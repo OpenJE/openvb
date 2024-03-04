@@ -1,2 +1,2 @@
-# openvb
-Open source Fallout: Van Buren
+# OpenVB
+Open source Fallout 3: Van Buren
