@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Windows-x86",
+            "includePath":
+            [
+                "${workspaceFolder}/src",
+                "/home/shane/Desktop/WindowsXP_Shared/Vc7/include",
+                "/home/shane/Desktop/WindowsXP_Shared/Vc7/PlatformSDK/Include"
+            ],
+            "defines": [],
+            "compilerPath": "",
+            "compilerArgs": [],
+            "cStandard": "c99",
+            "cppStandard": "c++03",
+            "intelliSenseMode": "windows-msvc-x86"
+        }
+    ],
+    "version": 4
+}
