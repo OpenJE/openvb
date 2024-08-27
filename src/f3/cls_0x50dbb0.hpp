@@ -1,0 +1,161 @@
+// Copyright 2024 OpenJE
+
+#ifndef F3_CLS_0X50DBB0_HPP_
+#define F3_CLS_0X50DBB0_HPP_
+
+#include "f3/global.hpp"
+
+namespace f3 {
+	class cls_0x50dbb0 {
+		//: Members
+		public:
+			byte mbr_0x0;
+			dword mbr_0x10;
+			dword mbr_0x14;
+			dword mbr_0x18;
+			dword mbr_0x1c;
+			dword mbr_0x4;
+			dword mbr_0x8;
+			byte mbr_0xc;
+		//: Methods
+		public:
+			meth_0x425e90;
+			meth_0x426160;
+			meth_0x429220;
+			meth_0x48d810;
+			meth_0x48df50;
+			meth_0x48e350;
+			meth_0x48e410;
+			meth_0x48e930;
+			meth_0x48ee00;
+			meth_0x4910d0;
+			meth_0x491110;
+			meth_0x492520;
+			meth_0x492700;
+			meth_0x492ac0;
+			meth_0x492b80;
+			meth_0x492c40;
+			meth_0x4933d0;
+			meth_0x493400;
+			meth_0x49dbb0;
+			meth_0x49e410;
+			meth_0x49e8c0;
+			meth_0x49f290;
+			meth_0x4b2e40;
+			meth_0x4b2e80;
+			meth_0x4b3ac0;
+			meth_0x4b4330;
+			meth_0x4b43f0;
+			meth_0x4b51f0;
+			meth_0x4b5220;
+			meth_0x4b9a50;
+			meth_0x4ba330;
+			meth_0x4baa40;
+			meth_0x4bb090;
+			meth_0x4bb2d0;
+			meth_0x4bc020;
+			meth_0x4c6600;
+			meth_0x4c6680;
+			meth_0x5068d0;
+			meth_0x506950;
+			meth_0x506c90;
+			meth_0x506f60;
+			meth_0x5071c0;
+			meth_0x507280;
+			meth_0x507470;
+			meth_0x507550;
+			meth_0x50cd40;
+			meth_0x50cda0;
+			meth_0x50ce00;
+			meth_0x50ce60;
+			meth_0x50ceb0;
+			meth_0x50cef0;
+			meth_0x50cf50;
+			meth_0x50d220;
+			meth_0x50d2e0;
+			meth_0x50d4c0;
+			meth_0x50d740;
+			meth_0x50d9b0;
+			meth_0x50daf0;
+			ctor_0x50dbb0;
+			meth_0x50dbf0;
+			meth_0x50dc60;
+			meth_0x50dee0;
+			meth_0x50dfa0;
+			meth_0x51e9f0;
+			meth_0x51ec10;
+			meth_0x51efd0;
+			meth_0x51f0f0;
+			meth_0x51fb10;
+			meth_0x51fde0;
+			meth_0x51ffc0;
+			meth_0x5201d0;
+			meth_0x520340;
+			meth_0x522ff0;
+			meth_0x523080;
+			meth_0x523260;
+			meth_0x523320;
+			meth_0x5233e0;
+			meth_0x54b0d0;
+			meth_0x54b150;
+			meth_0x54b1e0;
+			meth_0x54b6c0;
+			meth_0x54c300;
+			meth_0x54cda0;
+			meth_0x54d660;
+			meth_0x54d720;
+			meth_0x54dfb0;
+			meth_0x54e260;
+			meth_0x54e320;
+			meth_0x54e3e0;
+			meth_0x54e9a0;
+			meth_0x54ec60;
+			meth_0x54ecc0;
+			meth_0x54ecf0;
+			meth_0x559060;
+			meth_0x559680;
+			meth_0x559860;
+			meth_0x559be0;
+			meth_0x559ca0;
+			meth_0x559d60;
+			meth_0x55a530;
+			meth_0x55a5b0;
+			meth_0x55a790;
+			meth_0x55aa60;
+			meth_0x55ab20;
+			meth_0x55b100;
+			meth_0x55c0c0;
+			meth_0x55c300;
+			ctor_0x55ca10;
+			meth_0x56d6f0;
+			meth_0x56ebe0;
+			meth_0x56ecc0;
+			meth_0x56fb70;
+			meth_0x570160;
+			meth_0x570220;
+			meth_0x571440;
+			meth_0x572ee0;
+			meth_0x592090;
+			meth_0x592a40;
+			meth_0x592d10;
+			meth_0x592ef0;
+			meth_0x593430;
+			meth_0x593500;
+			meth_0x5a2ad0;
+			meth_0x5a2c10;
+			meth_0x5a2df0;
+			meth_0x5a30c0;
+			meth_0x5a3180;
+			meth_0x5a3240;
+			meth_0x5a51b0;
+			meth_0x5a53c0;
+			meth_0x5cab80;
+			meth_0x5cac40;
+			meth_0x5caf10;
+			meth_0x5cafd0;
+			meth_0x5cb1b0;
+			meth_0x5cb270;
+	}; // 
+} // namespace f3
+
+#endif // F3_CLS_0X50DBB0_HPP_

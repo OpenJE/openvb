@@ -1,3 +1,5 @@
+// Copyright 2024 OpenJE
+
 #ifndef F3_DISPLAY_H
 #define F3_DISPLAY_H
 

@@ -1,0 +1,290 @@
+// Copyright 2024 OpenJE
+
+#ifndef F3_VFXEFFECTTYPE_PARTICLESYSTEM_STRUCT_HPP_
+#define F3_VFXEFFECTTYPE_PARTICLESYSTEM_STRUCT_HPP_
+
+#include "f3/global.hpp"
+#include "f3/VFXEFFECTTYPE_BASE_Struct.hpp"
+#include "f3/cls_0x40a220.hpp"
+#include "f3/cls_0x50db20.hpp"
+#include "f3/cls_0x40a220.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x502110.hpp"
+#include "f3/cls_0x50db20.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x4d8d70.hpp"
+#include "f3/cls_0x40a220.hpp"
+#include "f3/cls_0x50db20.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+#include "f3/cls_0x4dff90.hpp"
+
+namespace f3 {
+	struct VFXEFFECTTYPE_PARTICLESYSTEM_Struct : public VFXEFFECTTYPE_BASE_Struct, public cls_0x50db20, public cls_0x4dff90 {
+		//: Members
+			byte mbr_0x100;
+			dword mbr_0x104;
+			cls_0x40a220 mbr_0x108;
+			dword mbr_0x10c;
+			dword mbr_0x11c;
+			dword mbr_0x120;
+			dword mbr_0x124;
+			dword mbr_0x128;
+			dword mbr_0x138;
+			dword mbr_0x13c;
+			cls_0x50db20 mbr_0x140;
+			dword mbr_0x144;
+			dword mbr_0x148;
+			dword mbr_0x14c;
+			cls_0x40a220 mbr_0x150;
+			dword mbr_0x154;
+			dword mbr_0x164;
+			dword mbr_0x168;
+			dword mbr_0x16c;
+			dword mbr_0x170;
+			dword mbr_0x180;
+			dword mbr_0x184;
+			byte mbr_0x188;
+			byte mbr_0x189;
+			byte mbr_0x18a;
+			byte mbr_0x18b;
+			dword mbr_0x18c;
+			byte mbr_0x190;
+			byte mbr_0x191;
+			byte mbr_0x192;
+			dword mbr_0x194;
+			dword mbr_0x198;
+			dword mbr_0x19c;
+			dword mbr_0x1a0;
+			dword mbr_0x1a4;
+			dword mbr_0x1a8;
+			dword mbr_0x1ac;
+			dword mbr_0x1b0;
+			cls_0x4dff90 mbr_0x1b4;
+			dword mbr_0x1b8;
+			dword mbr_0x1bc;
+			cls_0x4dff90 mbr_0x1c0;
+			dword mbr_0x1c4;
+			dword mbr_0x1c8;
+			dword mbr_0x1cc;
+			dword mbr_0x1d0;
+			cls_0x502110 mbr_0x1d4;
+			dword mbr_0x1d8;
+			cls_0x50db20 mbr_0x1dc;
+			dword mbr_0x1e0;
+			dword mbr_0x1f0;
+			dword mbr_0x1f4;
+			byte mbr_0x1f8;
+			dword mbr_0x1fc;
+			dword mbr_0x200;
+			dword mbr_0x204;
+			dword mbr_0x208;
+			byte mbr_0x20c;
+			cls_0x4d8d70 mbr_0x210;
+			dword mbr_0x214;
+			dword mbr_0x218;
+			cls_0x4d8d70 mbr_0x21c;
+			dword mbr_0x220;
+			dword mbr_0x224;
+			cls_0x4d8d70 mbr_0x228;
+			dword mbr_0x22c;
+			dword mbr_0x230;
+			cls_0x4d8d70 mbr_0x234;
+			dword mbr_0x238;
+			dword mbr_0x23c;
+			byte mbr_0x240;
+			dword mbr_0x244;
+			dword mbr_0x248;
+			cls_0x4d8d70 mbr_0x24c;
+			byte mbr_0x24e;
+			dword mbr_0x250;
+			cls_0x4d8d70 mbr_0x254;
+			byte mbr_0x256;
+			dword mbr_0x258;
+			cls_0x4d8d70 mbr_0x25c;
+			byte mbr_0x25e;
+			dword mbr_0x260;
+			cls_0x4d8d70 mbr_0x264;
+			byte mbr_0x266;
+			dword mbr_0x268;
+			cls_0x4d8d70 mbr_0x26c;
+			byte mbr_0x26e;
+			dword mbr_0x270;
+			cls_0x4d8d70 mbr_0x274;
+			byte mbr_0x276;
+			dword mbr_0x278;
+			cls_0x4d8d70 mbr_0x27c;
+			byte mbr_0x27e;
+			dword mbr_0x280;
+			cls_0x4d8d70 mbr_0x284;
+			byte mbr_0x286;
+			dword mbr_0x288;
+			byte mbr_0x28c;
+			byte mbr_0x28d;
+			byte mbr_0x28e;
+			dword mbr_0x290;
+			dword mbr_0x294;
+			dword mbr_0x298;
+			byte mbr_0x29c;
+			byte mbr_0x29d;
+			byte mbr_0x29e;
+			byte mbr_0x29f;
+			dword mbr_0x2a0;
+			dword mbr_0x2a4;
+			dword mbr_0x2a8;
+			byte mbr_0x2ac;
+			byte mbr_0x2ad;
+			byte mbr_0x2ae;
+			byte mbr_0x2af;
+			dword mbr_0x2b0;
+			dword mbr_0x2b4;
+			dword mbr_0x2b8;
+			byte mbr_0x2bc;
+			byte mbr_0x2bd;
+			dword mbr_0x2c0;
+			dword mbr_0x2c4;
+			dword mbr_0x2c8;
+			dword mbr_0x2cc;
+			dword mbr_0x2d0;
+			byte mbr_0x2d4;
+			byte mbr_0x2d5;
+			dword mbr_0x2d8;
+			dword mbr_0x2dc;
+			dword mbr_0x2e0;
+			dword mbr_0x2e4;
+			dword mbr_0x2e8;
+			byte mbr_0x2ec;
+			byte mbr_0x2ed;
+			dword mbr_0x2f0;
+			dword mbr_0x2f4;
+			dword mbr_0x2f8;
+			dword mbr_0x2fc;
+			byte mbr_0x300;
+			byte mbr_0x301;
+			dword mbr_0x304;
+			dword mbr_0x308;
+			dword mbr_0x30c;
+			dword mbr_0x310;
+			byte mbr_0x314;
+			byte mbr_0x315;
+			dword mbr_0x318;
+			dword mbr_0x31c;
+			dword mbr_0x320;
+			dword mbr_0x324;
+			byte mbr_0x328;
+			byte mbr_0x329;
+			dword mbr_0x32c;
+			dword mbr_0x330;
+			dword mbr_0x334;
+			dword mbr_0x338;
+			byte mbr_0x33c;
+			byte mbr_0x33d;
+			dword mbr_0x340;
+			dword mbr_0x344;
+			dword mbr_0x348;
+			dword mbr_0x34c;
+			byte mbr_0x350;
+			byte mbr_0x351;
+			dword mbr_0x354;
+			dword mbr_0x358;
+			dword mbr_0x35c;
+			dword mbr_0x360;
+			dword mbr_0x364;
+			dword mbr_0x368;
+			dword mbr_0x36c;
+			dword mbr_0x370;
+			byte mbr_0x374;
+			cls_0x4d8d70 mbr_0x375;
+			byte mbr_0x377;
+			byte mbr_0x378;
+			dword mbr_0x37c;
+			cls_0x4d8d70 mbr_0x380;
+			byte mbr_0x382;
+			byte mbr_0x383;
+			dword mbr_0x384;
+			cls_0x40a220 mbr_0x388;
+			dword mbr_0x38c;
+			dword mbr_0x39c;
+			dword mbr_0x3a0;
+			dword mbr_0x3a4;
+			dword mbr_0x3a8;
+			dword mbr_0x3b8;
+			dword mbr_0x3bc;
+			dword mbr_0x3c4;
+			dword mbr_0x3c8;
+			dword mbr_0x3cc;
+			cls_0x4dff90 mbr_0x3d0;
+			dword mbr_0x3d4;
+			dword mbr_0x3d8;
+			cls_0x4dff90 mbr_0x3dc;
+			dword mbr_0x3e0;
+			dword mbr_0x3e4;
+			dword mbr_0x3e8;
+			byte mbr_0x3ec;
+			byte mbr_0x3ed;
+			dword mbr_0x3f0;
+			dword mbr_0x70;
+			cls_0x4dff90 mbr_0x74;
+			dword mbr_0x78;
+			dword mbr_0x7c;
+			cls_0x4dff90 mbr_0x80;
+			dword mbr_0x84;
+			dword mbr_0x88;
+			cls_0x4dff90 mbr_0x8c;
+			dword mbr_0x90;
+			dword mbr_0x94;
+			cls_0x4dff90 mbr_0x98;
+			dword mbr_0x9c;
+			dword mbr_0xa0;
+			byte mbr_0xa4;
+			dword mbr_0xa8;
+			cls_0x4dff90 mbr_0xac;
+			dword mbr_0xb0;
+			dword mbr_0xb4;
+			cls_0x4dff90 mbr_0xb8;
+			dword mbr_0xbc;
+			dword mbr_0xc0;
+			byte mbr_0xc4;
+			cls_0x4dff90 mbr_0xc8;
+			dword mbr_0xcc;
+			dword mbr_0xd0;
+			byte mbr_0xd4;
+			dword mbr_0xdc;
+			dword mbr_0xe0;
+			byte mbr_0xe4;
+			byte mbr_0xe5;
+			dword mbr_0xe8;
+			byte mbr_0xec;
+			dword mbr_0xf0;
+			dword mbr_0xf4;
+			dword mbr_0xf8;
+			dword mbr_0xfc;
+		//: Methods
+			ctor_0x4f6d80;
+			meth_0x4f6f40;
+			virt_meth_0x4f7080;
+			meth_0x4f7ae0;
+	}; // VFXEFFECTTYPE_PARTICLESYSTEM_Struct
+} // namespace f3
+
+#endif // F3_VFXEFFECTTYPE_PARTICLESYSTEM_STRUCT_HPP_

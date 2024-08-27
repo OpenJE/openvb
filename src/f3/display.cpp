@@ -1,3 +1,5 @@
+// Copyright 2024 OpenJE
+
 #include "stdafx.h"
 
 #include "f3/display.hpp"
