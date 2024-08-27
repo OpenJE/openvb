@@ -1,15 +1,22 @@
+// Copyright 2024 OpenJE
+
 #ifndef F3_GLOBAL_H
 #define F3_GLOBAL_H
 
 #include "stdafx.h"
 
 // Ghidra Types
-typedef unsigned char byte;
 typedef unsigned char undefined;
 typedef unsigned short undefined2;
 typedef unsigned int undefined4;
 typedef unsigned long long undefined8;
 typedef void code;
+
+// OOAnalyzer Types
+typedef unsigned char byte;
+typedef unsigned short word ;
+typedef unsigned int dword;
+typedef unsigned long long qword;
 
 // F3 Defines
 #define CSIDL_PERSONAL_FOLDER 0x8005
