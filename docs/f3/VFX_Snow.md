@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Snow.hpp`](/c++/include/VFX_Snow.hpp)
-- [`VFX_Snow.cpp`](/c++/source/VFX_Snow.cpp)
+- [`VFX_Snow.hpp`](/src/f3/VFX_Snow.hpp)
+- [`VFX_Snow.cpp`](/src/f3/VFX_Snow.cpp)
 
 ## References
 

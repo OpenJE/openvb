@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_ModelBone.hpp`](/c++/include/Gfx_ModelBone.hpp)
-- [`Gfx_ModelBone.cpp`](/c++/source/Gfx_ModelBone.cpp)
+- [`Gfx_ModelBone.hpp`](/src/f3/Gfx_ModelBone.hpp)
+- [`Gfx_ModelBone.cpp`](/src/f3/Gfx_ModelBone.cpp)
 
 ## References
 

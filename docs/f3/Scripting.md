@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Scripting.hpp`](/c++/include/Scripting.hpp)
-- [`Scripting.cpp`](/c++/source/Scripting.cpp)
+- [`Scripting.hpp`](/src/f3/Scripting.hpp)
+- [`Scripting.cpp`](/src/f3/Scripting.cpp)
 
 ## References
 

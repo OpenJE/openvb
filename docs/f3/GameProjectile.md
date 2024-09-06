@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameProjectile.hpp`](/c++/include/GameProjectile.hpp)
-- [`GameProjectile.cpp`](/c++/source/GameProjectile.cpp)
+- [`GameProjectile.hpp`](/src/f3/GameProjectile.hpp)
+- [`GameProjectile.cpp`](/src/f3/GameProjectile.cpp)
 
 ## References
 

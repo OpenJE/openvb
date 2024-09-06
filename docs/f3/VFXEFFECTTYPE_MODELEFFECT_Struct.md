@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_MODELEFFECT_Struct.hpp`](/c++/include/VFXEFFECTTYPE_MODELEFFECT_Struct.hpp)
-- [`VFXEFFECTTYPE_MODELEFFECT_Struct.cpp`](/c++/source/VFXEFFECTTYPE_MODELEFFECT_Struct.cpp)
+- [`VFXEFFECTTYPE_MODELEFFECT_Struct.hpp`](/src/f3/VFXEFFECTTYPE_MODELEFFECT_Struct.hpp)
+- [`VFXEFFECTTYPE_MODELEFFECT_Struct.cpp`](/src/f3/VFXEFFECTTYPE_MODELEFFECT_Struct.cpp)
 
 ## References
 

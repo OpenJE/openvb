@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GamePathManager.hpp`](/c++/include/GamePathManager.hpp)
-- [`GamePathManager.cpp`](/c++/source/GamePathManager.cpp)
+- [`GamePathManager.hpp`](/src/f3/GamePathManager.hpp)
+- [`GamePathManager.cpp`](/src/f3/GamePathManager.cpp)
 
 ## References
 

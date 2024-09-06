@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_Camera.hpp`](/c++/include/Gfx_Camera.hpp)
-- [`Gfx_Camera.cpp`](/c++/source/Gfx_Camera.cpp)
+- [`Gfx_Camera.hpp`](/src/f3/Gfx_Camera.hpp)
+- [`Gfx_Camera.cpp`](/src/f3/Gfx_Camera.cpp)
 
 ## References
 

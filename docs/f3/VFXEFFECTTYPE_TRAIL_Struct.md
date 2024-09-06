@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_TRAIL_Struct.hpp`](/c++/include/VFXEFFECTTYPE_TRAIL_Struct.hpp)
-- [`VFXEFFECTTYPE_TRAIL_Struct.cpp`](/c++/source/VFXEFFECTTYPE_TRAIL_Struct.cpp)
+- [`VFXEFFECTTYPE_TRAIL_Struct.hpp`](/src/f3/VFXEFFECTTYPE_TRAIL_Struct.hpp)
+- [`VFXEFFECTTYPE_TRAIL_Struct.cpp`](/src/f3/VFXEFFECTTYPE_TRAIL_Struct.cpp)
 
 ## References
 

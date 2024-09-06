@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_LIGHTNING_Struct.hpp`](/c++/include/VFXEFFECTTYPE_LIGHTNING_Struct.hpp)
-- [`VFXEFFECTTYPE_LIGHTNING_Struct.cpp`](/c++/source/VFXEFFECTTYPE_LIGHTNING_Struct.cpp)
+- [`VFXEFFECTTYPE_LIGHTNING_Struct.hpp`](/src/f3/VFXEFFECTTYPE_LIGHTNING_Struct.hpp)
+- [`VFXEFFECTTYPE_LIGHTNING_Struct.cpp`](/src/f3/VFXEFFECTTYPE_LIGHTNING_Struct.cpp)
 
 ## References
 

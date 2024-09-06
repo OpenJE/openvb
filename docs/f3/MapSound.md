@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`MapSound.hpp`](/c++/include/MapSound.hpp)
-- [`MapSound.cpp`](/c++/source/MapSound.cpp)
+- [`MapSound.hpp`](/src/f3/MapSound.hpp)
+- [`MapSound.cpp`](/src/f3/MapSound.cpp)
 
 [Return to `f3`](/docs/f3.md)

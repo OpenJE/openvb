@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Collision.hpp`](/c++/include/VFX_Collision.hpp)
-- [`VFX_Collision.cpp`](/c++/source/VFX_Collision.cpp)
+- [`VFX_Collision.hpp`](/src/f3/VFX_Collision.hpp)
+- [`VFX_Collision.cpp`](/src/f3/VFX_Collision.cpp)
 
 ## References
 

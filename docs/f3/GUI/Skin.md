@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Skin.hpp`](/c++/include/Skin.hpp)
-- [`Skin.cpp`](/c++/source/Skin.cpp)
+- [`Skin.hpp`](/src/f3/Skin.hpp)
+- [`Skin.cpp`](/src/f3/Skin.cpp)
 
 [Return to `f3`](/docs/f3.md)

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_COLLISION_Struct.hpp`](/c++/include/VFXEFFECTTYPE_COLLISION_Struct.hpp)
-- [`VFXEFFECTTYPE_COLLISION_Struct.cpp`](/c++/source/VFXEFFECTTYPE_COLLISION_Struct.cpp)
+- [`VFXEFFECTTYPE_COLLISION_Struct.hpp`](/src/f3/VFXEFFECTTYPE_COLLISION_Struct.hpp)
+- [`VFXEFFECTTYPE_COLLISION_Struct.cpp`](/src/f3/VFXEFFECTTYPE_COLLISION_Struct.cpp)
 
 ## References
 

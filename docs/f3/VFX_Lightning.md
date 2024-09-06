@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Lightning.hpp`](/c++/include/VFX_Lightning.hpp)
-- [`VFX_Lightning.cpp`](/c++/source/VFX_Lightning.cpp)
+- [`VFX_Lightning.hpp`](/src/f3/VFX_Lightning.hpp)
+- [`VFX_Lightning.cpp`](/src/f3/VFX_Lightning.cpp)
 
 ## References
 

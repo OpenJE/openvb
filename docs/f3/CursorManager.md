@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`CursorManager.hpp`](/c++/include/CursorManager.hpp)
-- [`CursorManager.cpp`](/c++/source/CursorManager.cpp)
+- [`CursorManager.hpp`](/src/f3/CursorManager.hpp)
+- [`CursorManager.cpp`](/src/f3/CursorManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

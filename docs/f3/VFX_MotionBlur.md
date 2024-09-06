@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_MotionBlur.hpp`](/c++/include/VFX_MotionBlur.hpp)
-- [`VFX_MotionBlur.cpp`](/c++/source/VFX_MotionBlur.cpp)
+- [`VFX_MotionBlur.hpp`](/src/f3/VFX_MotionBlur.hpp)
+- [`VFX_MotionBlur.cpp`](/src/f3/VFX_MotionBlur.cpp)
 
 ## References
 

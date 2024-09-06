@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`PMD.hpp`](/c++/include/PMD.hpp)
-- [`PMD.cpp`](/c++/source/PMD.cpp)
+- [`PMD.hpp`](/src/f3/PMD.hpp)
+- [`PMD.cpp`](/src/f3/PMD.cpp)
 
 [Return to `f3`](/docs/f3.md)

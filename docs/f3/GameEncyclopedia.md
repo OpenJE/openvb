@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameEncyclopedia.hpp`](/c++/include/GameEncyclopedia.hpp)
-- [`GameEncyclopedia.cpp`](/c++/source/GameEncyclopedia.cpp)
+- [`GameEncyclopedia.hpp`](/src/f3/GameEncyclopedia.hpp)
+- [`GameEncyclopedia.cpp`](/src/f3/GameEncyclopedia.cpp)
 
 ## References
 

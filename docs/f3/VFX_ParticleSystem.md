@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_ParticleSystem.hpp`](/c++/include/VFX_ParticleSystem.hpp)
-- [`VFX_ParticleSystem.cpp`](/c++/source/VFX_ParticleSystem.cpp)
+- [`VFX_ParticleSystem.hpp`](/src/f3/VFX_ParticleSystem.hpp)
+- [`VFX_ParticleSystem.cpp`](/src/f3/VFX_ParticleSystem.cpp)
 
 ## References
 

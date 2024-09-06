@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Display.hpp`](/c++/include/Display.hpp)
-- [`Display.cpp`](/c++/source/Display.cpp)
+- [`Display.hpp`](/src/f3/Display.hpp)
+- [`Display.cpp`](/src/f3/Display.cpp)
 
 [Return to `f3`](/docs/f3.md)

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Model.hpp`](/c++/include/VFX_Model.hpp)
-- [`VFX_Model.cpp`](/c++/source/VFX_Model.cpp)
+- [`VFX_Model.hpp`](/src/f3/VFX_Model.hpp)
+- [`VFX_Model.cpp`](/src/f3/VFX_Model.cpp)
 
 ## References
 

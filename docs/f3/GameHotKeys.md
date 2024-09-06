@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameHotKeys.hpp`](/c++/include/GameHotKeys.hpp)
-- [`GameHotKeys.cpp`](/c++/source/GameHotKeys.cpp)
+- [`GameHotKeys.hpp`](/src/f3/GameHotKeys.hpp)
+- [`GameHotKeys.cpp`](/src/f3/GameHotKeys.cpp)
 
 ## References
 

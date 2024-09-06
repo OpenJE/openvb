@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`CStore.hpp`](/c++/include/CStore.hpp)
-- [`CStore.cpp`](/c++/source/CStore.cpp)
+- [`CStore.hpp`](/src/f3/CStore.hpp)
+- [`CStore.cpp`](/src/f3/CStore.cpp)
 
 [Return to `f3`](/docs/f3.md)

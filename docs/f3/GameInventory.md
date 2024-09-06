@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameInventory.hpp`](/c++/include/GameInventory.hpp)
-- [`GameInventory.cpp`](/c++/source/GameInventory.cpp)
+- [`GameInventory.hpp`](/src/f3/GameInventory.hpp)
+- [`GameInventory.cpp`](/src/f3/GameInventory.cpp)
 
 ## References
 

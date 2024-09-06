@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`CPktManager.hpp`](/c++/include/CPktManager.hpp)
-- [`CPktManager.cpp`](/c++/source/CPktManager.cpp)
+- [`CPktManager.hpp`](/src/f3/CPktManager.hpp)
+- [`CPktManager.cpp`](/src/f3/CPktManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

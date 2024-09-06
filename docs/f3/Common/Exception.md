@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Exception.hpp`](/c++/include/Exception.hpp)
-- [`Exception.cpp`](/c++/source/Exception.cpp)
+- [`Exception.hpp`](/src/f3/Exception.hpp)
+- [`Exception.cpp`](/src/f3/Exception.cpp)
 
 [Return to `f3`](/docs/f3.md)

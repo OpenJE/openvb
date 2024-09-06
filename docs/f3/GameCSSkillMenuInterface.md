@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameCSSkillMenuInterface.hpp`](/c++/include/GameCSSkillMenuInterface.hpp)
-- [`GameCSSkillMenuInterface.cpp`](/c++/source/GameCSSkillMenuInterface.cpp)
+- [`GameCSSkillMenuInterface.hpp`](/src/f3/GameCSSkillMenuInterface.hpp)
+- [`GameCSSkillMenuInterface.cpp`](/src/f3/GameCSSkillMenuInterface.cpp)
 
 ## References
 

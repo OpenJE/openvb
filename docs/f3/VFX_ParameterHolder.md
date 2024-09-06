@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`VFX_ParameterHolder.hpp`](/c++/include/VFX_ParameterHolder.hpp)
-- [`VFX_ParameterHolder.cpp`](/c++/source/VFX_ParameterHolder.cpp)
+- [`VFX_ParameterHolder.hpp`](/src/f3/VFX_ParameterHolder.hpp)
+- [`VFX_ParameterHolder.cpp`](/src/f3/VFX_ParameterHolder.cpp)
 
 [Return to `f3`](/docs/f3.md)

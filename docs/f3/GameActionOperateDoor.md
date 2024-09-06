@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionOperateDoor.hpp`](/c++/include/GameActionOperateDoor.hpp)
-- [`GameActionOperateDoor.cpp`](/c++/source/GameActionOperateDoor.cpp)
+- [`GameActionOperateDoor.hpp`](/src/f3/GameActionOperateDoor.hpp)
+- [`GameActionOperateDoor.cpp`](/src/f3/GameActionOperateDoor.cpp)
 
 ## References
 

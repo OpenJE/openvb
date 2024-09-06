@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`HotKeyWindowFormat.hpp`](/c++/include/HotKeyWindowFormat.hpp)
-- [`HotKeyWindowFormat.cpp`](/c++/source/HotKeyWindowFormat.cpp)
+- [`HotKeyWindowFormat.hpp`](/src/f3/HotKeyWindowFormat.hpp)
+- [`HotKeyWindowFormat.cpp`](/src/f3/HotKeyWindowFormat.cpp)
 
 [Return to `f3`](/docs/f3.md)

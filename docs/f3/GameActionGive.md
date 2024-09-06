@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionGive.hpp`](/c++/include/GameActionGive.hpp)
-- [`GameActionGive.cpp`](/c++/source/GameActionGive.cpp)
+- [`GameActionGive.hpp`](/src/f3/GameActionGive.hpp)
+- [`GameActionGive.cpp`](/src/f3/GameActionGive.cpp)
 
 ## References
 

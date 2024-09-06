@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CSMenuLabel.hpp`](/c++/include/CSMenuLabel.hpp)
-- [`CSMenuLabel.cpp`](/c++/source/CSMenuLabel.cpp)
+- [`CSMenuLabel.hpp`](/src/f3/CSMenuLabel.hpp)
+- [`CSMenuLabel.cpp`](/src/f3/CSMenuLabel.cpp)
 
 ## References
 

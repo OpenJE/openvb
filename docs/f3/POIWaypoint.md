@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`POIWaypoint.hpp`](/c++/include/POIWaypoint.hpp)
-- [`POIWaypoint.cpp`](/c++/source/POIWaypoint.cpp)
+- [`POIWaypoint.hpp`](/src/f3/POIWaypoint.hpp)
+- [`POIWaypoint.cpp`](/src/f3/POIWaypoint.cpp)
 
 ## References
 

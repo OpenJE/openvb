@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`COptionsInterface.hpp`](/c++/include/COptionsInterface.hpp)
-- [`COptionsInterface.cpp`](/c++/source/COptionsInterface.cpp)
+- [`COptionsInterface.hpp`](/src/f3/COptionsInterface.hpp)
+- [`COptionsInterface.cpp`](/src/f3/COptionsInterface.cpp)
 
 ## References
 

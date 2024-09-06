@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_BaseLight.hpp`](/c++/include/G3D_BaseLight.hpp)
-- [`G3D_BaseLight.cpp`](/c++/source/G3D_BaseLight.cpp)
+- [`G3D_BaseLight.hpp`](/src/f3/G3D_BaseLight.hpp)
+- [`G3D_BaseLight.cpp`](/src/f3/G3D_BaseLight.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_ModelInstance.hpp`](/c++/include/Gfx_ModelInstance.hpp)
-- [`Gfx_ModelInstance.cpp`](/c++/source/Gfx_ModelInstance.cpp)
+- [`Gfx_ModelInstance.hpp`](/src/f3/Gfx_ModelInstance.hpp)
+- [`Gfx_ModelInstance.cpp`](/src/f3/Gfx_ModelInstance.cpp)
 
 ## References
 

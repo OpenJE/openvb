@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`FrameInfo.hpp`](/c++/include/FrameInfo.hpp)
-- [`FrameInfo.cpp`](/c++/source/FrameInfo.cpp)
+- [`FrameInfo.hpp`](/src/f3/FrameInfo.hpp)
+- [`FrameInfo.cpp`](/src/f3/FrameInfo.cpp)
 
 [Return to `f3`](/docs/f3.md)

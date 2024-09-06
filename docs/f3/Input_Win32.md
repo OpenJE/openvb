@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Input_Win32.hpp`](/c++/include/Input_Win32.hpp)
-- [`Input_Win32.cpp`](/c++/source/Input_Win32.cpp)
+- [`Input_Win32.hpp`](/src/f3/Input_Win32.hpp)
+- [`Input_Win32.cpp`](/src/f3/Input_Win32.cpp)
 
 ## References
 

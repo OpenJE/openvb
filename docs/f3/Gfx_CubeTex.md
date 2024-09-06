@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_CubeTex.hpp`](/c++/include/Gfx_CubeTex.hpp)
-- [`Gfx_CubeTex.cpp`](/c++/source/Gfx_CubeTex.cpp)
+- [`Gfx_CubeTex.hpp`](/src/f3/Gfx_CubeTex.hpp)
+- [`Gfx_CubeTex.cpp`](/src/f3/Gfx_CubeTex.cpp)
 
 ## References
 

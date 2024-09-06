@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Interface.hpp`](/c++/include/Interface.hpp)
-- [`Interface.cpp`](/c++/source/Interface.cpp)
+- [`Interface.hpp`](/src/f3/Interface.hpp)
+- [`Interface.cpp`](/src/f3/Interface.cpp)
 
 ## Inheritance
 

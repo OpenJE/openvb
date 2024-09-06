@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Sprite.hpp`](/c++/include/VFX_Sprite.hpp)
-- [`VFX_Sprite.cpp`](/c++/source/VFX_Sprite.cpp)
+- [`VFX_Sprite.hpp`](/src/f3/VFX_Sprite.hpp)
+- [`VFX_Sprite.cpp`](/src/f3/VFX_Sprite.cpp)
 
 ## References
 

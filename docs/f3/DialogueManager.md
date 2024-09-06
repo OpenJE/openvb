@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`DialogueManager.hpp`](/c++/include/DialogueManager.hpp)
-- [`DialogueManager.cpp`](/c++/source/DialogueManager.cpp)
+- [`DialogueManager.hpp`](/src/f3/DialogueManager.hpp)
+- [`DialogueManager.cpp`](/src/f3/DialogueManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

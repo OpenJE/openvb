@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CCharacterGenerationInterface.hpp`](/c++/include/CCharacterGenerationInterface.hpp)
-- [`CCharacterGenerationInterface.cpp`](/c++/source/CCharacterGenerationInterface.cpp)
+- [`CCharacterGenerationInterface.hpp`](/src/f3/CCharacterGenerationInterface.hpp)
+- [`CCharacterGenerationInterface.cpp`](/src/f3/CCharacterGenerationInterface.cpp)
 
 ## References
 

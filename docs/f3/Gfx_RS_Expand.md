@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_RS_Expand.hpp`](/c++/include/Gfx_RS_Expand.hpp)
-- [`Gfx_RS_Expand.cpp`](/c++/source/Gfx_RS_Expand.cpp)
+- [`Gfx_RS_Expand.hpp`](/src/f3/Gfx_RS_Expand.hpp)
+- [`Gfx_RS_Expand.cpp`](/src/f3/Gfx_RS_Expand.cpp)
 
 ## References
 

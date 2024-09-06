@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameArmor.hpp`](/c++/include/GameArmor.hpp)
-- [`GameArmor.cpp`](/c++/source/GameArmor.cpp)
+- [`GameArmor.hpp`](/src/f3/GameArmor.hpp)
+- [`GameArmor.cpp`](/src/f3/GameArmor.cpp)
 
 ## References
 

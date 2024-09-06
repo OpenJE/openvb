@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameMap.hpp`](/c++/include/GameMap.hpp)
-- [`GameMap.cpp`](/c++/source/GameMap.cpp)
+- [`GameMap.hpp`](/src/f3/GameMap.hpp)
+- [`GameMap.cpp`](/src/f3/GameMap.cpp)
 
 ## References
 

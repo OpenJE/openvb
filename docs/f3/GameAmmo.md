@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameAmmo.hpp`](/c++/include/GameAmmo.hpp)
-- [`GameAmmo.cpp`](/c++/source/GameAmmo.cpp)
+- [`GameAmmo.hpp`](/src/f3/GameAmmo.hpp)
+- [`GameAmmo.cpp`](/src/f3/GameAmmo.cpp)
 
 ## References
 

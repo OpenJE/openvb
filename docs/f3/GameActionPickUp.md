@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionPickUp.hpp`](/c++/include/GameActionPickUp.hpp)
-- [`GameActionPickUp.cpp`](/c++/source/GameActionPickUp.cpp)
+- [`GameActionPickUp.hpp`](/src/f3/GameActionPickUp.hpp)
+- [`GameActionPickUp.cpp`](/src/f3/GameActionPickUp.cpp)
 
 ## References
 

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`DynamicObject.hpp`](/c++/include/DynamicObject.hpp)
-- [`DynamicObject.cpp`](/c++/source/DynamicObject.cpp)
+- [`DynamicObject.hpp`](/src/f3/DynamicObject.hpp)
+- [`DynamicObject.cpp`](/src/f3/DynamicObject.cpp)
 
 [Return to `f3`](/docs/f3.md)

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CGameFloatingTextInterface.hpp`](/c++/include/CGameFloatingTextInterface.hpp)
-- [`CGameFloatingTextInterface.cpp`](/c++/source/CGameFloatingTextInterface.cpp)
+- [`CGameFloatingTextInterface.hpp`](/src/f3/CGameFloatingTextInterface.hpp)
+- [`CGameFloatingTextInterface.cpp`](/src/f3/CGameFloatingTextInterface.cpp)
 
 ## References
 

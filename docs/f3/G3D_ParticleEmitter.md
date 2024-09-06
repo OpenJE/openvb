@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_ParticleEmitter.hpp`](/c++/include/G3D_ParticleEmitter.hpp)
-- [`G3D_ParticleEmitter.cpp`](/c++/source/G3D_ParticleEmitter.cpp)
+- [`G3D_ParticleEmitter.hpp`](/src/f3/G3D_ParticleEmitter.hpp)
+- [`G3D_ParticleEmitter.cpp`](/src/f3/G3D_ParticleEmitter.cpp)
 
 ## References
 

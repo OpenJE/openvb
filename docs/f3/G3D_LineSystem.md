@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_LineSystem.hpp`](/c++/include/G3D_LineSystem.hpp)
-- [`G3D_LineSystem.cpp`](/c++/source/G3D_LineSystem.cpp)
+- [`G3D_LineSystem.hpp`](/src/f3/G3D_LineSystem.hpp)
+- [`G3D_LineSystem.cpp`](/src/f3/G3D_LineSystem.cpp)
 
 ## References
 

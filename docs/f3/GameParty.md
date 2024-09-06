@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameParty.hpp`](/c++/include/GameParty.hpp)
-- [`GameParty.cpp`](/c++/source/GameParty.cpp)
+- [`GameParty.hpp`](/src/f3/GameParty.hpp)
+- [`GameParty.cpp`](/src/f3/GameParty.cpp)
 
 ## References
 

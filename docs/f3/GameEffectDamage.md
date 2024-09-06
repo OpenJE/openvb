@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameEffectDamage.hpp`](/c++/include/GameEffectDamage.hpp)
-- [`GameEffectDamage.cpp`](/c++/source/GameEffectDamage.cpp)
+- [`GameEffectDamage.hpp`](/src/f3/GameEffectDamage.hpp)
+- [`GameEffectDamage.cpp`](/src/f3/GameEffectDamage.cpp)
 
 ## References
 

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`AreaMapIcon.hpp`](/c++/include/AreaMapIcon.hpp)
-- [`AreaMapIcon.cpp`](/c++/source/AreaMapIcon.cpp)
+- [`AreaMapIcon.hpp`](/src/f3/AreaMapIcon.hpp)
+- [`AreaMapIcon.cpp`](/src/f3/AreaMapIcon.cpp)
 
 [Return to `f3`](/docs/f3.md)

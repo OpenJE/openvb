@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`COptionsHotKeysInterface.hpp`](/c++/include/COptionsHotKeysInterface.hpp)
-- [`COptionsHotKeysInterface.cpp`](/c++/source/COptionsHotKeysInterface.cpp)
+- [`COptionsHotKeysInterface.hpp`](/src/f3/COptionsHotKeysInterface.hpp)
+- [`COptionsHotKeysInterface.cpp`](/src/f3/COptionsHotKeysInterface.cpp)
 
 ## References
 

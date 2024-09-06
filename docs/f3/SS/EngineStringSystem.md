@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`EngineStringSystem.hpp`](/c++/include/EngineStringSystem.hpp)
-- [`EngineStringSystem.cpp`](/c++/source/EngineStringSystem.cpp)
+- [`EngineStringSystem.hpp`](/src/f3/EngineStringSystem.hpp)
+- [`EngineStringSystem.cpp`](/src/f3/EngineStringSystem.cpp)
 
 [Return to `f3`](/docs/f3.md)

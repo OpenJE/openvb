@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_AfterImageInfo.hpp`](/c++/include/Gfx_AfterImageInfo.hpp)
-- [`Gfx_AfterImageInfo.cpp`](/c++/source/Gfx_AfterImageInfo.cpp)
+- [`Gfx_AfterImageInfo.hpp`](/src/f3/Gfx_AfterImageInfo.hpp)
+- [`Gfx_AfterImageInfo.cpp`](/src/f3/Gfx_AfterImageInfo.cpp)
 
 ## References
 

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`HotKeyOption.hpp`](/c++/include/HotKeyOption.hpp)
-- [`HotKeyOption.cpp`](/c++/source/HotKeyOption.cpp)
+- [`HotKeyOption.hpp`](/src/f3/HotKeyOption.hpp)
+- [`HotKeyOption.cpp`](/src/f3/HotKeyOption.cpp)
 
 [Return to `f3`](/docs/f3.md)

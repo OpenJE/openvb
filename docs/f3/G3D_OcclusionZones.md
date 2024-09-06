@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_OcclusionZones.hpp`](/c++/include/G3D_OcclusionZones.hpp)
-- [`G3D_OcclusionZones.cpp`](/c++/source/G3D_OcclusionZones.cpp)
+- [`G3D_OcclusionZones.hpp`](/src/f3/G3D_OcclusionZones.hpp)
+- [`G3D_OcclusionZones.cpp`](/src/f3/G3D_OcclusionZones.cpp)
 
 ## References
 

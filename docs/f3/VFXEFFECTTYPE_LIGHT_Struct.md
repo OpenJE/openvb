@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_LIGHT_Struct.hpp`](/c++/include/VFXEFFECTTYPE_LIGHT_Struct.hpp)
-- [`VFXEFFECTTYPE_LIGHT_Struct.cpp`](/c++/source/VFXEFFECTTYPE_LIGHT_Struct.cpp)
+- [`VFXEFFECTTYPE_LIGHT_Struct.hpp`](/src/f3/VFXEFFECTTYPE_LIGHT_Struct.hpp)
+- [`VFXEFFECTTYPE_LIGHT_Struct.cpp`](/src/f3/VFXEFFECTTYPE_LIGHT_Struct.cpp)
 
 ## References
 

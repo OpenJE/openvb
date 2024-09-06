@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Window.hpp`](/c++/include/Window.hpp)
-- [`Window.cpp`](/c++/source/Window.cpp)
+- [`Window.hpp`](/src/f3/Window.hpp)
+- [`Window.cpp`](/src/f3/Window.cpp)
 
 ## Inheritance
 

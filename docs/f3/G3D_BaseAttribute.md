@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`G3D_BaseAttribute.hpp`](/c++/include/G3D_BaseAttribute.hpp)
-- [`G3D_BaseAttribute.cpp`](/c++/source/G3D_BaseAttribute.cpp)
+- [`G3D_BaseAttribute.hpp`](/src/f3/G3D_BaseAttribute.hpp)
+- [`G3D_BaseAttribute.cpp`](/src/f3/G3D_BaseAttribute.cpp)
 
 [Return to `f3`](/docs/f3.md)

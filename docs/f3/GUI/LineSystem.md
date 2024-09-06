@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`LineSystem.hpp`](/c++/include/LineSystem.hpp)
-- [`LineSystem.cpp`](/c++/source/LineSystem.cpp)
+- [`LineSystem.hpp`](/src/f3/LineSystem.hpp)
+- [`LineSystem.cpp`](/src/f3/LineSystem.cpp)
 
 [Return to `f3`](/docs/f3.md)

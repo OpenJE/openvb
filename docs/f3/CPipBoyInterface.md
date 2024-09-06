@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CPipBoyInterface.hpp`](/c++/include/CPipBoyInterface.hpp)
-- [`CPipBoyInterface.cpp`](/c++/source/CPipBoyInterface.cpp)
+- [`CPipBoyInterface.hpp`](/src/f3/CPipBoyInterface.hpp)
+- [`CPipBoyInterface.cpp`](/src/f3/CPipBoyInterface.cpp)
 
 ## References
 

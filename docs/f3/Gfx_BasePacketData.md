@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Gfx_BasePacketData.hpp`](/c++/include/Gfx_BasePacketData.hpp)
-- [`Gfx_BasePacketData.cpp`](/c++/source/Gfx_BasePacketData.cpp)
+- [`Gfx_BasePacketData.hpp`](/src/f3/Gfx_BasePacketData.hpp)
+- [`Gfx_BasePacketData.cpp`](/src/f3/Gfx_BasePacketData.cpp)
 
 [Return to `f3`](/docs/f3.md)

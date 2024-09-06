@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_ModelEffect.hpp`](/c++/include/VFX_ModelEffect.hpp)
-- [`VFX_ModelEffect.cpp`](/c++/source/VFX_ModelEffect.cpp)
+- [`VFX_ModelEffect.hpp`](/src/f3/VFX_ModelEffect.hpp)
+- [`VFX_ModelEffect.cpp`](/src/f3/VFX_ModelEffect.cpp)
 
 ## References
 

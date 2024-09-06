@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Resources.hpp`](/c++/include/Resources.hpp)
-- [`Resources.cpp`](/c++/source/Resources.cpp)
+- [`Resources.hpp`](/src/f3/Resources.hpp)
+- [`Resources.cpp`](/src/f3/Resources.cpp)
 
 ## References
 

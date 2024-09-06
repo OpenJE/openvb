@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionMoveTo.hpp`](/c++/include/GameActionMoveTo.hpp)
-- [`GameActionMoveTo.cpp`](/c++/source/GameActionMoveTo.cpp)
+- [`GameActionMoveTo.hpp`](/src/f3/GameActionMoveTo.hpp)
+- [`GameActionMoveTo.cpp`](/src/f3/GameActionMoveTo.cpp)
 
 ## References
 

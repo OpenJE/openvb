@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`OCTREE_Tri2D.hpp`](/c++/include/OCTREE_Tri2D.hpp)
-- [`OCTREE_Tri2D.cpp`](/c++/source/OCTREE_Tri2D.cpp)
+- [`OCTREE_Tri2D.hpp`](/src/f3/OCTREE_Tri2D.hpp)
+- [`OCTREE_Tri2D.cpp`](/src/f3/OCTREE_Tri2D.cpp)
 
 ## References
 

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Effect.hpp`](/c++/include/Effect.hpp)
-- [`Effect.cpp`](/c++/source/Effect.cpp)
+- [`Effect.hpp`](/src/f3/Effect.hpp)
+- [`Effect.cpp`](/src/f3/Effect.cpp)
 
 [Return to `f3`](/docs/f3.md)

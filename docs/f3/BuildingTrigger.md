@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`BuildingTrigger.hpp`](/c++/include/BuildingTrigger.hpp)
-- [`BuildingTrigger.cpp`](/c++/source/BuildingTrigger.cpp)
+- [`BuildingTrigger.hpp`](/src/f3/BuildingTrigger.hpp)
+- [`BuildingTrigger.cpp`](/src/f3/BuildingTrigger.cpp)
 
 ## References
 
