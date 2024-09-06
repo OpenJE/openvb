@@ -13,8 +13,8 @@ namespace f3 {
                 dword mbr_0x8;
                 dword mbr_0xc;
             //: Methods
-                dtor_0x599ed0;
-                virt_meth_0x599f00;
+                ~Polygon(); // dtor_0x599ed0
+                virtual undefined4 * virt_meth_0x599f00( byte param_1 ); // virt_meth_0x599f00
         }; // struct Polygon
     } // namespace Common
 } // namespace f3

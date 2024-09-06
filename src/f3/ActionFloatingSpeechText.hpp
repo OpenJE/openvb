@@ -23,7 +23,7 @@ namespace f3 {
 			ActionFloatingSpeechText(); // ctor_0x55fb60
 			void Set_mbr_0x2c( undefined param_1 ); // meth_0x55fb90
 			byte Get_mbr_0x2c(); // virt_meth_0x55fba0
-			virtual void virt_meth_0x55fbb0( unsigned int param_1 ); // virt_meth_0x55fbb0
+			virtual void virt_meth_0x55fbb0( uint param_1 ); // virt_meth_0x55fbb0
 	}; // ActionFloatingSpeechText
 } // namespace f3
 

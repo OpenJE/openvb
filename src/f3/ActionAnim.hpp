@@ -21,7 +21,7 @@ namespace f3 {
 			byte mbr_0x4;
 		//: Methods
 			ActionAnim(); // ctor_0x5a9230
-			virtual undefined4* virt_meth_0x405350( byte param_1 ); // virt_meth_0x405350
+			//virtual undefined4* virt_meth_0x405350( byte param_1 ); // virt_meth_0x405350
 			virtual byte Get_mbr_0x23 (); // virt_meth_0x5a9260
 			virtual void virt_meth_0x5a9270(); // virt_meth_0x5a9270
 			virtual undefined4 virt_meth_0x5a9280( int param1 ); // virt_meth_0x5a9280

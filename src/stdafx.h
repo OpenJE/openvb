@@ -17,7 +17,8 @@
 #include <mmsystem.h>
 #include <time.h>
 #include <mbstring.h>
-#include <stdio.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cmath>
+#include <fstream>
 
 // TODO: reference additional headers your program requires here

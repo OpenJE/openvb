@@ -7,7 +7,7 @@
 
 namespace f3 {
 	namespace display {
-		void CreateGameWindow( unsigned int nCmdShow );
+		void CreateGameWindow( uint nCmdShow );
 		void DestroyGameWindow (void);
 	}
 }

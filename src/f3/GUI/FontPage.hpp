@@ -16,9 +16,9 @@ namespace f3 {
                 dword mbr_0xc;
             //: Methods
             public:
-                virt_deldtor_0x51e940;
-                meth_0x5382a0;
-                meth_0x5382e0;
+                virtual ~FontPage( /*byte param_1*/ ); // virt_deldtor_0x51e940
+                void meth_0x5382a0(); // meth_0x5382a0
+                void meth_0x5382e0( _String_base *param_1, uint param_2, int param_3, int param_4, DWORD param_5 ); // meth_0x5382e0
         }; // class FontPage
     } //namespace GUI
 } // namespace f3

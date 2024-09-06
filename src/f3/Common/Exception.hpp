@@ -11,9 +11,8 @@ namespace f3 {
             //: Members
                 dword mbr_0x4;
             //: Methods
-                virt_deldtor_0x401010;
-                dtor_0x4011a0;
-                ctor_0x4011b0;
+                Exception(); // ctor_0x4011b0
+                virtual ~Exception(); // dtor_0x4011a0, virt_deldtor_0x401010
         }; // struct Exception
     } // namespace Common
 } // namespace f3
