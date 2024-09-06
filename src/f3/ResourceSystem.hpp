@@ -37,7 +37,7 @@ namespace f3 {
 		//: Methods
 		public:
 			ResourceSystem(); // ctor_0x49c610
-			undefined4 FileStreamSeek( unsigned int * param_1, int param_2, int param_3 ); // meth_0x498800
+			undefined4 FileStreamSeek( uint * param_1, int param_2, int param_3 ); // meth_0x498800
 			void Release( void * param_1 ); // meth_0x498eb0
 			undefined4 FileStreamRead( undefined4 param_1, int param_2, int param_3 ); // meth_0x499220
 			void meth_0x499900( undefined4 * param_1 ) // meth_0x499900
@@ -49,7 +49,7 @@ namespace f3 {
 			void meth_0x49b1d0( void * param_1, char param_2 ); // meth_0x49b1d0
 			void meth_0x49b240( undefined4 * param_1, undefined4 param_2 ); // meth_0x49b240
 			int * meth_0x49b670( int * param_1, undefined4 param_2 ); // meth_0x49b670
-			void Demand( undefined4 * param_1, int * param_2, unsigned int param_3 ); // meth_0x49b750
+			void Demand( undefined4 * param_1, int * param_2, uint param_3 ); // meth_0x49b750
 			void FileStreamOpen( char param_1, uint param_2 ); // meth_0x49b9f0
 			void meth_0x49bc60(); // meth_0x49bc60
 			int * MemStreamOpen( int * param_1, int * param_2 ) // meth_0x49beb0

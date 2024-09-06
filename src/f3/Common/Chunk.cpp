@@ -27,7 +27,7 @@ namespace f3 {
         // 0x4a1cc0
         undefined4 Chunk::Read( undefined4 param_1, int param_2 ) {
             dword dVar1;
-            unsigned int uVar2;
+            uint uVar2;
 
             if (this->mbr_0x4 != 0) {
                 FailWithError("Chunk::Read() called when not in proper mode.\n");

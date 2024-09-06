@@ -7,7 +7,7 @@
 // 0x56b810
 int APIENTRY _tWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow ) {
 	CHAR f3_exe_path [268];
-	f3::FindSubstringInString( lpCmdLine, "-leakcheck" );
+	_mbsstr( reinterpret_cast<const uchar*>( lpCmdLine ), reinterpret_cast<const unsigned char*>( "-leakcheck" ) );
 	f3::global_hinstance = hInstance;
 	if( GetModuleFileNameA( (HMODULE)0x0, f3_exe_path, 260 ) == 0 ) {
 		f3::FailWithError( "Unable to get module file name." );
@@ -20,6 +20,10 @@ int APIENTRY _tWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 	f3::display::CreateGameWindow( nCmdShow );
 	f3::SetStartupTime( (time_t)0 );
 	GetCommandLineA();
-	f3::Main();
+	int main_return = f3::Main();
 	f3::display::DestroyGameWindow();
+    timeEndPeriod( 1 );
+    f3::FUN_00497b70();
+    f3::FUN_0056B390();
+    return main_return;
 }

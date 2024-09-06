@@ -28,9 +28,9 @@ namespace f3 {
                 dword mbr_0xc;
             //: Methods
             public:
-                ctor_0x4b6200;
-                dtor_0x4b6340;
-                virt_meth_0x4b64f0;
+                CPktManager(); // ctor_0x4b6200
+                ~CPktManager(); // dtor_0x4b6340
+                int * virt_meth_0x4b64f0( byte param_1 ); // virt_meth_0x4b64f0
         }; // class CPktManager
     } // namespace GUI
 } // namespace f3

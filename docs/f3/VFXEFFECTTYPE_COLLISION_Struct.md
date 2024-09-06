@@ -1,0 +1,21 @@
+# f3::VFXEFFECTTYPE_COLLISION_Struct
+
+[Return to `f3`](/docs/f3.md)
+
+## C++
+
+- [`VFXEFFECTTYPE_COLLISION_Struct.hpp`](/c++/include/VFXEFFECTTYPE_COLLISION_Struct.hpp)
+- [`VFXEFFECTTYPE_COLLISION_Struct.cpp`](/c++/source/VFXEFFECTTYPE_COLLISION_Struct.cpp)
+
+## References
+
+- [`f3::VFXEFFECTTYPE_BASE_Struct`](/docs/f3/VFXEFFECTTYPE_BASE_Struct.md)
+
+## Inheritance
+
+```mermaid
+graph TD;
+    f3::VFXEFFECTTYPE_BASE_Struct --> f3::VFXEFFECTTYPE_COLLISION_Struct
+```
+
+[Return to `f3`](/docs/f3.md)

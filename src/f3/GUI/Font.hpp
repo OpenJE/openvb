@@ -22,11 +22,11 @@ namespace f3 {
                 dword mbr_0x8;
             //: Methods
             public:
-                ctor_0x4b5500;
-                virt_meth_0x4b5580;
-                dtor_0x4b55a0;
-                meth_0x51e970;
-                meth_0x51ebd0;
+                Font(); // ctor_0x4b5500
+                ~Font(); // dtor_0x4b55a0
+                void meth_0x51e970(); // meth_0x51e970
+                void meth_0x51ebd0( _String_base *param_1, dword param_2, dword param_3, dword param_4 ); // meth_0x51ebd0
+                virtual undefined4 * virt_meth_0x4b5580( byte param_1 ); // virt_meth_0x4b5580
         }; // class Font
     } // namespace GUI
 } // namespace f3

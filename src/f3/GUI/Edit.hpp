@@ -140,58 +140,58 @@ namespace f3 {
                 dword mbr_0xffc;
             //: Methods
             public:
-                meth_0x434220;
-                meth_0x4a7db0;
-                meth_0x4a8200;
-                meth_0x4a87b0;
-                meth_0x4a8800;
-                meth_0x4a8900;
-                meth_0x4a89c0;
-                meth_0x4a8b90;
-                virt_meth_0x4c0330;
-                virt_meth_0x4c0360;
-                virt_meth_0x4c0380;
-                virt_meth_0x4c03b0;
-                virt_meth_0x4c03d0;
-                virt_meth_0x4c03f0;
-                virt_meth_0x4c0410;
-                virt_meth_0x4c0430;
-                virt_meth_0x4c0450;
-                virt_meth_0x4c0470;
-                virt_meth_0x4c0490;
-                virt_meth_0x4c04b0;
-                virt_meth_0x4c04d0;
-                virt_meth_0x4c04f0;
-                meth_0x4c0510;
-                virt_meth_0x4c0590;
-                meth_0x4c05a0;
-                meth_0x4c05c0;
-                meth_0x4c0660;
-                virt_meth_0x4c0720;
-                virt_meth_0x4c07d0;
-                meth_0x4c09a0;
-                meth_0x4c0ef0;
-                dtor_0x4c1240;
-                virt_meth_0x4c13b0;
-                virt_meth_0x4c13c0;
-                meth_0x4c13d0;
-                meth_0x4c14d0;
-                meth_0x4c1960;
-                meth_0x4c1fa0;
-                virt_meth_0x4c2250;
-                virt_meth_0x4c2270;
-                virt_meth_0x4c22a0;
-                virt_meth_0x4c22d0;
-                virt_meth_0x4c2300;
-                virt_meth_0x4c2330;
-                meth_0x4c2360;
-                meth_0x4c2390;
-                meth_0x4c2f20;
-                virt_meth_0x4c3ac0;
-                meth_0x4c3af0;
-                meth_0x4c4ed0;
-                virt_meth_0x4c4ee0;
-                ctor_0x4c51b0;
+                Edit( uint param_1 ); // ctor_0x4c51b0
+                ~Edit(); // dtor_0x4c1240
+                int meth_0x434220(); // meth_0x434220
+                void meth_0x4a7db0( int param_1, int *param_2, int *param_3, int *param_4, uint *param_5 ); // meth_0x4a7db0
+                int meth_0x4a8200( int param_1, void *param_2, int param_3 ); // meth_0x4a8200
+                int meth_0x4a87b0( int param_1 ); // meth_0x4a87b0
+                int meth_0x4a8800( int param_1 ); // meth_0x4a8800
+                void meth_0x4a8900( int param_1, int param_2 ); // meth_0x4a8900
+                void meth_0x4a89c0( int param_1 ); // meth_0x4a89c0
+                undefined4 meth_0x4a8b90( int param_1, void *param_2 ); // meth_0x4a8b90
+                float10 * meth_0x4c0510( float10 *__return_storage_ptr__, float param_1, float param_2 ); // meth_0x4c0510
+                uint meth_0x4c05a0(); // meth_0x4c05a0
+                void meth_0x4c05c0( int param_1 ); // meth_0x4c05c0
+                void meth_0x4c0660( int param_1 ); // meth_0x4c0660
+                void meth_0x4c09a0( int param_1 ); // meth_0x4c09a0
+                void meth_0x4c0ef0(); // meth_0x4c0ef0
+                void meth_0x4c13d0(); // meth_0x4c13d0
+                void meth_0x4c14d0( int param_1 ); // meth_0x4c14d0
+                void meth_0x4c1960(); // meth_0x4c1960
+                void meth_0x4c1fa0( char param_1 ); // meth_0x4c1fa0
+                void meth_0x4c2360( int param_1, int param_2 ); // meth_0x4c2360
+                void meth_0x4c2390(); // meth_0x4c2390
+                void meth_0x4c2f20(); // meth_0x4c2f20
+                void meth_0x4c3af0( int param_1 ); // meth_0x4c3af0
+                void meth_0x4c3af0( int param_1 ); // meth_0x4c4ed0
+                virtual void virt_meth_0x4c0330(); // virt_meth_0x4c0330
+                virtual void virt_meth_0x4c0360(); // virt_meth_0x4c0360
+                virtual void virt_meth_0x4c0380(); // virt_meth_0x4c0380
+                virtual void virt_meth_0x4c03b0(); // virt_meth_0x4c03b0
+                virtual void virt_meth_0x4c03d0(); // virt_meth_0x4c03d0
+                virtual void virt_meth_0x4c03f0(); // virt_meth_0x4c03f0
+                virtual void virt_meth_0x4c0410(); // virt_meth_0x4c0410
+                virtual void virt_meth_0x4c0430(); // virt_meth_0x4c0430
+                virtual void virt_meth_0x4c0450(); // virt_meth_0x4c0450
+                virtual void virt_meth_0x4c0470(); // virt_meth_0x4c0470
+                virtual void virt_meth_0x4c0490(); // virt_meth_0x4c0490
+                virtual void virt_meth_0x4c04b0(); // virt_meth_0x4c04b0
+                virtual void virt_meth_0x4c04d0(); // virt_meth_0x4c04d0
+                virtual void virt_meth_0x4c04f0(); // virt_meth_0x4c04f0
+                virtual void virt_meth_0x4c0590(); // virt_meth_0x4c0590
+                virtual uint virt_meth_0x4c0720(); // virt_meth_0x4c0720
+                virtual void virt_meth_0x4c07d0(); // virt_meth_0x4c07d0
+                virtual undefined4 virt_meth_0x4c13b0(); // virt_meth_0x4c13b0
+                virtual void virt_meth_0x4c13c0(); // virt_meth_0x4c13c0
+                virtual int * virt_meth_0x4c2250( byte param_1 ); // virt_meth_0x4c2250
+                virtual void virt_meth_0x4c2270(); // virt_meth_0x4c2270
+                virtual void virt_meth_0x4c22a0(); // virt_meth_0x4c22a0
+                virtual void virt_meth_0x4c22d0(); // virt_meth_0x4c22d0
+                virtual void virt_meth_0x4c2300(); // virt_meth_0x4c2300
+                virtual void virt_meth_0x4c2330(); // virt_meth_0x4c2330
+                virtual void virt_meth_0x4c3ac0(); // virt_meth_0x4c3ac0
+                virtual undefined4 virt_meth_0x4c4ee0(); // virt_meth_0x4c4ee0
         }; // class Edit
     } // namespace GUI
 } // namespace f3

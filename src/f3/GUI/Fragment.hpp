@@ -80,20 +80,20 @@ namespace f3 {
                 dword mbr_0xec;
             //: Methods
             public:
-                virt_meth_0x4b1450;
-                meth_0x4b1530;
-                virt_meth_0x4b1610;
-                virt_meth_0x4b1640;
-                virt_meth_0x4b1650;
-                virt_meth_0x4b1720;
-                virt_meth_0x4b1830;
-                virt_meth_0x4b1b00;
-                virt_meth_0x4b1e50;
-                virt_meth_0x4b20a0;
-                virt_meth_0x4b2300;
-                ctor_0x4b24a0;
-                dtor_0x4b2680;
-                virt_meth_0x4b2700;
+                Fragment(); // ctor_0x4b24a0
+                ~Fragment(); // dtor_0x4b2680
+                undefined4 Get_Base_field_0x154(); // meth_0x4b1530
+                virtual void virt_meth_0x4b1450(); // virt_meth_0x4b1450
+                virtual float10 virt_meth_0x4b1610(); // virt_meth_0x4b1610
+                virtual float10 Get_mbr_0xc0(); // virt_meth_0x4b1640
+                virtual bool virt_meth_0x4b1650(); // virt_meth_0x4b1650
+                virtual void virt_meth_0x4b1720( int param_1, byte param_2 ); // virt_meth_0x4b1720
+                virtual void virt_meth_0x4b1830(); // virt_meth_0x4b1830
+                virtual void virt_meth_0x4b1b00(); // virt_meth_0x4b1b00
+                virtual void virt_meth_0x4b1e50( FILE * param_1, undefined4 param_2 ); // virt_meth_0x4b1e50
+                virtual void virt_meth_0x4b20a0( int param_1, undefined4 param_2 ); // virt_meth_0x4b20a0
+                virtual void virt_meth_0x4b2300( FILE * param_1 ); // virt_meth_0x4b2300
+                virtual undefined4 * virt_meth_0x4b2700( byte param_1 ); // virt_meth_0x4b2700
         }; // class Fragment
     } // namespace GUI
 } // namespace f3

@@ -4,19 +4,10 @@
 #define F3_GLOBAL_H
 
 #include "stdafx.h"
+#include "types.hpp"
+//#include "std/std.hpp"
 
-// Ghidra Types
-typedef unsigned char undefined;
-typedef unsigned short undefined2;
-typedef unsigned int undefined4;
-typedef unsigned long long undefined8;
-typedef void code;
-
-// OOAnalyzer Types
-typedef unsigned char byte;
-typedef unsigned short word ;
-typedef unsigned int dword;
-typedef unsigned long long qword;
+struct _String_base {}; // PlaceHolder Structure
 
 // F3 Defines
 #define CSIDL_PERSONAL_FOLDER 0x8005
@@ -28,7 +19,9 @@ namespace f3 {
 	static DWORD global_system_time_ms;
     static char some_directory_path[268];
     static char some_directory_path_2[256];
-    static unsigned int UINT_0070bfa8;
+    static char CHAR_0070bfa8[260];
+    static int INT_00707d60;
+    static bool DAT_00707cf0;
 }
 
 #endif // F3_GLOBAL_H
