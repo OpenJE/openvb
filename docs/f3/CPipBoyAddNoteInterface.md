@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CPipBoyAddNoteInterface.hpp`](/c++/include/CPipBoyAddNoteInterface.hpp)
-- [`CPipBoyAddNoteInterface.cpp`](/c++/source/CPipBoyAddNoteInterface.cpp)
+- [`CPipBoyAddNoteInterface.hpp`](/src/f3/CPipBoyAddNoteInterface.hpp)
+- [`CPipBoyAddNoteInterface.cpp`](/src/f3/CPipBoyAddNoteInterface.cpp)
 
 ## References
 

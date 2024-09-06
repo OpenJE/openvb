@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_Camera.hpp`](/c++/include/G3D_Camera.hpp)
-- [`G3D_Camera.cpp`](/c++/source/G3D_Camera.cpp)
+- [`G3D_Camera.hpp`](/src/f3/G3D_Camera.hpp)
+- [`G3D_Camera.cpp`](/src/f3/G3D_Camera.cpp)
 
 ## References
 

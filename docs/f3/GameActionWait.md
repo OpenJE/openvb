@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionWait.hpp`](/c++/include/GameActionWait.hpp)
-- [`GameActionWait.cpp`](/c++/source/GameActionWait.cpp)
+- [`GameActionWait.hpp`](/src/f3/GameActionWait.hpp)
+- [`GameActionWait.cpp`](/src/f3/GameActionWait.cpp)
 
 ## References
 

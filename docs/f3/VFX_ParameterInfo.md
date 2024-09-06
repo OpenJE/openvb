@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_ParameterInfo.hpp`](/c++/include/VFX_ParameterInfo.hpp)
-- [`VFX_ParameterInfo.cpp`](/c++/source/VFX_ParameterInfo.cpp)
+- [`VFX_ParameterInfo.hpp`](/src/f3/VFX_ParameterInfo.hpp)
+- [`VFX_ParameterInfo.cpp`](/src/f3/VFX_ParameterInfo.cpp)
 
 ## References
 

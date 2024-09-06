@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Sound.hpp`](/c++/include/VFX_Sound.hpp)
-- [`VFX_Sound.cpp`](/c++/source/VFX_Sound.cpp)
+- [`VFX_Sound.hpp`](/src/f3/VFX_Sound.hpp)
+- [`VFX_Sound.cpp`](/src/f3/VFX_Sound.cpp)
 
 ## References
 

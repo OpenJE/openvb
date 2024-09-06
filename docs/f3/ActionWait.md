@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionWait.hpp`](/c++/include/ActionWait.hpp)
-- [`ActionWait.cpp`](/c++/source/ActionWait.cpp)
+- [`ActionWait.hpp`](/src/f3/ActionWait.hpp)
+- [`ActionWait.cpp`](/src/f3/ActionWait.cpp)
 
 ## References
 

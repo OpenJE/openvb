@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameUsableObject.hpp`](/c++/include/GameUsableObject.hpp)
-- [`GameUsableObject.cpp`](/c++/source/GameUsableObject.cpp)
+- [`GameUsableObject.hpp`](/src/f3/GameUsableObject.hpp)
+- [`GameUsableObject.cpp`](/src/f3/GameUsableObject.cpp)
 
 ## References
 

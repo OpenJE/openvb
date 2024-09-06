@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_WIND_Struct.hpp`](/c++/include/VFXEFFECTTYPE_WIND_Struct.hpp)
-- [`VFXEFFECTTYPE_WIND_Struct.cpp`](/c++/source/VFXEFFECTTYPE_WIND_Struct.cpp)
+- [`VFXEFFECTTYPE_WIND_Struct.hpp`](/src/f3/VFXEFFECTTYPE_WIND_Struct.hpp)
+- [`VFXEFFECTTYPE_WIND_Struct.cpp`](/src/f3/VFXEFFECTTYPE_WIND_Struct.cpp)
 
 ## References
 

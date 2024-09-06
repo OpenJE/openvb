@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_ParticleInfo.hpp`](/c++/include/Gfx_ParticleInfo.hpp)
-- [`Gfx_ParticleInfo.cpp`](/c++/source/Gfx_ParticleInfo.cpp)
+- [`Gfx_ParticleInfo.hpp`](/src/f3/Gfx_ParticleInfo.hpp)
+- [`Gfx_ParticleInfo.cpp`](/src/f3/Gfx_ParticleInfo.cpp)
 
 ## References
 

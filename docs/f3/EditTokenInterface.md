@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`EditTokenInterface.hpp`](/c++/include/EditTokenInterface.hpp)
-- [`EditTokenInterface.cpp`](/c++/source/EditTokenInterface.cpp)
+- [`EditTokenInterface.hpp`](/src/f3/EditTokenInterface.hpp)
+- [`EditTokenInterface.cpp`](/src/f3/EditTokenInterface.cpp)
 
 ## References
 

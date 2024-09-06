@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionMoveTo.hpp`](/c++/include/ActionMoveTo.hpp)
-- [`ActionMoveTo.cpp`](/c++/source/ActionMoveTo.cpp)
+- [`ActionMoveTo.hpp`](/src/f3/ActionMoveTo.hpp)
+- [`ActionMoveTo.cpp`](/src/f3/ActionMoveTo.cpp)
 
 ## References
 

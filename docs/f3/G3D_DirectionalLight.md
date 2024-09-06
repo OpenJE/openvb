@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_DirectionalLight.hpp`](/c++/include/G3D_DirectionalLight.hpp)
-- [`G3D_DirectionalLight.cpp`](/c++/source/G3D_DirectionalLight.cpp)
+- [`G3D_DirectionalLight.hpp`](/src/f3/G3D_DirectionalLight.hpp)
+- [`G3D_DirectionalLight.cpp`](/src/f3/G3D_DirectionalLight.cpp)
 
 ## References
 

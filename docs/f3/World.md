@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`World.hpp`](/c++/include/World.hpp)
-- [`World.cpp`](/c++/source/World.cpp)
+- [`World.hpp`](/src/f3/World.hpp)
+- [`World.cpp`](/src/f3/World.cpp)
 
 ## References
 

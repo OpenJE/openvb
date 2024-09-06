@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_SkinMesh.hpp`](/c++/include/Gfx_SkinMesh.hpp)
-- [`Gfx_SkinMesh.cpp`](/c++/source/Gfx_SkinMesh.cpp)
+- [`Gfx_SkinMesh.hpp`](/src/f3/Gfx_SkinMesh.hpp)
+- [`Gfx_SkinMesh.cpp`](/src/f3/Gfx_SkinMesh.cpp)
 
 ## References
 

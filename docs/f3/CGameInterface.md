@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CGameInterface.hpp`](/c++/include/CGameInterface.hpp)
-- [`CGameInterface.cpp`](/c++/source/CGameInterface.cpp)
+- [`CGameInterface.hpp`](/src/f3/CGameInterface.hpp)
+- [`CGameInterface.cpp`](/src/f3/CGameInterface.cpp)
 
 ## References
 

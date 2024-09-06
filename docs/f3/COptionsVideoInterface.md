@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`COptionsVideoInterface.hpp`](/c++/include/COptionsVideoInterface.hpp)
-- [`COptionsVideoInterface.cpp`](/c++/source/COptionsVideoInterface.cpp)
+- [`COptionsVideoInterface.hpp`](/src/f3/COptionsVideoInterface.hpp)
+- [`COptionsVideoInterface.cpp`](/src/f3/COptionsVideoInterface.cpp)
 
 ## References
 

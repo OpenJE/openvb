@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`HeapTracker.hpp`](/c++/include/HeapTracker.hpp)
-- [`HeapTracker.cpp`](/c++/source/HeapTracker.cpp)
+- [`HeapTracker.hpp`](/src/f3/HeapTracker.hpp)
+- [`HeapTracker.cpp`](/src/f3/HeapTracker.cpp)
 
 [Return to `f3`](/docs/f3.md)

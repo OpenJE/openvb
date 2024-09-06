@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`WorldMap.hpp`](/c++/include/WorldMap.hpp)
-- [`WorldMap.cpp`](/c++/source/WorldMap.cpp)
+- [`WorldMap.hpp`](/src/f3/WorldMap.hpp)
+- [`WorldMap.cpp`](/src/f3/WorldMap.cpp)
 
 [Return to `f3`](/docs/f3.md)

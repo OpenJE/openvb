@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VideoInterface.hpp`](/c++/include/VideoInterface.hpp)
-- [`VideoInterface.cpp`](/c++/source/VideoInterface.cpp)
+- [`VideoInterface.hpp`](/src/f3/VideoInterface.hpp)
+- [`VideoInterface.cpp`](/src/f3/VideoInterface.cpp)
 
 ## References
 

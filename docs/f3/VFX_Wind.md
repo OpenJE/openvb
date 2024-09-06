@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Wind.hpp`](/c++/include/VFX_Wind.hpp)
-- [`VFX_Wind.cpp`](/c++/source/VFX_Wind.cpp)
+- [`VFX_Wind.hpp`](/src/f3/VFX_Wind.hpp)
+- [`VFX_Wind.cpp`](/src/f3/VFX_Wind.cpp)
 
 ## References
 

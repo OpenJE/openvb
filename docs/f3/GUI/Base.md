@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Base.hpp`](/c++/include/Base.hpp)
-- [`Base.cpp`](/c++/source/Base.cpp)
+- [`Base.hpp`](/src/f3/Base.hpp)
+- [`Base.cpp`](/src/f3/Base.cpp)
 
 [Return to `f3`](/docs/f3.md)

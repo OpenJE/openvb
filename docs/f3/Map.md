@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Map.hpp`](/c++/include/Map.hpp)
-- [`Map.cpp`](/c++/source/Map.cpp)
+- [`Map.hpp`](/src/f3/Map.hpp)
+- [`Map.cpp`](/src/f3/Map.cpp)
 
 [Return to `f3`](/docs/f3.md)

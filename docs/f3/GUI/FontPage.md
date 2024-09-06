@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`FontPage.hpp`](/c++/include/FontPage.hpp)
-- [`FontPage.cpp`](/c++/source/FontPage.cpp)
+- [`FontPage.hpp`](/src/f3/FontPage.hpp)
+- [`FontPage.cpp`](/src/f3/FontPage.cpp)
 
 [Return to `f3`](/docs/f3.md)

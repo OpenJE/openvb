@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Chunk.hpp`](/c++/include/Chunk.hpp)
-- [`Chunk.cpp`](/c++/source/Chunk.cpp)
+- [`Chunk.hpp`](/src/f3/Chunk.hpp)
+- [`Chunk.cpp`](/src/f3/Chunk.cpp)
 
 [Return to `f3`](/docs/f3.md)

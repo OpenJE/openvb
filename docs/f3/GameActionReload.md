@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionReload.hpp`](/c++/include/GameActionReload.hpp)
-- [`GameActionReload.cpp`](/c++/source/GameActionReload.cpp)
+- [`GameActionReload.hpp`](/src/f3/GameActionReload.hpp)
+- [`GameActionReload.cpp`](/src/f3/GameActionReload.cpp)
 
 ## References
 

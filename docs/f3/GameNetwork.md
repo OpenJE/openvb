@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameNetwork.hpp`](/c++/include/GameNetwork.hpp)
-- [`GameNetwork.cpp`](/c++/source/GameNetwork.cpp)
+- [`GameNetwork.hpp`](/src/f3/GameNetwork.hpp)
+- [`GameNetwork.cpp`](/src/f3/GameNetwork.cpp)
 
 ## References
 

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`HeapManager.hpp`](/c++/include/HeapManager.hpp)
-- [`HeapManager.cpp`](/c++/source/HeapManager.cpp)
+- [`HeapManager.hpp`](/src/f3/HeapManager.hpp)
+- [`HeapManager.cpp`](/src/f3/HeapManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`WayPoint.hpp`](/c++/include/WayPoint.hpp)
-- [`WayPoint.cpp`](/c++/source/WayPoint.cpp)
+- [`WayPoint.hpp`](/src/f3/WayPoint.hpp)
+- [`WayPoint.cpp`](/src/f3/WayPoint.cpp)
 
 [Return to `f3`](/docs/f3.md)

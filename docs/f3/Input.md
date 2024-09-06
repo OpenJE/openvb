@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Input.hpp`](/c++/include/Input.hpp)
-- [`Input.cpp`](/c++/source/Input.cpp)
+- [`Input.hpp`](/src/f3/Input.hpp)
+- [`Input.cpp`](/src/f3/Input.cpp)
 
 [Return to `f3`](/docs/f3.md)

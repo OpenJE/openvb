@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Edit.hpp`](/c++/include/Edit.hpp)
-- [`Edit.cpp`](/c++/source/Edit.cpp)
+- [`Edit.hpp`](/src/f3/Edit.hpp)
+- [`Edit.cpp`](/src/f3/Edit.cpp)
 
 ## Inheritance
 

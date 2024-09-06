@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CSoundGroup.hpp`](/c++/include/CSoundGroup.hpp)
-- [`CSoundGroup.cpp`](/c++/source/CSoundGroup.cpp)
+- [`CSoundGroup.hpp`](/src/f3/CSoundGroup.hpp)
+- [`CSoundGroup.cpp`](/src/f3/CSoundGroup.cpp)
 
 ## References
 

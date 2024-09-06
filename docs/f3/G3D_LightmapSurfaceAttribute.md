@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_LightmapSurfaceAttribute.hpp`](/c++/include/G3D_LightmapSurfaceAttribute.hpp)
-- [`G3D_LightmapSurfaceAttribute.cpp`](/c++/source/G3D_LightmapSurfaceAttribute.cpp)
+- [`G3D_LightmapSurfaceAttribute.hpp`](/src/f3/G3D_LightmapSurfaceAttribute.hpp)
+- [`G3D_LightmapSurfaceAttribute.cpp`](/src/f3/G3D_LightmapSurfaceAttribute.cpp)
 
 ## References
 

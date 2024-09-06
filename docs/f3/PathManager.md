@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`PathManager.hpp`](/c++/include/PathManager.hpp)
-- [`PathManager.cpp`](/c++/source/PathManager.cpp)
+- [`PathManager.hpp`](/src/f3/PathManager.hpp)
+- [`PathManager.cpp`](/src/f3/PathManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

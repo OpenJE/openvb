@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_ModelMesh.hpp`](/c++/include/Gfx_ModelMesh.hpp)
-- [`Gfx_ModelMesh.cpp`](/c++/source/Gfx_ModelMesh.cpp)
+- [`Gfx_ModelMesh.hpp`](/src/f3/Gfx_ModelMesh.hpp)
+- [`Gfx_ModelMesh.cpp`](/src/f3/Gfx_ModelMesh.cpp)
 
 ## References
 

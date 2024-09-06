@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CDebugInterface.hpp`](/c++/include/CDebugInterface.hpp)
-- [`CDebugInterface.cpp`](/c++/source/CDebugInterface.cpp)
+- [`CDebugInterface.hpp`](/src/f3/CDebugInterface.hpp)
+- [`CDebugInterface.cpp`](/src/f3/CDebugInterface.cpp)
 
 ## References
 

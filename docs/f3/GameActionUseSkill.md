@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionUseSkill.hpp`](/c++/include/GameActionUseSkill.hpp)
-- [`GameActionUseSkill.cpp`](/c++/source/GameActionUseSkill.cpp)
+- [`GameActionUseSkill.hpp`](/src/f3/GameActionUseSkill.hpp)
+- [`GameActionUseSkill.cpp`](/src/f3/GameActionUseSkill.cpp)
 
 ## References
 

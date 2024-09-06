@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameStoreManager.hpp`](/c++/include/GameStoreManager.hpp)
-- [`GameStoreManager.cpp`](/c++/source/GameStoreManager.cpp)
+- [`GameStoreManager.hpp`](/src/f3/GameStoreManager.hpp)
+- [`GameStoreManager.cpp`](/src/f3/GameStoreManager.cpp)
 
 ## References
 

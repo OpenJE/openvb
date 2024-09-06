@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CFloatingTextInterface.hpp`](/c++/include/CFloatingTextInterface.hpp)
-- [`CFloatingTextInterface.cpp`](/c++/source/CFloatingTextInterface.cpp)
+- [`CFloatingTextInterface.hpp`](/src/f3/CFloatingTextInterface.hpp)
+- [`CFloatingTextInterface.cpp`](/src/f3/CFloatingTextInterface.cpp)
 
 ## References
 

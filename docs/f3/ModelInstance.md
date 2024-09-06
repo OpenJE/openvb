@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`ModelInstance.hpp`](/c++/include/ModelInstance.hpp)
-- [`ModelInstance.cpp`](/c++/source/ModelInstance.cpp)
+- [`ModelInstance.hpp`](/src/f3/ModelInstance.hpp)
+- [`ModelInstance.cpp`](/src/f3/ModelInstance.cpp)
 
 [Return to `f3`](/docs/f3.md)

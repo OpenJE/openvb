@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionPickup.hpp`](/c++/include/ActionPickup.hpp)
-- [`ActionPickup.cpp`](/c++/source/ActionPickup.cpp)
+- [`ActionPickup.hpp`](/src/f3/ActionPickup.hpp)
+- [`ActionPickup.cpp`](/src/f3/ActionPickup.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_WATER_Struct.hpp`](/c++/include/VFXEFFECTTYPE_WATER_Struct.hpp)
-- [`VFXEFFECTTYPE_WATER_Struct.cpp`](/c++/source/VFXEFFECTTYPE_WATER_Struct.cpp)
+- [`VFXEFFECTTYPE_WATER_Struct.hpp`](/src/f3/VFXEFFECTTYPE_WATER_Struct.hpp)
+- [`VFXEFFECTTYPE_WATER_Struct.cpp`](/src/f3/VFXEFFECTTYPE_WATER_Struct.cpp)
 
 ## References
 

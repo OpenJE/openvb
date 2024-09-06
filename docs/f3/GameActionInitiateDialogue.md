@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionInitiateDialogue.hpp`](/c++/include/GameActionInitiateDialogue.hpp)
-- [`GameActionInitiateDialogue.cpp`](/c++/source/GameActionInitiateDialogue.cpp)
+- [`GameActionInitiateDialogue.hpp`](/src/f3/GameActionInitiateDialogue.hpp)
+- [`GameActionInitiateDialogue.cpp`](/src/f3/GameActionInitiateDialogue.cpp)
 
 ## References
 

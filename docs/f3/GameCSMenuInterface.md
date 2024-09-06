@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameCSMenuInterface.hpp`](/c++/include/GameCSMenuInterface.hpp)
-- [`GameCSMenuInterface.cpp`](/c++/source/GameCSMenuInterface.cpp)
+- [`GameCSMenuInterface.hpp`](/src/f3/GameCSMenuInterface.hpp)
+- [`GameCSMenuInterface.cpp`](/src/f3/GameCSMenuInterface.cpp)
 
 ## References
 

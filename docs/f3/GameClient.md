@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameClient.hpp`](/c++/include/GameClient.hpp)
-- [`GameClient.cpp`](/c++/source/GameClient.cpp)
+- [`GameClient.hpp`](/src/f3/GameClient.hpp)
+- [`GameClient.cpp`](/src/f3/GameClient.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_SOUND_Struct.hpp`](/c++/include/VFXEFFECTTYPE_SOUND_Struct.hpp)
-- [`VFXEFFECTTYPE_SOUND_Struct.cpp`](/c++/source/VFXEFFECTTYPE_SOUND_Struct.cpp)
+- [`VFXEFFECTTYPE_SOUND_Struct.hpp`](/src/f3/VFXEFFECTTYPE_SOUND_Struct.hpp)
+- [`VFXEFFECTTYPE_SOUND_Struct.cpp`](/src/f3/VFXEFFECTTYPE_SOUND_Struct.cpp)
 
 ## References
 

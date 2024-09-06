@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ReplyLabel.hpp`](/c++/include/ReplyLabel.hpp)
-- [`ReplyLabel.cpp`](/c++/source/ReplyLabel.cpp)
+- [`ReplyLabel.hpp`](/src/f3/ReplyLabel.hpp)
+- [`ReplyLabel.cpp`](/src/f3/ReplyLabel.cpp)
 
 ## References
 

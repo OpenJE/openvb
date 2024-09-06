@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_RAIN_Struct.hpp`](/c++/include/VFXEFFECTTYPE_RAIN_Struct.hpp)
-- [`VFXEFFECTTYPE_RAIN_Struct.cpp`](/c++/source/VFXEFFECTTYPE_RAIN_Struct.cpp)
+- [`VFXEFFECTTYPE_RAIN_Struct.hpp`](/src/f3/VFXEFFECTTYPE_RAIN_Struct.hpp)
+- [`VFXEFFECTTYPE_RAIN_Struct.cpp`](/src/f3/VFXEFFECTTYPE_RAIN_Struct.cpp)
 
 ## References
 

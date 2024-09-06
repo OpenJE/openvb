@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`ScrollBar.hpp`](/c++/include/ScrollBar.hpp)
-- [`ScrollBar.cpp`](/c++/source/ScrollBar.cpp)
+- [`ScrollBar.hpp`](/src/f3/ScrollBar.hpp)
+- [`ScrollBar.cpp`](/src/f3/ScrollBar.cpp)
 
 [Return to `f3`](/docs/f3.md)

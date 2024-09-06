@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionUnequip.hpp`](/c++/include/GameActionUnequip.hpp)
-- [`GameActionUnequip.cpp`](/c++/source/GameActionUnequip.cpp)
+- [`GameActionUnequip.hpp`](/src/f3/GameActionUnequip.hpp)
+- [`GameActionUnequip.cpp`](/src/f3/GameActionUnequip.cpp)
 
 ## References
 

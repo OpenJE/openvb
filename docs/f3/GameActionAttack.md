@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionAttack.hpp`](/c++/include/GameActionAttack.hpp)
-- [`GameActionAttack.cpp`](/c++/source/GameActionAttack.cpp)
+- [`GameActionAttack.hpp`](/src/f3/GameActionAttack.hpp)
+- [`GameActionAttack.cpp`](/src/f3/GameActionAttack.cpp)
 
 ## References
 

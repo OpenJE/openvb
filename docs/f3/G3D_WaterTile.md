@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_WaterTile.hpp`](/c++/include/G3D_WaterTile.hpp)
-- [`G3D_WaterTile.cpp`](/c++/source/G3D_WaterTile.cpp)
+- [`G3D_WaterTile.hpp`](/src/f3/G3D_WaterTile.hpp)
+- [`G3D_WaterTile.cpp`](/src/f3/G3D_WaterTile.cpp)
 
 ## References
 

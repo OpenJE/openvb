@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Button.hpp`](/c++/include/Button.hpp)
-- [`Button.cpp`](/c++/source/Button.cpp)
+- [`Button.hpp`](/src/f3/Button.hpp)
+- [`Button.cpp`](/src/f3/Button.cpp)
 
 ## Inheritance
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CMiniMapInterface.hpp`](/c++/include/CMiniMapInterface.hpp)
-- [`CMiniMapInterface.cpp`](/c++/source/CMiniMapInterface.cpp)
+- [`CMiniMapInterface.hpp`](/src/f3/CMiniMapInterface.hpp)
+- [`CMiniMapInterface.cpp`](/src/f3/CMiniMapInterface.cpp)
 
 ## References
 

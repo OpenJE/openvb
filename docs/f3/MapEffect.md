@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`MapEffect.hpp`](/c++/include/MapEffect.hpp)
-- [`MapEffect.cpp`](/c++/source/MapEffect.cpp)
+- [`MapEffect.hpp`](/src/f3/MapEffect.hpp)
+- [`MapEffect.cpp`](/src/f3/MapEffect.cpp)
 
 [Return to `f3`](/docs/f3.md)

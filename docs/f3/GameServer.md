@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameServer.hpp`](/c++/include/GameServer.hpp)
-- [`GameServer.cpp`](/c++/source/GameServer.cpp)
+- [`GameServer.hpp`](/src/f3/GameServer.hpp)
+- [`GameServer.cpp`](/src/f3/GameServer.cpp)
 
 ## References
 

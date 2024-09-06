@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CMusic.hpp`](/c++/include/CMusic.hpp)
-- [`CMusic.cpp`](/c++/source/CMusic.cpp)
+- [`CMusic.hpp`](/src/f3/CMusic.hpp)
+- [`CMusic.cpp`](/src/f3/CMusic.cpp)
 
 ## References
 

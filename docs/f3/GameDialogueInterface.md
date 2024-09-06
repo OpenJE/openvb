@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameDialogueInterface.hpp`](/c++/include/GameDialogueInterface.hpp)
-- [`GameDialogueInterface.cpp`](/c++/source/GameDialogueInterface.cpp)
+- [`GameDialogueInterface.hpp`](/src/f3/GameDialogueInterface.hpp)
+- [`GameDialogueInterface.cpp`](/src/f3/GameDialogueInterface.cpp)
 
 ## References
 

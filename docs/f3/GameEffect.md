@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameEffect.hpp`](/c++/include/GameEffect.hpp)
-- [`GameEffect.cpp`](/c++/source/GameEffect.cpp)
+- [`GameEffect.hpp`](/src/f3/GameEffect.hpp)
+- [`GameEffect.cpp`](/src/f3/GameEffect.cpp)
 
 ## References
 
