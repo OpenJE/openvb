@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameCreature.hpp`](/c++/include/GameCreature.hpp)
-- [`GameCreature.cpp`](/c++/source/GameCreature.cpp)
+- [`GameCreature.hpp`](/src/f3/GameCreature.hpp)
+- [`GameCreature.cpp`](/src/f3/GameCreature.cpp)
 
 ## References
 

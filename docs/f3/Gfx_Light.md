@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_Light.hpp`](/c++/include/Gfx_Light.hpp)
-- [`Gfx_Light.cpp`](/c++/source/Gfx_Light.cpp)
+- [`Gfx_Light.hpp`](/src/f3/Gfx_Light.hpp)
+- [`Gfx_Light.cpp`](/src/f3/Gfx_Light.cpp)
 
 ## References
 

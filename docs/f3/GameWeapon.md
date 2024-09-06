@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameWeapon.hpp`](/c++/include/GameWeapon.hpp)
-- [`GameWeapon.cpp`](/c++/source/GameWeapon.cpp)
+- [`GameWeapon.hpp`](/src/f3/GameWeapon.hpp)
+- [`GameWeapon.cpp`](/src/f3/GameWeapon.cpp)
 
 ## References
 

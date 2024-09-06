@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GamePlayer.hpp`](/c++/include/GamePlayer.hpp)
-- [`GamePlayer.cpp`](/c++/source/GamePlayer.cpp)
+- [`GamePlayer.hpp`](/src/f3/GamePlayer.hpp)
+- [`GamePlayer.cpp`](/src/f3/GamePlayer.cpp)
 
 ## References
 

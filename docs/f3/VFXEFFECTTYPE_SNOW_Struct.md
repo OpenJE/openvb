@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_SNOW_Struct.hpp`](/c++/include/VFXEFFECTTYPE_SNOW_Struct.hpp)
-- [`VFXEFFECTTYPE_SNOW_Struct.cpp`](/c++/source/VFXEFFECTTYPE_SNOW_Struct.cpp)
+- [`VFXEFFECTTYPE_SNOW_Struct.hpp`](/src/f3/VFXEFFECTTYPE_SNOW_Struct.hpp)
+- [`VFXEFFECTTYPE_SNOW_Struct.cpp`](/src/f3/VFXEFFECTTYPE_SNOW_Struct.cpp)
 
 ## References
 

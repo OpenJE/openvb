@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Graphics.hpp`](/c++/include/Graphics.hpp)
-- [`Graphics.cpp`](/c++/source/Graphics.cpp)
+- [`Graphics.hpp`](/src/f3/Graphics.hpp)
+- [`Graphics.cpp`](/src/f3/Graphics.cpp)
 
 [Return to `f3`](/docs/f3.md)

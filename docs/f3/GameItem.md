@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameItem.hpp`](/c++/include/GameItem.hpp)
-- [`GameItem.cpp`](/c++/source/GameItem.cpp)
+- [`GameItem.hpp`](/src/f3/GameItem.hpp)
+- [`GameItem.cpp`](/src/f3/GameItem.cpp)
 
 ## References
 

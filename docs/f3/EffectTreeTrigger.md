@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`EffectTreeTrigger.hpp`](/c++/include/EffectTreeTrigger.hpp)
-- [`EffectTreeTrigger.cpp`](/c++/source/EffectTreeTrigger.cpp)
+- [`EffectTreeTrigger.hpp`](/src/f3/EffectTreeTrigger.hpp)
+- [`EffectTreeTrigger.cpp`](/src/f3/EffectTreeTrigger.cpp)
 
 ## References
 

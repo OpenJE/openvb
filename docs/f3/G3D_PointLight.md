@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_PointLight.hpp`](/c++/include/G3D_PointLight.hpp)
-- [`G3D_PointLight.cpp`](/c++/source/G3D_PointLight.cpp)
+- [`G3D_PointLight.hpp`](/src/f3/G3D_PointLight.hpp)
+- [`G3D_PointLight.cpp`](/src/f3/G3D_PointLight.cpp)
 
 ## References
 

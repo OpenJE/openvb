@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`OptionDial.hpp`](/c++/include/OptionDial.hpp)
-- [`OptionDial.cpp`](/c++/source/OptionDial.cpp)
+- [`OptionDial.hpp`](/src/f3/OptionDial.hpp)
+- [`OptionDial.cpp`](/src/f3/OptionDial.cpp)
 
 [Return to `f3`](/docs/f3.md)

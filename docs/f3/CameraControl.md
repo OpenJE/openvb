@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`CameraControl.hpp`](/c++/include/CameraControl.hpp)
-- [`CameraControl.cpp`](/c++/source/CameraControl.cpp)
+- [`CameraControl.hpp`](/src/f3/CameraControl.hpp)
+- [`CameraControl.cpp`](/src/f3/CameraControl.cpp)
 
 [Return to `f3`](/docs/f3.md)

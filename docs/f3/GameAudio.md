@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameAudio.hpp`](/c++/include/GameAudio.hpp)
-- [`GameAudio.cpp`](/c++/source/GameAudio.cpp)
+- [`GameAudio.hpp`](/src/f3/GameAudio.hpp)
+- [`GameAudio.cpp`](/src/f3/GameAudio.cpp)
 
 ## References
 

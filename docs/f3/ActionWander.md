@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionWander.hpp`](/c++/include/ActionWander.hpp)
-- [`ActionWander.cpp`](/c++/source/ActionWander.cpp)
+- [`ActionWander.hpp`](/src/f3/ActionWander.hpp)
+- [`ActionWander.cpp`](/src/f3/ActionWander.cpp)
 
 ## References
 

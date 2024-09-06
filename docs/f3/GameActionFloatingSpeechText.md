@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionFloatingSpeechText.hpp`](/c++/include/GameActionFloatingSpeechText.hpp)
-- [`GameActionFloatingSpeechText.cpp`](/c++/source/GameActionFloatingSpeechText.cpp)
+- [`GameActionFloatingSpeechText.hpp`](/src/f3/GameActionFloatingSpeechText.hpp)
+- [`GameActionFloatingSpeechText.cpp`](/src/f3/GameActionFloatingSpeechText.cpp)
 
 ## References
 

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Combat.hpp`](/c++/include/Combat.hpp)
-- [`Combat.cpp`](/c++/source/Combat.cpp)
+- [`Combat.hpp`](/src/f3/Combat.hpp)
+- [`Combat.cpp`](/src/f3/Combat.cpp)
 
 [Return to `f3`](/docs/f3.md)

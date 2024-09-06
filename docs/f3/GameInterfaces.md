@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameInterfaces.hpp`](/c++/include/GameInterfaces.hpp)
-- [`GameInterfaces.cpp`](/c++/source/GameInterfaces.cpp)
+- [`GameInterfaces.hpp`](/src/f3/GameInterfaces.hpp)
+- [`GameInterfaces.cpp`](/src/f3/GameInterfaces.cpp)
 
 ## References
 

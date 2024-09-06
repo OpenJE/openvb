@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameDialogueWindow.hpp`](/c++/include/GameDialogueWindow.hpp)
-- [`GameDialogueWindow.cpp`](/c++/source/GameDialogueWindow.cpp)
+- [`GameDialogueWindow.hpp`](/src/f3/GameDialogueWindow.hpp)
+- [`GameDialogueWindow.cpp`](/src/f3/GameDialogueWindow.cpp)
 
 ## References
 

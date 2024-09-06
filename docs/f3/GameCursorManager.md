@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameCursorManager.hpp`](/c++/include/GameCursorManager.hpp)
-- [`GameCursorManager.cpp`](/c++/source/GameCursorManager.cpp)
+- [`GameCursorManager.hpp`](/src/f3/GameCursorManager.hpp)
+- [`GameCursorManager.cpp`](/src/f3/GameCursorManager.cpp)
 
 ## References
 

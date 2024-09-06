@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Action.hpp`](/c++/include/Action.hpp)
-- [`Action.cpp`](/c++/source/Action.cpp)
+- [`Action.hpp`](/src/f3/Action.hpp)
+- [`Action.cpp`](/src/f3/Action.cpp)
 
 [Return to `f3`](/docs/f3.md)

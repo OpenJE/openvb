@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Trail.hpp`](/c++/include/VFX_Trail.hpp)
-- [`VFX_Trail.cpp`](/c++/source/VFX_Trail.cpp)
+- [`VFX_Trail.hpp`](/src/f3/VFX_Trail.hpp)
+- [`VFX_Trail.cpp`](/src/f3/VFX_Trail.cpp)
 
 ## References
 

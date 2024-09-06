@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`VFX_VEGCache.hpp`](/c++/include/VFX_VEGCache.hpp)
-- [`VFX_VEGCache.cpp`](/c++/source/VFX_VEGCache.cpp)
+- [`VFX_VEGCache.hpp`](/src/f3/VFX_VEGCache.hpp)
+- [`VFX_VEGCache.cpp`](/src/f3/VFX_VEGCache.cpp)
 
 [Return to `f3`](/docs/f3.md)

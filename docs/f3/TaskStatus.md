@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`TaskStatus.hpp`](/c++/include/TaskStatus.hpp)
-- [`TaskStatus.cpp`](/c++/source/TaskStatus.cpp)
+- [`TaskStatus.hpp`](/src/f3/TaskStatus.hpp)
+- [`TaskStatus.cpp`](/src/f3/TaskStatus.cpp)
 
 [Return to `f3`](/docs/f3.md)

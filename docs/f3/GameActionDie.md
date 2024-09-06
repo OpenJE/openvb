@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionDie.hpp`](/c++/include/GameActionDie.hpp)
-- [`GameActionDie.cpp`](/c++/source/GameActionDie.cpp)
+- [`GameActionDie.hpp`](/src/f3/GameActionDie.hpp)
+- [`GameActionDie.cpp`](/src/f3/GameActionDie.cpp)
 
 ## References
 

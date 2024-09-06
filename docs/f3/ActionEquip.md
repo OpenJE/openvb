@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionEquip.hpp`](/c++/include/ActionEquip.hpp)
-- [`ActionEquip.cpp`](/c++/source/ActionEquip.cpp)
+- [`ActionEquip.hpp`](/src/f3/ActionEquip.hpp)
+- [`ActionEquip.cpp`](/src/f3/ActionEquip.cpp)
 
 ## References
 

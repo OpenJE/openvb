@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CFontTestInterface.hpp`](/c++/include/CFontTestInterface.hpp)
-- [`CFontTestInterface.cpp`](/c++/source/CFontTestInterface.cpp)
+- [`CFontTestInterface.hpp`](/src/f3/CFontTestInterface.hpp)
+- [`CFontTestInterface.cpp`](/src/f3/CFontTestInterface.cpp)
 
 ## References
 

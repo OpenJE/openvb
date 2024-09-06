@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`CSoundFile.hpp`](/c++/include/CSoundFile.hpp)
-- [`CSoundFile.cpp`](/c++/source/CSoundFile.cpp)
+- [`CSoundFile.hpp`](/src/f3/CSoundFile.hpp)
+- [`CSoundFile.cpp`](/src/f3/CSoundFile.cpp)
 
 [Return to `f3`](/docs/f3.md)

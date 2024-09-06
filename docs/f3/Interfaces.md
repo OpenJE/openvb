@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Interfaces.hpp`](/c++/include/Interfaces.hpp)
-- [`Interfaces.cpp`](/c++/source/Interfaces.cpp)
+- [`Interfaces.hpp`](/src/f3/Interfaces.hpp)
+- [`Interfaces.cpp`](/src/f3/Interfaces.cpp)
 
 [Return to `f3`](/docs/f3.md)

@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`JournalEntry.hpp`](/c++/include/JournalEntry.hpp)
-- [`JournalEntry.cpp`](/c++/source/JournalEntry.cpp)
+- [`JournalEntry.hpp`](/src/f3/JournalEntry.hpp)
+- [`JournalEntry.cpp`](/src/f3/JournalEntry.cpp)
 
 [Return to `f3`](/docs/f3.md)

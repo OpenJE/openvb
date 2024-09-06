@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_Light.hpp`](/c++/include/VFX_Light.hpp)
-- [`VFX_Light.cpp`](/c++/source/VFX_Light.cpp)
+- [`VFX_Light.hpp`](/src/f3/VFX_Light.hpp)
+- [`VFX_Light.cpp`](/src/f3/VFX_Light.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameScripting.hpp`](/c++/include/GameScripting.hpp)
-- [`GameScripting.cpp`](/c++/source/GameScripting.cpp)
+- [`GameScripting.hpp`](/src/f3/GameScripting.hpp)
+- [`GameScripting.cpp`](/src/f3/GameScripting.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_RS_B_LM_HFog_FOW.hpp`](/c++/include/Gfx_RS_B_LM_HFog_FOW.hpp)
-- [`Gfx_RS_B_LM_HFog_FOW.cpp`](/c++/source/Gfx_RS_B_LM_HFog_FOW.cpp)
+- [`Gfx_RS_B_LM_HFog_FOW.hpp`](/src/f3/Gfx_RS_B_LM_HFog_FOW.hpp)
+- [`Gfx_RS_B_LM_HFog_FOW.cpp`](/src/f3/Gfx_RS_B_LM_HFog_FOW.cpp)
 
 ## References
 

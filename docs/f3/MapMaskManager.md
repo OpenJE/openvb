@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`MapMaskManager.hpp`](/c++/include/MapMaskManager.hpp)
-- [`MapMaskManager.cpp`](/c++/source/MapMaskManager.cpp)
+- [`MapMaskManager.hpp`](/src/f3/MapMaskManager.hpp)
+- [`MapMaskManager.cpp`](/src/f3/MapMaskManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

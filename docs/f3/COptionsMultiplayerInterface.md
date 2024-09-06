@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`COptionsMultiplayerInterface.hpp`](/c++/include/COptionsMultiplayerInterface.hpp)
-- [`COptionsMultiplayerInterface.cpp`](/c++/source/COptionsMultiplayerInterface.cpp)
+- [`COptionsMultiplayerInterface.hpp`](/src/f3/COptionsMultiplayerInterface.hpp)
+- [`COptionsMultiplayerInterface.cpp`](/src/f3/COptionsMultiplayerInterface.cpp)
 
 ## References
 

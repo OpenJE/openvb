@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Encyclopedia.hpp`](/c++/include/Encyclopedia.hpp)
-- [`Encyclopedia.cpp`](/c++/source/Encyclopedia.cpp)
+- [`Encyclopedia.hpp`](/src/f3/Encyclopedia.hpp)
+- [`Encyclopedia.cpp`](/src/f3/Encyclopedia.cpp)
 
 [Return to `f3`](/docs/f3.md)

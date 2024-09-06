@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`TransitionTrigger.hpp`](/c++/include/TransitionTrigger.hpp)
-- [`TransitionTrigger.cpp`](/c++/source/TransitionTrigger.cpp)
+- [`TransitionTrigger.hpp`](/src/f3/TransitionTrigger.hpp)
+- [`TransitionTrigger.cpp`](/src/f3/TransitionTrigger.cpp)
 
 ## References
 

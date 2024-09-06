@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Trigger.hpp`](/c++/include/Trigger.hpp)
-- [`Trigger.cpp`](/c++/source/Trigger.cpp)
+- [`Trigger.hpp`](/src/f3/Trigger.hpp)
+- [`Trigger.cpp`](/src/f3/Trigger.cpp)
 
 [Return to `f3`](/docs/f3.md)

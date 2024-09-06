@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ScriptTrigger.hpp`](/c++/include/ScriptTrigger.hpp)
-- [`ScriptTrigger.cpp`](/c++/source/ScriptTrigger.cpp)
+- [`ScriptTrigger.hpp`](/src/f3/ScriptTrigger.hpp)
+- [`ScriptTrigger.cpp`](/src/f3/ScriptTrigger.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Label.hpp`](/c++/include/Label.hpp)
-- [`Label.cpp`](/c++/source/Label.cpp)
+- [`Label.hpp`](/src/f3/Label.hpp)
+- [`Label.cpp`](/src/f3/Label.cpp)
 
 ## Inheritance
 

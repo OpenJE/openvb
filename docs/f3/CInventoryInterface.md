@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CInventoryInterface.hpp`](/c++/include/CInventoryInterface.hpp)
-- [`CInventoryInterface.cpp`](/c++/source/CInventoryInterface.cpp)
+- [`CInventoryInterface.hpp`](/src/f3/CInventoryInterface.hpp)
+- [`CInventoryInterface.cpp`](/src/f3/CInventoryInterface.cpp)
 
 ## References
 

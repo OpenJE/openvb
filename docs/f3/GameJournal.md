@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameJournal.hpp`](/c++/include/GameJournal.hpp)
-- [`GameJournal.cpp`](/c++/source/GameJournal.cpp)
+- [`GameJournal.hpp`](/src/f3/GameJournal.hpp)
+- [`GameJournal.cpp`](/src/f3/GameJournal.cpp)
 
 ## References
 

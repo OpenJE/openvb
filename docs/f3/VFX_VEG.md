@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFX_VEG.hpp`](/c++/include/VFX_VEG.hpp)
-- [`VFX_VEG.cpp`](/c++/source/VFX_VEG.cpp)
+- [`VFX_VEG.hpp`](/src/f3/VFX_VEG.hpp)
+- [`VFX_VEG.cpp`](/src/f3/VFX_VEG.cpp)
 
 ## References
 

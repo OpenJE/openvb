@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`DialogueWindow.hpp`](/c++/include/DialogueWindow.hpp)
-- [`DialogueWindow.cpp`](/c++/source/DialogueWindow.cpp)
+- [`DialogueWindow.hpp`](/src/f3/DialogueWindow.hpp)
+- [`DialogueWindow.cpp`](/src/f3/DialogueWindow.cpp)
 
 ## References
 

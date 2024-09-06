@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionSetActiveWeapon.hpp`](/c++/include/ActionSetActiveWeapon.hpp)
-- [`ActionSetActiveWeapon.cpp`](/c++/source/ActionSetActiveWeapon.cpp)
+- [`ActionSetActiveWeapon.hpp`](/src/f3/ActionSetActiveWeapon.hpp)
+- [`ActionSetActiveWeapon.cpp`](/src/f3/ActionSetActiveWeapon.cpp)
 
 ## References
 

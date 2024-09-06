@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`OptionSwitch.hpp`](/c++/include/OptionSwitch.hpp)
-- [`OptionSwitch.cpp`](/c++/source/OptionSwitch.cpp)
+- [`OptionSwitch.hpp`](/src/f3/OptionSwitch.hpp)
+- [`OptionSwitch.cpp`](/src/f3/OptionSwitch.cpp)
 
 ## References
 

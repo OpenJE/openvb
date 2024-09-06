@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CTextEditInterface.hpp`](/c++/include/CTextEditInterface.hpp)
-- [`CTextEditInterface.cpp`](/c++/source/CTextEditInterface.cpp)
+- [`CTextEditInterface.hpp`](/src/f3/CTextEditInterface.hpp)
+- [`CTextEditInterface.cpp`](/src/f3/CTextEditInterface.cpp)
 
 ## References
 

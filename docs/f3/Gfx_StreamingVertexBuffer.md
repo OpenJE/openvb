@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_StreamingVertexBuffer.hpp`](/c++/include/Gfx_StreamingVertexBuffer.hpp)
-- [`Gfx_StreamingVertexBuffer.cpp`](/c++/source/Gfx_StreamingVertexBuffer.cpp)
+- [`Gfx_StreamingVertexBuffer.hpp`](/src/f3/Gfx_StreamingVertexBuffer.hpp)
+- [`Gfx_StreamingVertexBuffer.cpp`](/src/f3/Gfx_StreamingVertexBuffer.cpp)
 
 ## References
 

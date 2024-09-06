@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Script_Small.hpp`](/c++/include/Script_Small.hpp)
-- [`Script_Small.cpp`](/c++/source/Script_Small.cpp)
+- [`Script_Small.hpp`](/src/f3/Script_Small.hpp)
+- [`Script_Small.cpp`](/src/f3/Script_Small.cpp)
 
 ## References
 

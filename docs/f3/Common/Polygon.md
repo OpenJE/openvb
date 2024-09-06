@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`Polygon.hpp`](/c++/include/Polygon.hpp)
-- [`Polygon.cpp`](/c++/source/Polygon.cpp)
+- [`Polygon.hpp`](/src/f3/Polygon.hpp)
+- [`Polygon.cpp`](/src/f3/Polygon.cpp)
 
 [Return to `f3`](/docs/f3.md)

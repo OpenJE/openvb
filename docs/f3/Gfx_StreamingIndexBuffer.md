@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gfx_StreamingIndexBuffer.hpp`](/c++/include/Gfx_StreamingIndexBuffer.hpp)
-- [`Gfx_StreamingIndexBuffer.cpp`](/c++/source/Gfx_StreamingIndexBuffer.cpp)
+- [`Gfx_StreamingIndexBuffer.hpp`](/src/f3/Gfx_StreamingIndexBuffer.hpp)
+- [`Gfx_StreamingIndexBuffer.cpp`](/src/f3/Gfx_StreamingIndexBuffer.cpp)
 
 ## References
 

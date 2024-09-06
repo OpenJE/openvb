@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameDoor.hpp`](/c++/include/GameDoor.hpp)
-- [`GameDoor.cpp`](/c++/source/GameDoor.cpp)
+- [`GameDoor.hpp`](/src/f3/GameDoor.hpp)
+- [`GameDoor.cpp`](/src/f3/GameDoor.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`Gregorian.hpp`](/c++/include/Gregorian.hpp)
-- [`Gregorian.cpp`](/c++/source/Gregorian.cpp)
+- [`Gregorian.hpp`](/src/f3/Gregorian.hpp)
+- [`Gregorian.cpp`](/src/f3/Gregorian.cpp)
 
 ## References
 

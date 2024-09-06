@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameWorld.hpp`](/c++/include/GameWorld.hpp)
-- [`GameWorld.cpp`](/c++/source/GameWorld.cpp)
+- [`GameWorld.hpp`](/src/f3/GameWorld.hpp)
+- [`GameWorld.cpp`](/src/f3/GameWorld.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`ActionDie.hpp`](/c++/include/ActionDie.hpp)
-- [`ActionDie.cpp`](/c++/source/ActionDie.cpp)
+- [`ActionDie.hpp`](/src/f3/ActionDie.hpp)
+- [`ActionDie.cpp`](/src/f3/ActionDie.cpp)
 
 ## References
 

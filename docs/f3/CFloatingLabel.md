@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CFloatingLabel.hpp`](/c++/include/CFloatingLabel.hpp)
-- [`CFloatingLabel.cpp`](/c++/source/CFloatingLabel.cpp)
+- [`CFloatingLabel.hpp`](/src/f3/CFloatingLabel.hpp)
+- [`CFloatingLabel.cpp`](/src/f3/CFloatingLabel.cpp)
 
 ## References
 

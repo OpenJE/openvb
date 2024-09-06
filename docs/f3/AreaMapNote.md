@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`AreaMapNote.hpp`](/c++/include/AreaMapNote.hpp)
-- [`AreaMapNote.cpp`](/c++/source/AreaMapNote.cpp)
+- [`AreaMapNote.hpp`](/src/f3/AreaMapNote.hpp)
+- [`AreaMapNote.cpp`](/src/f3/AreaMapNote.cpp)
 
 [Return to `f3`](/docs/f3.md)

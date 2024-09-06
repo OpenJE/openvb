@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`CSoundPresetInfo.hpp`](/c++/include/CSoundPresetInfo.hpp)
-- [`CSoundPresetInfo.cpp`](/c++/source/CSoundPresetInfo.cpp)
+- [`CSoundPresetInfo.hpp`](/src/f3/CSoundPresetInfo.hpp)
+- [`CSoundPresetInfo.cpp`](/src/f3/CSoundPresetInfo.cpp)
 
 ## References
 

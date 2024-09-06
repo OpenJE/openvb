@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameActionIdle.hpp`](/c++/include/GameActionIdle.hpp)
-- [`GameActionIdle.cpp`](/c++/source/GameActionIdle.cpp)
+- [`GameActionIdle.hpp`](/src/f3/GameActionIdle.hpp)
+- [`GameActionIdle.cpp`](/src/f3/GameActionIdle.cpp)
 
 ## References
 

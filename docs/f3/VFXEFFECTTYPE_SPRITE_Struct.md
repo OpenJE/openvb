@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`VFXEFFECTTYPE_SPRITE_Struct.hpp`](/c++/include/VFXEFFECTTYPE_SPRITE_Struct.hpp)
-- [`VFXEFFECTTYPE_SPRITE_Struct.cpp`](/c++/source/VFXEFFECTTYPE_SPRITE_Struct.cpp)
+- [`VFXEFFECTTYPE_SPRITE_Struct.hpp`](/src/f3/VFXEFFECTTYPE_SPRITE_Struct.hpp)
+- [`VFXEFFECTTYPE_SPRITE_Struct.cpp`](/src/f3/VFXEFFECTTYPE_SPRITE_Struct.cpp)
 
 ## References
 

@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`GameEntity.hpp`](/c++/include/GameEntity.hpp)
-- [`GameEntity.cpp`](/c++/source/GameEntity.cpp)
+- [`GameEntity.hpp`](/src/f3/GameEntity.hpp)
+- [`GameEntity.cpp`](/src/f3/GameEntity.cpp)
 
 ## References
 

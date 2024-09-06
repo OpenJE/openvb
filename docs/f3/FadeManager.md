@@ -4,7 +4,7 @@
 
 ## C++
 
-- [`FadeManager.hpp`](/c++/include/FadeManager.hpp)
-- [`FadeManager.cpp`](/c++/source/FadeManager.cpp)
+- [`FadeManager.hpp`](/src/f3/FadeManager.hpp)
+- [`FadeManager.cpp`](/src/f3/FadeManager.cpp)
 
 [Return to `f3`](/docs/f3.md)

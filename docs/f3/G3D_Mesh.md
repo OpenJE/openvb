@@ -4,8 +4,8 @@
 
 ## C++
 
-- [`G3D_Mesh.hpp`](/c++/include/G3D_Mesh.hpp)
-- [`G3D_Mesh.cpp`](/c++/source/G3D_Mesh.cpp)
+- [`G3D_Mesh.hpp`](/src/f3/G3D_Mesh.hpp)
+- [`G3D_Mesh.cpp`](/src/f3/G3D_Mesh.cpp)
 
 ## References
 
