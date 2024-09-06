@@ -30,7 +30,7 @@ namespace f3 {
 			ActionMoveTo(); // ctor_0x55b300
 			~ActionMoveTo(); // dtor_0x55b460
 			virtual void virt_meth_0x406e90(); // virt_meth_0x406e90
-			virtual long double virt_meth_0x55b340();// virt_meth_0x55b340
+			virtual float10 virt_meth_0x55b340();// virt_meth_0x55b340
 			virtual void virt_meth_0x55b370(); // virt_meth_0x55b370
 			virtual void virt_meth_0x55b3b0(); // virt_meth_0x55b3b0
 			virtual undefined4 virt_meth_0x55b3f0(); // virt_meth_0x55b3f0

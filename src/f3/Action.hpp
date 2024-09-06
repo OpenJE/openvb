@@ -10,8 +10,7 @@ namespace f3 {
 		//: Members
 			byte mbr_0x4;
 		//: Methods
-			//~Action(); // dtor_0x4066f0
-			virtual ~Action(); // virt_deldtor_0x4010e0
+			virtual ~Action(); // dtor_0x4066f0, virt_deldtor_0x4010e0
 			virtual byte Get_mbr_0x4 (); // virt_meth_0x4010d0
 	}; // Action
 } // namespace f3

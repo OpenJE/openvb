@@ -7,7 +7,7 @@
 namespace f3 {
 	namespace display {
 		// 0x56b470
-		void CreateGameWindow( unsigned int nCmdShow ) {
+		void CreateGameWindow( uint nCmdShow ) {
 		}
 
 		// 0x56b1a0

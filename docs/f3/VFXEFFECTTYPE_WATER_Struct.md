@@ -1,0 +1,21 @@
+# f3::VFXEFFECTTYPE_WATER_Struct
+
+[Return to `f3`](/docs/f3.md)
+
+## C++
+
+- [`VFXEFFECTTYPE_WATER_Struct.hpp`](/c++/include/VFXEFFECTTYPE_WATER_Struct.hpp)
+- [`VFXEFFECTTYPE_WATER_Struct.cpp`](/c++/source/VFXEFFECTTYPE_WATER_Struct.cpp)
+
+## References
+
+- [`f3::VFXEFFECTTYPE_BASE_Struct`](/docs/f3/VFXEFFECTTYPE_BASE_Struct.md)
+
+## Inheritance
+
+```mermaid
+graph TD;
+    f3::VFXEFFECTTYPE_BASE_Struct --> f3::VFXEFFECTTYPE_WATER_Struct
+```
+
+[Return to `f3`](/docs/f3.md)

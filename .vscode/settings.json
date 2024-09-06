@@ -54,6 +54,18 @@
         "map": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "xiosbase": "cpp",
+        "cerrno": "cpp",
+        "cstring": "cpp",
+        "ios": "cpp",
+        "xdebug": "cpp",
+        "xlocale": "cpp",
+        "xlocinfo": "cpp",
+        "xlocnum": "cpp",
+        "xmemory": "cpp",
+        "xstddef": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }

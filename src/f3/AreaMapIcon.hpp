@@ -85,7 +85,7 @@ namespace f3 {
 			void meth_0x41e640( float param_1, float param_2, float param_3, float param_4 ); // meth_0x41e640
 			void meth_0x41f300( int param_1 ); // meth_0x41f300
 			void meth_0x436ad0( int param_1 ); // meth_0x436ad0
-			void meth_0x437940( int param_1, unsigned int param_2 ); // meth_0x437940
+			void meth_0x437940( int param_1, uint param_2 ); // meth_0x437940
 			undefined meth_0x437b90 (); // meth_0x437b90
 			void meth_0x437e70( int param_1 ); // meth_0x437e70
 			bool Get_mbr_0x4(); // meth_0x5b4f30
