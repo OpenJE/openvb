@@ -1,6 +1,6 @@
-# f3::GameAudio
+# F3::GameAudio
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Audio`](/docs/f3/Audio.md)
+- [`JE::Audio`](https://github.com/OpenJE/openje/docs/je/Audio.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Audio --> f3::GameAudio
+    JE::Audio --> F3::GameAudio
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

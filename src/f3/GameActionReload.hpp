@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONRELOAD_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Action.hpp"
+#include "je/Action.hpp"
 
-namespace f3 {
-	struct GameActionReload : public Action {
+namespace F3 {
+	struct GameActionReload : public JE::Action {
 		//: Members
 			byte mbr_0x10;
 			dword mbr_0x14;
@@ -30,6 +30,6 @@ namespace f3 {
 			meth_0x407250;
 			virt_meth_0x407270;
 	}; // GameActionReload
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONRELOAD_HPP_

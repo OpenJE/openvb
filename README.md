@@ -16,7 +16,7 @@
 - Adding mod support would also be a possible goal to allow the community to expand upon the tech demo, and a possible community edition of the game could be created as well as a combination of well received community content.
 
 ## Documentation
-- Documentation for the structs, classes, and functions of the Jefferson Engine: [`Documentation`](/docs/f3.md)
+- Documentation for the structs, classes, and functions of Fallout: Van Buren: [`Documentation`](/docs/f3.md)
 
 ## Contributing
 - If you want to contribute to this project, contact me on **Discord**: **shenmarukai** or by **Email**: **shanemulc@comcast.net**. A lot of work still needs to be done, and any help is appreciated.
@@ -27,3 +27,5 @@
 ## Information
 - I use both IDA and Ghidra to reverse engineer, using the differences between the decompilers to better understand the code. Because of this the reverse engineered code may look a bit different from either/both of the decompilers outputs.
 
+## OpenJE - Jefferson Engine
+- [`OpenJE`](https://github.com/OpenJE/openje)

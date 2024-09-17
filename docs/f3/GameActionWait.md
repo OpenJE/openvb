@@ -1,6 +1,6 @@
-# f3::GameActionWait
+# F3::GameActionWait
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::Action`](/docs/f3/Action.md)
-- [`f3::ActionWait`](/docs/f3/ActionWait.md)
+- [`JE::Action`](https://github.com/OpenJE/openje/docs/je/Action.md)
+- [`JE::ActionWait`](https://github.com/OpenJE/openje/docs/je/ActionWait.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Action --> f3::ActionWait
-    f3::ActionWait --> f3::GameActionWait
+    JE::Action --> JE::ActionWait
+    JE::ActionWait --> F3::GameActionWait
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

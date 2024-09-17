@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONUSESKILL_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Action.hpp"
+#include "je/Action.hpp"
 
-namespace f3 {
-	class GameActionUseSkill : public Action {
+namespace F3 {
+	class GameActionUseSkill : public JE::Action {
 		//: Members
 		public:
 			byte mbr_0x10;
@@ -20,6 +20,6 @@ namespace f3 {
 			ctor_0x407ca0;
 			virt_meth_0x407cc0;
 	}; // GameActionUseSkill
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONUSESKILL_HPP_

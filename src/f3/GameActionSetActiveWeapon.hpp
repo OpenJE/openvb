@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONSETACTIVEWEAPON_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionSetActiveWeapon.hpp"
+#include "je/ActionSetActiveWeapon.hpp"
 
-namespace f3 {
-	struct GameActionSetActiveWeapon : public ActionSetActiveWeapon {
+namespace F3 {
+	struct GameActionSetActiveWeapon : public JE::ActionSetActiveWeapon {
 		//: Members
 			dword mbr_0x14;
 			byte mbr_0x18;
@@ -32,6 +32,6 @@ namespace f3 {
 			virt_meth_0x4078f0;
 			virt_meth_0x407910;
 	}; // GameActionSetActiveWeapon
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONSETACTIVEWEAPON_HPP_

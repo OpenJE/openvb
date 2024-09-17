@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONOPERATEDOOR_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Action.hpp"
+#include "je/Action.hpp"
 
-namespace f3 {
-	struct GameActionOperateDoor : public Action {
+namespace F3 {
+	struct GameActionOperateDoor : public JE::Action {
 		//: Members
 			byte mbr_0x10;
 			dword mbr_0x14;
@@ -24,6 +24,6 @@ namespace f3 {
 			meth_0x406730;
 			virt_meth_0x4067c0;
 	}; // GameActionOperateDoor
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONOPERATEDOOR_HPP_

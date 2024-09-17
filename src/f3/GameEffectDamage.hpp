@@ -6,7 +6,7 @@
 #include "f3/global.hpp"
 #include "f3/GameEffect.hpp"
 
-namespace f3 {
+namespace F3 {
 	struct GameEffectDamage : public GameEffect {
 		//: Members
 			dword mbr_0x10;
@@ -32,6 +32,6 @@ namespace f3 {
 			virt_meth_0x45c6b0;
 			meth_0x462860;
 	}; // GameEffectDamage
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEEFFECTDAMAGE_HPP_

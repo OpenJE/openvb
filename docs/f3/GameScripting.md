@@ -1,6 +1,6 @@
-# f3::GameScripting
+# F3::GameScripting
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::IComponent`](/docs/f3/IComponent.md)
-- [`f3::Scripting`](/docs/f3/Scripting.md)
+- [`JE::IComponent`](https://github.com/OpenJE/openje/docs/je/IComponent.md)
+- [`JE::Scripting`](https://github.com/OpenJE/openje/docs/je/Scripting.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::IComponent --> f3::Scripting
-    f3::Scripting --> f3::GameScripting
+    JE::IComponent --> JE::Scripting
+    JE::Scripting --> F3::GameScripting
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

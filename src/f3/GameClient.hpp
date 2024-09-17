@@ -4,10 +4,10 @@
 #define F3_GAMECLIENT_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Client.hpp"
+#include "je/Client.hpp"
 
-namespace f3 {
-	struct GameClient : public Client {
+namespace F3 {
+	struct GameClient : public JE::Client {
 		//: Members
 			dword mbr_0x10;
 			byte mbr_0x108;
@@ -103,6 +103,6 @@ namespace f3 {
 			meth_0x58a9a0;
 			meth_0x59c4f0;
 	}; // GameClient
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMECLIENT_HPP_

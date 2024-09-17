@@ -1,6 +1,6 @@
-# f3::GameStoreManager
+# F3::GameStoreManager
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::StoreManager`](/docs/f3/StoreManager.md)
+- [`JE::StoreManager`](https://github.com/OpenJE/openje/docs/je/StoreManager.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::StoreManager --> f3::GameStoreManager
+    JE::StoreManager --> F3::GameStoreManager
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

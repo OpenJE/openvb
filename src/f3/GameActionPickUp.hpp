@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONPICKUP_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionPickUp.hpp"
+#include "je/ActionPickUp.hpp"
 
-namespace f3 {
-	struct GameActionPickUp : public ActionPickUp {
+namespace F3 {
+	struct GameActionPickUp : public JE::ActionPickUp {
 		//: Members
 			dword mbr_0x14;
 			dword mbr_0x18;
@@ -23,6 +23,6 @@ namespace f3 {
 			virt_meth_0x406f10;
 			virt_meth_0x4071a0;
 	}; // GameActionPickUp
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONPICKUP_HPP_

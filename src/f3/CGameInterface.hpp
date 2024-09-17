@@ -5,12 +5,12 @@
 
 #include "f3/global.hpp"
 
-namespace f3 {
+namespace F3 {
 	class CGameInterface {
 		//: Methods
 		public:
 			virt_meth_0x439670;
 	}; // CGameInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_CGAMEINTERFACE_HPP_

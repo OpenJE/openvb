@@ -1,6 +1,6 @@
-# f3::GameActionFloatingSpeechText
+# F3::GameActionFloatingSpeechText
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::Action`](/docs/f3/Action.md)
-- [`f3::ActionFloatingSpeechText`](/docs/f3/ActionFloatingSpeechText.md)
+- [`JE::Action`](https://github.com/OpenJE/openje/docs/je/Action.md)
+- [`JE::ActionFloatingSpeechText`](https://github.com/OpenJE/openje/docs/je/ActionFloatingSpeechText.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Action --> f3::ActionFloatingSpeechText
-    f3::ActionFloatingSpeechText --> f3::GameActionFloatingSpeechText
+    JE::Action --> JE::ActionFloatingSpeechText
+    JE::ActionFloatingSpeechText --> F3::GameActionFloatingSpeechText
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

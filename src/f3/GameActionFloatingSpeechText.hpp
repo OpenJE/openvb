@@ -4,16 +4,16 @@
 #define F3_GAMEACTIONFLOATINGSPEECHTEXT_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionFloatingSpeechText.hpp"
+#include "je/ActionFloatingSpeechText.hpp"
 
-namespace f3 {
-	struct GameActionFloatingSpeechText : public ActionFloatingSpeechText {
+namespace F3 {
+	struct GameActionFloatingSpeechText : public JE::ActionFloatingSpeechText {
 		//: Methods
 			ctor_0x405240;
 			dtor_0x405260;
 			virt_meth_0x405270;
 			virt_meth_0x405280;
 	}; // GameActionFloatingSpeechText
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONFLOATINGSPEECHTEXT_HPP_

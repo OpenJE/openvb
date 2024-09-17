@@ -1,6 +1,6 @@
-# f3::GameCSSkillMenuInterface
+# F3::GameCSSkillMenuInterface
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,22 +9,22 @@
 
 ## References
 
-- [`f3::HeapTracker`](/docs/f3/HeapTracker.md)
-- [`f3::GUI::Interface`](/docs/f3/GUI/Interface.md)
-- [`f3::CEngineInterface`](/docs/f3/CEngineInterface.md)
-- [`f3::CSMenuInterface`](/docs/f3/CSMenuInterface.md)
-- [`f3::CGameInterface`](/docs/f3/CGameInterface.md)
+- [`JE::HeapTracker`](https://github.com/OpenJE/openje/docs/je/HeapTracker.md)
+- [`JE::GUI::Interface`](https://github.com/OpenJE/openje/docs/je/GUI/Interface.md)
+- [`JE::CEngineInterface`](https://github.com/OpenJE/openje/docs/je/CEngineInterface.md)
+- [`JE::CSMenuInterface`](https://github.com/OpenJE/openje/docs/je/CSMenuInterface.md)
+- [`F3::CGameInterface`](/docs/f3/CGameInterface.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::HeapTracker --> f3::GUI::Interface
-    f3::GUI::Interface --> f3::CEngineInterface
-    f3::CEngineInterface --> f3::CSMenuInterface
-    f3::CEngineInterface --> f3::CGameInterface
-    f3::CSMenuInterface --> f3::GameCSSkillMenuInterface
-    f3::CGameInterface --> f3::GameCSSkillMenuInterface
+    JE::HeapTracker --> JE::GUI::Interface
+    JE::GUI::Interface --> JE::CEngineInterface
+    JE::CEngineInterface --> JE::CSMenuInterface
+    JE::CEngineInterface --> F3::CGameInterface
+    JE::CSMenuInterface --> F3::GameCSSkillMenuInterface
+    F3::CGameInterface --> F3::GameCSSkillMenuInterface
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

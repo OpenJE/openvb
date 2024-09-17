@@ -1,6 +1,6 @@
-# f3::GameActionWander
+# F3::GameActionWander
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::Action`](/docs/f3/Action.md)
-- [`f3::ActionWander`](/docs/f3/ActionWander.md)
+- [`JE::Action`](https://github.com/OpenJE/openje/docs/je/Action.md)
+- [`JE::ActionWander`](https://github.com/OpenJE/openje/docs/je/ActionWander.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Action --> f3::ActionWander
-    f3::ActionWander --> f3::GameActionWander
+    JE::Action --> JE::ActionWander
+    JE::ActionWander --> F3::GameActionWander
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

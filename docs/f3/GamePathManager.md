@@ -1,6 +1,6 @@
-# f3::GamePathManager
+# F3::GamePathManager
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::PathManager`](/docs/f3/PathManager.md)
+- [`JE::PathManager`](https://github.com/OpenJE/openje/docs/je/PathManager.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::PathManager --> f3::GamePathManager
+    JE::PathManager --> F3::GamePathManager
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

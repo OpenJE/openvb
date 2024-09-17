@@ -4,10 +4,10 @@
 #define F3_GAMENETWORK_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Network.hpp"
+#include "je/Network.hpp"
 
-namespace f3 {
-	struct GameNetwork : public Network {
+namespace F3 {
+	struct GameNetwork : public JE::Network {
 		//: Members
 			word mbr_0x1c;
 			word mbr_0x8;
@@ -17,6 +17,6 @@ namespace f3 {
 			virt_meth_0x45e0b0;
 			dtor_0x45e0d0;
 	}; // GameNetwork
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMENETWORK_HPP_

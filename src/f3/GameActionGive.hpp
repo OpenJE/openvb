@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONGIVE_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Action.hpp"
+#include "je/Action.hpp"
 
-namespace f3 {
-	struct GameActionGive : public Action {
+namespace F3 {
+	struct GameActionGive : public JE::Action {
 		//: Members
 			byte mbr_0x10;
 			dword mbr_0x14;
@@ -26,6 +26,6 @@ namespace f3 {
 			virt_meth_0x405300;
 			virt_meth_0x405370;
 	}; // GameActionGive
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONGIVE_HPP_

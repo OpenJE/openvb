@@ -1,6 +1,6 @@
-# f3::CPipBoyInterface
+# F3::CPipBoyInterface
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,17 +9,17 @@
 
 ## References
 
-- [`f3::HeapTracker`](/docs/f3/HeapTracker.md)
-- [`f3::GUI::Interface`](/docs/f3/GUI/Interface.md)
-- [`f3::CEngineInterface`](/docs/f3/CEngineInterface.md)
+- [`JE::HeapTracker`](https://github.com/OpenJE/openje/docs/je/HeapTracker.md)
+- [`JE::GUI::Interface`](https://github.com/OpenJE/openje/docs/je/GUI/Interface.md)
+- [`JE::CEngineInterface`](https://github.com/OpenJE/openje/docs/je/CEngineInterface.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::HeapTracker --> f3::GUI::Interface
-    f3::GUI::Interface --> f3::CEngineInterface
-    f3::CEngineInterface --> f3::CPipBoyInterface
+    JE::HeapTracker --> JE::GUI::Interface
+    JE::GUI::Interface --> JE::CEngineInterface
+    JE::CEngineInterface --> F3::CPipBoyInterface
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

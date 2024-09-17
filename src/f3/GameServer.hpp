@@ -4,10 +4,10 @@
 #define F3_GAMESERVER_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Server.hpp"
+#include "je/Server.hpp"
 
-namespace f3 {
-	struct GameServer : public Server {
+namespace F3 {
+	struct GameServer : public JE::Server {
 		//: Members
 			dword mbr_0x14;
 			dword mbr_0x5064;
@@ -93,6 +93,6 @@ namespace f3 {
 			meth_0x5a09d0;
 			meth_0x5a0a00;
 	}; // GameServer
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMESERVER_HPP_

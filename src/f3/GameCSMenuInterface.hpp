@@ -6,7 +6,7 @@
 #include "f3/global.hpp"
 #include "f3/GameCSSkillMenuInterface.hpp"
 
-namespace f3 {
+namespace F3 {
 	class GameCSMenuInterface : public GameCSSkillMenuInterface {
 		//: Members
 		public:
@@ -22,6 +22,6 @@ namespace f3 {
 			ctor_0x435840;
 			virt_meth_0x4359f0;
 	}; // GameCSMenuInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMECSMENUINTERFACE_HPP_

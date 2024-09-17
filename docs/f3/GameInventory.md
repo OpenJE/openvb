@@ -1,6 +1,6 @@
-# f3::GameInventory
+# F3::GameInventory
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Inventory`](/docs/f3/Inventory.md)
+- [`JE::Inventory`](https://github.com/OpenJE/openje/docs/je/Inventory.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Inventory --> f3::GameInventory
+    JE::Inventory --> F3::GameInventory
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

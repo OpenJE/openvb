@@ -4,15 +4,15 @@
 #define F3_GAMESCRIPTING_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Scripting.hpp"
+#include "je/Scripting.hpp"
 
-namespace f3 {
-	struct GameScripting : public Scripting {
+namespace F3 {
+	struct GameScripting : public JE::Scripting {
 		//: Methods
 			virt_meth_0x45e0e0;
 			dtor_0x45e100;
 			virt_meth_0x46cd60;
 	}; // GameScripting
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMESCRIPTING_HPP_

@@ -4,10 +4,10 @@
 #define F3_GAMEMAP_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Map.hpp"
+#include "je/Map.hpp"
 
-namespace f3 {
-	struct GameMap : public Map {
+namespace F3 {
+	struct GameMap : public JE::Map {
 		//: Members
 			byte mbr_0x15c;
 			dword mbr_0x168;
@@ -26,6 +26,6 @@ namespace f3 {
 			virt_meth_0x46cb90;
 			virt_meth_0x46cbb0;
 	}; // GameMap
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEMAP_HPP_

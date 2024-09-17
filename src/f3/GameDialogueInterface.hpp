@@ -4,11 +4,11 @@
 #define F3_GAMEDIALOGUEINTERFACE_HPP_
 
 #include "f3/global.hpp"
-#include "f3/DialogueInterface.hpp"
-#include "f3/cls_0x4395a0.hpp"
+#include "je/DialogueInterface.hpp"
+#include "je/cls_0x4395a0.hpp"
 
-namespace f3 {
-	class GameDialogueInterface : public DialogueInterface, public cls_0x4395a0 {
+namespace F3 {
+	class GameDialogueInterface : public JE::DialogueInterface, public JE::cls_0x4395a0 {
 		//: Members
 		public:
 			dword mbr_0x100;
@@ -84,6 +84,6 @@ namespace f3 {
 			virt_meth_0x438e20;
 			virt_meth_0x438e30;
 	}; // GameDialogueInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEDIALOGUEINTERFACE_HPP_

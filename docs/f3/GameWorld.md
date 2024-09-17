@@ -1,6 +1,6 @@
-# f3::GameWorld
+# F3::GameWorld
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,22 +9,22 @@
 
 ## References
 
-- [`f3::IWorld`](/docs/f3/IWorld.md)
-- [`f3::IComponent`](/docs/f3/IComponent.md)
-- [`f3::IWorldClient`](/docs/f3/IWorldClient.md)
-- [`f3::IWorldServer`](/docs/f3/IWorldServer.md)
-- [`f3::World`](/docs/f3/World.md)
+- [`JE::IWorld`](https://github.com/OpenJE/openje/docs/je/IWorld.md)
+- [`JE::IComponent`](https://github.com/OpenJE/openje/docs/je/IComponent.md)
+- [`JE::IWorldClient`](https://github.com/OpenJE/openje/docs/je/IWorldClient.md)
+- [`JE::IWorldServer`](https://github.com/OpenJE/openje/docs/je/IWorldServer.md)
+- [`JE::World`](https://github.com/OpenJE/openje/docs/je/World.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::IWorld --> f3::IWorldClient
-    f3::IWorld --> f3::IWorldServer
-    f3::IComponent --> f3::World
-    f3::IWorldClient --> f3::World
-    f3::IWorldServer --> f3::World
-    f3::World --> f3::GameWorld
+    JE::IWorld --> JE::IWorldClient
+    JE::IWorld --> JE::IWorldServer
+    JE::IComponent --> JE::World
+    JE::IWorldClient --> JE::World
+    JE::IWorldServer --> JE::World
+    JE::World --> F3::GameWorld
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

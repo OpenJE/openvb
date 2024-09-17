@@ -5,7 +5,7 @@
 
 #include "f3/global.hpp"
 
-namespace f3 {
+namespace F3 {
 	class COptionsGameInterface {
 		//: Methods
 		public:
@@ -13,6 +13,6 @@ namespace f3 {
 			virt_meth_0x4444d0;
 			virt_meth_0x4444e0;
 	}; // COptionsGameInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_COPTIONSGAMEINTERFACE_HPP_

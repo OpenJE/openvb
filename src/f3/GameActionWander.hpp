@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONWANDER_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionWander.hpp"
+#include "je/ActionWander.hpp"
 
-namespace f3 {
-	struct GameActionWander : public ActionWander {
+namespace F3 {
+	struct GameActionWander : public JE::ActionWander {
 		//: Members
 			dword mbr_0x14;
 		//: Methods
@@ -15,6 +15,6 @@ namespace f3 {
 			virt_meth_0x407f90;
 			ctor_0x46f140;
 	}; // GameActionWander
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONWANDER_HPP_

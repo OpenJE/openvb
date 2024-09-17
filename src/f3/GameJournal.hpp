@@ -4,10 +4,10 @@
 #define F3_GAMEJOURNAL_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Journal.hpp"
+#include "je/Journal.hpp"
 
-namespace f3 {
-	struct GameJournal : public Journal {
+namespace F3 {
+	struct GameJournal : public JE::Journal {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x14;
@@ -21,6 +21,6 @@ namespace f3 {
 			virt_meth_0x46c5e0;
 			virt_meth_0x46c5f0;
 	}; // GameJournal
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEJOURNAL_HPP_
