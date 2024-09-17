@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONEQUIP_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionEquip.hpp"
+#include "je/ActionEquip.hpp"
 
-namespace f3 {
-	struct GameActionEquip : public ActionEquip {
+namespace F3 {
+	struct GameActionEquip : public JE::ActionEquip {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x104;
@@ -319,6 +319,6 @@ namespace f3 {
 			meth_0x5c7980;
 			meth_0x5c7a50;
 	}; // GameActionEquip
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONEQUIP_HPP_

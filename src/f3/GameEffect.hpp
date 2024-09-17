@@ -4,10 +4,10 @@
 #define F3_GAMEEFFECT_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Effect.hpp"
+#include "je/Effect.hpp"
 
-namespace f3 {
-	struct GameEffect : public Effect {
+namespace F3 {
+	struct GameEffect : public JE::Effect {
 		//: Members
 			dword mbr_0x1c;
 			dword mbr_0x24;
@@ -49,6 +49,6 @@ namespace f3 {
 			virt_meth_0x462930;
 			meth_0x55ae10;
 	}; // GameEffect
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEEFFECT_HPP_

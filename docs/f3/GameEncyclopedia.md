@@ -1,6 +1,6 @@
-# f3::GameEncyclopedia
+# F3::GameEncyclopedia
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Encyclopedia`](/docs/f3/Encyclopedia.md)
+- [`JE::Encyclopedia`](https://github.com/OpenJE/openje/docs/je/Encyclopedia.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Encyclopedia --> f3::GameEncyclopedia
+    JE::Encyclopedia --> F3::GameEncyclopedia
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

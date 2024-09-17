@@ -6,7 +6,7 @@
 #include "f3/global.hpp"
 #include "f3/GameEntity.hpp"
 
-namespace f3 {
+namespace F3 {
 	struct GameUsableObject : public GameEntity {
 		//: Members
 			dword mbr_0x4;
@@ -40,6 +40,6 @@ namespace f3 {
 			virt_meth_0x412a80;
 			virt_meth_0x412a90;
 	}; // GameUsableObject
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEUSABLEOBJECT_HPP_

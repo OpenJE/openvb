@@ -1,6 +1,6 @@
-# f3::GameNetwork
+# F3::GameNetwork
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::IComponent`](/docs/f3/IComponent.md)
-- [`f3::Network`](/docs/f3/Network.md)
+- [`JE::IComponent`](https://github.com/OpenJE/openje/docs/je/IComponent.md)
+- [`JE::Network`](https://github.com/OpenJE/openje/docs/je/Network.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::IComponent --> f3::Network
-    f3::Network --> f3::GameNetwork
+    JE::IComponent --> JE::Network
+    JE::Network --> F3::GameNetwork
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

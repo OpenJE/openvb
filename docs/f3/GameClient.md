@@ -1,6 +1,6 @@
-# f3::GameClient
+# F3::GameClient
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,17 +9,17 @@
 
 ## References
 
-- [`f3::net::base`](/docs/net/base.md)
-- [`f3::net::client`](/docs/net/client.md)
-- [`f3::Client`](/docs/f3/Client.md)
+- [`JE::net::base`](https://github.com/OpenJE/openje/docs/je/net/base.md)
+- [`JE::net::client`](https://github.com/OpenJE/openje/docs/je/net/client.md)
+- [`JE::Client`](https://github.com/OpenJE/openje/docs/je/Client.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::net::base --> f3::net::client
-    f3::net::client --> f3::Client
-    f3::Client --> f3::GameClient
+    JE::net::base --> JE::net::client
+    JE::net::client --> JE::Client
+    JE::Client --> F3::GameClient
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

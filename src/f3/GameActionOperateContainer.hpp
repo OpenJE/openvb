@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONOPERATECONTAINER_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Action.hpp"
+#include "je/Action.hpp"
 
-namespace f3 {
-	struct GameActionOperateContainer : public Action {
+namespace F3 {
+	struct GameActionOperateContainer : public JE::Action {
 		//: Members
 			byte mbr_0x10;
 			dword mbr_0x14;
@@ -78,6 +78,6 @@ namespace f3 {
 			meth_0x495380;
 			meth_0x4959b0;
 	}; // GameActionOperateContainer
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONOPERATECONTAINER_HPP_

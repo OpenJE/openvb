@@ -4,14 +4,14 @@
 #define F3_GAMESTOREMANAGER_HPP_
 
 #include "f3/global.hpp"
-#include "f3/StoreManager.hpp"
+#include "je/StoreManager.hpp"
 
-namespace f3 {
-	struct GameStoreManager : public StoreManager {
+namespace F3 {
+	struct GameStoreManager : public JE::StoreManager {
 		//: Methods
 			virt_meth_0x46f110;
 			dtor_0x46f130;
 	}; // GameStoreManager
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMESTOREMANAGER_HPP_

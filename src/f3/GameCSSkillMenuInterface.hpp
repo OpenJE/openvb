@@ -4,11 +4,11 @@
 #define F3_GAMECSSKILLMENUINTERFACE_HPP_
 
 #include "f3/global.hpp"
-#include "f3/CSMenuInterface.hpp"
-#include "f3/cls_0x4395a0.hpp"
+#include "je/CSMenuInterface.hpp"
+#include "je/cls_0x4395a0.hpp"
 
-namespace f3 {
-	class GameCSSkillMenuInterface : public CSMenuInterface, public cls_0x4395a0 {
+namespace F3 {
+	class GameCSSkillMenuInterface : public JE::CSMenuInterface, public JE::cls_0x4395a0 {
 		//: Members
 		public:
 			dword mbr_0x4;
@@ -28,6 +28,6 @@ namespace f3 {
 			virt_meth_0x435fa0;
 			meth_0x569080;
 	}; // GameCSSkillMenuInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMECSSKILLMENUINTERFACE_HPP_

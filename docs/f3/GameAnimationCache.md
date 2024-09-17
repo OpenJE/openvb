@@ -1,6 +1,6 @@
-# f3::GameAnimationCache
+# F3::GameAnimationCache
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::IComponent`](/docs/f3/IComponent.md)
-- [`f3::AnimationCache`](/docs/f3/AnimationCache.md)
+- [`JE::IComponent`](https://github.com/OpenJE/openje/docs/je/IComponent.md)
+- [`JE::AnimationCache`](https://github.com/OpenJE/openje/docs/je/AnimationCache.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::IComponent --> f3::AnimationCache
-    f3::AnimationCache --> f3::GameAnimationCache
+    JE::IComponent --> JE::AnimationCache
+    JE::AnimationCache --> F3::GameAnimationCache
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

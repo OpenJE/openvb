@@ -4,15 +4,15 @@
 #define F3_GAMEENCYCLOPEDIA_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Encyclopedia.hpp"
+#include "je/Encyclopedia.hpp"
 
-namespace f3 {
-	struct GameEncyclopedia : public Encyclopedia {
+namespace F3 {
+	struct GameEncyclopedia : public JE::Encyclopedia {
 		//: Methods
 			virt_meth_0x462950;
 			virt_meth_0x46f0e0;
 			dtor_0x46f100;
 	}; // GameEncyclopedia
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEENCYCLOPEDIA_HPP_

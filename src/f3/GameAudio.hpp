@@ -4,10 +4,10 @@
 #define F3_GAMEAUDIO_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Audio.hpp"
+#include "je/Audio.hpp"
 
-namespace f3 {
-	struct GameAudio : public Audio {
+namespace F3 {
+	struct GameAudio : public JE::Audio {
 		//: Members
 			dword mbr_0x20;
 			dword mbr_0x4;
@@ -16,6 +16,6 @@ namespace f3 {
 			virt_meth_0x45e670;
 			dtor_0x45e690;
 	}; // GameAudio
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEAUDIO_HPP_

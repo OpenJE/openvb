@@ -1,6 +1,6 @@
-# f3::GameCursorManager
+# F3::GameCursorManager
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::CursorManager`](/docs/f3/CursorManager.md)
+- [`JE::CursorManager`](https://github.com/OpenJE/openje/docs/je/CursorManager.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::CursorManager --> f3::GameCursorManager
+    JE::CursorManager --> F3::GameCursorManager
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

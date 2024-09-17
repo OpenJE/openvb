@@ -1,6 +1,6 @@
-# f3::GameWorldMap
+# F3::GameWorldMap
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::WorldMap`](/docs/f3/WorldMap.md)
+- [`JE::WorldMap`](https://github.com/OpenJE/openje/docs/je/WorldMap.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::WorldMap --> f3::GameWorldMap
+    JE::WorldMap --> F3::GameWorldMap
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
