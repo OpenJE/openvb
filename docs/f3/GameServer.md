@@ -1,6 +1,6 @@
-# f3::GameServer
+# F3::GameServer
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,17 +9,17 @@
 
 ## References
 
-- [`f3::net::base`](/docs/net/base.md)
-- [`f3::net::server`](/docs/net/server.md)
-- [`f3::Server`](/docs/f3/Server.md)
+- [`JE::net::base`](https://github.com/OpenJE/openje/docs/je/net/base.md)
+- [`JE::net::server`](https://github.com/OpenJE/openje/docs/je/net/server.md)
+- [`JE::Server`](https://github.com/OpenJE/openje/docs/je/Server.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::net::base --> f3::net::server
-    f3::net::server --> f3::Server
-    f3::Server --> f3::GameServer
+    JE::net::base --> JE::net::server
+    JE::net::server --> JE::Server
+    JE::Server --> F3::GameServer
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

@@ -1,6 +1,6 @@
-# f3::GameActionPickUp
+# F3::GameActionPickUp
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::Action`](/docs/f3/Action.md)
-- [`f3::ActionPickUp`](/docs/f3/ActionPickUp.md)
+- [`JE::Action`](https://github.com/OpenJE/openje/docs/je/Action.md)
+- [`JE::ActionPickUp`](https://github.com/OpenJE/openje/docs/je/ActionPickUp.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Action --> f3::ActionPickUp
-    f3::ActionPickUp --> f3::GameActionPickUp
+    JE::Action --> JE::ActionPickUp
+    JE::ActionPickUp --> F3::GameActionPickUp
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

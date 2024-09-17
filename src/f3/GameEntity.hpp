@@ -4,10 +4,10 @@
 #define F3_GAMEENTITY_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Entity.hpp"
+#include "je/Entity.hpp"
 
-namespace f3 {
-	struct GameEntity : public Entity {
+namespace F3 {
+	struct GameEntity : public JE::Entity {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x14;
@@ -53,6 +53,6 @@ namespace f3 {
 			virt_meth_0x468720;
 			virt_meth_0x468ad0;
 	}; // GameEntity
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEENTITY_HPP_

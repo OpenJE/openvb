@@ -4,10 +4,10 @@
 #define F3_GAMEPATHMANAGER_HPP_
 
 #include "f3/global.hpp"
-#include "f3/PathManager.hpp"
+#include "je/PathManager.hpp"
 
-namespace f3 {
-	class GamePathManager : public PathManager {
+namespace F3 {
+	class GamePathManager : public JE::PathManager {
 		//: Members
 		public:
 			dword mbr_0x4;
@@ -23,6 +23,6 @@ namespace f3 {
 			virt_meth_0x45bb10;
 			virt_meth_0x45bc90;
 	}; // GamePathManager
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEPATHMANAGER_HPP_

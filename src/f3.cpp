@@ -7,14 +7,14 @@
 
 void __fastcall _write_char( FILE *param_1 );
 
-namespace f3 {
-	// 0x5ace00
+namespace F3 {
+	// 0x5ACE00
 	int Main() {
 		bool continue_running;
 		undefined4 unaff_retaddr = 0;
 
 		Startup();
-		RegisterCommand( "quit", &Quit, unaff_retaddr );
+		RegisterCommand( "quit", &Quit );
 		continue_running = ProcessMessagesAndUpdateTime();
 		while ( continue_running ) {
 			GameStateLoop();
@@ -29,20 +29,20 @@ namespace f3 {
 		return;
 	} // Quit
 
-	// 0x5acd60
+	// 0x5ACD60
 	void Startup() {
 
 	} // Startup
 
-	// 0x59f5d0
-	void RegisterCommand( char * command, void (*func)(), undefined4 param_3 ) {
+	// 0x59F5D0
+	void RegisterCommand( const char * command, void (*func)() ) {
 	} // RegisterCommand
 
-	// 0x5acde0
+	// 0x5ACDE0
 	void GameStateLoop() {
 	} // GameStateLoop
 
-	// 0x56af60
+	// 0x56AF60
 	bool ProcessMessagesAndUpdateTime() {
 		static DWORD program_time_ms = 0;
 		BOOL msg_available;
@@ -65,23 +65,23 @@ namespace f3 {
 		return false;
 	} // ProcessMessagesAndUpdateTime
 
-	// 0x5acda0
+	// 0x5ACDA0
 	void Shutdown() {
 	} // Shutdown
 
-	// 0x48cc40
+	// 0x48CC40
 	void FailWithError( char * format, ... ) {
         char buffer [ 1024 ];
         va_list arg_list;
 
         va_start( arg_list, format );
         vsprintf( buffer, format, arg_list );
-        FUN_00497120( buffer );
+        sub_497120( buffer );
         MessageBoxA( (HWND)0x0, buffer, "Fatal Error", MB_ICONERROR | MB_DEFBUTTON2 );
         exit( 1 );
 	} // FailWithError
 
-	// 0x56b000
+	// 0x56B000
 	void SetupSaveDirectory() {
         HRESULT result;
         int path_index;
@@ -89,7 +89,7 @@ namespace f3 {
         char personal_folder_path[ 64 ];
         char current_path_char;
 
-        if ( !FUN_0061b067( CHAR_0070bfa8, 260 ) ) {
+        if ( !sub_61B067( CHAR_0070bfa8, 260 ) ) {
             FailWithError( "Unable to retrieve current working directory." );
         }
         result = SHGetFolderPathA( (HWND)0x0, CSIDL_PERSONAL_FOLDER, (HANDLE)0x0, 0, personal_folder_path );
@@ -104,7 +104,7 @@ namespace f3 {
             path_index = path_index + 1;
         } while ( current_path_char != '\0' );
 
-        FUN_0061adfa( possible_file_path,(char *)0x0, (char *)0x0, personal_folder_path, (char *)0x0 );
+        sub_61ADFA( possible_file_path,(char *)0x0, (char *)0x0, personal_folder_path, (char *)0x0 );
 
         path_index = 0;
         do {
@@ -114,10 +114,10 @@ namespace f3 {
         } while ( current_path_char != '\0' );
 
         //some_directory_path_2 = (undefined *)get_some_directory_path_2();
-        //FUN_004c58a0( some_directory_path, some_directory_path_2 );
-        current_path_char = FUN_004c56b0( some_directory_path );
+        //sub_4c58a0( some_directory_path, some_directory_path_2 );
+        current_path_char = sub_4C56B0( some_directory_path );
         if ( current_path_char == '\0' ) {
-            current_path_char = FUN_004c5750( some_directory_path );
+            current_path_char = sub_4C5750( some_directory_path );
             if ( current_path_char == '\0' ) {
             FailWithError( "Unable to create save folder." );
             }
@@ -125,134 +125,157 @@ namespace f3 {
         return;
 	} // SetupSaveDirectory
 
-	// 0x56b220
+	// 0x56B220
 	void SetupConfigFile( uint nCmdShow ) {
 	} // SetupConfigFile
 
-	// 0x56b100
+	// 0x56B100
 	void SetupLogFile() {
 	} // SetupLogFile
 
-	// 0x48cca0
+	// 0x48CCA0
 	void SetStartupTime( time_t time32 ) {
 	} // SetStartupTime
 
-    // 0x61b067
-    char* FUN_0061b067( char * param_1, size_t param_2 ) {
+    // 0x61B067
+    char* sub_61B067( char * param_1, size_t param_2 ) {
         char* local_20;
-        local_20 = FUN_0061AF79( (LPSTR)0x0, param_1, param_2 );
+        local_20 = sub_61AF79( (LPSTR)0x0, param_1, param_2 );
         return local_20;
-    } // FUN_0061b067
+    } // sub_61B067
 
-    // 0x61adfa
-    void FUN_0061adfa( char * file_path, char * drive_letter, char * directory_path, char * folder_path, char * file_extension ) {
-        size_t input_string_length;
-        char *input_string_local;
-        uint uVar1;
-        char *input_string_local_2;
-        char *input_string_local_3;
-        byte input_string_local_2_char_pos;
+    // 0x61ADFA
+    unsigned __int8 *__cdecl sub_61ADFA(
+        unsigned __int8 *Source,
+        unsigned __int8 *Dest,
+        unsigned __int8 *directory_path,
+        unsigned __int8 *folder_path,
+        unsigned __int8 *file_extension)
+    {
+        unsigned __int8 *v5; // ebx
+        unsigned __int8 *result; // eax
+        size_t v7; // esi
+        unsigned __int8 v8; // cl
+        size_t v9; // edi
+        size_t v10; // edi
+        unsigned int v11; // eax
+        unsigned int v12; // eax
+        unsigned __int8 *input_string_local_2; // [esp+Ch] [ebp-8h]
+        unsigned __int8 *input_string_local_3; // [esp+10h] [ebp-4h]
+        unsigned __int8 *some_string; // [esp+1Ch] [ebp+8h]
 
-        input_string_local_3 = (char *)0x0;
-        input_string_length = strlen( file_path );
-        if ( ( input_string_length == 0 ) || ( file_path[1] != ':' ) ) {
-            input_string_local = file_path;
-            if ( drive_letter != (char *)0x0 ) {
-                *drive_letter = '\0';
+        input_string_local_3 = 0;
+        v5 = Source;
+        if ( strlen((const char *)Source) && Source[1] == 58 )
+        {
+            if ( Dest )
+            {
+            sub_61A6AA(Dest, Source, 2u);
+            Dest[2] = 0;
+            }
+            v5 = Source + 2;
+        }
+        else if ( Dest )
+        {
+            *Dest = 0;
+        }
+        some_string = 0;
+        result = v5;
+        input_string_local_2 = v5;
+        v7 = 255;
+        if ( !*v5 )
+            goto LABEL_23;
+        do
+        {
+            v8 = *result;
+            if ( ( CHAR_0070fd41[*result] & 4 ) != 0 )
+            {
+            ++result;
+            }
+            else if ( v8 == 47 || v8 == 92 )
+            {
+            some_string = result + 1;
+            }
+            else if ( v8 == 46 )
+            {
+            input_string_local_3 = result;
+            }
+            ++result;
+        }
+        while ( *result );
+        input_string_local_2 = result;
+        if ( some_string )
+        {
+            if ( directory_path )
+            {
+            v9 = some_string - v5;
+            if ( (unsigned int)(some_string - v5) >= 0xFF )
+                v9 = 255;
+            sub_61A6AA(directory_path, v5, v9);
+            directory_path[v9] = 0;
+            result = input_string_local_2;
+            }
+            v5 = some_string;
+        }
+        else
+        {
+        LABEL_23:
+            if ( directory_path )
+            *directory_path = 0;
+        }
+        if ( input_string_local_3 && input_string_local_3 >= v5 )
+        {
+            if ( folder_path )
+            {
+            v10 = input_string_local_3 - v5;
+            if ( (unsigned int)(input_string_local_3 - v5) >= 0xFF )
+                v10 = 255;
+            sub_61A6AA(folder_path, v5, v10);
+            folder_path[v10] = 0;
+            result = input_string_local_2;
+            }
+            if ( file_extension )
+            {
+            v11 = result - input_string_local_3;
+            if ( v11 < 0xFF )
+                v7 = v11;
+            result = sub_61A6AA(file_extension, input_string_local_3, v7);
+            file_extension[v7] = 0;
             }
         }
-        else {
-            if ( drive_letter != (char *)0x0 ) {
-                FUN_0061a6aa( drive_letter, file_path, 2 );
-                drive_letter[2] = '\0';
+        else
+        {
+            if ( folder_path )
+            {
+            v12 = result - v5;
+            if ( v12 < 0xFF )
+                v7 = v12;
+            sub_61A6AA(folder_path, v5, v7);
+            folder_path[v7] = 0;
             }
-            input_string_local = file_path + 2;
+            result = file_extension;
+            if ( file_extension )
+            *file_extension = 0;
         }
-        file_path = (char *)0x0;
-        input_string_local_2 = input_string_local;
-        if ( *input_string_local != '\0' ) {
-            do {
-                input_string_local_2_char_pos = *input_string_local_2;
-                if ( ( (&DAT_0070fd41)[input_string_local_2_char_pos] & 4 ) == 0 ) {
-                    if ( ( input_string_local_2_char_pos == '/' ) || ( input_string_local_2_char_pos == '\\' ) ) {
-                        file_path = (char *)( (byte *)input_string_local_2 + 1 );
-                    }
-                    else {
-                        if (input_string_local_2_char_pos == '.') {
-                            input_string_local_3 = input_string_local_2;
-                        }
-                    }
-                } else {
-                    input_string_local_2 = (char *)( (byte *)input_string_local_2 + 1 );
-                }
-                input_string_local_2 = (char *)( (byte *)input_string_local_2 + 1 );
-            } while ( *input_string_local_2 != 0 );
-            if ( file_path != (char *)0x0 ) {
-                if ( directory_path != (char *)0x0 ) {
-                    uVar1 = (int)file_path - (int)input_string_local;
-                    if (0xfe < uVar1) {
-                        uVar1 = 0xff;
-                    }
-                    FUN_0061a6aa( directory_path, input_string_local, uVar1 );
-                    directory_path[uVar1] = '\0';
-                }
-                goto LAB_0061aec2;
-            }
-        }
-        file_path = input_string_local;
-        if ( directory_path != (char *)0x0 ) {
-            *directory_path = '\0';
-        }
-        LAB_0061aec2:
-        if ( ( input_string_local_3 == (char *)0x0 ) || ( input_string_local_3 < file_path ) ) {
-            if ( folder_path != (char *)0x0 ) {
-                uVar1 = 0xff;
-                if ( (uint)( (int)input_string_local_2 - (int)file_path ) < 0xff ) {
-                    uVar1 = (int)input_string_local_2 - (int)file_path;
-                }
-                FUN_0061a6aa( folder_path, file_path, uVar1 );
-                folder_path[uVar1] = '\0';
-            }
-            if ( file_extension != (char *)0x0 ) {
-                *file_extension = '\0';
-            }
-        } else {
-            if ( folder_path != (char *)0x0 ) {
-                uVar1 = (int)input_string_local_3 - (int)file_path;
-                if (0xfe < uVar1) {
-                    uVar1 = 0xff;
-                }
-                FUN_0061a6aa( folder_path, file_path, uVar1);
-                folder_path[uVar1] = '\0';
-            }
-            if ( file_extension != (char *)0x0 ) {
-                uVar1 = 0xff;
-                if ( (uint)( (int)input_string_local_2 - (int)input_string_local_3 ) < 0xff ) {
-                    uVar1 = (int)input_string_local_2 - (int)input_string_local_3;
-                }
-                FUN_0061a6aa( file_extension, input_string_local_3, uVar1 );
-                file_extension[uVar1] = '\0';
-            }
-        }
-        return;
-    } // FUN_0061adfa(
+        return result;
+    } // sub_61ADFA
 
-    // 0x4c58a0
-    void FUN_004c58a0( char * param_1, undefined4 * param_2 ) {
-    } // FUN_004c58a0
+    // 0x4C58A0
+    void sub_4C58A0( char * param_1, undefined4 * param_2 ) {
+    } // sub_4C58A0
 
-    // 0x4c56b0
-    char FUN_004c56b0( LPCSTR param_1 ) {
+    // 0x4C56B0
+    char sub_4C56B0( LPCSTR param_1 ) {
         return '\0'; // temporary
-    } // FUN_004c56b0
+    } // sub_4C56B0
 
-    // 0x4c5750
-    char FUN_004c5750( char * param_1 ) {
+    // 0x4C5750
+    char sub_4C5750( char * param_1 ) {
         return '\0'; // temporary
-    } // FUN_004c5750
+    } // sub_4C5750
 
     // 0x497120
-    void FUN_00497120( char * format, ... ) {
+    void sub_497120( char * format, ... ) {
         CHAR buffer[1024];
         uint v3;
         uint retaddr;
@@ -271,15 +294,15 @@ namespace f3 {
             OutputDebugStringA( buffer );
             DAT_00707cf0 = 0;
         }
-    } // FUN_00497120
+    } // sub_497120
 
-    // 0x56af10
+    // 0x56AF10
     char* get_some_directory_path_2() {
         return some_directory_path_2;
     } // get_some_directory_path_2
 
-    // 0x6174da
-    undefined4 FUN_006174da( char * param_1, char * param_2 /*int ** param_3*/ )
+    // 0x6174DA
+    undefined4 sub_6174DA( char * param_1, char * param_2 /*int ** param_3*/ )
     {
         undefined4 uVar1;
         FILE file;
@@ -288,7 +311,7 @@ namespace f3 {
         file._flag = 0x42;
         file._base = param_1;
         file._ptr = param_1;
-        uVar1 = FUN_0061f82f( &file, param_2 /*param_3*/ );
+        uVar1 = sub_61F82F( &file, param_2 /*param_3*/ );
         if ( param_1 != (char *)0x0 ) {
             file._cnt = file._cnt + -1;
             if ( file._cnt < 0 ) {
@@ -299,14 +322,14 @@ namespace f3 {
             }
         }
         return uVar1;
-    } // FUN_006174da
+    } // sub_6174DA
 
     // 0x61f82f
-    undefined4 FUN_0061f82f( FILE * param_1, char * param_2 /*int ** param_3*/ ) {
+    undefined4 sub_61F82F( FILE * param_1, char * param_2 /*int ** param_3*/ ) {
         return 0; // temporary
-    } // FUN_0061f82f
+    } // sub_61F82F
 
-    ulonglong FUN_00616e24() {
+    ulonglong sub_616E24() {
         ulonglong uVar1;
         uint uVar2;
         float fVar3;
@@ -328,9 +351,9 @@ namespace f3 {
             }
         }
         return uVar1;
-    } // FUN_00616e24
+    } // sub_616E24
 
-    void FUN_0056b170() {
+    void sub_56B170() {
         /*
         int iVar1;
         int *piVar2;
@@ -349,17 +372,17 @@ namespace f3 {
         }
         return;
         */
-    } // FUN_0056b170
+    } // sub_56B170
 
-    void FUN_00497b70() {
+    void sub_497B70() {
 
-    } // FUN_00497b70
+    } // sub_497B70
 
-    void FUN_0056B390() {
+    void sub_56B390() {
 
-    } // FUN_0056B390
+    } // sub_56B390
 
-    char* FUN_0061AF79( LPSTR file_name, char *a2, int a3 )
+    char* sub_61AF79( LPSTR file_name, char *a2, int a3 )
     {
         char v3; // bl
         DWORD path_length; // eax
@@ -370,9 +393,9 @@ namespace f3 {
         uint retaddr; // [esp+114h] [ebp+4h]
 
         if ( file_name ) {
-            if ( !FUN_0061AF42( file_name ) ) {
-                //*FUN_0061B79D() = 15;
-                //*FUN_0061B794() = 13;
+            if ( !sub_61AF42( file_name ) ) {
+                //*sub_61B79D() = 15;
+                //*sub_61B794() = 13;
                 return 0;
             }
             file_name = (LPSTR)CONCAT12( '.', CONCAT11( ':', file_name + '@' ) );
@@ -390,7 +413,7 @@ namespace f3 {
         v7 = a2;
         if ( a2 ) {
             if ( v6 > a3 ) {
-                //*FUN_0061B794() = 34;
+                //*sub_61B794() = 34;
                 return 0;
             }
         }
@@ -399,14 +422,14 @@ namespace f3 {
             v6 = a3;
             v7 = (char *)malloc( v6 );
             if ( !v7 ) {
-                //*FUN_0061B794() = 12;
+                //*sub_61B794() = 12;
                 return 0;
             }
         }
         return strcpy(v7, path);
-    } // FUN_0061AF79
+    } // sub_61AF79
 
-    BOOL FUN_0061AF42( LPCSTR root_path_name ) {
+    BOOL sub_61AF42( LPCSTR root_path_name ) {
         BOOL result = 1; // eax
         if ( root_path_name ) {
             root_path_name = (LPCSTR)CONCAT12( '\\', CONCAT11( ':', root_path_name + '@' ) );
@@ -415,9 +438,9 @@ namespace f3 {
             }
         }
         return result;
-    } // FUN_0061AF42
+    } // sub_61AF42
 
-    char* FUN_0061a6aa( char* dest, const char* source, size_t count ) {
+    char* sub_61A6AA( char* dest, const char* source, size_t count ) {
         byte bVar1;
         byte bVar2;
         _ptiddata p_Var3;
@@ -430,7 +453,7 @@ namespace f3 {
         p_Var3 = __getptd();
         piVar4 = (int *)p_Var3->_tpxcptinfoptrs;
         if (piVar4 != DAT_0070fd28) {
-            piVar4 = FUN_00625e2a();
+            piVar4 = sub_625E2A();
         }
         if (piVar4[2] == 0) {
             dest = strncpy( dest, source, count );
@@ -483,8 +506,8 @@ namespace f3 {
             }
         }
         return dest;
-    } // FUN_0061a6aa
-} // namespace f3
+    } // sub_61A6AA
+} // namespace F3
 
 void __fastcall _write_char( FILE *param_1 ) {
     int *piVar1;

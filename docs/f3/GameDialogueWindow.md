@@ -1,6 +1,6 @@
-# f3::GameDialogueWindow
+# F3::GameDialogueWindow
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,19 +9,19 @@
 
 ## References
 
-- [`f3::GUI::Base`](/docs/f3/GUI/Base.md)
-- [`f3::HeapTracker`](/docs/f3/HeapTracker.md)
-- [`f3::GUI::Window`](/docs/f3/GUI/Window.md)
-- [`f3::DialogueWindow`](/docs/f3/DialogueWindow.md)
+- [`JE::GUI::Base`](https://github.com/OpenJE/openje/docs/je/GUI/Base.md)
+- [`JE::HeapTracker`](https://github.com/OpenJE/openje/docs/je/HeapTracker.md)
+- [`JE::GUI::Window`](https://github.com/OpenJE/openje/docs/je/GUI/Window.md)
+- [`JE::DialogueWindow`](https://github.com/OpenJE/openje/docs/je/DialogueWindow.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::GUI::Base --> f3::GUI::Window
-    f3::HeapTracker --> f3::GUI::Window
-    f3::GUI::Window --> f3::DialogueWindow
-    f3::DialogueWindow --> f3::GameDialogueWindow
+    JE::GUI::Base --> JE::GUI::Window
+    JE::HeapTracker --> JE::GUI::Window
+    JE::GUI::Window --> JE::DialogueWindow
+    JE::DialogueWindow --> F3::GameDialogueWindow
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

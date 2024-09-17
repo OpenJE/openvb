@@ -4,9 +4,10 @@
             "name": "Windows-x86",
             "includePath":
             [
+                "${workspaceFolder}/../openje/src",
                 "${workspaceFolder}/src",
-                "/home/shane/Desktop/WindowsXP_Shared/Vc7/include",
-                "/home/shane/Desktop/WindowsXP_Shared/Vc7/PlatformSDK/Include"
+                "${workspaceFolder}/../vc7/include",
+                "${workspaceFolder}/../vc7/PlatformSDK/Include"
             ],
             "defines": [],
             "compilerPath": "",

@@ -6,7 +6,7 @@
 #include "f3/global.hpp"
 #include "f3/GameUsableObject.hpp"
 
-namespace f3 {
+namespace F3 {
 	struct GameContainer : public GameUsableObject {
 		//: Members
 			dword mbr_0x100;
@@ -47,6 +47,6 @@ namespace f3 {
 			virt_meth_0x409260;
 			virt_meth_0x40e900;
 	}; // GameContainer
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMECONTAINER_HPP_

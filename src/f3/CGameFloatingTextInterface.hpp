@@ -4,11 +4,11 @@
 #define F3_CGAMEFLOATINGTEXTINTERFACE_HPP_
 
 #include "f3/global.hpp"
-#include "f3/CFloatingTextInterface.hpp"
-#include "f3/cls_0x4395a0.hpp"
+#include "je/CFloatingTextInterface.hpp"
+#include "je/cls_0x4395a0.hpp"
 
-namespace f3 {
-	class CGameFloatingTextInterface : public CFloatingTextInterface, public cls_0x4395a0 {
+namespace F3 {
+	class CGameFloatingTextInterface : public JE::CFloatingTextInterface, public JE::cls_0x4395a0 {
 		//: Members
 		public:
 			dword mbr_0x100;
@@ -57,6 +57,6 @@ namespace f3 {
 			ctor_0x4390d0;
 			virt_meth_0x439320;
 	}; // CGameFloatingTextInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_CGAMEFLOATINGTEXTINTERFACE_HPP_

@@ -1,6 +1,6 @@
-# f3::GameActionEquip
+# F3::GameActionEquip
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,15 +9,15 @@
 
 ## References
 
-- [`f3::Action`](/docs/f3/Action.md)
-- [`f3::ActionEquip`](/docs/f3/ActionEquip.md)
+- [`JE::Action`](https://github.com/OpenJE/openje/docs/je/Action.md)
+- [`JE::ActionEquip`](https://github.com/OpenJE/openje/docs/je/ActionEquip.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Action --> f3::ActionEquip
-    f3::ActionEquip --> f3::GameActionEquip
+    JE::Action --> JE::ActionEquip
+    JE::ActionEquip --> F3::GameActionEquip
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

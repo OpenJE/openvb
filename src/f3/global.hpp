@@ -7,13 +7,11 @@
 #include "types.hpp"
 //#include "std/std.hpp"
 
-struct _String_base {}; // PlaceHolder Structure
-
 // F3 Defines
 #define CSIDL_PERSONAL_FOLDER 0x8005
 
 // F3 Globals
-namespace f3 {
+namespace F3 {
 	static HINSTANCE global_hinstance;
 	static HWND global_window;
 	static DWORD global_system_time_ms;
@@ -22,6 +20,7 @@ namespace f3 {
     static char CHAR_0070bfa8[260];
     static int INT_00707d60;
     static bool DAT_00707cf0;
+    static char CHAR_0070fd41[2];
 }
 
 #endif // F3_GLOBAL_H

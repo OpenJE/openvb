@@ -4,10 +4,10 @@
 #define F3_GAMEHOTKEYS_HPP_
 
 #include "f3/global.hpp"
-#include "f3/HotKeys.hpp"
+#include "je/HotKeys.hpp"
 
-namespace f3 {
-	struct GameHotKeys : public HotKeys {
+namespace F3 {
+	struct GameHotKeys : public JE::HotKeys {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x4;
@@ -20,6 +20,6 @@ namespace f3 {
 			meth_0x5997b0;
 			meth_0x599860;
 	}; // GameHotKeys
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEHOTKEYS_HPP_

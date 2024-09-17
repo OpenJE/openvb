@@ -1,6 +1,6 @@
-# f3::GameParty
+# F3::GameParty
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Party`](/docs/f3/Party.md)
+- [`JE::Party`](https://github.com/OpenJE/openje/docs/je/Party.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Party --> f3::GameParty
+    JE::Party --> F3::GameParty
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

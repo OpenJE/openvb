@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONDIE_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionDie.hpp"
+#include "je/ActionDie.hpp"
 
-namespace f3 {
-	struct GameActionDie : public ActionDie {
+namespace F3 {
+	struct GameActionDie : public JE::ActionDie {
 		//: Members
 			dword mbr_0x14;
 			byte mbr_0x18;
@@ -23,6 +23,6 @@ namespace f3 {
 			virt_meth_0x405020;
 			virt_meth_0x405040;
 	}; // GameActionDie
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONDIE_HPP_

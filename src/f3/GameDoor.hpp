@@ -6,7 +6,7 @@
 #include "f3/global.hpp"
 #include "f3/GameUsableObject.hpp"
 
-namespace f3 {
+namespace F3 {
 	struct GameDoor : public GameUsableObject {
 		//: Members
 			dword mbr_0x4;
@@ -48,6 +48,6 @@ namespace f3 {
 			virt_meth_0x40ffe0;
 			virt_meth_0x4100a0;
 	}; // GameDoor
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEDOOR_HPP_

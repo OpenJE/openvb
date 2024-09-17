@@ -4,10 +4,10 @@
 #define F3_GAMECURSORMANAGER_HPP_
 
 #include "f3/global.hpp"
-#include "f3/CursorManager.hpp"
+#include "je/CursorManager.hpp"
 
-namespace f3 {
-	struct GameCursorManager : public CursorManager {
+namespace F3 {
+	struct GameCursorManager : public JE::CursorManager {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x14;
@@ -61,6 +61,6 @@ namespace f3 {
 			meth_0x591780;
 			meth_0x5919d0;
 	}; // GameCursorManager
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMECURSORMANAGER_HPP_

@@ -1,6 +1,6 @@
-# f3::GameJournal
+# F3::GameJournal
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Journal`](/docs/f3/Journal.md)
+- [`JE::Journal`](https://github.com/OpenJE/openje/docs/je/Journal.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Journal --> f3::GameJournal
+    JE::Journal --> F3::GameJournal
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

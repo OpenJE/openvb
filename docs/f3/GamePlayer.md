@@ -1,6 +1,6 @@
-# f3::GamePlayer
+# F3::GamePlayer
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,19 +9,19 @@
 
 ## References
 
-- [`f3::DynamicObject`](/docs/f3/DynamicObject.md)
-- [`f3::Entity`](/docs/f3/Entity.md)
-- [`f3::GameEntity`](/docs/f3/GameEntity.md)
-- [`f3::GameCreature`](/docs/f3/GameCreature.md)
+- [`JE::DynamicObject`](https://github.com/OpenJE/openje/docs/je/DynamicObject.md)
+- [`JE::Entity`](https://github.com/OpenJE/openje/docs/je/Entity.md)
+- [`F3::GameEntity`](/docs/f3/GameEntity.md)
+- [`F3::GameCreature`](/docs/f3/GameCreature.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::DynamicObject --> f3::Entity
-    f3::Entity --> f3::GameEntity
-    f3::GameEntity --> f3::GameCreature
-    f3::GameCreature --> f3::GamePlayer
+    JE::DynamicObject --> JE::Entity
+    JE::Entity --> F3::GameEntity
+    F3::GameEntity --> F3::GameCreature
+    F3::GameCreature --> F3::GamePlayer
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

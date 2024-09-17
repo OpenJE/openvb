@@ -4,10 +4,10 @@
 #define F3_GAMEINTERFACES_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Interfaces.hpp"
+#include "je/Interfaces.hpp"
 
-namespace f3 {
-	struct GameInterfaces : public Interfaces {
+namespace F3 {
+	struct GameInterfaces : public JE::Interfaces {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x14;
@@ -45,6 +45,6 @@ namespace f3 {
 			virt_meth_0x4398c0;
 			ctor_0x4398e0;
 	}; // GameInterfaces
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEINTERFACES_HPP_

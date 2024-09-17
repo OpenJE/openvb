@@ -5,9 +5,10 @@
 
 #include "f3/global.hpp"
 
-namespace f3 {
+namespace F3 {
 	namespace display {
-		void CreateGameWindow( uint nCmdShow );
+        static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+		bool CreateGameWindow( uint nCmdShow );
 		void DestroyGameWindow (void);
 	}
 }

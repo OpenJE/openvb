@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONWAIT_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionWait.hpp"
+#include "je/ActionWait.hpp"
 
-namespace f3 {
-	struct GameActionWait : public ActionWait {
+namespace F3 {
+	struct GameActionWait : public JE::ActionWait {
 		//: Members
 			dword mbr_0x14;
 		//: Methods
@@ -16,6 +16,6 @@ namespace f3 {
 			virt_meth_0x407f00;
 			virt_meth_0x407f60;
 	}; // GameActionWait
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONWAIT_HPP_

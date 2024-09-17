@@ -5,7 +5,7 @@
 
 #include "f3/global.hpp"
 
-namespace f3 {
+namespace F3 {
 	class CPipBoyAddNoteInterface {
 		//: Methods
 		public:
@@ -13,6 +13,6 @@ namespace f3 {
 			virt_meth_0x44a6b0;
 			virt_meth_0x453eb0;
 	}; // CPipBoyAddNoteInterface
-} // namespace f3
+} // namespace F3
 
 #endif // F3_CPIPBOYADDNOTEINTERFACE_HPP_

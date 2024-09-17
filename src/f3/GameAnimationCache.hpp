@@ -4,10 +4,10 @@
 #define F3_GAMEANIMATIONCACHE_HPP_
 
 #include "f3/global.hpp"
-#include "f3/AnimationCache.hpp"
+#include "je/AnimationCache.hpp"
 
-namespace f3 {
-	class GameAnimationCache : public AnimationCache {
+namespace F3 {
+	class GameAnimationCache : public JE::AnimationCache {
 		//: Methods
 		public:
 			ctor_0x45c6d0;
@@ -15,6 +15,6 @@ namespace f3 {
 			virt_meth_0x45c8c0;
 			virt_meth_0x45d300;
 	}; // GameAnimationCache
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEANIMATIONCACHE_HPP_

@@ -4,10 +4,10 @@
 #define F3_GAMEINVENTORY_HPP_
 
 #include "f3/global.hpp"
-#include "f3/Inventory.hpp"
+#include "je/Inventory.hpp"
 
-namespace f3 {
-	struct GameInventory : public Inventory {
+namespace F3 {
+	struct GameInventory : public JE::Inventory {
 		//: Members
 			dword mbr_0x14;
 			dword mbr_0x2c;
@@ -40,6 +40,6 @@ namespace f3 {
 			virt_meth_0x46ba10;
 			virt_meth_0x46be40;
 	}; // GameInventory
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEINVENTORY_HPP_

@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONUNEQUIP_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionUnequip.hpp"
+#include "je/ActionUnequip.hpp"
 
-namespace f3 {
-	struct GameActionUnequip : public ActionUnequip {
+namespace F3 {
+	struct GameActionUnequip : public JE::ActionUnequip {
 		//: Members
 			dword mbr_0x14;
 			byte mbr_0x18;
@@ -23,6 +23,6 @@ namespace f3 {
 			virt_meth_0x407c30;
 			virt_meth_0x407c50;
 	}; // GameActionUnequip
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONUNEQUIP_HPP_

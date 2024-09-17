@@ -4,10 +4,10 @@
 #define F3_GAMEWORLD_HPP_
 
 #include "f3/global.hpp"
-#include "f3/World.hpp"
+#include "je/World.hpp"
 
-namespace f3 {
-	struct GameWorld : public World {
+namespace F3 {
+	struct GameWorld : public JE::World {
 		//: Members
 			dword mbr_0x10;
 			dword mbr_0x164;
@@ -71,6 +71,6 @@ namespace f3 {
 			virt_meth_0x470330;
 			ctor_0x470340;
 	}; // GameWorld
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEWORLD_HPP_

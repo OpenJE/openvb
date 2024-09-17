@@ -1,6 +1,6 @@
-# f3::GameEffect
+# F3::GameEffect
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Effect`](/docs/f3/Effect.md)
+- [`JE::Effect`](https://github.com/OpenJE/openje/docs/je/Effect.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Effect --> f3::GameEffect
+    JE::Effect --> F3::GameEffect
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)

@@ -4,10 +4,10 @@
 #define F3_GAMEACTIONMOVETO_HPP_
 
 #include "f3/global.hpp"
-#include "f3/ActionMoveTo.hpp"
+#include "je/ActionMoveTo.hpp"
 
-namespace f3 {
-	struct GameActionMoveTo : public ActionMoveTo {
+namespace F3 {
+	struct GameActionMoveTo : public JE::ActionMoveTo {
 		//: Members
 			dword mbr_0x14;
 			dword mbr_0x18;
@@ -29,6 +29,6 @@ namespace f3 {
 			meth_0x55b350;
 			meth_0x55b420;
 	}; // GameActionMoveTo
-} // namespace f3
+} // namespace F3
 
 #endif // F3_GAMEACTIONMOVETO_HPP_

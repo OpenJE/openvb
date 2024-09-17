@@ -1,6 +1,6 @@
-# f3::GameInterfaces
+# F3::GameInterfaces
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
 
 ## C++
 
@@ -9,13 +9,13 @@
 
 ## References
 
-- [`f3::Interfaces`](/docs/f3/Interfaces.md)
+- [`JE::Interfaces`](https://github.com/OpenJE/openje/docs/je/Interfaces.md)
 
 ## Inheritance
 
 ```mermaid
 graph TD;
-    f3::Interfaces --> f3::GameInterfaces
+    JE::Interfaces --> F3::GameInterfaces
 ```
 
-[Return to `f3`](/docs/f3.md)
+[Return to `F3`](/docs/f3.md)
