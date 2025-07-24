@@ -17,9 +17,9 @@ namespace F3 {
 	bool ProcessMessagesAndUpdateTime();
 	void Shutdown();
 	char* FindSubstringInString ( char * string, char * sub_string );
-	void FailWithError( char * format, ... );
+	void FatalError( char * format, ... );
 	void SetupSaveDirectory();
-	void SetupConfigFile( uint nCmdShow );
+	void SetupConfigFile( UINT nCmdShow );
 	void SetupLogFile();
 	void SetStartupTime( time_t time );
     char* sub_61B067( char * param_1, size_t param_2 );

@@ -4,7 +4,7 @@
 #define F3_GLOBAL_H
 
 #include "stdafx.h"
-#include "types.hpp"
+//#include "types.hpp"
 //#include "std/std.hpp"
 
 // F3 Defines

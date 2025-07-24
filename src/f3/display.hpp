@@ -8,8 +8,8 @@
 namespace F3 {
 	namespace display {
         static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-		bool CreateGameWindow( uint nCmdShow );
-		void DestroyGameWindow (void);
+		bool CreateGameWindow( UINT nCmdShow );
+		void DestroyGameWindow(void);
 	}
 }
 

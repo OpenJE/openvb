@@ -9,8 +9,8 @@ int APIENTRY _tWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpC
 	CHAR f3_exe_path [268];
 	_mbsstr( reinterpret_cast<const uchar*>( lpCmdLine ), reinterpret_cast<const unsigned char*>( "-leakcheck" ) );
 	F3::global_hinstance = hInstance;
-	if( GetModuleFileNameA( (HMODULE)0x0, f3_exe_path, 260 ) == 0 ) {
-		F3::FailWithError( "Unable to get module file name." );
+	if( GetModuleFileName( (HMODULE)0x0, f3_exe_path, 260 ) == 0 ) {
+		F3::FatalError( "Unable to get module file name." );
 	}
 	F3::SetupSaveDirectory();
 	F3::SetupConfigFile( nCmdShow );
