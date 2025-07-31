@@ -1,0 +1,10 @@
+
+--target=i686-w64-windows-gnu
+--sysroot=/usr/i686-w64-mingw32i
+-std=c++98
+-D_WIN32
+-I/usr/i686-w64-mingw32/include
+-I/usr/i686-w64-mingw32/include/c++
+-I/usr/i686-w64-mingw32/include/c++/i686-w64-mingw32
+-I./src
+-I./openje/src

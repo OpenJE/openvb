@@ -70,14 +70,14 @@ namespace F3 {
 	} // Shutdown
 
 	// 0x48CC40
-	void FailWithError( char * format, ... ) {
+	void FatalError( const char * format, ... ) {
         char buffer [ 1024 ];
         va_list arg_list;
 
         va_start( arg_list, format );
         vsprintf( buffer, format, arg_list );
         sub_497120( buffer );
-        MessageBoxA( (HWND)0x0, buffer, "Fatal Error", MB_ICONERROR | MB_DEFBUTTON2 );
+        MessageBox( (HWND)0x0, buffer, "Fatal Error", MB_ICONERROR | MB_DEFBUTTON2 );
         exit( 1 );
 	} // FailWithError
 

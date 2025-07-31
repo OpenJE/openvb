@@ -1,12 +1,9 @@
 // Copyright 2024 OpenJE
 
-#include "stdafx.h"
-
-#include "f3.hpp"
-#include "f3/display.hpp"
+#include "f3/Display/Display.hpp"
 
 namespace F3 {
-	namespace display {
+	namespace Display {
 		// 0x56b470
 		bool CreateGameWindow( uint nCmdShow ) {
             char* some_directory_path_2; // eax

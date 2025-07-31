@@ -3,10 +3,21 @@
 #ifndef F3_H
 #define F3_H
 
-#include "stdafx.h"
+#include <windows.h>
+#include <time.h>
 
-#include "f3/global.hpp"
-#include "f3/display.hpp"
+// F3 Globals
+namespace F3 {
+	static HINSTANCE global_hinstance;
+	static HWND global_window;
+	static DWORD global_system_time_ms;
+    static char some_directory_path[268];
+    static char some_directory_path_2[256];
+    static char CHAR_0070bfa8[260];
+    static int INT_00707d60;
+    static bool DAT_00707cf0;
+    static char CHAR_0070fd41[2];
+}
 
 namespace F3 {
 	int Main();
@@ -17,7 +28,7 @@ namespace F3 {
 	bool ProcessMessagesAndUpdateTime();
 	void Shutdown();
 	char* FindSubstringInString ( char * string, char * sub_string );
-	void FatalError( char * format, ... );
+	void FatalError( const char * format, ... );
 	void SetupSaveDirectory();
 	void SetupConfigFile( UINT nCmdShow );
 	void SetupLogFile();
