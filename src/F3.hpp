@@ -4,6 +4,7 @@
 #define F3_H
 
 #include <windows.h>
+#include <stdio.h>
 #include <time.h>
 
 // F3 Globals

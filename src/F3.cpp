@@ -1,9 +1,6 @@
 // Copyright 2024 OpenJE
 
-#include "stdafx.h"
-
-//#include "std/std.hpp"
-#include "f3.hpp"
+#include "F3.hpp"
 
 void __fastcall _write_char( FILE *param_1 );
 

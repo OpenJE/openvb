@@ -1,29 +1,32 @@
+CFG = Debug
+
 CC = cl
 LINK = link
 
 EXE = F3.exe
 
-SRC = src\main.cpp \
-      src\f3.cpp
+SRCS = src\main.cpp
 
-OBJ = src\main.obj \
-      src\f3.obj
+OBJS = obj\main.obj
 
-LIB = user32.lib \
+LIBS = user32.lib \
 	   gdi32.lib
 
-CFLAGS = /c /EHsc
+!IF "$(CFG)" == "Debug"
+CFLAGS = /c /EHsc /Zi /Od
+LDFLAGS = /DEBUG
+!ELSE
+CFLAGS = /c /EHsc /O2
+LDFLAGS =
+!ENDIF
 
 all: $(EXE)
 
-src\main.obj: src\main.cpp
-	$(CC) $(CFLAGS) src\main.cpp
+obj\main.obj: src\main.cpp
+	$(CC) $(CFLAGS) /Foobj\main.obj src\main.cpp
 
-src\f3.obj: src\f3.cpp
-	$(CC) $(CFLAGS) src\f3.cpp
-
-$(EXE): $(OBJ)
-	$(LINK) $(OBJ) $(LIB) /OUT:$(EXE)
+$(EXE): $(OBJS)
+	$(LINK) $(OBJS) $(LIBS) /OUT:$(EXE) $(LDFLAGS)
 
 clean:
 	-del $(OBJ) $(EXE)
