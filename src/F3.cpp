@@ -1,10 +1,57 @@
 // Copyright 2024 OpenJE
 
+#include <windows.h>
+#include <stdio.h>
+
+#include "JE.hpp"
 #include "F3.hpp"
 
-void __fastcall _write_char( FILE *param_1 );
-
 namespace F3 {
+    /*
+    // 0x56B000
+	void SetupSaveDirectory() {
+        HRESULT result;
+        int path_index;
+        char *possible_file_path;
+        char personal_folder_path[ 64 ];
+        char current_path_char;
+
+        if ( !sub_61B067( CHAR_0070bfa8, 260 ) ) {
+            JE::FatalError( "Unable to retrieve current working directory." );
+        }
+        result = SHGetFolderPath( (HWND)0x0, CSIDL_PERSONAL_FOLDER, (HANDLE)0x0, 0, personal_folder_path );
+        if ( result != 0 ) {
+            JE::FatalError( "Unable to retrieve personal folder." );
+        }
+
+        path_index = 0;
+        do {
+            current_path_char = personal_folder_path[ path_index ];
+            some_directory_path[ path_index ] = current_path_char;
+            path_index = path_index + 1;
+        } while ( current_path_char != '\0' );
+
+        sub_61ADFA( possible_file_path,(char *)0x0, (char *)0x0, personal_folder_path, (char *)0x0 );
+
+        path_index = 0;
+        do {
+            current_path_char = personal_folder_path[ path_index ];
+            some_directory_path_2[ path_index ] = current_path_char;
+            path_index = path_index + 1;
+        } while ( current_path_char != '\0' );
+
+        //some_directory_path_2 = (undefined *)get_some_directory_path_2();
+        //sub_4c58a0( some_directory_path, some_directory_path_2 );
+        current_path_char = sub_4C56B0( some_directory_path );
+        if ( current_path_char == '\0' ) {
+            current_path_char = sub_4C5750( some_directory_path );
+            if ( current_path_char == '\0' ) {
+                JE::FatalError( "Unable to create save folder." );
+            }
+        }
+        return;
+	} // SetupSaveDirectory
+
 	// 0x5ACE00
 	int Main() {
 		bool continue_running;
@@ -65,62 +112,6 @@ namespace F3 {
 	// 0x5ACDA0
 	void Shutdown() {
 	} // Shutdown
-
-	// 0x48CC40
-	void FatalError( const char * format, ... ) {
-        char buffer [ 1024 ];
-        va_list arg_list;
-
-        va_start( arg_list, format );
-        vsprintf( buffer, format, arg_list );
-        sub_497120( buffer );
-        MessageBox( (HWND)0x0, buffer, "Fatal Error", MB_ICONERROR | MB_DEFBUTTON2 );
-        exit( 1 );
-	} // FailWithError
-
-	// 0x56B000
-	void SetupSaveDirectory() {
-        HRESULT result;
-        int path_index;
-        char *possible_file_path;
-        char personal_folder_path[ 64 ];
-        char current_path_char;
-
-        if ( !sub_61B067( CHAR_0070bfa8, 260 ) ) {
-            FailWithError( "Unable to retrieve current working directory." );
-        }
-        result = SHGetFolderPathA( (HWND)0x0, CSIDL_PERSONAL_FOLDER, (HANDLE)0x0, 0, personal_folder_path );
-        if ( result != 0 ) {
-            FailWithError( "Unable to retrieve personal folder." );
-        }
-
-        path_index = 0;
-        do {
-            current_path_char = personal_folder_path[ path_index ];
-            some_directory_path[ path_index ] = current_path_char;
-            path_index = path_index + 1;
-        } while ( current_path_char != '\0' );
-
-        sub_61ADFA( possible_file_path,(char *)0x0, (char *)0x0, personal_folder_path, (char *)0x0 );
-
-        path_index = 0;
-        do {
-            current_path_char = personal_folder_path[ path_index ];
-            some_directory_path_2[ path_index ] = current_path_char;
-            path_index = path_index + 1;
-        } while ( current_path_char != '\0' );
-
-        //some_directory_path_2 = (undefined *)get_some_directory_path_2();
-        //sub_4c58a0( some_directory_path, some_directory_path_2 );
-        current_path_char = sub_4C56B0( some_directory_path );
-        if ( current_path_char == '\0' ) {
-            current_path_char = sub_4C5750( some_directory_path );
-            if ( current_path_char == '\0' ) {
-            FailWithError( "Unable to create save folder." );
-            }
-        }
-        return;
-	} // SetupSaveDirectory
 
 	// 0x56B220
 	void SetupConfigFile( uint nCmdShow ) {
@@ -299,7 +290,7 @@ namespace F3 {
     } // get_some_directory_path_2
 
     // 0x6174DA
-    undefined4 sub_6174DA( char * param_1, char * param_2 /*int ** param_3*/ )
+    undefined4 sub_6174DA( char * param_1, char * param_2 //int ** param_3 )
     {
         undefined4 uVar1;
         FILE file;
@@ -308,7 +299,7 @@ namespace F3 {
         file._flag = 0x42;
         file._base = param_1;
         file._ptr = param_1;
-        uVar1 = sub_61F82F( &file, param_2 /*param_3*/ );
+        uVar1 = sub_61F82F( &file, param_2 //param_3 );
         if ( param_1 != (char *)0x0 ) {
             file._cnt = file._cnt + -1;
             if ( file._cnt < 0 ) {
@@ -322,7 +313,7 @@ namespace F3 {
     } // sub_6174DA
 
     // 0x61f82f
-    undefined4 sub_61F82F( FILE * param_1, char * param_2 /*int ** param_3*/ ) {
+    undefined4 sub_61F82F( FILE * param_1, char * param_2 //int ** param_3 ) {
         return 0; // temporary
     } // sub_61F82F
 
@@ -351,7 +342,6 @@ namespace F3 {
     } // sub_616E24
 
     void sub_56B170() {
-        /*
         int iVar1;
         int *piVar2;
         uint uVar3;
@@ -368,7 +358,6 @@ namespace F3 {
             }
         }
         return;
-        */
     } // sub_56B170
 
     void sub_497B70() {
@@ -504,30 +493,5 @@ namespace F3 {
         }
         return dest;
     } // sub_61A6AA
+    */
 } // namespace F3
-
-void __fastcall _write_char( FILE *param_1 ) {
-    int *piVar1;
-    byte in_AL;
-    uint uVar2;
-    int *unaff_ESI;
-
-    if (((*(byte *)&param_1->_flag & 0x40) == 0) || (param_1->_base != (char *)0x0)) {
-        piVar1 = &param_1->_cnt;
-        *piVar1 = *piVar1 + -1;
-        if (*piVar1 < 0) {
-        uVar2 = _flsbuf((int)(char)in_AL,param_1);
-        }
-        else {
-        *param_1->_ptr = in_AL;
-        param_1->_ptr = param_1->_ptr + 1;
-        uVar2 = (uint)in_AL;
-        }
-        if (uVar2 == 0xffffffff) {
-        *unaff_ESI = -1;
-        return;
-        }
-    }
-    *unaff_ESI = *unaff_ESI + 1;
-    return;
-}
