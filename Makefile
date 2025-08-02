@@ -13,6 +13,9 @@ EXE = $(OPENVB)\build\F3-dbg.exe
 EXE = $(OPENVB)\build\F3.exe
 !ENDIF
 
+INCS = /I$(OPENVB)\src \
+	   /I$(OPENJE)\src
+
 SRCS = $(OPENVB)\src\main.cpp \
 	   $(OPENVB)\src\F3.cpp \
 	   $(OPENJE)\src\JE.cpp
@@ -24,11 +27,24 @@ OBJS = $(OPENVB)\obj\main.obj \
 LIBS = user32.lib \
 	   gdi32.lib
 
+DEBUG_ARGS = /c \
+			 /EHsc \
+			 /Zi \
+			 /Od \
+			 /GS \
+			 /DLOGGER \
+			 /DLOG_TERMINAL \
+			 /DLOG_FILE
+
+ARGS = /c \
+	   /EHsc \
+	   /O2
+
 !IF "$(CFG)" == "Debug"
-CFLAGS = /c /I$(OPENVB)\src /I$(OPENJE)\src /EHsc /Zi /Od /GS /DLOGGER /DLOG_TERMINAL /DLOG_FILE
+CFLAGS = $(INCS) $(DEBUG_ARGS)
 LDFLAGS = /DEBUG
 !ELSE
-CFLAGS = /c /I$(OPENVB)\src /I$(OPENJE)\src /EHsc /O2
+CFLAGS = $(INCS) $(ARGS)
 LDFLAGS =
 !ENDIF
 
