@@ -1,10 +1,12 @@
 // Copyright 2024 OpenJE
 
+#include <ios>
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include "JE.hpp"
 #include "F3.hpp"
+#include "Logger.hpp"
 
 namespace F3 {
     /*
@@ -51,6 +53,105 @@ namespace F3 {
         }
         return;
 	} // SetupSaveDirectory
+
+    // 0x56b220
+	void SetupConfigFile( uint nCmdShow ) {
+	} // SetupConfigFile
+    */
+
+	// 0x56B100
+	int SetupLogFile() {
+        LOG_INFO( LOG_LOCATION, "Enter: SetupLogFile()" );
+        char *some_directory_path_0x56af00;
+        int diff;
+        char some_directory_path_char;
+        char *save_directory_relative_path_0x56af10;
+        char *v4;
+        char v7;
+        char FileName[ 256 ];
+        unsigned int retaddr;
+
+        some_directory_path_0x56af00 = Get_some_directory_path();
+        diff = (int)(FileName - some_directory_path_0x56af00);
+        do
+        {
+            some_directory_path_char = *some_directory_path_0x56af00;
+            some_directory_path_0x56af00[diff] = *some_directory_path_0x56af00;
+            ++some_directory_path_0x56af00;
+        }
+        while ( some_directory_path_char );
+        save_directory_relative_path_0x56af10 = Get_save_directory_relative_path();
+        PathConcat(FileName, save_directory_relative_path_0x56af10);
+        v4 = &v7;
+        while ( *++v4 )
+        {
+            ;
+        }
+        strcpy(v4, ".log");
+        //return sub_498000(FileName);
+        return 0;
+        LOG_INFO( LOG_LOCATION, "Exit: SetupLogFile()" );
+	} // SetupLogFile
+
+    // 0x56af10
+    char *Get_save_directory_relative_path() {
+        return save_directory_relative_path_0x70c1b8;
+    }
+
+    // 0x56af00
+    char *Get_some_directory_path() {
+        return directory_path_0x70c0b0;
+    }
+
+    // 0x4c58a0
+    unsigned int PathConcat( const char *string_a, const char *string_b ) {
+        unsigned int string_a_len; // eax
+        char last_char_string_a; // dl
+        unsigned int string_b_size; // eax
+
+        string_a_len = strlen( string_a );
+        last_char_string_a = string_a[ string_a_len - 1 ];
+        if ( last_char_string_a != '\\' && last_char_string_a != '/' ) {
+            strcpy( (char *)&string_a[ string_a_len ], "\\" );
+        }
+        string_b_size = strlen( string_b ) + 1;
+        memcpy( (void *)&string_a[ strlen( string_a ) ], string_b, string_b_size );
+        return string_b_size;
+    }
+
+    int SetStartupTime( int time32 ) {
+        int result;
+
+        result = time32;
+        start_time = time32;
+        start_time_set = 1;
+        return result;
+    }
+
+    /*
+    // 0x498000
+    int sub_498000( int a1, char *FileName ) {
+        char *v2; // ecx
+        int v3; // eax
+        int result; // eax
+        char v5[260]; // [esp+0h] [ebp-108h] BYREF
+        unsigned int v6; // [esp+104h] [ebp-4h]
+        unsigned int retaddr; // [esp+108h] [ebp+0h]
+
+        if ( !logFileBuffer. ) {
+            v2 = &byte_707CF8[*(_DWORD *)(*(_DWORD *)byte_707CF8 + 4)];
+            v3 = *((_DWORD *)v2 + 1) | 2;
+            if ( !*((_DWORD *)v2 + 10) ) {
+                v3 = *((_DWORD *)v2 + 1) | 6;
+            }
+            std::ios::clear_int_bool_((int)v2, a1, v3, 0);
+        }
+        result = *(_DWORD *)(*(_DWORD *)byte_707CF8 + 4);
+        if ( (byte_707CFC[result] & 6) != 0 ) {
+            JE::FatalError("Unable to open log file %s.", v5);
+        }
+        return result;
+    }
 
 	// 0x5ACE00
 	int Main() {
@@ -112,14 +213,6 @@ namespace F3 {
 	// 0x5ACDA0
 	void Shutdown() {
 	} // Shutdown
-
-	// 0x56B220
-	void SetupConfigFile( uint nCmdShow ) {
-	} // SetupConfigFile
-
-	// 0x56B100
-	void SetupLogFile() {
-	} // SetupLogFile
 
 	// 0x48CCA0
 	void SetStartupTime( time_t time32 ) {

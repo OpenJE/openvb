@@ -25,7 +25,8 @@ OBJS = $(OPENVB)\obj\main.obj \
 	   $(OPENJE)\obj\JE.obj
 
 LIBS = user32.lib \
-	   gdi32.lib
+	   gdi32.lib \
+	   winmm.lib
 
 DEBUG_ARGS = /c \
 			 /EHsc \

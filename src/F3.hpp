@@ -4,22 +4,31 @@
 #define F3_H
 
 #include <windows.h>
+#include <fstream>
 
 // F3 Globals
 namespace F3 {
-	static HINSTANCE global_hinstance;
-	static HWND global_window;
-	static DWORD global_system_time_ms;
-    static char some_directory_path[268];
-    static char some_directory_path_2[256];
-    static char CHAR_0070bfa8[260];
+	static HINSTANCE g_hinstance;
+	static HWND g_window;
+	static int g_system_time_ms;
+    static int g_start_time;
+    static bool g_start_time_set;
+    static std::filebuf g_log_file_buffer;
+    static char g_some_directory_path[ 268 ];
+    static char g_some_directory_path_2[ 256 ];
+    static char g_save_directory_relative_path_0x70c1b8[ 256 ];
+    static char directory_path_0x70c0b0[ 256 ];
+    static char CHAR_0070bfa8[ 260 ];
     static int INT_00707d60;
     static bool DAT_00707cf0;
-    static char CHAR_0070fd41[2];
-}
+    static char CHAR_0070fd41[ 2 ];
 
-namespace F3 {
     //void SetupSaveDirectory();
+    void SetupConfigFile();
+    char *Get_save_directory_relative_path();
+    char *Get_some_directory_path();
+    unsigned int PathConcat( const char *string_a, const char *string_b );
+    int SetStartupTime( int time32 );
 	//int Main();
 	//void Quit();
 	//void Startup();
@@ -28,7 +37,6 @@ namespace F3 {
 	//bool ProcessMessagesAndUpdateTime();
 	//void Shutdown();
 	//char* FindSubstringInString ( char * string, char * sub_string );
-	//void SetupConfigFile( UINT nCmdShow );
 	//void SetupLogFile();
 	//void SetStartupTime( time_t time );
     //char* sub_61B067( char * param_1, size_t param_2 );
