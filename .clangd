@@ -1,0 +1,21 @@
+CompileFlags:
+  Add: [
+    --target=i686-w64-windows-gnu,
+    --sysroot=/usr/i686-w64-mingw32,
+    -std=c++98,
+    -Wall,
+    -Wno-pragma-pack,
+    -D_WIN32,
+    -DLOGGER,
+    -DLOG_TERMINAL,
+    -DLOG_FILE,
+    -I/usr/lib/gcc/i686-w64-mingw32/13-win32/include/c++,
+    -I/usr/lib/gcc/i686-w64-mingw32/13-win32/include/c++/i686-w64-mingw32,
+    -I/usr/i686-w64-mingw32/include,
+    -I./src,
+    -I../openje/src
+  ]
+
+ClangTidy:
+  Add:
+    Checks: '*'

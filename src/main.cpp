@@ -32,7 +32,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 	//F3::SetStartupTime( (time_t)0 );
 	GetCommandLine();
 	//int main_result = F3::Main();
-	//F3::Display::DestroyGameWindow();
+	F3::Display::DestroyGameWindow();
     timeEndPeriod( 1 );
     //F3::sub_497B70();
     //F3::sub_56B390();

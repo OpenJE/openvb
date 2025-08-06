@@ -11,8 +11,8 @@ namespace F3 {
 	static HINSTANCE g_hinstance;
 	static HWND g_window;
 	static int g_system_time_ms;
-    static int g_start_time;
-    static bool g_start_time_set;
+    static int g_startup_time;
+    static bool g_startup_time_set;
     static std::filebuf g_log_file_buffer;
     static char g_some_directory_path[ 268 ];
     static char g_some_directory_path_2[ 256 ];
@@ -55,6 +55,9 @@ namespace F3 {
     //char* sub_61AF79( LPSTR file_name, char *a2, int a3 );
     //BOOL sub_61AF42( LPCSTR root_path_name );
     //char* sub_61A6AA( char* dest, const char* source, size_t count );
+    namespace Display {
+        void DestroyGameWindow();
+    } // namespace Display
 }
 
 #endif // F3_H
