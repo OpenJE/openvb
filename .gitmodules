@@ -1,0 +1,3 @@
+[submodule "openje"]
+	path = openje
+	url = https://github.com/OpenJE/openje
