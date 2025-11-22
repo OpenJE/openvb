@@ -38,7 +38,7 @@ jobs:
             -u 0:0 \
             -v "$PWD":/src \
             -w /src \
-            ghcr.io/OpenJE/msvc2002:latest \
+            ghcr.io/openje/msvc2002:latest \
             nmake
 
       - name: Locate EXE
