@@ -25,6 +25,9 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+            submodules: recursive
+            fetch-depth: 0
 
       - name: Log in to GitHub Container Registry
         run: |
@@ -75,6 +78,9 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+            submodules: recursive
+            fetch-depth: 0
 
       # Set up the Visual C++ build environment (nmake, cl, etc.)
       - name: Set up MSVC Developer Command Prompt
