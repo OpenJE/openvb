@@ -1,4 +1,4 @@
-name: Build Windows binary for release
+name: Release Build
 
 on:
   release:
