@@ -34,16 +34,29 @@ jobs:
         run: |
           docker pull ghcr.io/openje/msvc2002:latest
 
-      - name: Build with nmake (MSVC 2002 via Docker container)
+      - name: Build with MSVC 2002
+        shell: bash
+        working-directory: ${{ github.workspace }}
         run: |
-          # If you use a specific .mak file, change the last argument to e.g.:
-          #   nmake /f path\to\your.mak
+          mkdir -p obj
+          mkdir -p openje/obj
+          mkdir -p tracing/obj
+          mkdir -p build
+        
+          # 1) Fix permissions on the mounted repo so UID 1000 can write
           docker run --rm \
             -u 0:0 \
-            -v "$PWD":/src \
-            -w /src \
+            -v "$PWD":"$PWD" \
+            -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
-            nmake
+            -lc 'chown -R 1000:1000 "$PWD"'
+      
+          # 2) Run the actual build as UID 1000 (from Dockerfile USER 1000:1000)
+          docker run --rm \
+            -v "$PWD":"$PWD" \
+            -w "$PWD" \
+            ghcr.io/openje/msvc2002:latest \
+            -lc 'nmake /f Makefile'
 
       - name: Locate EXE
         id: find-exe
