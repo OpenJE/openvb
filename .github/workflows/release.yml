@@ -18,7 +18,7 @@ jobs:
   build-linux-container:
     # Only run:
     # - in the original repo (not forks)
-    if: github.repository_owner == env.ORIGIN_OWNER
+    if: github.repository_owner == vars.ORIGIN_OWNER
 
     runs-on: ubuntu-latest
 
@@ -71,7 +71,7 @@ jobs:
   # 2. Windows job using latest MSVC on windows-latest, with nmake
   build-windows-msvc:
     # Run on forks (i.e., not the original repo owner)
-    if: github.repository_owner != env.ORIGIN_OWNER
+    if: github.repository_owner != vars.ORIGIN_OWNER
 
     runs-on: windows-latest
 
