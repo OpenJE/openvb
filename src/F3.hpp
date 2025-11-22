@@ -4,40 +4,44 @@
 #define F3_H
 
 #include <windows.h>
+#include <ctime>
 #include <fstream>
 
 // F3 Globals
 namespace F3 {
 	static HINSTANCE g_hinstance;
 	static HWND g_window;
-	static int g_system_time_ms;
-    static int g_startup_time;
-    static bool g_startup_time_set;
-    static std::filebuf g_log_file_buffer;
-    static char g_some_directory_path[ 268 ];
-    static char g_some_directory_path_2[ 256 ];
-    static char g_save_directory_relative_path_0x70c1b8[ 256 ];
-    static char directory_path_0x70c0b0[ 256 ];
-    static char CHAR_0070bfa8[ 260 ];
+	static unsigned long g_nSystemTimeMS;
+    static std::time_t g_nStartupTimeMS;
+    static bool g_bIsStartupTimeSet;
+    static BOOL g_bIsLogStreamInitialized;
+    static std::filebuf g_LogFilebuf;
+    static std::ios* g_LogIos;
+    static char g_szSaveDirectoryAbsolute[ MAX_PATH ];
+    static char g_szSaveDirectoryRelative[ MAX_PATH ];
+    static char g_save_directory_relative_path_0x70c1b8[ MAX_PATH ];
+    static char directory_path_0x70c0b0[ MAX_PATH ];
+    static char g_szCurrentWorkingDirectory[ MAX_PATH ];
     static int INT_00707d60;
     static bool DAT_00707cf0;
     static char CHAR_0070fd41[ 2 ];
 
-    //void SetupSaveDirectory();
-    void SetupConfigFile();
-    char *Get_save_directory_relative_path();
-    char *Get_some_directory_path();
+    char SetupSaveDirectory( CHAR *pcModulePath );
+    //void SetupConfigFile();
+    //int SetupLogFile();
+    char *GetSaveDirectoryRelative();
+    char *GetSaveDirectoryAbsolute();
     unsigned int PathConcat( const char *string_a, const char *string_b );
-    int SetStartupTime( int time32 );
+    int SetStartupTime( int nTime );
 	//int Main();
 	//void Quit();
 	//void Startup();
 	//void RegisterCommand ( const char* command, void (*func)() );
 	//void GameStateLoop();
-	//bool ProcessMessagesAndUpdateTime();
+	//bool ProcessMessagesAndUpdateTime()
 	//void Shutdown();
 	//char* FindSubstringInString ( char * string, char * sub_string );
-	//void SetupLogFile();
+
 	//void SetStartupTime( time_t time );
     //char* sub_61B067( char * param_1, size_t param_2 );
     //void sub_61ADFA( char * some_string, char * drive_letter, char * directory_path, char * folder_path, char * file_extension );
