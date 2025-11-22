@@ -27,6 +27,10 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" |
             docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
+      - name: Pull docker container (MSVC 2002)
+        run: |
+          docker pull ghcr.io/openje/msvc2002:latest
+
       - name: Build with nmake (MSVC 2002 via Docker container)
         run: |
           # If you need a specific makefile:
