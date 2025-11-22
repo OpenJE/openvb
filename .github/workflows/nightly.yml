@@ -16,7 +16,7 @@ env:
 
 jobs:
   build-nightly-linux-container:
-    if: github.repository_owner == env.ORIGIN_OWNER
+    if: github.repository_owner == vars.ORIGIN_OWNER
     runs-on: ubuntu-latest
 
     steps:
@@ -74,7 +74,7 @@ jobs:
           prerelease: true
 
   build-nightly-windows-msvc:
-    if: github.repository_owner != env.ORIGIN_OWNER
+    if: github.repository_owner != vars.ORIGIN_OWNER
     runs-on: windows-latest
 
     steps:
