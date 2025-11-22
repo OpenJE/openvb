@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build-nightly-linux-container:
-    if: github.repository_owner == "OpenJE"
+    if: github.repository_owner == 'OpenJE'
     runs-on: ubuntu-latest
 
     steps:
@@ -70,7 +70,7 @@ jobs:
           prerelease: true
 
   build-nightly-windows-msvc:
-    if: github.repository_owner != "OpenJE"
+    if: github.repository_owner != 'OpenJE'
     runs-on: windows-latest
 
     steps:
