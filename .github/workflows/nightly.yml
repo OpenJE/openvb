@@ -35,6 +35,11 @@ jobs:
         shell: bash
         working-directory: ${{ github.workspace }}
         run: |
+          mkdir -p obj
+          mkdir -p openje/obj
+          mkdir -p tracing/obj
+          mkdir -p build
+          
           # 1) Fix permissions on the mounted repo so UID 1000 can write
           docker run --rm \
             -u 0:0 \
