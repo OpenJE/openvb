@@ -1,0 +1,112 @@
+name: Build Windows binary for release
+
+on:
+  release:
+    types: [published]  # fires when you publish a GitHub Release
+  workflow_dispatch: {}  # allow manual trigger for testing
+
+permissions:
+  contents: write   # needed to upload release assets
+  packages: read    # needed to pull GHCR image
+
+env:
+  # CHANGE THIS to your GitHub user or org name (the owner of the original repo)
+  ORIGIN_OWNER: OpenJE
+
+jobs:
+  # 1. Linux job that INVOKES the MSVC 2003 container via docker run
+  build-linux-container:
+    # Only run:
+    # - in the original repo (not forks)
+    if: github.repository_owner == env.ORIGIN_OWNER
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" |
+            docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build with nmake (MSVC 2002 via Docker container)
+        run: |
+          # If you use a specific .mak file, change the last argument to e.g.:
+          #   nmake /f path\to\your.mak
+          docker run --rm \
+            -u 0:0 \
+            -v "$PWD":/src \
+            -w /src \
+            ghcr.io/OpenJE/msvc2002:latest \
+            nmake
+
+      - name: Locate EXE
+        id: find-exe
+        run: |
+          set -e
+          exe=$(find . -maxdepth 6 -type f -iname '*.exe' | head -n 1)
+          if [ -z "$exe" ]; then
+            echo "No EXE found" >&2
+            exit 1
+          fi
+          echo "exe=$exe" >> "$GITHUB_OUTPUT"
+          echo "Found: $exe"
+
+      - name: Upload EXE to this GitHub Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.find-exe.outputs.exe }}
+          asset_name: MyProgram-container-${{ github.ref_name }}.exe
+          asset_content_type: application/octet-stream
+
+  # 2. Windows job using latest MSVC on windows-latest, with nmake
+  build-windows-msvc:
+    # Run on forks (i.e., not the original repo owner)
+    if: github.repository_owner != env.ORIGIN_OWNER
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # Set up the Visual C++ build environment (nmake, cl, etc.)
+      - name: Set up MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86   # or x64, adjust for your app
+
+      - name: Build with nmake (latest MSVC)
+        run: |
+          REM If you use a specific .mak file, do:
+          REM nmake /f path\to\your.mak
+          nmake
+
+      - name: Locate EXE
+        id: find-exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path . -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "No EXE found"
+            exit 1
+          }
+          "exe=$($exe.FullName)" >> $env:GITHUB_OUTPUT
+          Write-Host "Found: $($exe.FullName)"
+
+      - name: Upload EXE to this GitHub Release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.find-exe.outputs.exe }}
+          asset_name: MyProgram-msvc-${{ github.ref_name }}.exe
+          asset_content_type: application/octet-stream
