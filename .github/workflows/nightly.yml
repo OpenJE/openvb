@@ -31,13 +31,19 @@ jobs:
         run: |
           docker pull ghcr.io/openje/msvc2002:latest
 
-      - name: Build with nmake (MSVC 2002 via Docker container)
+      - name: Build with (MSVC 2002)
         run: |
           docker run --rm \
+            -u 0:0 \
             -v "$PWD":"$PWD" \
             -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
-            nmake
+            bash -lc '
+              chown -R msvc2002:msvc2002 "$PWD" &&
+              su - msvc2002 -c "cd \"$PWD\" && nmake /f Makefile"
+            '
+        shell: bash
+        working-directory: ${{ github.workspace }}
 
       - name: Locate EXE
         id: find-exe
