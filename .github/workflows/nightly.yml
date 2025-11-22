@@ -1,4 +1,4 @@
-name: Nightly Windows build
+name: Nightly Build
 
 on:
   schedule:
@@ -10,13 +10,9 @@ permissions:
   contents: write   # needed to create/update releases & upload assets
   packages: read    # needed to pull GHCR image
 
-env:
-  # CHANGE THIS to your GitHub user or org name (the owner of the original repo)
-  ORIGIN_OWNER: OpenJE
-
 jobs:
   build-nightly-linux-container:
-    if: github.repository_owner == vars.ORIGIN_OWNER
+    if: github.repository_owner == OpenJE
     runs-on: ubuntu-latest
 
     steps:
@@ -74,7 +70,7 @@ jobs:
           prerelease: true
 
   build-nightly-windows-msvc:
-    if: github.repository_owner != vars.ORIGIN_OWNER
+    if: github.repository_owner != OpenJE
     runs-on: windows-latest
 
     steps:
