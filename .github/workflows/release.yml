@@ -1,4 +1,4 @@
-name: Release Build
+name: Build Windows binary for release
 
 on:
   release:
@@ -9,12 +9,16 @@ permissions:
   contents: write   # needed to upload release assets
   packages: read    # needed to pull GHCR image
 
+env:
+  # CHANGE THIS to your GitHub user or org name (the owner of the original repo)
+  ORIGIN_OWNER: "OpenJE"
+
 jobs:
   # 1. Linux job that INVOKES the MSVC 2003 container via docker run
   build-linux-container:
     # Only run:
     # - in the original repo (not forks)
-    if: github.repository_owner == OpenJE
+    if: github.repository_owner == env.ORIGIN_OWNER
 
     runs-on: ubuntu-latest
 
@@ -67,7 +71,7 @@ jobs:
   # 2. Windows job using latest MSVC on windows-latest, with nmake
   build-windows-msvc:
     # Run on forks (i.e., not the original repo owner)
-    if: github.repository_owner != OpenJE
+    if: github.repository_owner != env.ORIGIN_OWNER
 
     runs-on: windows-latest
 
