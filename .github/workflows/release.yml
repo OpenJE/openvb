@@ -36,14 +36,12 @@ jobs:
 
       - name: Build with nmake (MSVC 2002 via Docker container)
         run: |
-          # If you use a specific .mak file, change the last argument to e.g.:
-          #   nmake /f path\to\your.mak
           docker run --rm \
             -u 0:0 \
-            -v "$PWD":/src \
-            -w /src \
+            -v "$PWD":"$PWD" \
+            -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
-            nmake
+            nmake /f Makefile
 
       - name: Locate EXE
         id: find-exe
