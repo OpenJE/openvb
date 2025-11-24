@@ -159,6 +159,49 @@ namespace F3 {
 		return result;
 	}
 
+	int Main() {
+		tracing::instrument( tracing::LOCATION, "" );
+		//F3::Startup();
+		//F3::RegisterCommand( ArgList: aQuit, func_ptr: j_F3::Quit );
+		while ( ProcessMessagesAndUpdateTime() ) {
+			//F3::GameStateLoop();
+		}
+		//F3::Shutdown();
+		return 1;
+	}
+
+	bool ProcessMessagesAndUpdateTime() {
+		tracing::instrument( tracing::LOCATION, "" );
+
+		DWORD nCurrentTime;
+		int nElapsedTimeDiff;
+		struct tagMSG messageStruct;
+		UINT nRemoveMessage1;
+		UINT nRemoveMessage2;
+
+		if ( PeekMessageA( &messageStruct, 0, 0, 1u, nRemoveMessage1 ) ) {
+			while ( messageStruct.message != 18 ) {
+				TranslateMessage( &messageStruct );
+				DispatchMessageA( &messageStruct );
+				if ( !PeekMessageA( &messageStruct, 0, 0, 1u, nRemoveMessage2 ) ) {
+					nCurrentTime = timeGetTime();
+					nElapsedTimeDiff = nCurrentTime - F3::g_nSystemTimeMS + F3::g_nElapsedTimeMS;
+					F3::g_nSystemTimeMS= nCurrentTime;
+					F3::g_nElapsedTimeMS = nElapsedTimeDiff;
+					return true;
+				}
+			}
+			return false;
+		}
+		else {
+			nCurrentTime = timeGetTime();
+			nElapsedTimeDiff = nCurrentTime - g_nSystemTimeMS + g_nElapsedTimeMS;
+			g_nSystemTimeMS= nCurrentTime;
+			g_nElapsedTimeMS = nElapsedTimeDiff;
+			return true;
+		}
+	}
+
 	/*
 	std::filebuf* ShutdownGlobalLogStream() {
 		std::filebuf* result;
@@ -182,7 +225,189 @@ namespace F3 {
 	}
 	*/
 
+	void F3::Quit() {
+		tracing::instrument( tracing::LOCATION, "" );
+		PostQuitMessage( 1 );
+	}
+
 	namespace Display {
+		LRESULT CALLBACK WinProc( HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam ) {
+			tracing::instrument( tracing::LOCATION, "hWnd=0x%p,Msg=%i,wParam=%i,lParamnCmdShow=%d", hWnd, Msg, wParam, lParam );
+
+			if ( hWnd != g_window ) {
+				return DefWindowProc( hWnd, Msg, wParam, lParam );
+			}
+			if ( Msg == 16 ) {
+				Quit();
+				return 0;
+			}
+			else {
+				if ( Msg == 28 && !wParam ) {
+					//cls_0x4b28a0::meth_0x4b2ad0_4b2ad0( this: &unk_707E48, param_1: 0 );
+				}
+				return DefWindowProc( hWnd, Msg, wParam, lParam );
+			}
+		}
+
+		BOOL CreateGameWindow( int nCmdShow ) {
+			tracing::instrument( tracing::LOCATION, "nCmdShow=0x%i", nCmdShow );
+
+			char *pcSaveDirectoryRelativePath;
+			int nNameIndex;
+			char cCurrentChar;
+			int *pnParameterValuePtr;
+			const char *pcParameterNameBufferAddress;
+			const char *pcParameterNameBuffer;
+			char *pcArgListPointer;
+			int nParameterValue;
+			DWORD *pParameterStruct;
+			int *pnParameterValueResult;
+			bool bIsParameterMatch;
+			const char *pcWidthParameterValue;
+			int *pnHeightParameterValue;
+			const char *pcHeightAdjustedValue;
+			int nSystemMetrics;
+			struct HWND__ *pwinWindow;
+			int nWindowTopPosition;
+			int nWindowRightPosition;
+			int nWindowBottomPosition;
+			char szArgList[4];
+			int nWindowWidth;
+			int nWindowHeight;
+			char szBuffer[4];
+			void *pBlock;
+			int nBlockSize;
+			unsigned int nBufferSize;
+			struct tagRECT windowRect;
+			int *pnParameterName;
+			char szTempBuffer[4];
+			char *pcParameterNameBuffer_1;
+			int nParameterIndex;
+			unsigned int nLoopCounter;
+			WNDCLASSA WndClass;
+			CHAR szClassName[MAX_PATH];
+
+			pcSaveDirectoryRelativePath = F3::GetSaveDirectoryRelative();
+			nNameIndex = (szClassName - pcSaveDirectoryRelativePath);
+			do {
+				cCurrentChar = *pcSaveDirectoryRelativePath;
+				pcSaveDirectoryRelativePath[nNameIndex] = *pcSaveDirectoryRelativePath;
+				++pcSaveDirectoryRelativePath;
+			}
+			while ( cCurrentChar );
+			WndClass.style = 11;
+			WndClass.lpfnWndProc = WinProc;
+			WndClass.cbClsExtra = 0;
+			WndClass.cbWndExtra = 0;
+			WndClass.hInstance = g_instance;
+			WndClass.hIcon = (HICON)LoadImage( F3::g_instance, szClassName, 1u, 0, 0, 0x40u );
+			WndClass.hCursor = LoadCursor( 0, IDC_ARROW/*0x7F00*/ );
+			WndClass.hbrBackground = (HBRUSH)GetStockObject( 4 );
+			WndClass.lpszMenuName = 0;
+			WndClass.lpszClassName = szClassName;
+			if ( !RegisterClass( &WndClass ) ) {
+				JE::FatalError( "Unable to register window class." );
+			}
+			nWindowWidth = 800;
+			nWindowHeight = 600;
+			nLoopCounter = 15;
+			nParameterIndex = 0;
+
+			/*
+			LOBYTE( pcParameterNameBuffer_1 ) = 0;
+			cls_0x50db20::meth_0x401bd0( this: szTempBuffer, param_1: "Graphics", param_2: strlen( a1: "Graphics" ) );
+			pnParameterValuePtr = JE::VFX_Parameter::meth_0x4339b0_4339b0( this: &F3::global_vfx_parameter_0x70c2cc, param_1: szTempBuffer );
+			pnParameterName = pnParameterValuePtr;
+			if ( pnParameterValuePtr == F3::global_vfx_parameter_0x70c2cc.int_0x4 ) {
+				goto LABEL_13;
+			}
+			if ( pnParameterValuePtr[9] < 0x10 ) {
+				pcParameterNameBufferAddress = (pnParameterValuePtr + 4);
+			}
+			else {
+				pcParameterNameBufferAddress = pnParameterValuePtr[4];
+			}
+			pcParameterNameBuffer = pcParameterNameBuffer_1;
+			if ( nLoopCounter < 0x10 ) {
+				pcParameterNameBuffer = &pcParameterNameBuffer_1;
+			}
+			if ( _stricmp( pcParameterNameBuffer, pcParameterNameBufferAddress ) < 0 ) {
+		LABEL_13:
+				*szArgList = F3::global_vfx_parameter_0x70c2cc.int_0x4;
+				pcArgListPointer = szArgList;
+			}
+			else {
+				pcArgListPointer = &pnParameterName;
+			}
+			nParameterValue = *pcArgListPointer;
+			if ( nLoopCounter >= 0x10 ) {
+				j__free( pcParameterNameBuffer_1 );
+			}
+			nLoopCounter = 15;
+			nParameterIndex = 0;
+			LOBYTE( pcParameterNameBuffer_1 ) = 0;
+			if ( nParameterValue != F3::global_vfx_parameter_0x70c2cc.int_0x4 ) {
+				pnParameterStruct = (nParameterValue + 40);
+				nBufferSize = 15;
+				nBlockSize = 0;
+				LOBYTE( pBlock ) = 0;
+				cls_0x50db20::meth_0x401bd0( szBuffer, "width", strlen( "width" ) );
+				pnParameterValueResult = *sub_4DF070( pnParameterStruct, szArgList, szBuffer );
+				if ( nBufferSize >= 0x10 ) {
+					free( Block: pBlock );
+				}
+				bIsParameterMatch = pnParameterValueResult == pnParameterStruct[1];
+				nBufferSize = 15;
+				nBlockSize = 0;
+				LOBYTE( pBlock ) = 0;
+				if ( !bIsParameterMatch ) {
+					if ( pnParameterValueResult[16] < 0x10 ) {
+						pcWidthParameterValue = (pnParameterValueResult + 11);
+					}
+					else {
+						pcWidthParameterValue = pnParameterValueResult[11];
+					}
+					nWindowWidth = atol( pcWidthParameterValue );
+				}
+				nBufferSize = 15;
+				nBlockSize = 0;
+				LOBYTE( pBlock ) = 0;
+				cls_0x50db20::meth_0x401bd0( szBuffer, "height", strlen( "height" ) );
+				pnHeightParameterValue = *sub_4DF070( pnParameterStruct, szArgList, szBuffer );
+				if ( nBufferSize >= 0x10 ) {
+					free( Block: pBlock );
+				}
+				bIsParameterMatch = pnHeightParameterValue == pnParameterStruct[1];
+				nBufferSize = 15;
+				nBlockSize = 0;
+				LOBYTE( pBlock ) = 0;
+				if ( !bIsParameterMatch ) {
+					if ( pnHeightParameterValue[16] < 0x10 ) {
+						pcHeightAdjustedValue = (pnHeightParameterValue + 11);
+					}
+					else {
+						pcHeightAdjustedValue = pnHeightParameterValue[11];
+					}
+					nWindowHeight = j__atol( pcHeightAdjustedValue );
+				}
+			}
+			*/
+
+			SetRect( &windowRect, 0, 0, nWindowWidth, nWindowHeight );
+			AdjustWindowRect( &windowRect, 0x10C80000u, 0 );
+			nWindowBottomPosition = windowRect.bottom - windowRect.top;
+			nWindowRightPosition = windowRect.right - windowRect.left;
+			nWindowTopPosition = (windowRect.top - windowRect.bottom + GetSystemMetrics( 1 )) / 2;
+			nSystemMetrics = GetSystemMetrics( 0 );
+			pwinWindow = CreateWindowExA( 0, szClassName, szClassName, 0x10C80000u, (windowRect.left - windowRect.right + nSystemMetrics) / 2, nWindowTopPosition, nWindowRightPosition, nWindowBottomPosition, 0, 0, 0, 0 );
+			g_window = pwinWindow;
+			if ( !pwinWindow ) {
+				JE::FatalError( "Could not create main window." );
+			}
+			ShowWindow( pwinWindow, nCmdShow );
+			return UpdateWindow( g_window );
+		}
+
 		void DestroyGameWindow() {
 			tracing::instrument( tracing::LOCATION, "F3::g_window=0x%p", F3::g_window );
 			DestroyWindow( F3::g_window );
