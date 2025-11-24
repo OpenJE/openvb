@@ -53,19 +53,32 @@ jobs:
             -v "$PWD":"$PWD" \
             -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
+            -lc 'nmake /f Makefile CFG=Debug'
+
+          docker run --rm \
+            -v "$PWD":"$PWD" \
+            -w "$PWD" \
+            ghcr.io/openje/msvc2002:latest \
             -lc 'nmake /f Makefile'
 
-      - name: Locate EXE
+      - name: Locate EXEs (Debug + Release)
         id: find-exe
         run: |
           set -e
-          exe=$(find . -maxdepth 6 -type f -iname '*.exe' | head -n 1)
-          if [ -z "$exe" ]; then
-            echo "No EXE found" >&2
+
+          # Find up to 2 exe files – adjust pattern/path as needed
+          exes=$(find . -maxdepth 6 -type f -iname '*.exe' | head -n 2)
+
+          if [ -z "$exes" ]; then
+            echo "No EXEs found" >&2
             exit 1
           fi
-          echo "exe=$exe" >> "$GITHUB_OUTPUT"
-          echo "Found: $exe"
+
+          # Turn the list into a single comma-separated line for release-action
+          artifacts=$(printf "%s" "$exes" | paste -sd "," -)
+
+          echo "artifacts=$artifacts" >> "$GITHUB_OUTPUT"
+          echo "Found EXEs: $artifacts"
 
       - name: Create or update 'nightly' release and upload EXE
         uses: ncipollo/release-action@v1
@@ -79,10 +92,10 @@ jobs:
             Commit: ${{ github.sha }}
             Ref: ${{ github.ref }}
             Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          artifacts: ${{ steps.find-exe.outputs.exe }}
+          artifacts: ${{ steps.find-exe.outputs.artifacts }}
           artifactContentType: application/octet-stream
           allowUpdates: true
-          replacesArtifacts: false
+          replacesArtifacts: true
           makeLatest: false
           prerelease: true
 
@@ -104,21 +117,29 @@ jobs:
 
       - name: Build with nmake (latest MSVC)
         run: |
-          REM If you use a specific .mak:
-          REM nmake /f path\to\your.mak
-          nmake
+          nmake /f Makefile CFG=Debug
 
-      - name: Locate EXE
+      - name: Build with nmake (latest MSVC)
+        run: |
+          nmake /f Makefile
+
+      - name: Locate EXEs (Debug + Release)
         id: find-exe
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Path . -Recurse -Filter *.exe | Select-Object -First 1
-          if (-not $exe) {
-            Write-Error "No EXE found"
+          # Find up to 2 exe files – adjust path/pattern to match your layout
+          $exes = Get-ChildItem -Path . -Recurse -Filter *.exe | Select-Object -First 2
+
+          if (-not $exes) {
+            Write-Error "No EXEs found"
             exit 1
           }
-          "exe=$($exe.FullName)" >> $env:GITHUB_OUTPUT
-          Write-Host "Found: $($exe.FullName)"
+
+          # Join full paths into a comma-separated list
+          $paths = $exes | ForEach-Object { $_.FullName } -join ","
+
+          "artifacts=$paths" >> $env:GITHUB_OUTPUT
+          Write-Host "Found EXEs: $paths"
 
       - name: Create or update 'nightly' release and upload EXE
         uses: ncipollo/release-action@v1
@@ -132,9 +153,9 @@ jobs:
             Commit: ${{ github.sha }}
             Ref: ${{ github.ref }}
             Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          artifacts: ${{ steps.find-exe.outputs.exe }}
+          artifacts: ${{ steps.find-exe.outputs.artifacts }}
           artifactContentType: application/octet-stream
           allowUpdates: true
-          replacesArtifacts: false
+          replacesArtifacts: true
           makeLatest: false
           prerelease: true
