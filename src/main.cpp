@@ -20,7 +20,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 	int nExitStatus;
 	int nSavedRegs;
 
-	F3::g_hinstance = hInstance;
+	F3::g_instance = hInstance;
 	if( !GetModuleFileName( (HMODULE)0x0, szModulePath, MAX_PATH ) ) {
 		tracing::error( tracing::LOCATION, "Unable to get module file name." );
 		JE::FatalError( "Unable to get module file name." );
@@ -35,14 +35,14 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 	F3::g_nSystemTimeMS = timeGetTime();
 	tracing::info( tracing::LOCATION, "F3::g_nSystemTimeMS=%d", F3::g_nSystemTimeMS );
 
-	//F3::Display::CreateGameWindow( nCmdShow );
+	F3::Display::CreateGameWindow( nCmdShow );
 	timeStartupTime = std::time( 0 );
 	F3::SetStartupTime( timeStartupTime );
 	GetCommandLine();
-	//int main_result = F3::Main();
+	nMainResult = F3::Main();
 	F3::Display::DestroyGameWindow();
 	timeEndPeriod( 1 );
 	//F3::ShutdownGlobalLogStream( &nSavedRegs );
 	//F3::sub_56B390();
-	//return main_result;
+	return nMainResult;
 } // WinMain
