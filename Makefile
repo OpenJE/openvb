@@ -1,4 +1,3 @@
-CFG = Debug
 OPENVB = .
 OPENJE = .\openje
 TRACING = .\tracing
