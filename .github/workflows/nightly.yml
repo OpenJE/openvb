@@ -53,13 +53,13 @@ jobs:
             -v "$PWD":"$PWD" \
             -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
-            -lc 'nmake CFG=Debug /f Makefile'
+            -lc 'CFG=Debug nmake /f Makefile'
 
-          docker run --rm \
-            -v "$PWD":"$PWD" \
-            -w "$PWD" \
-            ghcr.io/openje/msvc2002:latest \
-            -lc 'nmake /f Makefile'
+          #docker run --rm \
+          #  -v "$PWD":"$PWD" \
+          #  -w "$PWD" \
+          #  ghcr.io/openje/msvc2002:latest \
+          #  -lc 'nmake /f Makefile'
 
       - name: Locate EXEs (Debug + Release)
         id: find-exe
@@ -117,11 +117,11 @@ jobs:
 
       - name: Build with nmake (latest MSVC)
         run: |
-          nmake CFG=Debug /f Makefile"
+          CFG=Debug nmake /f Makefile"
 
-      - name: Build with nmake (latest MSVC)
-        run: |
-          nmake /f Makefile
+      #- name: Build with nmake (latest MSVC)
+      #  run: |
+      #    nmake /f Makefile
 
       - name: Locate EXEs (Debug + Release)
         id: find-exe
