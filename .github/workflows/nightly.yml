@@ -53,7 +53,7 @@ jobs:
             -v "$PWD":"$PWD" \
             -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
-            -lc 'nmake /f Makefile CFG="Debug"'
+            -lc 'nmake CFG=Debug /f Makefile'
 
           docker run --rm \
             -v "$PWD":"$PWD" \
@@ -117,7 +117,7 @@ jobs:
 
       - name: Build with nmake (latest MSVC)
         run: |
-          nmake /f Makefile CFG="Debug"
+          nmake CFG=Debug /f Makefile"
 
       - name: Build with nmake (latest MSVC)
         run: |
