@@ -59,7 +59,7 @@ namespace F3 {
 	} // SetupSaveDirectory
 
 	/*
-	// 0x56b220
+	// 0x56B220
 	void SetupConfigFile( uint nCmdShow ) {
 	} // SetupConfigFile
 	*/
@@ -95,6 +95,7 @@ namespace F3 {
 	} // SetupLogFile
 
 	/*
+	// 0x498000
 	int OpenLogFile( const char* pcLogFilePath ) {
 		std::ios* ios;
 		std::ios::iostate ioState;
@@ -120,17 +121,17 @@ namespace F3 {
 	}
 	*/
 
-	// 0x56af10
+	// 0x56AF10
 	char *GetSaveDirectoryRelative() {
 		return g_szSaveDirectoryRelative;
 	}
 
-	// 0x56af00
+	// 0x56AF00
 	char *GetSaveDirectoryAbsolute() {
 		return g_szSaveDirectoryAbsolute;
 	}
 
-	// 0x4c58a0
+	// 0x4C58A0
 	unsigned int PathConcat( const char *pcPathA, const char *pcPathB ) {
 		tracing::instrument( tracing::LOCATION, "pcPathA=\"%s\", pcPathB=%s", pcPathA, pcPathB );
 
@@ -148,6 +149,7 @@ namespace F3 {
 		return nPathBLen;
 	}
 
+	// 0x48CCA0
 	int SetStartupTime( int nTime ) {
 		tracing::instrument( tracing::LOCATION, "nTime=%d", nTime );
 
@@ -159,6 +161,7 @@ namespace F3 {
 		return result;
 	}
 
+	// 0x5ACE00
 	int Main() {
 		tracing::instrument( tracing::LOCATION, "" );
 		//F3::Startup();
@@ -170,7 +173,9 @@ namespace F3 {
 		return 1;
 	}
 
+	// 0x56AF60
 	bool ProcessMessagesAndUpdateTime() {
+
 		tracing::instrument( tracing::LOCATION, "" );
 
 		DWORD nCurrentTime;
@@ -203,6 +208,7 @@ namespace F3 {
 	}
 
 	/*
+	// 0x497B70
 	std::filebuf* ShutdownGlobalLogStream() {
 		std::filebuf* result;
 		std::ios* ios;
@@ -225,12 +231,14 @@ namespace F3 {
 	}
 	*/
 
+	// 0x56AFF0
 	void F3::Quit() {
 		tracing::instrument( tracing::LOCATION, "" );
 		PostQuitMessage( 1 );
 	}
 
 	namespace Display {
+		// 0x56B1B0
 		LRESULT CALLBACK WinProc( HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam ) {
 			tracing::instrument( tracing::LOCATION, "hWnd=0x%p,Msg=%i,wParam=%i,lParamnCmdShow=%d", hWnd, Msg, wParam, lParam );
 
@@ -249,7 +257,9 @@ namespace F3 {
 			}
 		}
 
+		// 0x56B470
 		BOOL CreateGameWindow( int nCmdShow ) {
+
 			tracing::instrument( tracing::LOCATION, "nCmdShow=0x%i", nCmdShow );
 
 			char *pcSaveDirectoryRelativePath;
@@ -408,9 +418,11 @@ namespace F3 {
 			return UpdateWindow( g_window );
 		}
 
+		// 0x56B1A0
 		void DestroyGameWindow() {
 			tracing::instrument( tracing::LOCATION, "F3::g_window=0x%p", F3::g_window );
 			DestroyWindow( F3::g_window );
 		}
 	} // namespace Display
+
 } // namespace F3
