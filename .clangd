@@ -1,4 +1,6 @@
 CompileFlags:
+  Compiler: /etc/profiles/per-user/shane/bin/i686-w64-mingw32-g++
+  BuiltinHeaders: QueryDriver
   Add: [
     -std=c++98,
     -Wall,
@@ -7,10 +9,24 @@ CompileFlags:
     -DTRACING,
     -DTRACE_TERMINAL,
     -DTRACE_FILE,
+    -isystem,
+    /etc/profiles/per-user/shane/include,
+    -isystem,
+    /home/shane/.local/include,
     -I./src,
     -I../openje/src,
-    -I../tracing/src
+    -I../tracing/src,
   ]
+
+---
+If:
+  PathMatch: [.*\.h, .*\.hpp]
+CompileFlags:
+  Add: [-xc++]
+
+InlayHints:
+ Enabled: true
+ ParameterNames: true
 
 ClangTidy:
   Add: ["*"]
