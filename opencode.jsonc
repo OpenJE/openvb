@@ -17,6 +17,10 @@
     "ida-pro": {
       // https://github.com/mrexodia/ida-pro-mcp
       "enabled": true
+    },
+    "local-rag": {
+      // https://github.com/shinpr/mcp-local-rag
+      "enabled": true
     }
   },
 }

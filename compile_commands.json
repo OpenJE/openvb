@@ -1,0 +1,202 @@
+[
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "src/main.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "src/main.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "src/F3.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "src/F3.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "src/F3/Display/Display.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "src/F3/Display/Display.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "openje/src/JE.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "openje/src/JE.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "openje/src/je/Action.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "openje/src/je/Action.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "openje/src/je/ActionAnim.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "openje/src/je/ActionAnim.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "openje/src/je/Common/Chunk.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "openje/src/je/Common/Chunk.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "tracing/src/tracing.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "tracing/src/tracing.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "openje/tests/je/Action/Action.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "openje/tests/je/Action/Action.cpp"
+    ]
+  },
+  {
+    "directory": "/home/shane/code/shane/openvb",
+    "file": "openje/tests/je/ActionAnim/Action.cpp",
+    "arguments": [
+      "i686-w64-mingw32-g++",
+      "-std=c++98",
+      "-Wall",
+      "-Wno-pragma-pack",
+      "-D_WIN32",
+      "-DTRACING",
+      "-DTRACE_TERMINAL",
+      "-DTRACE_FILE",
+      "-I./src",
+      "-I./openje/src",
+      "-I./openje/tests",
+      "-I./tracing/src",
+      "-c",
+      "openje/tests/je/ActionAnim/Action.cpp"
+    ]
+  }
+]
