@@ -1,4 +1,7 @@
-build/*
-obj/*
+build
+obj
+build-msvc
+build-msvc-tracing
 vc70.pdb
 log.txt
+

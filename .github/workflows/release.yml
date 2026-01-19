@@ -34,15 +34,20 @@ jobs:
         run: |
           docker pull ghcr.io/openje/msvc2002:latest
 
+      - name: Download CMake (host)
+        shell: bash
+        run: |
+          set -e
+          mkdir -p build/tools/cmake
+          curl -L "https://github.com/Kitware/CMake/releases/download/v3.24.4/cmake-3.24.4-linux-x86_64.tar.gz" |
+            tar -xz --strip-components=1 -C build/tools/cmake
+
       - name: Build with MSVC 2002
         shell: bash
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p obj
-          mkdir -p openje/obj
-          mkdir -p tracing/obj
           mkdir -p build
-        
+
           # 1) Fix permissions on the mounted repo so UID 1000 can write
           docker run --rm \
             -u 0:0 \
@@ -50,13 +55,18 @@ jobs:
             -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
             -lc 'chown -R 1000:1000 "$PWD"'
-      
-          # 2) Run the actual build as UID 1000 (from Dockerfile USER 1000:1000)
+
+          # 2) Configure + build using CMake + NMake in the container
           docker run --rm \
             -v "$PWD":"$PWD" \
             -w "$PWD" \
             ghcr.io/openje/msvc2002:latest \
-            -lc 'nmake /f Makefile'
+            -lc '"$PWD/build/tools/cmake/bin/cmake" -S . -B build-cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY'
+          docker run --rm \
+            -v "$PWD":"$PWD" \
+            -w "$PWD" \
+            ghcr.io/openje/msvc2002:latest \
+            -lc '"$PWD/build/tools/cmake/bin/cmake" --build build-cmake'
 
       - name: Locate EXE
         id: find-exe
@@ -101,11 +111,10 @@ jobs:
         with:
           arch: x86   # or x64, adjust for your app
 
-      - name: Build with nmake (latest MSVC)
+      - name: Build with CMake + NMake (latest MSVC)
         run: |
-          REM If you use a specific .mak file, do:
-          REM nmake /f path\to\your.mak
-          nmake
+          cmake -S . -B build-cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY
+          cmake --build build-cmake
 
       - name: Locate EXE
         id: find-exe
