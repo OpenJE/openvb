@@ -1,0 +1,3 @@
+# ./devenv/services/default.nix
+
+{ ... }: {}

@@ -4,4 +4,18 @@ build-msvc
 build-msvc-tracing
 vc70.pdb
 log.txt
+F3.exe.i64
 
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+.opencode
+opencode.jsonc

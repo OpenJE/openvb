@@ -1,0 +1,7 @@
+# ./devenv.nix
+
+{ ... }: {
+  imports = [
+    ./devenv
+  ];
+}
