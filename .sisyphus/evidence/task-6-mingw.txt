@@ -1,7 +1,0 @@
-=== Task 6: mingw32 Cross-Compilation Verification ===
-
-Compiler: i686-w64-mingw32-g++ (from CMakeCache.txt)
-Link libs: libopenje.a libtracing.a -luser32 -lgdi32 -lwinmm -lshell32
-WIN32 flag: -mwindows present in link.txt
-
-VERDICT: PASS - mingw32 config succeeds, Windows libs linked correctly

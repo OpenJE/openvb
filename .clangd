@@ -14,8 +14,8 @@ CompileFlags:
     -isystem,
     /home/shane/.local/include,
     -I./src,
-    -I../openje/src,
-    -I../tracing/src,
+    -I./modules/openje/src,
+    -I./modules/tracing/src,
   ]
 
 ---
