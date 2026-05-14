@@ -1,0 +1,69 @@
+[cmake]
+version = "3.24"
+cmkr-include = "cmkr.cmake"
+
+[project]
+name = "openvb"
+languages = ["CXX"]
+
+[variables]
+CMAKE_RUNTIME_OUTPUT_DIRECTORY = "${CMAKE_SOURCE_DIR}/build"
+CMAKE_ARCHIVE_OUTPUT_DIRECTORY = "${CMAKE_SOURCE_DIR}/obj"
+CMAKE_LIBRARY_OUTPUT_DIRECTORY = "${CMAKE_SOURCE_DIR}/obj"
+CMAKE_TRY_COMPILE_TARGET_TYPE = "STATIC_LIBRARY"
+
+[options]
+OPENVB_TRACING = false
+
+[target.openje]
+type = "static"
+sources = ["modules/openje/src/JE.cpp"]
+private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
+msvc.private-compile-options = ["/EHsc"]
+
+[target.tracing]
+type = "static"
+sources = ["modules/tracing/src/tracing.cpp"]
+private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
+msvc.private-compile-options = ["/EHsc"]
+
+[target.F3]
+type = "executable"
+sources = ["src/main.cpp", "src/F3.cpp"]
+private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
+private-link-libraries = ["openje", "tracing"]
+windows.private-link-libraries = ["user32", "gdi32", "winmm", "shell32"]
+msvc.private-compile-options = ["/EHsc"]
+cmake-after = """
+if(NOT MSVC)
+    foreach(target_name openje tracing F3)
+        target_compile_options(${target_name} PRIVATE -std=c++98)
+    endforeach()
+endif()
+
+if(OPENVB_TRACING)
+    set_target_properties(openje PROPERTIES OUTPUT_NAME "openje-trace")
+    set_target_properties(tracing PROPERTIES OUTPUT_NAME "tracing-trace")
+    set_target_properties(F3 PROPERTIES OUTPUT_NAME "F3-trace")
+endif()
+
+foreach(target_name openje tracing F3)
+    target_compile_definitions(${target_name} PRIVATE
+        $<$<OR:$<CONFIG:Debug>,$<BOOL:${OPENVB_TRACING}>>:TRACING TRACE_TERMINAL TRACE_FILE>
+    )
+endforeach()
+
+if(MSVC)
+    foreach(target_name openje tracing F3)
+        target_compile_options(${target_name} PRIVATE
+            $<$<CONFIG:Debug>:/Zi /Od /GS>
+            $<$<CONFIG:Release>:/O2>
+        )
+    endforeach()
+endif()
+"""
+
+[target.F3.properties]
+WIN32_EXECUTABLE = true
+OUTPUT_NAME = "F3"
+DEBUG_POSTFIX = "-dbg"
