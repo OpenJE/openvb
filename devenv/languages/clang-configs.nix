@@ -1,5 +1,10 @@
+# ./devenv/languages/clang-configs.nix
+
+{ pkgs, ... }: {
+  files.".clangd".text = ''
 CompileFlags:
-  Compiler: /etc/profiles/per-user/shane/bin/i686-w64-mingw32-g++
+  Compiler: ${pkgs.pkgsCross.mingw32.stdenv.cc}/bin/i686-w64-mingw32-g++
+  QueryDriver: ${pkgs.pkgsCross.mingw32.stdenv.cc}/bin/i686-w64-mingw32-g++
   BuiltinHeaders: QueryDriver
   Add: [
     -std=c++98,
@@ -10,9 +15,7 @@ CompileFlags:
     -DTRACE_TERMINAL,
     -DTRACE_FILE,
     -isystem,
-    /etc/profiles/per-user/shane/include,
-    -isystem,
-    /home/shane/.local/include,
+    ${pkgs.pkgsCross.mingw32.windows.mcfgthreads.dev}/include,
     -I./src,
     -I./modules/openje/src,
     -I./modules/tracing/src,
@@ -30,3 +33,5 @@ InlayHints:
 
 ClangTidy:
   Add: ["*"]
+'';
+}

@@ -26,6 +26,7 @@ devenv.local.yaml
 
 .opencode
 opencode.jsonc
+.clangd
 
 .rework/re.db
 .rework/re.db-shm

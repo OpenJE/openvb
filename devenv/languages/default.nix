@@ -4,5 +4,6 @@
   imports = [
     ./nix.nix
     ./cplusplus.nix
+    ./clang-configs.nix
   ];
 }
