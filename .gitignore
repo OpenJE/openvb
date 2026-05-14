@@ -19,3 +19,7 @@ devenv.local.yaml
 
 .opencode
 opencode.jsonc
+
+.rework/re.db
+.rework/re.db-shim
+.rework/re.db-wal

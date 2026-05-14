@@ -9,6 +9,6 @@
     ./scripts
     ./services
     ./tasks
-    ./harness
+    ./opencode
   ];
 }

@@ -1,6 +1,9 @@
 [submodule "openje"]
-	path = openje
+	path = modules/openje
 	url = https://github.com/OpenJE/openje
 [submodule "tracing"]
-	path = tracing
+	path = modules/tracing
 	url = https://github.com/OpenJE/tracing
+[submodule "opencode-openje"]
+	path = modules/opencode-openje
+	url = https://github.com/OpenJE/opencode-openje
