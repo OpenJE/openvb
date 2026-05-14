@@ -17,6 +17,10 @@ let
     - On the reimplementation side, prefer opening `OPENVB_REIMPL_IDB` when it exists.
     - If the reimplementation database does not exist yet, open `OPENVB_REIMPL_EXE` and later save to `OPENVB_REIMPL_IDB`.
     - Treat session state as ephemeral; verify the active database explicitly with `idalib_current` or `idalib_list` before assuming context.
+
+    opencode-openje integration:
+    - When opening an IDA database, register the target function(s) via `re_function_register` as `discovered`. Check `re_status` for ledger state before opening. Set function status to `analyzing` when actively working on a target.
+    - When dispatched as `task(category='re-discovery')` or `task(category='re-analysis')`, this skill's database targeting is prerequisite evidence gathering.
   '';
   yaml = lib.strings.removeSuffix "\n" /* yaml */ ''
     name: ${name}

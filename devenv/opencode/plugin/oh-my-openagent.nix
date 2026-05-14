@@ -48,6 +48,14 @@ let
     writing.model =            "lmstudio/gemma-4-31b-it";
   };
 
+  localReCategories = {
+    re-discovery.model = "lmstudio/qwen3.6-35b-a3b";
+    re-analysis.model =  "lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";
+    re-review.model =    "lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";
+    re-synthesis.model = "lmstudio/qwen3.6-27b";
+    re-ops.model =       "lmstudio/glm-4.7-flash";
+  };
+
   providerCategories = {
     visual-engineering.model = "opencode-go/glm-5.1";
     ultrabrain.model =         "opencode-go/glm-5.1";
@@ -57,6 +65,14 @@ let
     unspecified-high.model =   "opencode-go/glm-5.1";
     unspecified-low.model =    "opencode-go/kimi-k2.6";
     writing.model =            "opencode-go/kimi-k2.6";
+  };
+
+  providerReCategories = {
+    re-discovery.model = "opencode-go/qwen3.5-plus";
+    re-analysis.model =  "opencode-go/glm-5.1";
+    re-review.model =    "opencode-go/glm-5.1";
+    re-synthesis.model = "opencode-go/kimi-k2.6";
+    re-ops.model =       "opencode-go/minimax-m2.7";
   };
 in
 {
@@ -69,10 +85,19 @@ in
         opencode provider models.
       '';
     };
+
+    useReCloudModels = lib.mkOption {
+      type = lib.types.bool;
+      default = cfg.useLocalModels;
+      description = ''
+        Whether reverse-engineering categories should use opencode provider
+        models instead of local lmstudio models.
+      '';
+    };
   };
 
   config = {
-    files.".opencode/oh-my-openagent.jsonc".text = builtins.toJSON (
+    files.".opencode/oh-my-openagent.jsonc".text = builtins.toJSON
       {
         "$schema" = schema;
 
@@ -82,18 +107,19 @@ in
           else providerAgents;
 
         categories =
-          if cfg.useLocalModels
-          then localCategories
-          else providerCategories;
-      }
-      // lib.optionalAttrs cfg.useLocalModels {
+          (if cfg.useLocalModels
+           then localCategories
+           else providerCategories)
+          // (if cfg.useReCloudModels
+              then providerReCategories
+              else localReCategories);
+
         team_mode = {
           enabled = true;
           max_parallel_members = 4;
           max_members = 8;
           tmux_visualization = false;
         };
-      }
-    );
+      };
   };
 }

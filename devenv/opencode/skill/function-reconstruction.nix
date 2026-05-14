@@ -25,6 +25,10 @@ let
     - confirmed findings
     - hypotheses
     - blockers
+
+    opencode-openje integration:
+    When reconstructing a function, create a `re_job_create` with type `analyze_function_semantics`. Register the target via `re_function_register`. Check `re_tree` for existing summaries before starting. Submit findings via `re_worker_submit` with purpose (summary), inputs (parameters), side effects, and confidence. Submit for review via `re_review_submit` when the contract is stable.
+    When dispatched as `task(category='re-analysis')`, use `analyze_function_semantics` job type.
   '';
   yaml = lib.strings.removeSuffix "\n" /* yaml */ ''
     name: ${name}

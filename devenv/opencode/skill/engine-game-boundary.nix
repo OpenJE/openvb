@@ -38,6 +38,11 @@ let
     3. Evidence and prior-IDA-state rationale
     4. Candidate repo target
     5. Remaining uncertainty
+
+    opencode-openje integration:
+    When deciding engine/game/boundary placement, register the placement decision via `re_worker_submit` with purpose summary and confidence. Use `re_review_submit` for placement review. If placement is `unknown`, set function status to `stale` via `re_function_set_status` until evidence resolves it.
+
+    When dispatched as `task(category='re-analysis')`, the boundary decision is part of semantic analysis.
   '';
   yaml = lib.strings.removeSuffix "\n" /* yaml */ ''
     name: ${name}

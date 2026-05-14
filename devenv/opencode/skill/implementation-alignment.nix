@@ -11,6 +11,10 @@ let
     - map binary behavior to existing source structures
     - preserve repo style and architecture
     - verify whether unresolved analysis should block coding
+
+    ## opencode-openje integration
+    Before translating summaries to C++, verify the source function has `reviewed` status via `re_function_get`. Create a `re_job_create` with type `emit_faithful_cpp`. After implementation, submit via `re_worker_submit`. If compilation succeeds, update status via `re_function_set_status`. If compilation fails, create a `fix_compile_error` job.
+    When dispatched as `task(category='re-synthesis')`, use `emit_faithful_cpp` job type.
   '';
   yaml = lib.strings.removeSuffix "\n" /* yaml */ ''
     name: ${name}

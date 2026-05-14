@@ -65,6 +65,9 @@ in {
 
       cmakeExeWin="Z:\\work\\build\\tools\\cmake-${cmakeVersion}-windows-i386\\bin\\cmake.exe"
 
+      # Remove stale reimpl IDB so IDA regenerates from fresh EXE
+      rm -f "$OPENVB_REIMPL_IDB"
+
       "$docker" pull "${msvcImage}" >/dev/null
 
       chown_cmd=""
