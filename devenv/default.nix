@@ -12,5 +12,5 @@
     ./opencode
   ];
 
-  ohMyOpenagent.useLocalModels = false;
+  ohMyOpenagent.useLocalModels = true;
 }

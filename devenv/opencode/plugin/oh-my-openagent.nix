@@ -97,29 +97,28 @@ in
   };
 
   config = {
-    files.".opencode/oh-my-openagent.jsonc".text = builtins.toJSON
-      {
-        "$schema" = schema;
+    files.".opencode/oh-my-openagent.jsonc".text = builtins.toJSON {
+      "$schema" = schema;
 
-        agents =
-          if cfg.useLocalModels
-          then localAgents
-          else providerAgents;
-
-        categories =
-          (if cfg.useLocalModels
-           then localCategories
-           else providerCategories)
-          // (if cfg.useReCloudModels
-              then providerReCategories
-              else localReCategories);
-
-        team_mode = {
-          enabled = true;
-          max_parallel_members = 4;
-          max_members = 8;
-          tmux_visualization = false;
-        };
+      team_mode = {
+        enabled = true;
+        max_parallel_members = 4;
+        max_members = 8;
+        tmux_visualization = false;
       };
+
+      agents =
+        if cfg.useLocalModels
+        then localAgents
+        else providerAgents;
+
+      categories =
+        (if cfg.useLocalModels
+         then localCategories
+         else providerCategories)
+        // (if cfg.useReCloudModels
+            then providerReCategories
+            else localReCategories);
+    };
   };
 }
