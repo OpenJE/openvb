@@ -11,6 +11,8 @@ F3.exe.id2
 F3.exe.nam
 F3.exe.til
 
+.sisyphus
+
 # Devenv
 .devenv*
 devenv.local.nix
