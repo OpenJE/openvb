@@ -53,7 +53,6 @@
       };
 
       plugin = [
-        "opencode-lmstudio@0.3.0"
         "oh-my-openagent@4.0.0"
         "file:${config.devenv.root}/opencode-openje"
       ];

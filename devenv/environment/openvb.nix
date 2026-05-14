@@ -18,7 +18,7 @@ in {
     OPENVB_ORIG_IDB = "./F3.exe.i64";
     OPENVB_ORIG_GDB_PORT = "31337";
     OPENVB_REIMPL_EXE = "./build/F3.exe";
-    OPENVB_REIMPL_IDB = "./.devenv/state/ida/F3-reimpl.i64";
+    OPENVB_REIMPL_IDB = "./build/F3.exe.i64";
     OPENVB_REIMPL_TRACE_EXE = "./build/F3-trace.exe";
     OPENVB_REIMPL_GDB_PORT = "31338";
     OPENVB_IDA_ORIG_MCP_PORT = "8745";

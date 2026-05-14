@@ -11,4 +11,6 @@
     ./tasks
     ./opencode
   ];
+
+  ohMyOpenagent.useLocalModels = false;
 }
