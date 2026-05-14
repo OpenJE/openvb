@@ -1,0 +1,74 @@
+{
+  "active_plan": "/home/shane/code/shane/openvb/.sisyphus/plans/cmkr-integration.md",
+  "started_at": "2026-05-14T01:34:29.936Z",
+  "session_ids": [
+    "ses_1dbf58d85ffei8H88JIemNgwBF",
+    "ses_1dbd6cecfffetlFZoi0CY31cR3",
+    "ses_1dbb40576ffesxiJgO27JyZKbd",
+    "ses_1dbb3cee6ffe5XSSizjt29xFJH",
+    "ses_1dbb39432ffe8ETK5JxdZl65M7",
+    "ses_1dbb0fa10ffe4XwQMU1gi4xzre",
+    "ses_1dbb0d399ffevrro9W1hlivBcK",
+    "ses_1dbb09876ffeJylaTABgHvwgwC",
+    "ses_1dbb06437ffe1QFxYYK4KrQe2t"
+  ],
+  "session_origins": {
+    "ses_1dbf58d85ffei8H88JIemNgwBF": "direct",
+    "ses_1dbd6cecfffetlFZoi0CY31cR3": "appended",
+    "ses_1dbb40576ffesxiJgO27JyZKbd": "appended",
+    "ses_1dbb3cee6ffe5XSSizjt29xFJH": "appended",
+    "ses_1dbb39432ffe8ETK5JxdZl65M7": "appended",
+    "ses_1dbb0fa10ffe4XwQMU1gi4xzre": "appended",
+    "ses_1dbb0d399ffevrro9W1hlivBcK": "appended",
+    "ses_1dbb09876ffeJylaTABgHvwgwC": "appended",
+    "ses_1dbb06437ffe1QFxYYK4KrQe2t": "appended"
+  },
+  "plan_name": "cmkr-integration",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Create cmake.toml with all build semantics",
+      "session_id": "ses_1dbd6cecfffetlFZoi0CY31cR3",
+      "agent": "librarian",
+      "updated_at": "2026-05-14T01:46:12.017Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Add cmkr.cmake bootstrap script",
+      "session_id": "ses_1dbce6b07ffeuypW4g5DDkaIQp",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-14T01:55:35.234Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Generate CMakeLists.txt and verify build equivalence",
+      "session_id": "ses_1dbbaa001ffeODidyTGwoG0yIk",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-14T02:18:26.884Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Verify equivalent build output (Linux/GCC)",
+      "session_id": "ses_1dbb39432ffe8ETK5JxdZl65M7",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-14T02:25:18.171Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_1dbb06437ffe1QFxYYK4KrQe2t",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-14T02:28:00.408Z"
+    }
+  }
+}
