@@ -30,8 +30,6 @@ in {
         -DTRACING,
         -DTRACE_TERMINAL,
         -DTRACE_FILE,
-        -nostdinc,
-        -nostdinc++,
         -isystem,
         ${pkgs.pkgsCross.mingw32.windows.mcfgthreads.dev}/include,
         -isystem,
@@ -60,5 +58,5 @@ in {
     Diagnostics:
       ClangTidy:
         Add: ["*"]
-'';
+  '';
 }

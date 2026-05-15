@@ -1,5 +1,12 @@
 # ./devenv/languages/nix.nix
 
-{ ... }: {
-  languages.nix.enable = true;
+{ pkgs, ... }: {
+  languages.nix = {
+    enable = true;
+    lsp.enable = true;
+  };
+
+  packages = with pkgs; [
+    nil
+  ];
 }
