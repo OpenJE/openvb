@@ -5,7 +5,7 @@ let
   nodeModules = "${config.devenv.root}/.opencode/node_modules";
   dataFile = "${config.devenv.root}/F3.json";
 in {
-  opencode.tools.f3-vftable-index = /* typescript */ ''
+  opencode.tools.f3_vftable_index = /* typescript */ ''
     import { tool } from "${nodeModules}/@opencode-ai/plugin/dist/tool.js"
     import { readFile } from "node:fs/promises"
 

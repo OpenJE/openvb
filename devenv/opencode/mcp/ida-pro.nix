@@ -5,13 +5,13 @@ let
   origBaseUrl = "http://127.0.0.1:${config.env.OPENVB_IDA_ORIG_MCP_PORT}/mcp?ext=dbg";
   reimplBaseUrl = "http://127.0.0.1:${config.env.OPENVB_IDA_REIMPL_MCP_PORT}/mcp?ext=dbg";
 in {
-  opencode.mcp.f3-original-ida = {
+  opencode.mcp.f3_original_ida = {
     type = "remote";
     url = origBaseUrl;
     enabled = true;
   };
 
-  opencode.mcp.f3-reimplemented-ida = {
+  opencode.mcp.f3_reimplemented_ida = {
     type = "remote";
     url = reimplBaseUrl;
     enabled = true;
