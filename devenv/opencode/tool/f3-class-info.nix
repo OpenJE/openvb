@@ -56,7 +56,7 @@ in {
 
         const found = findStructure(structures, args.class)
         if (!found) {
-          return `No class/struct found for: ${args.class}`
+          return `No class/struct found for: ''${args.class}`
         }
 
         const [key, s] = found
