@@ -8,6 +8,7 @@
     ./permission
     ./plugin
     ./skill
+    ./tool
   ];
 
   opencode = {
