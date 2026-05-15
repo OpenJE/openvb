@@ -5,5 +5,8 @@
 	path = modules/tracing
 	url = https://github.com/OpenJE/tracing
 [submodule "opencode-openje"]
-	path = modules/opencode-openje
+	path = modules/opencode-re
 	url = https://github.com/OpenJE/opencode-openje
+[submodule "modules/patterns"]
+	path = modules/patterns
+	url = ./modules/patterns

@@ -5,6 +5,8 @@
 inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  imhex:
+    url: github:nixos/nixpkgs/f2642a9101a8bedccbc9b7870f3cb9eda657f1a9
 
 nixpkgs:
   permitted_unfree_packages:

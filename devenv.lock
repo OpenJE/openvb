@@ -17,6 +17,22 @@
         "type": "github"
       }
     },
+    "imhex": {
+      "locked": {
+        "lastModified": 1766419912,
+        "narHash": "sha256-QKvcerYVmFMs5N2723dTFTUdYp+Hb3s9fEt+L+7yKz8=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "f2642a9101a8bedccbc9b7870f3cb9eda657f1a9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "f2642a9101a8bedccbc9b7870f3cb9eda657f1a9",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "inputs": {
         "nixpkgs-src": "nixpkgs-src"
@@ -56,6 +72,7 @@
     "root": {
       "inputs": {
         "devenv": "devenv",
+        "imhex": "imhex",
         "nixpkgs": "nixpkgs"
       }
     }

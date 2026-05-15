@@ -54,8 +54,8 @@
       };
 
       plugin = [
-        "file:${config.devenv.root}/modules/opencode-openje"
-        "oh-my-openagent@4.0.0"
+        "file:${config.devenv.root}/modules/opencode-re"
+        "oh-my-openagent@4.1.2"
       ];
     };
 

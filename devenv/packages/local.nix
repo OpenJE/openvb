@@ -6,6 +6,28 @@ let
 in rec {
   f3demo = pkgs.callPackage ./f3demo.nix { };
 
+  hexpat-language-server = pkgs.rustPlatform.buildRustPackage {
+    pname = "hexpat-language-server";
+    version = "unstable-2025-04-16";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "Calcoph";
+      repo = "hexpat-lsp";
+      rev = "main";
+      hash = "sha256-itrpBruWiTPT5HkQwPG7ma87HcYvSM65JGe8CrDHTi8=";
+    };
+
+    cargoHash = "sha256-77prNRR8j365CGFyApBD/hDe28sor5D0EKQKsg8p6/U=";
+
+    meta = with pkgs.lib; {
+      description = "Language server for ImHex Pattern Language";
+      homepage = "https://github.com/Calcoph/hexpat-lsp";
+      license = licenses.mit;
+      platforms = platforms.linux;
+      mainProgram = "hexpat-language-server";
+    };
+  };
+
   math-mcp = pkgs.buildNpmPackage {
     pname = "math-mcp";
     version = "0.1.1";
