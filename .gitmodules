@@ -9,4 +9,4 @@
 	url = https://github.com/OpenJE/opencode-openje
 [submodule "modules/patterns"]
 	path = modules/patterns
-	url = ./modules/patterns
+	url = https://github.com/OpenJE/patterns
