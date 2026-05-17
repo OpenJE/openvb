@@ -1,16 +1,14 @@
-# ./devenv/processes/imhex-mcp.nix
+# ./devenv/processes/imhex-headless.nix
+#
+# ImHex GUI-only process. Starts ImHex and waits for the Network Interface
+# to be listening on port 31337. The MCP server is managed separately by
+# OpenCode's opencode.mcp.imhex configuration.
 
 { config, pkgs, ... }:
 let
-  localPackages = import ../packages/local.nix { inherit pkgs; };
-
-  serverBin = "${localPackages.imhex-mcp-server}/bin/imhex-mcp-server";
-
-  # ImHex Network Interface port.
-  # This is what imhex-mcp-server connects to.
   imhexNetworkPort = "31337";
 
-  makeImHexMcpExec = /* bash */ ''
+  makeImHexHeadlessExec = /* bash */ ''
     set -euo pipefail
 
     is_imhex_network_listening() {
@@ -24,9 +22,6 @@ let
     imhex_pid=$!
 
     cleanup() {
-      if [ -n "''${server_pid:-}" ]; then
-        kill "$server_pid" 2>/dev/null || true
-      fi
       if [ -n "''${imhex_pid:-}" ]; then
         kill "$imhex_pid" 2>/dev/null || true
       fi
@@ -42,7 +37,6 @@ let
         exit 1
       fi
 
-      # Do not use nc here; ss checks the listener without connecting to it.
       if is_imhex_network_listening; then
         printf 'ImHex Network Interface is listening on 127.0.0.1:${imhexNetworkPort}\n' >&2
         break
@@ -57,21 +51,15 @@ let
       sleep 1
     done
 
-    printf 'Starting imhex-mcp-server connected to ImHex on 127.0.0.1:${imhexNetworkPort}\n' >&2
-
-    "${serverBin}" \
-      --host 127.0.0.1 \
-      --port ${imhexNetworkPort} &
-    server_pid=$!
-
-    wait "$server_pid"
+    # Keep the process alive as long as ImHex is running.
+    wait "$imhex_pid"
   '';
 in {
-  processes.imhex-mcp = {
-    exec = makeImHexMcpExec;
+  processes.imhex-headless = {
+    exec = makeImHexHeadlessExec;
     cwd = config.git.root;
 
-    # The MCP server is probably stdio-based, so do not wait on a TCP MCP port.
+    # ImHex is ready when the Network Interface port is listening.
     ready.exec = "${pkgs.coreutils}/bin/true";
   };
 }

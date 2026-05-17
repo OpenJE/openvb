@@ -144,6 +144,13 @@ in rec {
   from pathlib import Path
   sys.path.insert(0, str(Path(__file__).resolve().parent / "imhex_mcp_lib"))'
 
+      # Remove redundant imhex_client.connect() in main() - send_command() handles its own connect lifecycle.
+      # Single-line substitution to avoid multi-line whitespace issues in nix substituteInPlace.
+      substituteInPlace server.py \
+        --replace-fail \
+          '        imhex_client.connect()' \
+          '        # send_command() handles its own connect lifecycle'
+
       # Add sync entry point for console_scripts (main() is async).
       cat >> server.py << 'PYEOF'
 

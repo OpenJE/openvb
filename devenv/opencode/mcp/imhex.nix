@@ -15,7 +15,9 @@
     enabled = true;
     command = [
       "imhex-mcp-server"
+      "--host" "127.0.0.1"
       "--port" config.env.OPENVB_IMHEX_MCP_PORT
+      "--max-retries" "0"
     ];
   };
 }
