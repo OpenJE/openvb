@@ -113,4 +113,51 @@ in rec {
       platforms = platforms.linux;
     };
   };
+
+  imhex-mcp-server = py311.buildPythonApplication {
+    pname = "imhex-mcp-server";
+    version = "0.1.0";
+
+    src = _imhex-mcp-src;
+    sourceRoot = "source/mcp-server";
+
+    format = "pyproject";
+    nativeBuildInputs = [ py311.setuptools ];
+
+    postPatch = ''
+      # Fix logger bug: server.py uses logger.warning() before logger is defined
+      substituteInPlace server.py \
+        --replace-fail \
+          '    logger.warning("Enhanced client not available - performance optimizations disabled")' \
+          '    logging.warning("Enhanced client not available - performance optimizations disabled")'
+
+      # Add sync entry point for console_scripts (main() is async)
+      cat >> server.py << 'PYEOF'
+
+def entry_point():
+    """Sync entry point for console_scripts."""
+    asyncio.run(main())
+PYEOF
+
+      # Update entry point to use sync wrapper
+      substituteInPlace pyproject.toml \
+        --replace '"server:main"' '"server:entry_point"'
+    '';
+
+    propagatedBuildInputs = with py311; [
+      mcp
+      pydantic
+      zstandard
+      pyyaml
+      prometheus-client
+    ];
+
+    meta = with pkgs.lib; {
+      description = "MCP server for ImHex hex editor - AI-powered binary analysis";
+      homepage = "https://github.com/jmpnop/imhexMCP";
+      license = licenses.gpl2;
+      platforms = platforms.linux;
+      mainProgram = "imhex-mcp-server";
+    };
+  };
 }
