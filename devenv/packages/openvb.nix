@@ -5,6 +5,14 @@ let
   localPackages = import ./local.nix { inherit pkgs; };
   imhex-unpatched = inputs.imhex.legacyPackages.${pkgs.stdenv.hostPlatform.system}.imhex;
 
+  # Van Buren ImHex patterns — fetched from GitHub and baked into the derivation.
+  je-patterns = pkgs.fetchFromGitHub {
+    owner = "OpenJE";
+    repo = "patterns";
+    rev = "9f845917303ab0c0efc748bcf12654c57a5ec720";
+    hash = "sha256-3xefMAdZf2jEVpUVn4jHvt+zAbJoFUcKEDPzwyp/Ww8=";
+  };
+
   # Patched imhex with MCP plugin built in.
   # Applies 9 patches (0002 skipped due to API mismatch: FileProvider::open()
   # return type changed from bool to OpenResult in ImHex 1.38.1).
@@ -40,6 +48,13 @@ let
       sed -i 's|''${CMAKE_SOURCE_DIR}/plugins/builtin/include|&\n        ''${CMAKE_SOURCE_DIR}/plugins/fonts/include|' plugins/mcp/CMakeLists.txt
       sed -i '/^        OpenResult open(bool memoryMapped);/i\    public:' plugins/builtin/include/content/providers/file_provider.hpp
       sed -i 's|if (!fileProvider->open(false))|if (fileProvider->open(false).isFailure())|' plugins/mcp/source/plugin_mcp.cpp
+    '';
+
+    # Bundle Van Buren patterns into the ImHex includes directory.
+    # This makes `import je.xxx` resolution available declaratively.
+    postInstall = (old.postInstall or "") + ''
+      mkdir -p $out/share/imhex/includes/je
+      cp -r ${je-patterns}/includes/je/* $out/share/imhex/includes/je/
     '';
   });
 in {

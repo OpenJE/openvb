@@ -13,21 +13,6 @@ let
   makeImHexMcpExec = /* bash */ ''
     set -euo pipefail
 
-    # Symlink Van Buren patterns into ImHex user includes path.
-    # ImHex resolves `import je.xxx` from ~/.local/share/imhex/includes/je/
-    patternsDir="${config.git.root}/modules/patterns/includes/je"
-    imhexIncludesDir="$HOME/.local/share/imhex/includes"
-    imhexJeLink="$imhexIncludesDir/je"
-
-    if [ -d "$patternsDir" ]; then
-      mkdir -p "$imhexIncludesDir"
-      ln -sfn "$patternsDir" "$imhexJeLink"
-      printf 'ImHex patterns symlinked: %s -> %s\n' "$imhexJeLink" "$patternsDir" >&2
-    else
-      printf 'WARNING: Van Buren patterns directory not found at %s\n' "$patternsDir" >&2
-      printf '  Run: git submodule update --init modules/patterns\n' >&2
-    fi
-
     is_imhex_network_listening() {
       ${pkgs.iproute2}/bin/ss -H -ltn "sport = :${imhexNetworkPort}" | grep -q .
     }
