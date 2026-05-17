@@ -4,7 +4,7 @@
 #
 # Manual launch:
 #   1. Run imhex (GUI) and enable Network Interface in Settings → General
-#   2. The MCP server will connect to ImHex on port 31339
+#   2. The MCP server will connect to ImHex on port 31337
 #
 # Headless launch:
 #   devenv process start imhex-headless
