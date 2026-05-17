@@ -3,6 +3,7 @@
 { ... }: {
   imports = [
     ./ida-headless.nix
+    ./imhex-headless.nix
     ./f3-gdb-stubs.nix
   ];
 }
