@@ -3,7 +3,16 @@
 { pkgs, ... }:
 let
   py311 = pkgs.python311Packages;
+
+  _imhex-mcp-src = pkgs.fetchFromGitHub {
+    owner = "jmpnop";
+    repo = "imhexMCP";
+    rev = "c9ceb7f791e5e9233c555a1fc3770b4403d08dcf";
+    hash = "sha256-gDcUYTQrYBCU/XI+Y/dJIc3nFNFInMMB0HQuMNblTOg=";
+  };
 in rec {
+  imhex-mcp-src = _imhex-mcp-src;
+
   f3demo = pkgs.callPackage ./f3demo.nix { };
 
   hexpat-language-server = pkgs.rustPlatform.buildRustPackage {
