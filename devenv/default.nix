@@ -12,5 +12,6 @@
     ./opencode
   ];
 
-  ohMyOpenagent.useLocalModels = false;
+  ohMyOpenagent.harness = "free";
+  ohMyOpenagent.reHarness = "free";
 }

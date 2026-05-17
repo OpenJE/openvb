@@ -37,6 +37,22 @@ let
     hephaestus.model =        "opencode/gpt-5.5";
   };
 
+  freeAgents = {
+    sisyphus.model =          "opencode/qwen3.6-plus-free";
+    atlas.model =             "opencode/qwen3.6-plus-free";
+    sisyphus-junior.model =   "opencode/minimax-m2.5-free";
+    multimodal-looker.model = "opencode/qwen3.6-plus-free";
+    prometheus.model =        "opencode/deepseek-v4-flash-free";
+    metis.model =             "opencode/deepseek-v4-flash-free";
+    oracle.model =            "opencode/nemotron-3-super-free";
+    momus.model =             "opencode/nemotron-3-super-free";
+    librarian.model =         "opencode/qwen3.6-plus-free";
+    explore.model =           "opencode/qwen3.6-plus-free";
+    hephaestus.model =        "opencode/deepseek-v4-flash-free";
+
+    hephaestus.allow_non_gpt_model = true;
+  };
+
   localCategories = {
     visual-engineering.model = "lmstudio/gemma-4-31b-it";
     ultrabrain.model =         "lmstudio/qwen3.6-27b";
@@ -74,24 +90,73 @@ let
     re-synthesis.model = "opencode-go/kimi-k2.6";
     re-ops.model =       "opencode-go/minimax-m2.7";
   };
+
+  freeCategories = {
+    visual-engineering.model = "opencode/qwen3.6-plus-free";
+    ultrabrain.model =         "opencode/qwen3.6-plus-free";
+    deep.model =               "opencode/deepseek-v4-flash-free";
+    artistry.model =           "opencode/qwen3.6-plus-free";
+    quick.model =              "opencode/minimax-m2.5-free";
+    unspecified-high.model =   "opencode/qwen3.6-plus-free";
+    unspecified-low.model =    "opencode/minimax-m2.5-free";
+    writing.model =            "opencode/qwen3.6-plus-free";
+  };
+
+  freeReCategories = {
+    re-discovery.model = "opencode/qwen3.6-plus-free";
+    re-analysis.model =  "opencode/nemotron-3-super-free";
+    re-review.model =    "opencode/nemotron-3-super-free";
+    re-synthesis.model = "opencode/deepseek-v4-flash-free";
+    re-ops.model =       "opencode/minimax-m2.5-free";
+  };
+
+  agentsForHarness = {
+    local = localAgents;
+    opencode = providerAgents;
+    free = freeAgents;
+  };
+
+  categoriesForHarness = {
+    local = localCategories;
+    opencode = providerCategories;
+    free = freeCategories;
+  };
+
+  reCategoriesForHarness = {
+    local = localReCategories;
+    opencode = providerReCategories;
+    free = freeReCategories;
+  };
+
+  effectiveReHarness =
+    if cfg.reHarness == "inherit"
+    then cfg.harness
+    else cfg.reHarness;
 in
 {
   options.ohMyOpenagent = {
-    useLocalModels = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
+    harness = lib.mkOption {
+      type = lib.types.enum [ "local" "opencode" "free" ];
+      default = "local";
       description = ''
-        Whether oh-my-openagent should use local lmstudio models instead of
-        opencode provider models.
+        Which model harness oh-my-openagent should use.
+
+        - "local": use local lmstudio models.
+        - "opencode": use opencode provider models.
+        - "free": use free OpenCode Zen models.
       '';
     };
 
-    useReCloudModels = lib.mkOption {
-      type = lib.types.bool;
-      default = cfg.useLocalModels;
+    reHarness = lib.mkOption {
+      type = lib.types.enum [ "inherit" "local" "opencode" "free" ];
+      default = "inherit";
       description = ''
-        Whether reverse-engineering categories should use opencode provider
-        models instead of local lmstudio models.
+        Which model harness reverse-engineering categories should use.
+
+        - "inherit": use the same harness as ohMyOpenagent.harness.
+        - "local": use local lmstudio models.
+        - "opencode": use opencode provider models.
+        - "free": use free OpenCode Zen models.
       '';
     };
   };
@@ -107,18 +172,11 @@ in
         tmux_visualization = false;
       };
 
-      agents =
-        if cfg.useLocalModels
-        then localAgents
-        else providerAgents;
+      agents = agentsForHarness.${cfg.harness};
 
       categories =
-        (if cfg.useLocalModels
-         then localCategories
-         else providerCategories)
-        // (if cfg.useReCloudModels
-            then providerReCategories
-            else localReCategories);
+        categoriesForHarness.${cfg.harness}
+        // reCategoriesForHarness.${effectiveReHarness};
     };
   };
 }

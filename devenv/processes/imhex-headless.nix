@@ -1,19 +1,77 @@
-# ./devenv/processes/imhex-headless.nix
-#
-# Headless ImHex process with MCP plugin.
-# Runs ImHex under xvfb-run (virtual framebuffer) so it can start
-# without a display. The MCP plugin's TCP server listens on port 31339.
+# ./devenv/processes/imhex-mcp.nix
 
-{ config, pkgs, ... }: {
-  processes.imhex-headless = {
-    exec = ''
-      mkdir -p "$HOME/.config/imhex"
-      if [ ! -f "$HOME/.config/imhex/settings.json" ]; then
-        echo '{"network": {"enabled": true, "port": ${config.env.OPENVB_IMHEX_MCP_PORT}}}' > "$HOME/.config/imhex/settings.json"
+{ config, pkgs, ... }:
+let
+  localPackages = import ../packages/local.nix { inherit pkgs; };
+
+  serverBin = "${localPackages.imhex-mcp-server}/bin/imhex-mcp-server";
+
+  # ImHex Network Interface port.
+  # This is what imhex-mcp-server connects to.
+  imhexNetworkPort = "31337";
+
+  makeImHexMcpExec = /* bash */ ''
+    set -euo pipefail
+
+    is_imhex_network_listening() {
+      ${pkgs.iproute2}/bin/ss -H -ltn "sport = :${imhexNetworkPort}" | grep -q .
+    }
+
+    printf '%s\n' "Starting normal visible ImHex GUI..." >&2
+
+    # Uses patched ImHex from your devenv packages/PATH.
+    imhex &
+    imhex_pid=$!
+
+    cleanup() {
+      if [ -n "''${server_pid:-}" ]; then
+        kill "$server_pid" 2>/dev/null || true
       fi
-      exec ${pkgs.xorg.xvfb}/bin/xvfb-run ${pkgs.imhex}/bin/imhex
-    '';
+      if [ -n "''${imhex_pid:-}" ]; then
+        kill "$imhex_pid" 2>/dev/null || true
+      fi
+    }
+    trap cleanup EXIT INT TERM
+
+    printf 'Waiting for ImHex Network Interface on 127.0.0.1:${imhexNetworkPort}\n' >&2
+
+    for i in $(seq 1 120); do
+      if ! kill -0 "$imhex_pid" 2>/dev/null; then
+        printf '%s\n' "ImHex exited before opening the Network Interface." >&2
+        wait "$imhex_pid" || true
+        exit 1
+      fi
+
+      # Do not use nc here; ss checks the listener without connecting to it.
+      if is_imhex_network_listening; then
+        printf 'ImHex Network Interface is listening on 127.0.0.1:${imhexNetworkPort}\n' >&2
+        break
+      fi
+
+      if [ "$i" -eq 120 ]; then
+        printf '%s\n' "Timed out waiting for ImHex Network Interface." >&2
+        ${pkgs.iproute2}/bin/ss -ltnp || true
+        exit 1
+      fi
+
+      sleep 1
+    done
+
+    printf 'Starting imhex-mcp-server connected to ImHex on 127.0.0.1:${imhexNetworkPort}\n' >&2
+
+    "${serverBin}" \
+      --host 127.0.0.1 \
+      --port ${imhexNetworkPort} &
+    server_pid=$!
+
+    wait "$server_pid"
+  '';
+in {
+  processes.imhex-mcp = {
+    exec = makeImHexMcpExec;
     cwd = config.git.root;
-    ready.exec = "${pkgs.netcat-openbsd}/bin/nc -z 127.0.0.1 ${config.env.OPENVB_IMHEX_MCP_PORT}";
+
+    # The MCP server is probably stdio-based, so do not wait on a TCP MCP port.
+    ready.exec = "${pkgs.coreutils}/bin/true";
   };
 }

@@ -3,6 +3,7 @@
 { pkgs, ... }:
 let
   py311 = pkgs.python311Packages;
+  py312 = pkgs.python312Packages;
 
   _imhex-mcp-src = pkgs.fetchFromGitHub {
     owner = "jmpnop";
@@ -114,7 +115,7 @@ in rec {
     };
   };
 
-  imhex-mcp-server = py311.buildPythonApplication {
+  imhex-mcp-server = py312.buildPythonApplication {
     pname = "imhex-mcp-server";
     version = "0.1.0";
 
@@ -122,29 +123,41 @@ in rec {
     sourceRoot = "source/mcp-server";
 
     format = "pyproject";
-    nativeBuildInputs = [ py311.setuptools ];
+    nativeBuildInputs = [ py312.setuptools ];
 
     postPatch = ''
-      # Fix logger bug: server.py uses logger.warning() before logger is defined
+      # Make sibling ../lib available to the installed server.
+      cp -r ../lib ./imhex_mcp_lib
+
+      # Fix logger bug: server.py uses logger.warning() before logger is defined.
       substituteInPlace server.py \
         --replace-fail \
           '    logger.warning("Enhanced client not available - performance optimizations disabled")' \
           '    logging.warning("Enhanced client not available - performance optimizations disabled")'
 
-      # Add sync entry point for console_scripts (main() is async)
+      # Ensure the copied library package is importable.
+      substituteInPlace server.py \
+        --replace-fail \
+          'import logging' \
+          'import logging
+  import sys
+  from pathlib import Path
+  sys.path.insert(0, str(Path(__file__).resolve().parent / "imhex_mcp_lib"))'
+
+      # Add sync entry point for console_scripts (main() is async).
       cat >> server.py << 'PYEOF'
 
-def entry_point():
-    """Sync entry point for console_scripts."""
-    asyncio.run(main())
-PYEOF
+  def entry_point():
+      """Sync entry point for console_scripts."""
+      asyncio.run(main())
+  PYEOF
 
-      # Update entry point to use sync wrapper
+      # Update entry point to use sync wrapper.
       substituteInPlace pyproject.toml \
         --replace '"server:main"' '"server:entry_point"'
     '';
 
-    propagatedBuildInputs = with py311; [
+    propagatedBuildInputs = with py312; [
       mcp
       pydantic
       zstandard
