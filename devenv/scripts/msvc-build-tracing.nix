@@ -31,8 +31,16 @@ in {
         esac
       fi
 
-      prep_user_arg="--user 0:0"
-      docker_user_arg="--user $uid:$gid"
+      if [ "$rootless_docker" = true ]; then
+        # In rootless Docker, container root maps to the host user.
+        # Keep Wine prefix ownership consistent inside the container.
+        prep_user_arg="--user 0:0"
+        docker_user_arg="--user 0:0"
+      else
+        # In rootful Docker, avoid root-owned build artifacts on the host.
+        prep_user_arg="--user 0:0"
+        docker_user_arg="--user $uid:$gid"
+      fi
 
       if ! "$docker" info >/dev/null 2>&1; then
         printf '%s\n' \

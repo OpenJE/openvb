@@ -3,6 +3,21 @@
 let
   localPackages = import ./local.nix { inherit pkgs; };
 
+  f3demoDir = "${localPackages.f3demo}/share/f3demo";
+
+  f3demoBuildFiles =
+    lib.mapAttrs'
+      (name: _type:
+        lib.nameValuePair "build/${name}" {
+          source = "${f3demoDir}/${name}";
+        }
+      )
+      (
+        lib.filterAttrs
+          (name: _type: name != "F3.exe")
+          (builtins.readDir f3demoDir)
+      );
+
   imhex-mcp-src = localPackages.imhex-mcp-src;
 
   imhex-src = pkgs.fetchFromGitHub {
@@ -207,6 +222,8 @@ let
   };
 in
 {
+  files = f3demoBuildFiles;
+
   packages = (with pkgs; [
     docker
     gdb
