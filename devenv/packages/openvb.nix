@@ -1,72 +1,222 @@
-# ./devenv/packages/openvb.nix
+{ lib, pkgs, ... }:
 
-{ inputs, lib, pkgs, ... }:
 let
   localPackages = import ./local.nix { inherit pkgs; };
-  imhex-unpatched = inputs.imhex.legacyPackages.${pkgs.stdenv.hostPlatform.system}.imhex;
 
-  # Van Buren ImHex patterns — fetched from GitHub and baked into the derivation.
-  je-patterns = pkgs.fetchFromGitHub {
-    owner = "OpenJE";
-    repo = "patterns";
-    rev = "9f845917303ab0c0efc748bcf12654c57a5ec720";
-    hash = "sha256-3xefMAdZf2jEVpUVn4jHvt+zAbJoFUcKEDPzwyp/Ww8=";
+  imhex-mcp-src = localPackages.imhex-mcp-src;
+
+  imhex-src = pkgs.fetchFromGitHub {
+    owner = "WerWolv";
+    repo = "ImHex";
+
+    # Match whatever the imhexMCP fork expects.
+    # If this hash is wrong, Nix will print the correct one.
+    rev = "v1.38.1";
+    hash = "sha256-lkpFiXuEF72nBkPuInv683Ct1Uu+uZ0PGejI9cVEUp0=";
+
+    fetchSubmodules = true;
   };
 
-  # Patched imhex with MCP plugin built in.
-  # Applies 9 patches (0002 skipped due to API mismatch: FileProvider::open()
-  # return type changed from bool to OpenResult in ImHex 1.38.1).
-  # Patch order per imhexMCP PATCH_MANIFEST.md: 0007 → 0008 → 0009 → 0010 → 0011 → 0012 → 0013 → 0014 → 0001
-  imhex = imhex-unpatched.overrideAttrs (old: {
-    patches = (old.patches or []) ++ [
-      "${localPackages.imhex-mcp-src}/patches/0007-fix-Replace-RequestOpenFile-event-based-approach-wit.patch"
-      "${localPackages.imhex-mcp-src}/patches/0008-fix-Improve-disassembly-and-diff-error-handling.patch"
-      "${localPackages.imhex-mcp-src}/patches/0009-fix-Implement-TaskManager-based-diff-analysis-ALL-v0.patch"
-      "${localPackages.imhex-mcp-src}/patches/0010-feat-Add-batch-open_directory-endpoint-v1.0.0-Phase-.patch"
-      "${localPackages.imhex-mcp-src}/patches/0011-Add-batch-search-endpoint-for-v1.0.0-Phase-2.patch"
-      "${localPackages.imhex-mcp-src}/patches/0012-Add-batch-hash-endpoint-for-v1.0.0-Phase-2.patch"
-      "${localPackages.imhex-mcp-src}/patches/0013-Fix-glob-pattern-matching-in-batch-open_directory.patch"
-      "${localPackages.imhex-mcp-src}/patches/0014-Fix-glob-pattern-escaping-bug-in-batch-open_director.patch"
-      "${localPackages.imhex-mcp-src}/patches/0001-feat-Implement-queue-based-file-opening-to-fix-netwo.patch"
-      # NOTE: Patch 0002 skipped — API mismatch (bool -> OpenResult return type change)
+  imhexBuildInputs = with pkgs; [
+    openssl
+    curl
+    zlib
+    xz
+    bzip2
+    mbedtls
+    file
+
+    libGL
+    glfw
+    freetype
+    fontconfig
+    dbus
+    gtk3
+
+    libx11
+    libxext
+    libxcursor
+    libxi
+    libxinerama
+    libxrandr
+    libxrender
+    libxcb
+    libSM
+    libICE
+
+    wayland
+
+    # Provides libstdc++.so.6 and libgcc_s.so.1.
+    stdenv.cc.cc.lib
+  ];
+
+  imhex-mcp = pkgs.stdenv.mkDerivation {
+    pname = "imhex-mcp";
+    version = "unstable";
+
+    src = imhex-mcp-src;
+
+    nativeBuildInputs = with pkgs; [
+      cmake
+      ninja
+      pkg-config
+      python3
+      git
+      patch
+      patchelf
     ];
 
-    # Port configuration:
-    # The C++ plugin registers endpoints via ImHex's CommunicationInterface (no
-    # hardcoded port — ImHex manages it via settings). The Python MCP server
-    # reads port from config.yaml (default 31337) and supports --port CLI arg.
-    # The port is runtime-configurable; no source patch needed here.
+    buildInputs = imhexBuildInputs;
+    dontUseCmakeConfigure = true;
 
-    # postPatch: Fix MCP plugin CMakeLists.txt and source code for nixpkgs build.
-    # - CMakeLists.txt: Remove 'builtin' from LIBRARIES (MODULE_LIBRARY can't link
-    #   into other targets); add fonts include path for transitive <fonts/vscode_icons.hpp>.
-    # - file_provider.hpp: Make open(bool) public — patches were designed for ImHex
-    #   version where this was already public (old patch 02-fileprovider-public-open.patch).
-    # - plugin_mcp.cpp: Handle OpenResult return type (ImHex 1.38.1 changed from bool).
-    postPatch = (old.postPatch or "") + ''
-      sed -i '/^[[:space:]]*builtin$/d' plugins/mcp/CMakeLists.txt
-      sed -i 's|''${CMAKE_SOURCE_DIR}/plugins/builtin/include|&\n        ''${CMAKE_SOURCE_DIR}/plugins/fonts/include|' plugins/mcp/CMakeLists.txt
-      sed -i '/^        OpenResult open(bool memoryMapped);/i\    public:' plugins/builtin/include/content/providers/file_provider.hpp
-      sed -i 's|if (!fileProvider->open(false))|if (fileProvider->open(false).isFailure())|' plugins/mcp/source/plugin_mcp.cpp
+    configurePhase = ''
+      runHook preConfigure
+
+      chmod -R u+w .
+      patchShebangs .
+
+      cp -R ${imhex-src} ImHex
+      chmod -R u+w ImHex
+
+      echo "Applying imhexMCP patches in manifest-compatible order..."
+
+      # Do not apply every patch in the directory.
+      # Some old compatibility patches target older ImHex APIs.
+      # This order matches the working manifest path:
+      # 0007 -> 0008 -> 0009 -> 0010 -> 0011 -> 0012 -> 0013 -> 0014 -> 0001
+      for patch_num in 0007 0008 0009 0010 0011 0012 0013 0014 0001; do
+        patch_file="$(find patches -maxdepth 1 -type f -name "$patch_num-*.patch" | sort | head -n 1)"
+
+        if [ -z "$patch_file" ]; then
+          echo "Missing imhexMCP patch $patch_num"
+          find patches -maxdepth 1 -type f -name '*.patch' | sort
+          exit 1
+        fi
+
+        echo "Applying $patch_file"
+        patch -d ImHex -p1 < "$patch_file"
+      done
+
+      echo "Fixing MCP plugin CMake for Nix/ImHex MODULE_LIBRARY builtin target..."
+
+      sed -i '/^[[:space:]]*builtin[[:space:]]*$/d' ImHex/plugins/mcp/CMakeLists.txt
+
+      sed -i \
+        's|''${CMAKE_SOURCE_DIR}/plugins/builtin/include|&\n        ''${CMAKE_SOURCE_DIR}/plugins/fonts/include|' \
+        ImHex/plugins/mcp/CMakeLists.txt
+
+      sed -i \
+        '/^        OpenResult open(bool memoryMapped);/i\    public:' \
+        ImHex/plugins/builtin/include/content/providers/file_provider.hpp
+
+      substituteInPlace ImHex/plugins/mcp/source/plugin_mcp.cpp \
+        --replace-fail \
+          'if (!fileProvider->open(false))' \
+          'if (fileProvider->open(false).isFailure())'
+
+      runHook postConfigure
     '';
 
-    # Bundle Van Buren patterns into the ImHex includes directory.
-    # This makes `import je.xxx` resolution available declaratively.
-    postInstall = (old.postInstall or "") + ''
-      mkdir -p $out/share/imhex/includes/je
-      cp -r ${je-patterns}/includes/je/* $out/share/imhex/includes/je/
+    buildPhase = ''
+      runHook preBuild
+
+      cd ImHex
+
+      cmake -S . -B build \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="$out" \
+        -DSYSTEM_PLUGINS_LOCATION="$out/lib/imhex/plugins"
+
+      cmake --build build
+
+      cd ..
+
+      runHook postBuild
     '';
-  });
-in {
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p "$out/bin"
+      mkdir -p "$out/lib"
+
+      imhex_bin="$(find ImHex/build -type f -perm -0100 -name imhex | head -n 1)"
+
+      if [ -z "$imhex_bin" ]; then
+        echo "Could not find built imhex binary"
+        find ImHex/build -type f -perm -0100 | sort || true
+        exit 1
+      fi
+
+      imhex_build_dir="$(dirname "$imhex_bin")"
+
+      echo "ImHex binary: $imhex_bin"
+      echo "ImHex build dir: $imhex_build_dir"
+
+      cp "$imhex_bin" "$out/bin/imhex"
+
+      # This is the important part:
+      # ImHex expects plugins next to the executable in a sibling/relative plugins dir.
+      # The CMake macro emits plugins to ''${IMHEX_MAIN_OUTPUT_DIRECTORY}/plugins.
+      if [ ! -d "$imhex_build_dir/plugins" ]; then
+        echo "Expected plugin output dir missing: $imhex_build_dir/plugins"
+        echo "Available hexplug files:"
+        find ImHex/build -type f \( -name '*.hexplug' -o -name '*.hexpluglib' \) -print | sort || true
+        exit 1
+      fi
+
+      cp -R "$imhex_build_dir/plugins" "$out/bin/plugins"
+
+      if [ ! -f "$out/bin/plugins/builtin.hexplug" ]; then
+        echo "builtin.hexplug missing from $out/bin/plugins"
+        echo "Installed plugins:"
+        find "$out/bin/plugins" -maxdepth 2 -type f -print | sort || true
+        echo "Built plugins:"
+        find ImHex/build -type f \( -name '*.hexplug' -o -name '*.hexpluglib' \) -print | sort || true
+        exit 1
+      fi
+
+      # Install ImHex's own shared libraries.
+      find ImHex/build -type f \
+        \( -name 'libimhex.so*' -o -name 'lib*.so*' \) \
+        -exec cp -P {} "$out/lib/" \;
+
+      runtime_rpath="$out/lib:$out/bin/plugins:${lib.makeLibraryPath imhexBuildInputs}"
+
+      patchelf --set-rpath "$runtime_rpath" "$out/bin/imhex"
+
+      find "$out/lib" "$out/bin/plugins" -type f | while read -r elf; do
+        if patchelf --print-rpath "$elf" >/dev/null 2>&1; then
+          patchelf --set-rpath "$runtime_rpath" "$elf" || true
+        fi
+      done
+
+      echo "Final installed plugin tree:"
+      find "$out/bin/plugins" -maxdepth 1 -type f -name '*.hexplug*' -print | sort
+
+      runHook postInstall
+    '';
+
+    meta = with lib; {
+      description = "ImHex built with dfdgsdfg/imhexMCP patches";
+      homepage = "https://github.com/dfdgsdfg/imhexMCP";
+      platforms = platforms.linux;
+      mainProgram = "imhex";
+    };
+  };
+in
+{
   packages = (with pkgs; [
     docker
     gdb
     ninja
-    (lib.getBin cppcheck)
+    (lib.getBin pkgs.cppcheck)
     pkgsCross.mingw32.stdenv.cc
     uv
+    iproute2
   ]) ++ [
-    imhex
+    imhex-mcp
     localPackages.imhex-mcp-server
     localPackages.f3demo
     localPackages.hexpat-language-server

@@ -1,17 +1,19 @@
 # ./devenv/packages/local.nix
 
 { pkgs, ... }:
+
 let
   py311 = pkgs.python311Packages;
   py312 = pkgs.python312Packages;
 
   _imhex-mcp-src = pkgs.fetchFromGitHub {
-    owner = "jmpnop";
+    owner = "dfdgsdfg";
     repo = "imhexMCP";
-    rev = "c9ceb7f791e5e9233c555a1fc3770b4403d08dcf";
-    hash = "sha256-gDcUYTQrYBCU/XI+Y/dJIc3nFNFInMMB0HQuMNblTOg=";
+    rev = "45b25b65205a3f3c1348c910f083cbcd5819fed9";
+    sha256 = "0wwy57x8dcli9yxwzjc68zxwcqf2rwgrbnjr53vanmkjhh7xsbxh";
   };
-in rec {
+in
+rec {
   imhex-mcp-src = _imhex-mcp-src;
 
   f3demo = pkgs.callPackage ./f3demo.nix { };
@@ -102,6 +104,7 @@ in rec {
 
     format = "pyproject";
     nativeBuildInputs = [ py311.setuptools ];
+
     propagatedBuildInputs = [
       idapro
       py311.tomli-w
@@ -123,7 +126,11 @@ in rec {
     sourceRoot = "source/mcp-server";
 
     format = "pyproject";
-    nativeBuildInputs = [ py312.setuptools ];
+
+    nativeBuildInputs = [
+      py312.setuptools
+      pkgs.python312
+    ];
 
     postPatch = ''
       # Make sibling ../lib available to the installed server.
@@ -140,28 +147,44 @@ in rec {
         --replace-fail \
           'import logging' \
           'import logging
-  import sys
-  from pathlib import Path
-  sys.path.insert(0, str(Path(__file__).resolve().parent / "imhex_mcp_lib"))'
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent / "imhex_mcp_lib"))'
 
-      # Remove redundant imhex_client.connect() in main() - send_command() handles its own connect lifecycle.
-      # Single-line substitution to avoid multi-line whitespace issues in nix substituteInPlace.
+      # Remove redundant imhex_client.connect() in main().
+      # send_command() handles its own connect lifecycle.
       substituteInPlace server.py \
         --replace-fail \
           '        imhex_client.connect()' \
           '        # send_command() handles its own connect lifecycle'
 
-      # Add sync entry point for console_scripts (main() is async).
-      cat >> server.py << 'PYEOF'
+      # Fix Python code that accidentally uses JSON boolean/null syntax.
+      # OpenCode tools/list was failing with: name 'false' is not defined.
+      ${pkgs.python312}/bin/python - <<'PY'
+from pathlib import Path
+import re
 
-  def entry_point():
-      """Sync entry point for console_scripts."""
-      asyncio.run(main())
-  PYEOF
+path = Path("server.py")
+text = path.read_text()
+
+text = re.sub(r'(?<![A-Za-z0-9_])false(?![A-Za-z0-9_])', 'False', text)
+text = re.sub(r'(?<![A-Za-z0-9_])true(?![A-Za-z0-9_])', 'True', text)
+text = re.sub(r'(?<![A-Za-z0-9_])null(?![A-Za-z0-9_])', 'None', text)
+
+path.write_text(text)
+PY
+
+      # Add sync entry point for console_scripts because main() is async.
+      cat >> server.py <<'PYEOF'
+
+def entry_point():
+    """Sync entry point for console_scripts."""
+    asyncio.run(main())
+PYEOF
 
       # Update entry point to use sync wrapper.
       substituteInPlace pyproject.toml \
-        --replace '"server:main"' '"server:entry_point"'
+        --replace-fail '"server:main"' '"server:entry_point"'
     '';
 
     propagatedBuildInputs = with py312; [
@@ -174,7 +197,7 @@ in rec {
 
     meta = with pkgs.lib; {
       description = "MCP server for ImHex hex editor - AI-powered binary analysis";
-      homepage = "https://github.com/jmpnop/imhexMCP";
+      homepage = "https://github.com/dfdgsdfg/imhexMCP";
       license = licenses.gpl2;
       platforms = platforms.linux;
       mainProgram = "imhex-mcp-server";

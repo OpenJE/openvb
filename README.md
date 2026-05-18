@@ -208,3 +208,13 @@ If you want to contribute to this project, contact me on **Discord**: **shenmaru
 - [devenv.sh](https://devenv.sh/getting-started/) — Devenv getting started guide
 - [NixOS Download](https://nixos.org/download/#download-nix) — Nix installer
 - [NixOS-WSL](https://nix-community.github.io/NixOS-WSL/install.html) — NixOS-WSL installation
+
+### Community Resources & Tools
+
+These external projects were invaluable for understanding Van Buren's file formats and data structures:
+
+- [VanBurenTools](https://github.com/kran27/VanBurenTools) — C# launcher, editor, and format parsers
+- [VBEditor](https://github.com/kran27/VBEditor) — MAP/CRT/STF editor
+- [Van-Buren-Explorer](https://github.com/bsimser/Van-Buren-Explorer) — GRP/RHT viewer
+- [Van-Buren-Editor](https://github.com/L33TM4S73R/Van-Buren-Editor) — C creature/item editor
+- [Archive.org bundle](https://archive.org/details/f3demo) — Tech demo + original tools

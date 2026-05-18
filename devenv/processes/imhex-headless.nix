@@ -1,65 +1,69 @@
-# ./devenv/processes/imhex-headless.nix
-#
-# ImHex GUI-only process. Starts ImHex and waits for the Network Interface
-# to be listening on port 31337. The MCP server is managed separately by
-# OpenCode's opencode.mcp.imhex configuration.
-
 { config, pkgs, ... }:
+
 let
+  imhexNetworkHost = "127.0.0.1";
   imhexNetworkPort = "31337";
 
-  makeImHexHeadlessExec = /* bash */ ''
-    set -euo pipefail
+  runImHex = pkgs.writeShellApplication {
+    name = "run-imhex-mcp";
 
-    is_imhex_network_listening() {
-      ${pkgs.iproute2}/bin/ss -H -ltn "sport = :${imhexNetworkPort}" | grep -q .
-    }
+    runtimeInputs = with pkgs; [
+      coreutils
+      gnugrep
+      iproute2
+    ];
 
-    printf '%s\n' "Starting normal visible ImHex GUI..." >&2
+    text = ''
+      set -euo pipefail
 
-    # Uses patched ImHex from your devenv packages/PATH.
-    imhex &
-    imhex_pid=$!
+      is_imhex_network_listening() {
+        ss -H -ltn "sport = :${imhexNetworkPort}" | grep -q .
+      }
 
-    cleanup() {
-      if [ -n "''${imhex_pid:-}" ]; then
+      echo "Starting imhexMCP ImHex GUI..." >&2
+
+      imhex &
+      imhex_pid="$!"
+
+      cleanup() {
         kill "$imhex_pid" 2>/dev/null || true
-      fi
-    }
-    trap cleanup EXIT INT TERM
+      }
 
-    printf 'Waiting for ImHex Network Interface on 127.0.0.1:${imhexNetworkPort}\n' >&2
+      trap cleanup EXIT INT TERM
 
-    for i in $(seq 1 120); do
-      if ! kill -0 "$imhex_pid" 2>/dev/null; then
-        printf '%s\n' "ImHex exited before opening the Network Interface." >&2
-        wait "$imhex_pid" || true
-        exit 1
-      fi
+      echo "Waiting for ImHex Network Interface on ${imhexNetworkHost}:${imhexNetworkPort}" >&2
 
-      if is_imhex_network_listening; then
-        printf 'ImHex Network Interface is listening on 127.0.0.1:${imhexNetworkPort}\n' >&2
-        break
-      fi
+      for i in $(seq 1 120); do
+        if ! kill -0 "$imhex_pid" 2>/dev/null; then
+          echo "ImHex exited before the Network Interface became ready." >&2
+          wait "$imhex_pid" || true
+          exit 1
+        fi
 
-      if [ "$i" -eq 120 ]; then
-        printf '%s\n' "Timed out waiting for ImHex Network Interface." >&2
-        ${pkgs.iproute2}/bin/ss -ltnp || true
-        exit 1
-      fi
+        if is_imhex_network_listening; then
+          echo "ImHex Network Interface is ready on ${imhexNetworkHost}:${imhexNetworkPort}" >&2
+          wait "$imhex_pid"
+          exit "$?"
+        fi
 
-      sleep 1
-    done
+        if [ "$i" -eq 120 ]; then
+          echo "Timed out waiting for ImHex Network Interface." >&2
+          ss -ltnp >&2 || true
+          exit 1
+        fi
 
-    # Keep the process alive as long as ImHex is running.
-    wait "$imhex_pid"
-  '';
-in {
-  processes.imhex-headless = {
-    exec = makeImHexHeadlessExec;
+        sleep 1
+      done
+    '';
+  };
+in
+{
+  env.IMHEX_HOST = imhexNetworkHost;
+  env.IMHEX_PORT = imhexNetworkPort;
+
+  processes.imhex = {
+    exec = "${runImHex}/bin/run-imhex-mcp";
     cwd = config.git.root;
-
-    # ImHex is ready when the Network Interface port is listening.
     ready.exec = "${pkgs.coreutils}/bin/true";
   };
 }
