@@ -8,17 +8,17 @@ let
   schema = "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/v4.0.0/assets/oh-my-opencode.schema.json";
 
   localAgents = {
-    sisyphus.model =          "lmstudio/qwen3.6-27b";
-    atlas.model =             "lmstudio/qwen3.6-27b";
+    sisyphus.model =          /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
+    atlas.model =             /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
     sisyphus-junior.model =   "lmstudio/qwen3.6-35b-a3b";
-    multimodal-looker.model = "lmstudio/gemma-4-31b-it";
-    prometheus.model =        "lmstudio/qwen3.6-27b";
-    metis.model =             "lmstudio/qwen3.6-27b";
-    oracle.model =            "lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";
-    momus.model =             "lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";
+    multimodal-looker.model = /*"lmstudio/gemma-4-31b-it";*/ "lmstudio/qwen3.6-35b-a3b";
+    prometheus.model =        /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
+    metis.model =             /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
+    oracle.model =            /*"lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";*/ "lmstudio/qwen3.6-35b-a3b";
+    momus.model =             /*"lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";*/ "lmstudio/qwen3.6-35b-a3b";
     librarian.model =         "lmstudio/qwen3.6-35b-a3b";
     explore.model =           "lmstudio/qwen3.6-35b-a3b";
-    hephaestus.model =        "lmstudio/qwen3.6-27b";
+    hephaestus.model =        /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
 
     hephaestus.allow_non_gpt_model = true;
   };
@@ -54,22 +54,22 @@ let
   };
 
   localCategories = {
-    visual-engineering.model = "lmstudio/gemma-4-31b-it";
-    ultrabrain.model =         "lmstudio/qwen3.6-27b";
-    deep.model =               "lmstudio/qwen3.6-27b";
-    artistry.model =           "lmstudio/gemma-4-31b-it";
-    quick.model =              "lmstudio/glm-4.7-flash";
+    visual-engineering.model = /*"lmstudio/gemma-4-31b-it";*/ "lmstudio/qwen3.6-35b-a3b";
+    ultrabrain.model =         /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
+    deep.model =               /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
+    artistry.model =           /*"lmstudio/gemma-4-31b-it";*/ "lmstudio/qwen3.6-35b-a3b";
+    quick.model =              /*"lmstudio/glm-4.7-flash";*/ "lmstudio/qwen3.6-35b-a3b";
     unspecified-high.model =   "lmstudio/qwen3.6-35b-a3b";
-    unspecified-low.model =    "lmstudio/glm-4.7-flash";
-    writing.model =            "lmstudio/gemma-4-31b-it";
+    unspecified-low.model =    /*"lmstudio/glm-4.7-flash";*/ "lmstudio/qwen3.6-35b-a3b";
+    writing.model =            /*"lmstudio/gemma-4-31b-it";*/ "lmstudio/qwen3.6-35b-a3b";
   };
 
   localReCategories = {
     re-discovery.model = "lmstudio/qwen3.6-35b-a3b";
-    re-analysis.model =  "lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";
-    re-review.model =    "lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";
-    re-synthesis.model = "lmstudio/qwen3.6-27b";
-    re-ops.model =       "lmstudio/glm-4.7-flash";
+    re-analysis.model =  /*"lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";*/ "lmstudio/qwen3.6-35b-a3b";
+    re-review.model =    /*"lmstudio/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning";*/ "lmstudio/qwen3.6-35b-a3b";
+    re-synthesis.model = /*"lmstudio/qwen3.6-27b";*/ "lmstudio/qwen3.6-35b-a3b";
+    re-ops.model =       /*"lmstudio/glm-4.7-flash";*/ "lmstudio/qwen3.6-35b-a3b";
   };
 
   providerCategories = {

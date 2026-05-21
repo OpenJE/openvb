@@ -12,6 +12,6 @@
     ./opencode
   ];
 
-  ohMyOpenagent.harness = "opencode";
-  ohMyOpenagent.reHarness = "opencode";
+  ohMyOpenagent.harness = "local";
+  ohMyOpenagent.reHarness = "local";
 }
