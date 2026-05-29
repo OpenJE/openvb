@@ -3,5 +3,6 @@
 { ... }: {
   imports = [
     ./openvb.nix
+    ./codegraph.nix
   ];
 }

@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ inputs, lib, pkgs, ... }:
 
 let
   localPackages = import ./local.nix { inherit pkgs; };
@@ -233,6 +233,7 @@ in
     uv
     iproute2
   ]) ++ [
+    inputs.wrkflw.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wrkflw
     imhex-mcp
     localPackages.imhex-mcp-server
     localPackages.f3demo

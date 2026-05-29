@@ -7,6 +7,10 @@ inputs:
     url: github:cachix/devenv-nixpkgs/rolling
   imhex:
     url: github:nixos/nixpkgs/f2642a9101a8bedccbc9b7870f3cb9eda657f1a9
+  wrkflw:
+    url: github:nixos/nixpkgs/19ca7f6a89a7a8c94c75afe2c9f4865925a53355
+  codegraph:
+    url: github:Shenmarukai/codegraph/103223adf0718cf1932fbc29b580daf1de0bb5f0
 
 nixpkgs:
   permitted_unfree_packages:

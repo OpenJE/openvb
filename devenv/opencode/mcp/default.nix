@@ -7,5 +7,6 @@
     ./math.nix
     ./microsoft-learn.nix
     ./devenv.nix
+    ./codegraph.nix
   ];
 }

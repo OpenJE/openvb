@@ -24,6 +24,8 @@ devenv.local.yaml
 # pre-commit
 .pre-commit-config.yaml
 
+node_modules
+
 .opencode
 opencode.jsonc
 .clangd
@@ -31,3 +33,5 @@ opencode.jsonc
 .rework/re.db
 .rework/re.db-shm
 .rework/re.db-wal
+
+van-buren-docs
