@@ -172,12 +172,12 @@ namespace F3 {
 	// 0x5ACE00
 	int Main() {
 		tracing::instrument( tracing::LOCATION, "" );
-		//F3::Startup();
-		//F3::RegisterCommand( ArgList: aQuit, func_ptr: j_F3::Quit );
+		F3::Startup();
+		F3::RegisterCommand("quit", reinterpret_cast<void (__stdcall *)()>(F3::Quit));
 		while ( ProcessMessagesAndUpdateTime() ) {
-			//F3::GameStateLoop();
+			F3::GameStateLoop();
 		}
-		//F3::Shutdown();
+		F3::Shutdown();
 		return 1;
 	}
 
