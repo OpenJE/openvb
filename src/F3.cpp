@@ -214,6 +214,50 @@ namespace F3 {
 		}
 	}
 
+	// 0x5ACDE0
+	void GameStateLoop() {
+		tracing::instrument( tracing::LOCATION, "" );
+
+		char* functions = reinterpret_cast<char*>(g_commandRegistryRoot);
+		do {
+			JE::cls_0x4d8d70* node = *reinterpret_cast<JE::cls_0x4d8d70**>(functions);
+			if ( node ) {
+				typedef void (__thiscall *CommandFunc)( JE::cls_0x4d8d70* );
+				CommandFunc func = reinterpret_cast<CommandFunc>(
+					*(int**)((char*)(uintptr_t)node + 12)
+				);
+				func( node );
+			}
+			functions += 8;
+		} while ( functions < g_commandArrayEnd );
+	}
+
+	// 0x5ACDA0
+	void F3::Shutdown() {
+		tracing::instrument( tracing::LOCATION, "" );
+
+		JE::LogDebugString( NULL, "Shutdown()\r\n" );
+
+		// Walk reverse init table from &off_6FF70C down to F3::functions
+		void** terminate = reinterpret_cast<void**>(&g_commandArrayEnd);
+
+		do {
+			terminate -= 2; // Move back one {func, result} pair (8 bytes)
+			void* resultPtr = *terminate; // The result from Startup's init call
+
+			if ( resultPtr ) {
+				// Call cleanup on the result: method at offset +8 of vtable
+				typedef void (__thiscall *CleanupFunc)(void*, int);
+				CleanupFunc func = reinterpret_cast<CleanupFunc>(
+					*(int**)(static_cast<char*>(resultPtr) + 8)
+				);
+				func(resultPtr, 1);
+			}
+
+			*terminate = NULL; // Clear the result slot
+		} while ( terminate > reinterpret_cast<void**>(&g_commandRegistryRoot) );
+	}
+
 	/*
 	// 0x497B70
 	std::filebuf* ShutdownGlobalLogStream() {

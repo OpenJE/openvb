@@ -7,6 +7,9 @@
 #include <ctime>
 #include <fstream>
 
+// Forward declaration (full include in F3.cpp)
+namespace JE { class cls_0x4d8d70; }
+
 // F3 Globals
 namespace F3 {
 	// 0x70BFA0 (F3::global_hInstance_0x70bfa0)
