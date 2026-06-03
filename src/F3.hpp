@@ -44,6 +44,16 @@ namespace F3 {
 	// 0x70FD41 (CHAR_0070fd41)
 	static char CHAR_0070fd41[ 2 ];
 
+	// ptr_F3::InitializeMemorySystem table — array of {func_ptr, result} pairs ending at sentinel 0x619089
+	extern void** g_initFuncTable;        // 0x6FF6C8
+	
+	// F3::functions BST root for command registry — starts at 0x6FF6CC  
+	extern JE::cls_0x4d8d70* g_commandRegistryRoot;  
+    
+	// End markers (sentinel values from binary data section)
+	extern char* g_initTableEnd;          // 0x6FF708 — sentinel = 0x619089  
+	extern char* g_commandArrayEnd;       // 0x6FF70C
+
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath );
 	// 0x56B220
@@ -65,15 +75,15 @@ namespace F3 {
 	// 0x56AFF0
 	void Quit();
 	// 0x5ACD60
-	//void Startup();
+	int (*Startup())(void);
 	// 0x59F5D0
-	//void RegisterCommand( const char* command, void (*func)() );
+	void RegisterCommand(const char* ArgList, void (__stdcall *func_ptr)());
 	// 0x5ACDE0
-	//void GameStateLoop();
+	void GameStateLoop();
 	// 0x56AF60
 	bool ProcessMessagesAndUpdateTime();
 	// 0x5ACDA0
-	//void Shutdown();
+	void Shutdown();
 	// 0x48CCA0
 	//void SetStartupTime( time_t time );
 	// 0x61B067

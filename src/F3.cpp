@@ -8,9 +8,16 @@
 
 #include "JE.hpp"
 #include "F3.hpp"
+#include "JE/cls_0x4d8d70.hpp"
 #include "tracing.hpp"
 
 namespace F3 {
+	// Global variable definitions with addresses from binary data section
+	void** g_initFuncTable = reinterpret_cast<void**>(0x6FF6C8);                // ptr_F3::InitializeMemorySystem
+	JE::cls_0x4d8d70* g_commandRegistryRoot = NULL;                             // F3::functions BST root
+	char* g_initTableEnd = reinterpret_cast<char*>(0x619089);                   // off_6FF708 sentinel value
+	char* g_commandArrayEnd = reinterpret_cast<char*>(0x6FF70C);                // off_6FF70C end marker
+
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath ) {
 		tracing::instrument( tracing::LOCATION, "pcModulePath=%s", pcModulePath );
