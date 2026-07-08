@@ -12,6 +12,8 @@ F3.exe.nam
 F3.exe.til
 
 .sisyphus
+.omo
+.codegraph
 
 # Devenv
 .devenv*

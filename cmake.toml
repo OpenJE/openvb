@@ -17,15 +17,15 @@ OPENVB_TRACING = false
 
 [target.openje]
 type = "static"
-sources = ["modules/openje/src/JE.cpp", "modules/openje/src/JE/cls_0x4d8d70.cpp"]
+sources = ["modules/openje/src/JE.cpp", "modules/openje/src/JE/cls_0x4d8d70.cpp", "modules/openje/src/JE/cls_0x50db20.cpp"]
 private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
-msvc.private-compile-options = ["/EHsc"]
+msvc.private-compile-options = ["/EHsc", "/wd4234"]
 
 [target.tracing]
 type = "static"
 sources = ["modules/tracing/src/tracing.cpp"]
 private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
-msvc.private-compile-options = ["/EHsc"]
+msvc.private-compile-options = ["/EHsc", "/wd4234"]
 
 [target.F3]
 type = "executable"

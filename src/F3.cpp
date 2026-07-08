@@ -251,7 +251,7 @@ namespace F3 {
 				
 				initialize[1] = result;
 				
-				typedef void (__thiscall* CleanupFunc)(void*);
+				typedef void (*CleanupFunc)(void*);
 				CleanupFunc cleanup = reinterpret_cast<CleanupFunc>(
 					*(int**)((char*)result + 4)
 				);
@@ -313,7 +313,7 @@ namespace F3 {
 		do {
 			JE::cls_0x4d8d70* node = *reinterpret_cast<JE::cls_0x4d8d70**>(functions);
 			if ( node ) {
-				typedef void (__thiscall *CommandFunc)( JE::cls_0x4d8d70* );
+				typedef void (*CommandFunc)( JE::cls_0x4d8d70* );
 				CommandFunc func = reinterpret_cast<CommandFunc>(
 					*(int**)((char*)(uintptr_t)node + 12)
 				);
@@ -338,7 +338,7 @@ namespace F3 {
 
 			if ( resultPtr ) {
 				// Call cleanup on the result: method at offset +8 of vtable
-				typedef void (__thiscall *CleanupFunc)(void*, int);
+				typedef void (*CleanupFunc)(void*, int);
 				CleanupFunc func = reinterpret_cast<CleanupFunc>(
 					*(int**)(static_cast<char*>(resultPtr) + 8)
 				);

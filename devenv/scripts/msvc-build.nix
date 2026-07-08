@@ -84,12 +84,16 @@ in {
       fi
 
       "$docker" run --rm -t \
+        --cap-add=NET_RAW \
+        --security-opt seccomp=unconfined \
         $prep_user_arg \
         -v "$PWD:/work" -w /work \
         "${msvcImage}" \
         -lc "mkdir -p /work/build-msvc /work/obj /work/build /work/build/wineprefix && if [ ! -f /work/build/wineprefix/system.reg ]; then cp -a --no-preserve=ownership /home/msvc2002/.wine32/. /work/build/wineprefix/; fi && chmod -R a+rwX /work/build-msvc /work/obj /work/build /work/build/wineprefix$chown_cmd"
 
       "$docker" run --rm -t \
+        --cap-add=NET_RAW \
+        --security-opt seccomp=unconfined \
         $docker_user_arg \
         -e CMAKE_EXE_WIN="$cmakeExeWin" \
         -v "$PWD:/work" -w /work \

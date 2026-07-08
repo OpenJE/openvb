@@ -68,6 +68,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-master": {
+      "locked": {
+        "lastModified": 1781388577,
+        "narHash": "sha256-WTrty+a0iztc0qcuFvcBgTyMMNchas3w2SgevLj6zc0=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "47a7ad37cb6f9a98c3a573545af6f40c78ca913a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "master",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-src": {
       "flake": false,
       "locked": {
@@ -104,12 +120,30 @@
         "type": "github"
       }
     },
+    "opencode": {
+      "locked": {
+        "lastModified": 1783224896,
+        "narHash": "sha256-EnmNT819Ks4LgOWr8YT/issERY4N+ic3cXqxaoiDctc=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "1e6f5a1711c37d6a26bd10b277e6f93c32f776d9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "1e6f5a1711c37d6a26bd10b277e6f93c32f776d9",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "codegraph": "codegraph",
         "devenv": "devenv",
         "imhex": "imhex",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-master": "nixpkgs-master",
+        "opencode": "opencode",
         "wrkflw": "wrkflw"
       }
     },

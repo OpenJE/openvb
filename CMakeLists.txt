@@ -42,6 +42,8 @@ project(openvb
 set(openje_SOURCES
 	cmake.toml
 	"modules/openje/src/JE.cpp"
+	"modules/openje/src/JE/cls_0x4d8d70.cpp"
+	"modules/openje/src/JE/cls_0x50db20.cpp"
 )
 
 add_library(openje STATIC)
@@ -52,6 +54,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${openje_SOURCES})
 if(MSVC) # msvc
 	target_compile_options(openje PRIVATE
 		"/EHsc"
+		"/wd4234"
 	)
 endif()
 
@@ -75,6 +78,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${tracing_SOURCES})
 if(MSVC) # msvc
 	target_compile_options(tracing PRIVATE
 		"/EHsc"
+		"/wd4234"
 	)
 endif()
 

@@ -33,6 +33,14 @@
               name = "Qwen 3.6 35B A3B";
             };
 
+            "qwen3.6-27b-mtp" = {
+              name = "Qwen 3.6 27B MTP";
+            };
+
+            "qwen3.6-35b-a3b-mtp" = {
+              name = "Qwen 3.6 35B A3B MTP";
+            };
+
             "glm-4.7-flash" = {
               name = "GLM 4.7 Flash";
             };
@@ -55,7 +63,7 @@
 
       plugin = [
         "file:${config.devenv.root}/modules/opencode-re"
-        "oh-my-openagent@4.1.2"
+        "oh-my-openagent@4.16.0"
       ];
     };
 

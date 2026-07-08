@@ -5,13 +5,41 @@
 inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  nixpkgs-master:
+    url: github:NixOS/nixpkgs/master
   imhex:
     url: github:nixos/nixpkgs/f2642a9101a8bedccbc9b7870f3cb9eda657f1a9
   wrkflw:
     url: github:nixos/nixpkgs/19ca7f6a89a7a8c94c75afe2c9f4865925a53355
   codegraph:
     url: github:Shenmarukai/codegraph/103223adf0718cf1932fbc29b580daf1de0bb5f0
+  opencode:
+    url: github:nixos/nixpkgs/1e6f5a1711c37d6a26bd10b277e6f93c32f776d9
 
 nixpkgs:
   permitted_unfree_packages:
     - unrar
+
+nixpkgs-master:
+  permitted_unfree_packages:
+    - cuda_cccl
+    - cuda_cudart
+    - cuda_cuobjdump
+    - cuda_cupti
+    - cuda_cuxxfilt
+    - cuda_gdb
+    - cuda_nvcc
+    - cuda_nvdisasm
+    - cuda_nvml_dev
+    - cuda_nvprune
+    - cuda_nvrtc
+    - cuda_nvtx
+    - cuda_profiler_api
+    - cuda_sanitizer_api
+    - libcublas
+    - libcufft
+    - libcurand
+    - libcusolver
+    - libcusparse
+    - libnpp
+    - libnvjitlink

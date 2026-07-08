@@ -11,7 +11,4 @@
     ./tasks
     ./opencode
   ];
-
-  ohMyOpenagent.harness = "local";
-  ohMyOpenagent.reHarness = "local";
 }
