@@ -17,8 +17,8 @@ namespace F3 {
 			byte mbr_0x20;
 		//: Methods
 		public:
-			ctor_0x407ca0;
-			virt_meth_0x407cc0;
+			void ctor_0x407ca0();
+			undefined4 virt_meth_0x407cc0();
 	}; // GameActionUseSkill
 } // namespace F3
 

@@ -51,11 +51,11 @@ namespace F3 {
 			dword mbr_0xfc;
 		//: Methods
 		public:
-			virt_meth_0x438f80;
-			virt_meth_0x439070;
-			virt_meth_0x439080;
-			ctor_0x4390d0;
-			virt_meth_0x439320;
+			undefined4 virt_meth_0x438f80();
+			undefined4 virt_meth_0x439070();
+			undefined4 virt_meth_0x439080();
+			void ctor_0x4390d0();
+			undefined4 virt_meth_0x439320();
 	}; // CGameFloatingTextInterface
 } // namespace F3
 

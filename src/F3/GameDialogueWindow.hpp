@@ -15,10 +15,10 @@ namespace F3 {
 			dword mbr_0xd58;
 		//: Methods
 		public:
-			ctor_0x437ed0;
-			virt_meth_0x437f00;
-			virt_meth_0x437fd0;
-			virt_meth_0x438050;
+			void ctor_0x437ed0();
+			undefined4 virt_meth_0x437f00();
+			undefined4 virt_meth_0x437fd0();
+			undefined4 virt_meth_0x438050();
 	}; // GameDialogueWindow
 } // namespace F3
 

@@ -14,31 +14,31 @@ namespace F3 {
 			dword mbr_0xa4;
 			dword mbr_0xc0;
 		//: Methods
-			ctor_0x412420;
-			virt_meth_0x412610;
-			virt_meth_0x412620;
-			virt_meth_0x412630;
-			virt_meth_0x412640;
-			virt_meth_0x412650;
-			virt_meth_0x412660;
-			virt_meth_0x412670;
-			virt_meth_0x412680;
-			virt_meth_0x412690;
-			virt_meth_0x4126a0;
-			virt_meth_0x4126b0;
-			virt_meth_0x4126c0;
-			virt_meth_0x4126d0;
-			virt_meth_0x4126e0;
-			virt_meth_0x4126f0;
-			virt_meth_0x412700;
-			virt_meth_0x412710;
-			virt_meth_0x412720;
-			virt_meth_0x412730;
-			virt_meth_0x412740;
-			virt_meth_0x412750;
-			virt_meth_0x4127c0;
-			virt_meth_0x412a80;
-			virt_meth_0x412a90;
+			void ctor_0x412420();
+			undefined4 virt_meth_0x412610();
+			undefined4 virt_meth_0x412620();
+			undefined4 virt_meth_0x412630();
+			undefined4 virt_meth_0x412640();
+			undefined4 virt_meth_0x412650();
+			undefined4 virt_meth_0x412660();
+			undefined4 virt_meth_0x412670();
+			undefined4 virt_meth_0x412680();
+			undefined4 virt_meth_0x412690();
+			undefined4 virt_meth_0x4126a0();
+			undefined4 virt_meth_0x4126b0();
+			undefined4 virt_meth_0x4126c0();
+			undefined4 virt_meth_0x4126d0();
+			undefined4 virt_meth_0x4126e0();
+			undefined4 virt_meth_0x4126f0();
+			undefined4 virt_meth_0x412700();
+			undefined4 virt_meth_0x412710();
+			undefined4 virt_meth_0x412720();
+			undefined4 virt_meth_0x412730();
+			undefined4 virt_meth_0x412740();
+			undefined4 virt_meth_0x412750();
+			undefined4 virt_meth_0x4127c0();
+			undefined4 virt_meth_0x412a80();
+			undefined4 virt_meth_0x412a90();
 	}; // GameUsableObject
 } // namespace F3
 

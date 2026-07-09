@@ -17,11 +17,11 @@ namespace F3 {
 			byte mbr_0x28;
 			byte mbr_0x4;
 		//: Methods
-			ctor_0x404e50;
-			dtor_0x404e80;
-			virt_meth_0x404e90;
-			virt_meth_0x405020;
-			virt_meth_0x405040;
+			void ctor_0x404e50();
+			void dtor_0x404e80();
+			undefined4 virt_meth_0x404e90();
+			undefined4 virt_meth_0x405020();
+			undefined4 virt_meth_0x405040();
 	}; // GameActionDie
 } // namespace F3
 

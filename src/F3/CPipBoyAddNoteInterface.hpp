@@ -9,9 +9,9 @@ namespace F3 {
 	class CPipBoyAddNoteInterface {
 		//: Methods
 		public:
-			virt_meth_0x44a6a0;
-			virt_meth_0x44a6b0;
-			virt_meth_0x453eb0;
+			undefined4 virt_meth_0x44a6a0();
+			undefined4 virt_meth_0x44a6b0();
+			undefined4 virt_meth_0x453eb0();
 	}; // CPipBoyAddNoteInterface
 } // namespace F3
 

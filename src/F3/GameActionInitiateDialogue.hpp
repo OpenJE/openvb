@@ -17,9 +17,9 @@ namespace F3 {
 			dword mbr_0x20;
 			byte mbr_0x4;
 		//: Methods
-			ctor_0x404b40;
-			virt_meth_0x404b80;
-			virt_meth_0x404be0;
+			void ctor_0x404b40();
+			undefined4 virt_meth_0x404b80();
+			undefined4 virt_meth_0x404be0();
 	}; // GameActionInitiateDialogue
 } // namespace F3
 

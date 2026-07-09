@@ -9,9 +9,9 @@
 namespace F3 {
 	struct GameEncyclopedia : public JE::Encyclopedia {
 		//: Methods
-			virt_meth_0x462950;
-			virt_meth_0x46f0e0;
-			dtor_0x46f100;
+			undefined4 virt_meth_0x462950();
+			undefined4 virt_meth_0x46f0e0();
+			void dtor_0x46f100();
 	}; // GameEncyclopedia
 } // namespace F3
 

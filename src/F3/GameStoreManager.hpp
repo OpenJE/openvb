@@ -9,8 +9,8 @@
 namespace F3 {
 	struct GameStoreManager : public JE::StoreManager {
 		//: Methods
-			virt_meth_0x46f110;
-			dtor_0x46f130;
+			undefined4 virt_meth_0x46f110();
+			void dtor_0x46f130();
 	}; // GameStoreManager
 } // namespace F3
 

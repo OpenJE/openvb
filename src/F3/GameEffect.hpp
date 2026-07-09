@@ -35,19 +35,19 @@ namespace F3 {
 			byte mbr_0xa;
 			byte mbr_0xb;
 		//: Methods
-			virt_meth_0x45c0a0;
-			ctor_0x462434;
-			dtor_0x4624e0;
-			virt_meth_0x4624f0;
-			virt_meth_0x4625c0;
-			virt_meth_0x4625e0;
-			virt_meth_0x462600;
-			virt_meth_0x462620;
-			virt_meth_0x4626a0;
-			virt_meth_0x462710;
-			virt_meth_0x462740;
-			virt_meth_0x462930;
-			meth_0x55ae10;
+			undefined4 virt_meth_0x45c0a0();
+			void ctor_0x462434();
+			void dtor_0x4624e0();
+			undefined4 virt_meth_0x4624f0();
+			undefined4 virt_meth_0x4625c0();
+			undefined4 virt_meth_0x4625e0();
+			undefined4 virt_meth_0x462600();
+			undefined4 virt_meth_0x462620();
+			undefined4 virt_meth_0x4626a0();
+			undefined4 virt_meth_0x462710();
+			undefined4 virt_meth_0x462740();
+			undefined4 virt_meth_0x462930();
+			undefined4 meth_0x55ae10();
 	}; // GameEffect
 } // namespace F3
 

@@ -15,13 +15,13 @@ namespace F3 {
 			dword mbr_0xc;
 		//: Methods
 		public:
-			ctor_0x45ba40;
-			dtor_0x45ba60;
-			virt_meth_0x45ba70;
-			virt_meth_0x45ba90;
-			virt_meth_0x45baf0;
-			virt_meth_0x45bb10;
-			virt_meth_0x45bc90;
+			void ctor_0x45ba40();
+			void dtor_0x45ba60();
+			undefined4 virt_meth_0x45ba70();
+			undefined4 virt_meth_0x45ba90();
+			undefined4 virt_meth_0x45baf0();
+			undefined4 virt_meth_0x45bb10();
+			undefined4 virt_meth_0x45bc90();
 	}; // GamePathManager
 } // namespace F3
 

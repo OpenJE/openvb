@@ -16,12 +16,12 @@ namespace F3 {
 			byte mbr_0x2c;
 			byte mbr_0x2d;
 		//: Methods
-			meth_0x406a30;
-			ctor_0x406e70;
-			dtor_0x406eb0;
-			meth_0x406ec0;
-			virt_meth_0x406f10;
-			virt_meth_0x4071a0;
+			undefined4 meth_0x406a30();
+			void ctor_0x406e70();
+			void dtor_0x406eb0();
+			undefined4 meth_0x406ec0();
+			undefined4 virt_meth_0x406f10();
+			undefined4 virt_meth_0x4071a0();
 	}; // GameActionPickUp
 } // namespace F3
 

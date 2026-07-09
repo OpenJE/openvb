@@ -15,11 +15,11 @@ namespace F3 {
 			dword mbr_0x8;
 			dword mbr_0xc;
 		//: Methods
-			ctor_0x46c410;
-			meth_0x46c480;
-			dtor_0x46c550;
-			virt_meth_0x46c5e0;
-			virt_meth_0x46c5f0;
+			void ctor_0x46c410();
+			undefined4 meth_0x46c480();
+			void dtor_0x46c550();
+			undefined4 virt_meth_0x46c5e0();
+			undefined4 virt_meth_0x46c5f0();
 	}; // GameJournal
 } // namespace F3
 

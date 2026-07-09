@@ -18,11 +18,11 @@ namespace F3 {
 			byte mbr_0x25;
 			byte mbr_0x4;
 		//: Methods
-			ctor_0x4066c0;
-			meth_0x406700;
-			virt_meth_0x406720;
-			meth_0x406730;
-			virt_meth_0x4067c0;
+			void ctor_0x4066c0();
+			undefined4 meth_0x406700();
+			undefined4 virt_meth_0x406720();
+			undefined4 meth_0x406730();
+			undefined4 virt_meth_0x4067c0();
 	}; // GameActionOperateDoor
 } // namespace F3
 

@@ -11,10 +11,10 @@ namespace F3 {
 		//: Members
 			dword mbr_0x14;
 		//: Methods
-			ctor_0x407ed0;
-			dtor_0x407ef0;
-			virt_meth_0x407f00;
-			virt_meth_0x407f60;
+			void ctor_0x407ed0();
+			void dtor_0x407ef0();
+			undefined4 virt_meth_0x407f00();
+			undefined4 virt_meth_0x407f60();
 	}; // GameActionWait
 } // namespace F3
 

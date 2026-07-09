@@ -34,16 +34,16 @@ namespace F3 {
 			dword mbr_0x8;
 			dword mbr_0xc;
 		//: Methods
-			dtor_0x4396b0;
-			virt_meth_0x4396c0;
-			virt_meth_0x4396f0;
-			virt_meth_0x439720;
-			virt_meth_0x439770;
-			virt_meth_0x4397e0;
-			virt_meth_0x439810;
-			virt_meth_0x439850;
-			virt_meth_0x4398c0;
-			ctor_0x4398e0;
+			void dtor_0x4396b0();
+			undefined4 virt_meth_0x4396c0();
+			undefined4 virt_meth_0x4396f0();
+			undefined4 virt_meth_0x439720();
+			undefined4 virt_meth_0x439770();
+			undefined4 virt_meth_0x4397e0();
+			undefined4 virt_meth_0x439810();
+			undefined4 virt_meth_0x439850();
+			undefined4 virt_meth_0x4398c0();
+			void ctor_0x4398e0();
 	}; // GameInterfaces
 } // namespace F3
 

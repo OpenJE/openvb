@@ -20,13 +20,13 @@ namespace F3 {
 			dword mbr_0xd58;
 		//: Methods
 		public:
-			ctor_0x435c90;
-			virt_meth_0x435f20;
-			virt_meth_0x435f30;
-			virt_meth_0x435f40;
-			virt_meth_0x435f50;
-			virt_meth_0x435fa0;
-			meth_0x569080;
+			void ctor_0x435c90();
+			undefined4 virt_meth_0x435f20();
+			undefined4 virt_meth_0x435f30();
+			undefined4 virt_meth_0x435f40();
+			undefined4 virt_meth_0x435f50();
+			undefined4 virt_meth_0x435fa0();
+			undefined4 meth_0x569080();
 	}; // GameCSSkillMenuInterface
 } // namespace F3
 

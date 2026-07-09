@@ -12,10 +12,10 @@ namespace F3 {
 			word mbr_0x1c;
 			word mbr_0x8;
 		//: Methods
-			virt_meth_0x45dfd0;
-			virt_meth_0x45e040;
-			virt_meth_0x45e0b0;
-			dtor_0x45e0d0;
+			undefined4 virt_meth_0x45dfd0();
+			undefined4 virt_meth_0x45e040();
+			undefined4 virt_meth_0x45e0b0();
+			void dtor_0x45e0d0();
 	}; // GameNetwork
 } // namespace F3
 

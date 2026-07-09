@@ -21,7 +21,7 @@ let
   # - implementation
   # - build fixing
   # - hostile review
-  leadModel = "localserver/qwen36-27b";
+  leadModel = "localserver/qwen36-27b-gguf";
   workerModel = "localserver/ornith-35b";
 
   reCorePrompt = ''
@@ -97,7 +97,7 @@ in
 
     team_mode = {
       enabled = true;
-      max_parallel_members = 4;
+      max_parallel_members = 6;
       max_members = 8;
       tmux_visualization = false;
     };
@@ -106,16 +106,16 @@ in
     # - qwen3.6-27b is the single lead/review lane.
     # - ornith-35b gets the parallel worker lanes.
     background_task = {
-      defaultConcurrency = 12;
+      defaultConcurrency = 6;
       staleTimeoutMs = 180000;
 
       providerConcurrency = {
-        "local-server" = 12;
+        "local-server" = 6;
       };
 
       modelConcurrency = {
-        "local-server/qwen36-27b" = 4;
-        "local-server/ornith-35b" = 8;
+        "local-server/qwen36-27b" = 2;
+        "local-server/ornith-35b" = 4;
       };
     };
 

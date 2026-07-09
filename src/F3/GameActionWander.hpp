@@ -11,9 +11,9 @@ namespace F3 {
 		//: Members
 			dword mbr_0x14;
 		//: Methods
-			virt_meth_0x407f80;
-			virt_meth_0x407f90;
-			ctor_0x46f140;
+			undefined4 virt_meth_0x407f80();
+			undefined4 virt_meth_0x407f90();
+			void ctor_0x46f140();
 	}; // GameActionWander
 } // namespace F3
 

@@ -10,10 +10,10 @@ namespace F3 {
 	class GameAnimationCache : public JE::AnimationCache {
 		//: Methods
 		public:
-			ctor_0x45c6d0;
-			dtor_0x45c6f0;
-			virt_meth_0x45c8c0;
-			virt_meth_0x45d300;
+			void ctor_0x45c6d0();
+			void dtor_0x45c6f0();
+			undefined4 virt_meth_0x45c8c0();
+			undefined4 virt_meth_0x45d300();
 	}; // GameAnimationCache
 } // namespace F3
 

@@ -77,12 +77,12 @@ namespace F3 {
 			dword mbr_0xfc;
 		//: Methods
 		public:
-			virt_meth_0x437fe0;
-			ctor_0x438080;
-			virt_meth_0x438e00;
-			virt_meth_0x438e10;
-			virt_meth_0x438e20;
-			virt_meth_0x438e30;
+			undefined4 virt_meth_0x437fe0();
+			void ctor_0x438080();
+			undefined4 virt_meth_0x438e00();
+			undefined4 virt_meth_0x438e10();
+			undefined4 virt_meth_0x438e20();
+			undefined4 virt_meth_0x438e30();
 	}; // GameDialogueInterface
 } // namespace F3
 

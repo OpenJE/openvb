@@ -18,13 +18,13 @@ namespace F3 {
 			dword mbr_0x44;
 			byte mbr_0x8;
 		//: Methods
-			ctor_0x46c8e0;
-			dtor_0x46c910;
-			virt_meth_0x46c920;
-			virt_meth_0x46c980;
-			virt_meth_0x46cae0;
-			virt_meth_0x46cb90;
-			virt_meth_0x46cbb0;
+			void ctor_0x46c8e0();
+			void dtor_0x46c910();
+			undefined4 virt_meth_0x46c920();
+			undefined4 virt_meth_0x46c980();
+			undefined4 virt_meth_0x46cae0();
+			undefined4 virt_meth_0x46cb90();
+			undefined4 virt_meth_0x46cbb0();
 	}; // GameMap
 } // namespace F3
 

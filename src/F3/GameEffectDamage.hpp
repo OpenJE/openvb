@@ -24,13 +24,13 @@ namespace F3 {
 			byte mbr_0xad;
 			byte mbr_0xb;
 		//: Methods
-			ctor_0x45c040;
-			dtor_0x45c0b0;
-			virt_meth_0x45c0c0;
-			virt_meth_0x45c100;
-			virt_meth_0x45c120;
-			virt_meth_0x45c6b0;
-			meth_0x462860;
+			void ctor_0x45c040();
+			void dtor_0x45c0b0();
+			undefined4 virt_meth_0x45c0c0();
+			undefined4 virt_meth_0x45c100();
+			undefined4 virt_meth_0x45c120();
+			undefined4 virt_meth_0x45c6b0();
+			undefined4 meth_0x462860();
 	}; // GameEffectDamage
 } // namespace F3
 

@@ -69,31 +69,31 @@ namespace F3 {
 			dword mbr_0xc0;
 			dword mbr_0xc4;
 		//: Methods
-			meth_0x401100;
-			virt_meth_0x4011d0;
-			meth_0x4012c0;
-			meth_0x4012e0;
-			meth_0x401410;
-			meth_0x401790;
-			meth_0x401890;
-			meth_0x401a10;
-			virt_meth_0x402080;
-			virt_meth_0x4021b0;
-			meth_0x402260;
-			meth_0x4023c0;
-			meth_0x402680;
-			meth_0x402e00;
-			meth_0x403300;
-			meth_0x403320;
-			meth_0x403770;
-			dtor_0x403c70;
-			virt_meth_0x403d50;
-			ctor_0x403e40;
-			virt_meth_0x403f80;
-			meth_0x403fa0;
-			meth_0x404060;
-			meth_0x404270;
-			virt_meth_0x404320;
+			undefined4 meth_0x401100();
+			undefined4 virt_meth_0x4011d0();
+			undefined4 meth_0x4012c0();
+			undefined4 meth_0x4012e0();
+			undefined4 meth_0x401410();
+			undefined4 meth_0x401790();
+			undefined4 meth_0x401890();
+			undefined4 meth_0x401a10();
+			undefined4 virt_meth_0x402080();
+			undefined4 virt_meth_0x4021b0();
+			undefined4 meth_0x402260();
+			undefined4 meth_0x4023c0();
+			undefined4 meth_0x402680();
+			undefined4 meth_0x402e00();
+			undefined4 meth_0x403300();
+			undefined4 meth_0x403320();
+			undefined4 meth_0x403770();
+			void dtor_0x403c70();
+			undefined4 virt_meth_0x403d50();
+			void ctor_0x403e40();
+			undefined4 virt_meth_0x403f80();
+			undefined4 meth_0x403fa0();
+			undefined4 meth_0x404060();
+			undefined4 meth_0x404270();
+			undefined4 virt_meth_0x404320();
 	}; // GameActionAttack
 } // namespace F3
 

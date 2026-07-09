@@ -23,14 +23,14 @@ namespace F3 {
 			byte mbr_0x40;
 			byte mbr_0x41;
 		//: Methods
-			ctor_0x4075d0;
-			dtor_0x407610;
-			virt_meth_0x407620;
-			meth_0x407710;
-			meth_0x4077b0;
-			virt_meth_0x407850;
-			virt_meth_0x4078f0;
-			virt_meth_0x407910;
+			void ctor_0x4075d0();
+			void dtor_0x407610();
+			undefined4 virt_meth_0x407620();
+			undefined4 meth_0x407710();
+			undefined4 meth_0x4077b0();
+			undefined4 virt_meth_0x407850();
+			undefined4 virt_meth_0x4078f0();
+			undefined4 virt_meth_0x407910();
 	}; // GameActionSetActiveWeapon
 } // namespace F3
 

@@ -9,10 +9,10 @@ namespace F3 {
 	class CPipBoyInterface {
 		//: Methods
 		public:
-			virt_meth_0x455d80;
-			virt_meth_0x455d90;
-			virt_meth_0x455da0;
-			virt_meth_0x455db0;
+			undefined4 virt_meth_0x455d80();
+			undefined4 virt_meth_0x455d90();
+			undefined4 virt_meth_0x455da0();
+			undefined4 virt_meth_0x455db0();
 	}; // CPipBoyInterface
 } // namespace F3
 

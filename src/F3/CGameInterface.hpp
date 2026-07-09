@@ -9,7 +9,7 @@ namespace F3 {
 	class CGameInterface {
 		//: Methods
 		public:
-			virt_meth_0x439670;
+			undefined4 virt_meth_0x439670();
 	}; // CGameInterface
 } // namespace F3
 

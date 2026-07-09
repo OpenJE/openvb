@@ -24,11 +24,11 @@ namespace F3 {
 			dword mbr_0x38;
 			byte mbr_0x4;
 		//: Methods
-			ctor_0x4071c0;
-			virt_meth_0x407200;
-			virt_meth_0x407210;
-			meth_0x407250;
-			virt_meth_0x407270;
+			void ctor_0x4071c0();
+			undefined4 virt_meth_0x407200();
+			undefined4 virt_meth_0x407210();
+			undefined4 meth_0x407250();
+			undefined4 virt_meth_0x407270();
 	}; // GameActionReload
 } // namespace F3
 

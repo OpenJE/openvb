@@ -9,9 +9,9 @@ namespace F3 {
 	class COptionsGameInterface {
 		//: Methods
 		public:
-			virt_meth_0x4444c0;
-			virt_meth_0x4444d0;
-			virt_meth_0x4444e0;
+			undefined4 virt_meth_0x4444c0();
+			undefined4 virt_meth_0x4444d0();
+			undefined4 virt_meth_0x4444e0();
 	}; // COptionsGameInterface
 } // namespace F3
 

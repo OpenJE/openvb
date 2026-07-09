@@ -9,10 +9,10 @@
 namespace F3 {
 	struct GameActionFloatingSpeechText : public JE::ActionFloatingSpeechText {
 		//: Methods
-			ctor_0x405240;
-			dtor_0x405260;
-			virt_meth_0x405270;
-			virt_meth_0x405280;
+			void ctor_0x405240();
+			void dtor_0x405260();
+			undefined4 virt_meth_0x405270();
+			undefined4 virt_meth_0x405280();
 	}; // GameActionFloatingSpeechText
 } // namespace F3
 

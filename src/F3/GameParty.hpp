@@ -13,8 +13,8 @@ namespace F3 {
 			dword mbr_0x8;
 			dword mbr_0xc;
 		//: Methods
-			ctor_0x46cd00;
-			virt_meth_0x46cd30;
+			void ctor_0x46cd00();
+			undefined4 virt_meth_0x46cd30();
 	}; // GameParty
 } // namespace F3
 
