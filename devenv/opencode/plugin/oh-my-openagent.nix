@@ -21,8 +21,9 @@ let
   # - implementation
   # - build fixing
   # - hostile review
-  leadModel = "localserver/qwen36-27b-gguf";
-  workerModel = "localserver/ornith-35b";
+  provider = "localserver";
+  leadModel = "qwen36-27b-gguf";
+  workerModel = "ornith-35b";
 
   reCorePrompt = ''
     OpenVB automated reverse-engineering and reimplementation harness.
@@ -110,12 +111,12 @@ in
       staleTimeoutMs = 180000;
 
       providerConcurrency = {
-        "local-server" = 6;
+        "${provider}" = 6;
       };
 
       modelConcurrency = {
-        "local-server/qwen36-27b" = 2;
-        "local-server/ornith-35b" = 4;
+        "${provider}/${leadModel}" = 2;
+        "${provider}/${workerModel}" = 4;
       };
     };
 
@@ -131,7 +132,7 @@ in
 
     agents = {
       sisyphus = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
 
         prompt_append = ''
           ${reCorePrompt}
@@ -182,16 +183,16 @@ in
         };
 
         ultrawork = {
-          model = leadModel;
+          model = "${provider}/${leadModel}";
         };
 
         compaction = {
-          model = leadModel;
+          model = "${provider}/${leadModel}";
         };
       };
 
       atlas = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
 
         prompt_append = reCategoryPrompt "plan executor" ''
           You are Atlas, the OmO Plan Executor.
@@ -269,7 +270,7 @@ in
       };
 
       prometheus = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
 
         prompt_append = reCategoryPrompt "RE planner" ''
           Convert a target EA, subsystem, build failure, or parity issue into a
@@ -309,7 +310,7 @@ in
       };
 
       metis = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
 
         prompt_append = reCategoryPrompt "lead risk analyst" ''
           Check whether the proposed plan respects ledger state, stale functions,
@@ -331,7 +332,7 @@ in
       };
 
       hephaestus = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         allow_non_gpt_model = true;
 
         prompt_append = reCategoryPrompt "faithful implementation lead" ''
@@ -368,7 +369,7 @@ in
       };
 
       sisyphus-junior = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
 
         prompt_append = reCategoryPrompt "parallel category worker" ''
           You usually operate through a dedicated re-* category.
@@ -384,7 +385,7 @@ in
       };
 
       librarian = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
 
         prompt_append = reCategoryPrompt "evidence librarian" ''
           Find definitions, references, strings, symbols, docs, commits, issues,
@@ -400,7 +401,7 @@ in
       };
 
       explore = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
 
         prompt_append = reCategoryPrompt "codebase and binary scout" ''
           Map the local codebase and binary-analysis state.
@@ -430,7 +431,7 @@ in
       };
 
       oracle = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
 
         prompt_append = reCategoryPrompt "semantic reviewer" ''
           Review recovered semantics for:
@@ -449,7 +450,7 @@ in
       };
 
       momus = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
 
         prompt_append = reCategoryPrompt "hostile reviewer" ''
           Try to falsify the proposed function recovery.
@@ -470,7 +471,7 @@ in
       };
 
       multimodal-looker = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
 
         prompt_append = reCategoryPrompt "visual evidence reader" ''
           Inspect screenshots, diagrams, decompiler views, tables, debugger output,
@@ -495,7 +496,7 @@ in
       unspecified-low.disable = true;
 
       re-discovery = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Discover functions, xrefs, call edges, strings, imports, types, and initial ledger entries.";
 
         prompt_append = reCategoryPrompt "discovery and ledger seeding worker" ''
@@ -518,7 +519,7 @@ in
       };
 
       re-edge-classification = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Classify direct, indirect, virtual, import, thunk, tail-call, callback, and unresolved edges.";
 
         prompt_append = reCategoryPrompt "edge classifier" ''
@@ -544,7 +545,7 @@ in
       };
 
       re-analysis = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Analyze one function's semantics and submit a structured worker hypothesis.";
 
         prompt_append = reCategoryPrompt "function semantics worker" ''
@@ -582,7 +583,7 @@ in
       };
 
       re-types = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Recover prototypes, parameter names, struct/class ownership, fields, globals, and variable names.";
 
         prompt_append = reCategoryPrompt "type and naming worker" ''
@@ -610,7 +611,7 @@ in
       };
 
       re-scc = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
         description = "Analyze strongly connected call clusters without dependency deadlock.";
 
         prompt_append = reCategoryPrompt "SCC/cycle analyst" ''
@@ -632,7 +633,7 @@ in
       };
 
       re-review = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
         description = "Review worker hypotheses and submit canonical accepted contracts.";
 
         prompt_append = reCategoryPrompt "canonical review worker" ''
@@ -663,7 +664,7 @@ in
       };
 
       re-implementation-plan = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
         description = "Convert accepted RE contracts into a small safe implementation plan.";
 
         prompt_append = reCategoryPrompt "implementation planner" ''
@@ -686,7 +687,7 @@ in
       };
 
       re-emit-cpp = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Implement faithful OpenVB C++ from accepted contracts and original-binary evidence.";
 
         prompt_append = reCategoryPrompt "faithful C++ implementation worker" ''
@@ -726,7 +727,7 @@ in
       };
 
       re-cpp-fidelity = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
         description = "Review implemented C++ against original semantics, accepted contracts, and binary evidence.";
 
         prompt_append = reCategoryPrompt "implementation fidelity reviewer" ''
@@ -753,7 +754,7 @@ in
       };
 
       re-build-fix = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Fix compile/link/runtime integration failures while preserving recovered behavior.";
 
         prompt_append = reCategoryPrompt "faithful build-fix worker" ''
@@ -779,7 +780,7 @@ in
       };
 
       re-debug-parity = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Use original/reimplementation IDA MCP plus Wine/GDB stubs for runtime parity checks.";
 
         prompt_append = reCategoryPrompt "runtime parity debugger" ''
@@ -808,7 +809,7 @@ in
       };
 
       re-ops = {
-        model = workerModel;
+        model = "${provider}/${workerModel}";
         description = "Ledger, devenv, process, MCP, and automation operations.";
 
         prompt_append = reCategoryPrompt "RE operations worker" ''
@@ -836,7 +837,7 @@ in
       };
 
       re-synthesis = {
-        model = leadModel;
+        model = "${provider}/${leadModel}";
         description = "Lead-model synthesis of reviewed findings into an implementation plan or final answer.";
 
         prompt_append = reCategoryPrompt "lead synthesis worker" ''
