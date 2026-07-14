@@ -98,8 +98,8 @@ in
 
     team_mode = {
       enabled = true;
-      max_parallel_members = 8;
-      max_members = 10;
+      max_parallel_members = 10;
+      max_members = 12;
       tmux_visualization = false;
     };
 
@@ -116,7 +116,7 @@ in
 
       modelConcurrency = {
         "${provider}/${leadModel}" = 5;
-        "${provider}/${workerModel}" = 5;
+        "${provider}/${workerModel}" = 7;
       };
     };
 
