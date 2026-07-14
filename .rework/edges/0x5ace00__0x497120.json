@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x5ace00",
+  "callee_ea": "0x497120",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "F3::Startup → JE::LogDebugString (\"Startup()\\r\\n\")",
+  "discovered_at": "2026-07-14T04:34:51.189Z"
+}

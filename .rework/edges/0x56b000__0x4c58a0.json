@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b000",
+  "callee_ea": "0x4c58a0",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "F3::SetupSaveDirectory → PathConcat (already registered)",
+  "discovered_at": "2026-07-14T04:34:42.311Z"
+}

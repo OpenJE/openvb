@@ -4,12 +4,12 @@ build-msvc
 build-msvc-tracing
 vc70.pdb
 log.txt
-F3.exe.i64
-F3.exe.id0
-F3.exe.id1
-F3.exe.id2
-F3.exe.nam
-F3.exe.til
+artifacts/F3.exe.i64
+artifacts/F3.exe.id0
+artifacts/F3.exe.id1
+artifacts/F3.exe.id2
+artifacts/F3.exe.nam
+artifacts/F3.exe.til
 
 .sisyphus
 .omo

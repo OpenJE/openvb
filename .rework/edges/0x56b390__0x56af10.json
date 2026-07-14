@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b390",
+  "callee_ea": "0x56af10",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "sub_56B390 → GetSaveDirectoryRelative",
+  "discovered_at": "2026-07-14T04:34:55.473Z"
+}

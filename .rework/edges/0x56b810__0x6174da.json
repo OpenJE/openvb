@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b810",
+  "callee_ea": "0x6174da",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "FormatAndWriteToBuffer — engine code, openje/JE.cpp",
+  "discovered_at": "2026-07-14T04:32:37.941Z"
+}

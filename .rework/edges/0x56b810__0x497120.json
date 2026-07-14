@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b810",
+  "callee_ea": "0x497120",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "JE::LogDebugString — engine code, openje (called by FatalError)",
+  "discovered_at": "2026-07-14T04:32:36.142Z"
+}

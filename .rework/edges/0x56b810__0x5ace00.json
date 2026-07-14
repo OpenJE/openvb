@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b810",
+  "callee_ea": "0x5ace00",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "F3::Main — game code, src/F3.cpp (calls Startup, RegisterCommand, GameStateLoop, Shutdown)",
+  "discovered_at": "2026-07-14T04:32:31.413Z"
+}

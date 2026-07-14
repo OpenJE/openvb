@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b390",
+  "callee_ea": "0x4c58a0",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "sub_56B390 → PathConcat",
+  "discovered_at": "2026-07-14T04:34:57.694Z"
+}

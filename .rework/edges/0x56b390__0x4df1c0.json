@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b390",
+  "callee_ea": "0x4df1c0",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "sub_56B390 → sub_4DF1C0 (saves settings file)",
+  "discovered_at": "2026-07-14T04:35:00.252Z"
+}

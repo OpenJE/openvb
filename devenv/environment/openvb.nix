@@ -15,7 +15,7 @@ in {
     OPENVB_F3DEMO_ROOT = "${localPackages.f3demo}/share/f3demo";
     OPENVB_IDADIR = resolvedIdaDir;
     OPENVB_ORIG_EXE = "${localPackages.f3demo}/share/f3demo/F3.exe";
-    OPENVB_ORIG_IDB = "./F3.exe.i64";
+    OPENVB_ORIG_IDB = "./artifacts/F3.exe.i64";
     OPENVB_ORIG_GDB_PORT = "31337";
     OPENVB_REIMPL_EXE = "./build/F3.exe";
     OPENVB_REIMPL_IDB = "./build/F3.exe.i64";

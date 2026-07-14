@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b810",
+  "callee_ea": "0x48cca0",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "F3::SetStartupTime — game code, src/F3.cpp",
+  "discovered_at": "2026-07-14T04:32:28.960Z"
+}

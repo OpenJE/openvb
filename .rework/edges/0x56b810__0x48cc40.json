@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b810",
+  "callee_ea": "0x48cc40",
+  "edge_kind": "direct_call",
+  "blocking": 1,
+  "reason": "JE::FatalError calls exit(1) — no return path",
+  "discovered_at": "2026-07-14T04:32:20.281Z"
+}

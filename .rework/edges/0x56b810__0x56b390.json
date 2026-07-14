@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x56b810",
+  "callee_ea": "0x56b390",
+  "edge_kind": "direct_call",
+  "blocking": 0,
+  "reason": "sub_56B390 — game code, commented out in WinMain, handles settings file",
+  "discovered_at": "2026-07-14T04:32:34.153Z"
+}

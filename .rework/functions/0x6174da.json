@@ -1,12 +1,12 @@
 {
-  "ea": "0x56b810",
+  "ea": "0x6174da",
   "status": "discovered",
   "summary_version": 0,
   "accepted_summary_json": null,
   "confidence": null,
   "dirty": 0,
   "last_pseudocode_hash": null,
-  "updated_at": "2026-07-14T04:31:11.849Z",
+  "updated_at": "2026-07-14T04:32:04.734Z",
   "removed_at": null,
   "removal_reason": null
 }
