@@ -22,7 +22,7 @@ let
   # - build fixing
   # - hostile review
   provider = "localserver";
-  leadModel = "qwen36-27b-gguf";
+  leadModel = "agents-a1";
   workerModel = "ornith-35b";
 
   reCorePrompt = ''
@@ -98,8 +98,8 @@ in
 
     team_mode = {
       enabled = true;
-      max_parallel_members = 6;
-      max_members = 8;
+      max_parallel_members = 8;
+      max_members = 10;
       tmux_visualization = false;
     };
 
@@ -107,16 +107,16 @@ in
     # - qwen3.6-27b is the single lead/review lane.
     # - ornith-35b gets the parallel worker lanes.
     background_task = {
-      defaultConcurrency = 6;
+      defaultConcurrency = 10;
       staleTimeoutMs = 180000;
 
       providerConcurrency = {
-        "${provider}" = 6;
+        "${provider}" = 10;
       };
 
       modelConcurrency = {
-        "${provider}/${leadModel}" = 2;
-        "${provider}/${workerModel}" = 4;
+        "${provider}/${leadModel}" = 5;
+        "${provider}/${workerModel}" = 5;
       };
     };
 
@@ -139,7 +139,7 @@ in
 
           You are the lead coordinator.
 
-          Use qwen3.6-27b for:
+          Use ${leadModel} for:
           - single-agent reasoning
           - planning
           - synthesis
@@ -147,7 +147,7 @@ in
           - final implementation decisions
           - coordination of ledger state
 
-          Use ornith-35b for:
+          Use ${workerModel} for:
           - bounded worker execution
           - codebase and binary scouting
           - implementation-heavy tasks
@@ -385,7 +385,7 @@ in
       };
 
       librarian = {
-        model = "${provider}/${workerModel}";
+        model = "${provider}/${leadModel}";
 
         prompt_append = reCategoryPrompt "evidence librarian" ''
           Find definitions, references, strings, symbols, docs, commits, issues,
@@ -431,7 +431,7 @@ in
       };
 
       oracle = {
-        model = "${provider}/${workerModel}";
+        model = "${provider}/${leadModel}";
 
         prompt_append = reCategoryPrompt "semantic reviewer" ''
           Review recovered semantics for:
@@ -841,7 +841,7 @@ in
         description = "Lead-model synthesis of reviewed findings into an implementation plan or final answer.";
 
         prompt_append = reCategoryPrompt "lead synthesis worker" ''
-          Use the qwen3.6-27b lead model for final synthesis.
+          Use the ${leadModel} lead model for final synthesis.
 
           Merge:
           - reviewed contracts
