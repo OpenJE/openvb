@@ -1,0 +1,8 @@
+{
+  "caller_ea": "0x401560",
+  "callee_ea": "0x401130",
+  "edge_kind": "direct_call",
+  "blocking": 1,
+  "reason": null,
+  "discovered_at": "2026-07-14T03:34:58.271Z"
+}

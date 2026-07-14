@@ -65,6 +65,12 @@
         "file:${config.devenv.root}/modules/opencode-re"
         "oh-my-openagent@4.16.0"
       ];
+
+      permission = {
+        "*_idalib_switch" = "deny";
+        "*_idalib_open" = "deny";
+        "*_idalib_unbind" = "deny";
+      };
     };
 
     rules = lib.strings.removeSuffix "\n" ''
