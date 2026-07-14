@@ -220,13 +220,13 @@ namespace F3 {
 		tracing::instrument( tracing::LOCATION, "param1=0x%p, param2=0x%p", param1, param2 );
 
 		const char* str2;
-		
+
 		if ( *(int*)( param2 + 24 ) < 0x10u ) {
 			str2 = reinterpret_cast<const char*>( param2 + 4 );
 		} else {
 			str2 = *reinterpret_cast<const char**>( param2 + 4 );
 		}
-		
+
 		if ( *(int*)( param1 + 24 ) < 0x10u ) {
 			return _stricmp( reinterpret_cast<const char*>( param1 + 4 ), str2 ) < 0;
 		} else {
@@ -239,28 +239,28 @@ namespace F3 {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::LogDebugString( NULL, "Startup()\r\n" );
-		
+
 		void** initialize = g_initFuncTable;
 		void* result = NULL;
-		
+
 		while ( initialize < reinterpret_cast<void**>(g_initTableEnd) ) {
 			if ( *initialize ) {
 				typedef void* (*InitFunc)(void);
 				InitFunc func = reinterpret_cast<InitFunc>(*initialize);
 				result = func();
-				
+
 				initialize[1] = result;
-				
+
 				typedef void (*CleanupFunc)(void*);
 				CleanupFunc cleanup = reinterpret_cast<CleanupFunc>(
 					*(int**)((char*)result + 4)
 				);
 				cleanup(result);
 			}
-			
+
 			initialize += 2;
 		}
-		
+
 		return reinterpret_cast<int (*)(void)>(result);
 	}
 
@@ -271,18 +271,18 @@ namespace F3 {
 		JE::cls_0x50db20 tempString;
 		reinterpret_cast<byte*>(&tempString)[0] = 0;
 		tempString.meth_0x401bd0(ArgList, strlen(ArgList));
-		
+
 		int* v2 = reinterpret_cast<int*>(g_commandRegistryRoot->meth_0x545710(
-			reinterpret_cast<int>(&tempString)
+			reinterpret_cast<int*>(&tempString)
 		));
-		
+
 		const char* v3;
 		if ( v2[9] < 0x10 ) {
 			v3 = reinterpret_cast<const char*>(v2 + 4);
 		} else {
 			v3 = *reinterpret_cast<const char**>(v2 + 4);
 		}
-		
+
 		const char* v4;
 		int v10 = static_cast<int>(strlen(ArgList));
 		if ( v10 < 0x10 ) {
@@ -290,15 +290,15 @@ namespace F3 {
 		} else {
 			v4 = *reinterpret_cast<const char**>(&tempString);
 		}
-		
+
 		if ( _stricmp(v4, v3) == 0 && v2 != reinterpret_cast<int*>(g_commandRegistryRoot->mbr_0x4) ) {
 			JE::FatalError("Command %s already registered.", ArgList);
 			return;
 		}
-		
-		int* insertionSlot = g_commandRegistryRoot->meth_0x59f3e0(reinterpret_cast<int>(&tempString), reinterpret_cast<int*>(&v2));
+
+		int* insertionSlot = g_commandRegistryRoot->meth_0x59f3e0(reinterpret_cast<int*>(&tempString), reinterpret_cast<int*>(&v2));
 		*(void**)insertionSlot = reinterpret_cast<void*>(func_ptr);
-		
+
 		if ( v10 >= 0x10 ) {
 			void* heapPtr = *reinterpret_cast<void**>(&tempString);
 			free(heapPtr);
