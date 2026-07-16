@@ -22,8 +22,8 @@ let
   # - build fixing
   # - hostile review
   provider = "localserver";
-  leadModel = "agents-a1";
-  workerModel = "agents-a1";
+  leadModel = "qwen35-122b";
+  workerModel = "ornith-35b";
 
   reCorePrompt = ''
     OpenVB automated reverse-engineering and reimplementation harness.
@@ -98,8 +98,8 @@ in
 
     team_mode = {
       enabled = true;
-      max_parallel_members = 11;
-      max_members = 13;
+      max_parallel_members = 3;
+      max_members = 4;
       tmux_visualization = false;
     };
 
@@ -107,16 +107,16 @@ in
     # - qwen3.6-27b is the single lead/review lane.
     # - ornith-35b gets the parallel worker lanes.
     background_task = {
-      defaultConcurrency = 13;
+      defaultConcurrency = 4;
       staleTimeoutMs = 180000;
 
       providerConcurrency = {
-        "${provider}" = 13;
+        "${provider}" = 4;
       };
 
       modelConcurrency = {
-        #"${provider}/${leadModel}" = 6;
-        "${provider}/${workerModel}" = 13;
+        "${provider}/${leadModel}" = 1;
+        "${provider}/${workerModel}" = 3;
       };
     };
 

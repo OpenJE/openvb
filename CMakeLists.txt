@@ -42,8 +42,18 @@ project(openvb
 set(openje_SOURCES
 	cmake.toml
 	"modules/openje/src/JE.cpp"
+	"modules/openje/src/JE/Action.cpp"
+	"modules/openje/src/JE/ActionAnim.cpp"
+	"modules/openje/src/JE/AnimationCache.cpp"
+	"modules/openje/src/JE/Common/Chunk.cpp"
+	"modules/openje/src/JE/MemorySystem.cpp"
+	"modules/openje/src/JE/Network.cpp"
+	"modules/openje/src/JE/Resources.cpp"
+	"modules/openje/src/JE/Scripting.cpp"
+	"modules/openje/src/JE/Strings.cpp"
 	"modules/openje/src/JE/cls_0x4d8d70.cpp"
 	"modules/openje/src/JE/cls_0x50db20.cpp"
+	"modules/openje/src/JE/cls_0x585c00.cpp"
 )
 
 add_library(openje STATIC)
@@ -92,6 +102,8 @@ target_include_directories(tracing PRIVATE
 set(F3_SOURCES
 	cmake.toml
 	"src/F3.cpp"
+	"src/F3/GameAnimationCache.cpp"
+	"src/F3/GameWorld.cpp"
 	"src/main.cpp"
 )
 

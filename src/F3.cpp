@@ -11,13 +11,93 @@
 #include "JE/cls_0x4d8d70.hpp"
 #include "JE/cls_0x50db20.hpp"
 #include "tracing.hpp"
+#include "JE/MemorySystem.hpp"
+#include "JE/Resources.hpp"
+#include "JE/Scripting.hpp"
+#include "JE/Strings.hpp"
+#include "JE/Network.hpp"
+#include "F3/GameAnimationCache.hpp"
+#include "F3/GameWorld.hpp"
 
 namespace F3 {
-	// Global variable definitions with addresses from binary data section
-	void** g_initFuncTable = reinterpret_cast<void**>(0x6FF6C8);                // ptr_F3::InitializeMemorySystem
-	JE::cls_0x4d8d70* g_commandRegistryRoot = NULL;                             // F3::functions BST root
-	char* g_initTableEnd = reinterpret_cast<char*>(0x619089);                   // off_6FF708 sentinel value
-	char* g_commandArrayEnd = reinterpret_cast<char*>(0x6FF70C);                // off_6FF70C end marker
+	// Global variable definitions
+
+	void* g_initFuncTable[] = {
+		reinterpret_cast<void*>(InitializeMemorySystem),
+		reinterpret_cast<void*>(InitializeResources),
+		reinterpret_cast<void*>(InitializeScripting),
+		reinterpret_cast<void*>(InitializeStrings),
+		reinterpret_cast<void*>(InitializeNetwork),
+		reinterpret_cast<void*>(Initialize_cls_0x585c00),
+		reinterpret_cast<void*>(InitializeGameAnimationCache),
+		reinterpret_cast<void*>(InitializeGameWorld),
+	};
+
+	JE::cls_0x4d8d70* g_commandRegistryRoot = NULL;
+	char* g_initTableEnd = NULL;  // Use NULL instead of hardcoded address
+	char* g_commandArrayEnd = NULL;  // Use NULL instead of hardcoded address
+
+    // Initialize* function implementations
+    void* InitializeMemorySystem() {
+    	JE::MemorySystem* memory_system = new JE::MemorySystem();
+    	if ( memory_system ) {
+    		memory_system->ctor_0x5b31c0();
+    	}
+    	return memory_system;
+    }
+
+    void* InitializeResources() {
+    	JE::Resources* resources = new JE::Resources();
+    	if ( resources ) {
+    		resources->ctor_0x59c110();
+    	}
+    	return resources;
+    }
+
+    void* InitializeScripting() {
+    	JE::Scripting* scripting = new JE::Scripting();
+    	if ( scripting ) {
+    		scripting->ctor_0x59c040();
+    	}
+    	return scripting;
+    }
+
+    void* InitializeStrings() {
+    	JE::Strings* strings = new JE::Strings();
+    	if ( strings ) {
+    		strings->ctor_0x59c240();
+    	}
+    	return strings;
+    }
+
+    void* InitializeNetwork() {
+    	JE::Network* network = new JE::Network();
+    	if ( network ) {
+    		network->ctor_0x543890();
+    	}
+    	return network;
+    }
+
+    void* Initialize_cls_0x585c00() {
+    	JE::cls_0x585c00* obj = new JE::cls_0x585c00();
+    	return obj;
+    }
+
+    void* InitializeGameAnimationCache() {
+    	F3::GameAnimationCache* cache = new F3::GameAnimationCache();
+    	if ( cache ) {
+    		cache->ctor_0x45c6d0();
+    	}
+    	return cache;
+    }
+
+    void* InitializeGameWorld() {
+    	F3::GameWorld* world = new F3::GameWorld();
+    	if ( world ) {
+    		world->ctor_0x470340();
+    	}
+    	return world;
+    }
 
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath ) {
@@ -183,7 +263,6 @@ namespace F3 {
 
 	// 0x56AF60
 	bool ProcessMessagesAndUpdateTime() {
-
 		tracing::instrument( tracing::LOCATION, "" );
 
 		DWORD nCurrentTime;

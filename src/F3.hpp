@@ -10,7 +10,6 @@
 // Forward declaration (full include in F3.cpp)
 namespace JE { class cls_0x4d8d70; }
 
-// F3 Globals
 namespace F3 {
 	// 0x70BFA0 (F3::global_hInstance_0x70bfa0)
 	static HINSTANCE g_instance;
@@ -48,14 +47,24 @@ namespace F3 {
 	static char CHAR_0070fd41[ 2 ];
 
 	// ptr_F3::InitializeMemorySystem table — array of {func_ptr, result} pairs ending at sentinel 0x619089
-	extern void** g_initFuncTable;        // 0x6FF6C8
-	
-	// F3::functions BST root for command registry — starts at 0x6FF6CC  
-	extern JE::cls_0x4d8d70* g_commandRegistryRoot;  
-    
-	// End markers (sentinel values from binary data section)
-	extern char* g_initTableEnd;          // 0x6FF708 — sentinel = 0x619089  
-	extern char* g_commandArrayEnd;       // 0x6FF70C
+	extern void* g_initFuncTable[];
+
+// F3::functions BST root for command registry — starts at 0x6FF6CC
+	extern JE::cls_0x4d8d70* g_commandRegistryRoot;
+
+// End markers (sentinel values from binary data section)
+	extern char* g_initTableEnd;
+	extern char* g_commandArrayEnd;
+
+	// Initialization functions (from original binary)
+	void* InitializeMemorySystem();
+	void* InitializeResources();
+	void* InitializeScripting();
+	void* InitializeStrings();
+	void* InitializeNetwork();
+	void* Initialize_cls_0x585c00();
+	void* InitializeGameAnimationCache();
+	void* InitializeGameWorld();
 
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath );
@@ -119,6 +128,7 @@ namespace F3 {
 	//BOOL sub_61AF42( LPCSTR root_path_name );
 	// 0x61A6AA
 	//char* sub_61A6AA( char* dest, const char* source, size_t count );
+	//
 
 	namespace Display {
 		// 0x56B1B0
