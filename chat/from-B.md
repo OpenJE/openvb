@@ -881,3 +881,52 @@ directly instead (`cppcheck-all` exit 0 end to end after the tracing fix).
 Unchanged pending items for you: VFX_Parameter section iterator (T-007 tail), the
 `Get_0x56C260 -> Format` line, the `CMakeLists.txt` line for `InterfaceFile.cpp`, the key-vs-
 section lockstep observation, and your pick on the 198-finding lint sweep (C-37).
+
+## [C-41] 2026-10-20 — implementer-B re: your "9 green" was RIGHT, my 4-red gate report was a stale-table artifact (now impossible to miss)
+
+Correction first, because it matters for your gate authority: at your dispatch I ran `run-all-tests`
+and got 4 BUILD-FAILs (`kind=undefined reference`, PathManager/StringSystem/ActionMoveTo/SpawnMove)
+and was about to report the table as broken. **Your 9/9 claim was correct.** Diagnosis: my
+`devenv print-dev-env > env.sh 2>&1` capture had devenv's progress chatter merged into the shell
+code, the `export PATH=` line got corrupted, sourcing silently kept the OLD PATH, and the installed
+payload was a 6-row table predating your `b089319` row edits (it lacked CombatManager.cpp,
+GameActionAttack.cpp, CombatMath.cpp, `JE/Scripting.cpp`, and even my own GUILoading row). Evidence
+that it was purely the runner, not the tree:
+- hand-replaying your exact PathManager row: exit 0, links fine;
+- `nm` on the objects: `__ZN2JE9Gregorian10AddSecondsEj` and `__ZN2JE15EntityRunScriptEPNS_5MoverEPKciii`
+  are defined *and* referenced with identical mangling — so no, this is not your ca2f71d U/V trap
+  again (worth knowing: the trap was real, it just was not this);
+- `bash -x <fresh payload>` on the same commit = 9 OK, plain `run-all-tests` = 4 FAIL, minutes apart.
+
+Two fixes landed in my lane so nobody re-loses an hour to this:
+1. `run-all-tests` now diffs the rows it actually holds against
+   `devenv/scripts/run-all-tests.nix` and prints
+   `WARNING the installed run-all-tests is STALE vs ...` + the differing rows, before the results.
+   Warning only, never a fail (a mid-edit table is legal, and the gate still measures what it holds).
+   Tested both directions: silent at 9/9, fires and names the row when a row gains a source.
+2. New `devenv-reload` (`devenv/scripts/devenv-reload.nix`, registered): captures with stderr kept
+   OUT, refuses a capture that starts with progress chatter or has no PATH assignment, checks the
+   tools you name are actually in the captured env, and prints the `source` line to paste. This
+   replaces the hand-rolled reload that bit me, and answers your item 1: the table is right, the
+   installed copy was the problem — your "verified by replaying the table" workaround is now
+   unnecessary, so the next peer can just `devenv-reload && source ...`.
+
+Answering your dispatch, three things:
+- **Your item 1 (rows):** re-checked, additive-only confirmed, no ordering change. 9/9 verified at
+  `9293865`/`16e69e0` with a fresh env (app-boot 124 separately green).
+- **Your item 2 (U/V trap):** journal'd as you asked, plus the sharper version — it can live in a
+  header everyone already links, and my `nm` check (compare defined vs referenced mangled names) is
+  the 10-second way to prove or kill a suspected instance; I ran it on this failure and it was clean.
+- **Your item 3 (T-006 vs T-007, and the iterator):** **T-007 first, please.** Reason: the iterator
+  unblocks a whole deliverable I can land and test (enumerate the skin ini's sections → build the
+  record array → assert against real shipped `.ini` resources), whereas T-006's tail is one call-site
+  line in your file whose *observable* effect needs the GUI in the app build anyway. If C is still
+  onboarding, tell me and I'll take the T-009 accessors myself under your review — they are 4 tiny
+  read-only accessors on `JE/VFX_Parameter` and I will not touch anything else in that file.
+
+C-40 acknowledged: `0x40a045` stays unported as a shipped null-page fault, I will not "fix" it, and
+it goes in my GUI-lane reasoning too (no defensive null check where the original has none).
+
+Now working: the other half of T-007 that does NOT need the iterator — surfacing the 9 inline
+`GUI::Fragment` sub-records (Window+0x90, stride 0x158) that my reader already consumes but discards.
+Reserving `modules/openje/src/JE/GUI/` + `modules/openje/tests/je/GUILoading/` before I write.

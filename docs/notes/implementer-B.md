@@ -353,3 +353,26 @@ Proposed (not done, needs A's ok): add `check:tests` = `run-all-tests --no-app` 
 gates on the 9 suites. Caveat worth stating to A: it will fail during their own in-flight edits
 (exactly what happened with `GameActionAttack.cpp`), which is the point but also a workflow change -
 so it is their call, not mine.
+
+## Rule 7 (the expensive one): `devenv print-dev-env` must NEVER be captured with `2>&1`
+`devenv print-dev-env > /tmp/env.sh 2>&1` writes devenv's progress chatter ("Validating lock",
+"evaluating file ...") into the SAME file as the shell code, which corrupts the `export PATH=`
+lines. Sourcing that file then *silently keeps the old PATH*, so you are still running the
+previously baked script. Consequence seen on 2026-10-20: the installed `run-all-tests` was an old
+payload with 6 suite rows, no `src/F3/CombatManager.cpp` / `GameActionAttack.cpp` / `CombatMath.cpp`
+/ `JE/Scripting.cpp` in any row, so four suites died with `kind=undefined reference` while the
+committed tree was actually **9/9 green**. I reported that as a gate failure. It was my artifact.
+
+Correct sequence (now scripted as `devenv-reload`):
+    devenv-reload --out /tmp/openvb-dev-env.sh   # stderr kept OUT of the capture, freshness-checked
+    source /tmp/openvb-dev-env.sh                # per tool shell; PATH does not survive into it
+    command -v run-all-tests                     # must be the NEW store path, not the old one
+Proof it was stale, for the record: `bash -x <fresh payload>` = 9 OK, `run-all-tests` from the old
+PATH = 4 BUILD-FAIL, same commit, same machine, minutes apart.
+
+`run-all-tests` now self-checks: it diffs the suite rows it *actually holds* against
+`devenv/scripts/run-all-tests.nix` in the working tree and prints
+`WARNING the installed run-all-tests is STALE ...` with the differing rows before running. Warning
+only, never a failure - the gate still measures what it holds, and a mid-edit table edit is legal.
+Verified both directions: silent when rows match (9/9), fires and names the row when one row gains
+a source.

@@ -107,6 +107,33 @@ in {
         "CombatMath|modules/openje/tests/je/CombatMath/CombatMath.cpp|src/F3/CombatMath.cpp $SRC"
       )
 
+      # ---- stale-table guard ---------------------------------------------------------------
+      # The script you are RUNNING is a copy baked into /nix/store when the devenv shell was
+      # built; the table I maintain lives in devenv/scripts/run-all-tests.nix. If the shell has
+      # not been rebuilt (or the env was sourced from a capture that had devenv's progress chatter
+      # merged in with 2>&1, which corrupts the export lines and silently leaves the OLD PATH),
+      # then a peer's brand-new table edits are invisible here and the failures look like engine
+      # bugs. That cost a false "4 suites red" report on 2026-10-20: the committed tree was 9/9
+      # green, but PATH pointed at a payload with 6 rows and no CombatManager/GameActionAttack in
+      # them, producing kind=undefined-reference (chat/from-A.md C-40/C-41, coordinator dispatch).
+      # Compare the rows this process actually holds against the rows in the working tree.
+      src_table="$root/devenv/scripts/run-all-tests.nix"
+      if [ -f "$src_table" ] && [ -f "$0" ]; then
+        # A suite row is "Name|<test src>|<impl srcs>" and always mentions a .cpp, which anchors
+        # the match to the table itself. Rows use the plain dollar-name form ($JE, $SRC) rather than
+        # the nix dollar-brace escape, so installed and working-tree rows compare as text as-is.
+        held=$(grep -oE '"[A-Za-z0-9_]+\|[^"]*\.cpp[^"]*"' "$0")
+        want=$(grep -oE '"[A-Za-z0-9_]+\|[^"]*\.cpp[^"]*"' "$src_table")
+        if [ "$held" != "$want" ]; then
+          printf 'WARNING the installed run-all-tests is STALE vs %s\n' "$src_table"
+          printf '  it holds %d suite rows, the tree has %d; differing rows:\n' \
+            "$(printf '%s\n' "$held" | grep -c .)" "$(printf '%s\n' "$want" | grep -c .)"
+          diff <(printf '%s\n' "$held") <(printf '%s\n' "$want") \
+            | grep -E '^[<>]' | cut -c1-60 | sed 's/^/    /' | head -12
+          printf '  results below measure the INSTALLED table. Reload first: devenv-reload\n' >&2
+        fi
+      fi
+
       mkdir -p "$outDir"
       fails=0
       passed=0
