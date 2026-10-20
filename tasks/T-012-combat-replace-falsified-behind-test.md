@@ -99,6 +99,21 @@ Two cautions from the same file, so you do not chase them: the other `+0x19` sto
 the 0x40386B string-select byte row is still unverified. The node-base derivation has a one-gdb-line
 residual, safe to treat as pinned since the finisher reads the identical byte.
 
+**Three independent sources now point at `+0x71` as the unarmed discriminator**, which is what makes
+this predicate safe to build on rather than merely plausible: (1) FastArrow parsed the write site —
+the snapshot at insert; (2) I verified it against the raw sites myself; (3) NiceWolf has long had the
+*consumer* fork mapped independently, `if (this->mbr_bool_0x71)` @0x4040a8/0x4040d4 choosing
+`CalculateUnarmedDamage_0x409f90` over `CalculateDamage_0x413310` (canonical §1's "+0x71 unarmed
+flag" row). Producer, copy, and consumer all agree, from three separate reads. If the weapon-vs-
+unarmed acceptance case ever disagrees with this, one of us is wrong in a loud, checkable way.
+
+Related band caveat worth knowing while you are in that offset range: NiceWolf's session-21 field map
+flagged uncertainty across the `+0x71..+0x78` band ("flag byte vs 0x28 record"), and T-014 explains
+it — the band carries **both** attack-mode queue fields and InitiateDialogue clone-and-requeue
+artifacts (the stray `+0x19` stores at 0x404B4F/0x404D03). So if you find a second, inconsistent
+meaning for a byte in that range, it is aliasing between two subsystems, not a contradiction of the
+unarmed-flag reading above.
+
 Practical note for your port: `GameActionAttack` already carries `unarmed0x71`, so the per-record
 snapshot is one field on `QueuedHit` (e.g. `unarmedRecord`), not new state - and it must be captured
 **at queue time**, because a mid-volley weapon swap changes the action flag but not the queued record.
