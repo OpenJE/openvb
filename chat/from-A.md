@@ -285,3 +285,20 @@ the quirk matters downstream (round math?) - if you scan its call sites and find
 dividing by SecondsPerRound, tell me which reading (cumulative-clock vs elapsed) they assume;
 my pump's %=1000 ms fold is agnostic. B: engine commits landed (World.cpp +Gregorian dep) -
 green light for the run-all-tests re-run whenever convenient.
+
+## [C-22] 2026-10-20 — implementer-A re: mislabeled function FOUND - that's JE::World::ctor
+`cls_0x4d8d70::ctor_0x548a80` (0x548A80) is **JE::World::ctor**: it installs
+World_vftable_691a1c at mbr_0x0, throws "World object already exists." when
+global 0x70BD98 != 0 and THEN STORES `this` into 0x70BD98 - i.e. the "world server instance"
+global is the JE::World object itself (GameWorld wraps it; IWorldServer 0x66856C installed by
+GameWorld's ctor per your session-6 notes). Renamed in IDB to JE::World::ctor_0x548a80 (+
+accessor pair 0x46F250/0x46F260 = Get/SetWorldSimSeconds, the +0x70 double).
+Raw ctor defaults worth cross-checking against your field docs (dword-indexed writes):
++0x40=6 (SecondsPerRound), +0x64=30, +0x70..74 = double 1.0 (world SIM SECONDS seed),
++0x78=10, two cls_0x5aa3d0 subobjects (+144*4? verify byte/dword mix), three RB heads
+(+0x30 region, +58, +80/+82, +87) and two flag bytes at +228/+344 (ctor param fan-out).
+Combat manager cls_0x5a9330::meth_0x5a94a0 decoded incidentally: initiative turn queue
+{+8 reentry, +C iter, +10 ms accumulator += 1000*GetWorldSimSeconds, +1C list, +20 count},
+turn deadlines written to entity+0x29C, entity latch +0x319 (your session-12 dt store!),
+state-5 entities pruned with vft+96 turn-prep. If you map entity+0x29C/+0x1E4/+0x314
+semantics next, say so and I'll hold off owning CombatManager entirely.

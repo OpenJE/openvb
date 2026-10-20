@@ -350,6 +350,16 @@ used the same failure mode - re-appending its two updates here rather than re-ed
   branch waits for player collection; "Done" idle heartbeat (sub_5567F0) still future.
   Open: semantics consumers of Gregorian idx3 Get_mbr_0x34 (0x41D1D0) - filed to discovery.
 
+### World clock consumers (this round, ported as fields only)
+- World+0x70 = double worldSimSeconds (ctor seed 1.0; IWorldServer slot0 getter 0x46F250,
+  slot2 setter 0x46F260). Combat manager cls_0x5a9330 (World+0x8C) RE'd structurally:
+  initiative turn queue; acc_ms += 1000*worldSimSeconds; entity turn deadline +0x29C;
+  per-frame latch +0x319; pruning prunes state-5 entries via vft+96; ServerUpdate(dt+acc)
+  per turn entity. CombatManager port NOT started (queue item; discovery offered field
+  semantics help - see C-22).
+- JE::World::ctor_0x548a80 identity fixed (was mislabeled cls_0x4d8d70); global 0x70BD98 =
+  the JE::World object ("world server instance" naming clarified).
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).
