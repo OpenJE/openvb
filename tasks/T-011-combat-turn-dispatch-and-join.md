@@ -44,8 +44,17 @@ than invented. This task closes that, plus the join path, using only raw-verifie
    intuition: iterator walk, the `+0x319` latch check (an entity that already acted gets its
    `+0x29C` deadline cleared and is skipped this frame), the `+0x1E4 == 0 || +0x314 != 0` gate,
    deadline arming from `accMs`, and the entity-side turn update it dispatches to.
-4. **Time source:** keep the manager clock-source-agnostic as it is today (it takes
-   `clockSeconds` in). Do not resurrect the old `IWorldServer` slot-0 reading — that was a
+4. **Time source — now settled (canonical §13), and it is NOT a wall clock.** GW+0x40 has exactly
+   two writers: the World ctor @0x548b23 (=6) and `InitClock` @0x546b5b/0x546c8f
+   (`atol("Seconds Per Round")`). Nothing writes it continuously. The consumer @0x5a95ac adds
+   `1000 * GW+0x40` to the manager's `+0x10` accumulator **once per dispatched queue event**, so
+   it is a **round-based virtual clock**: N processed items ⇒ N × SecondsPerRound × 1000 ms.
+   Second domain: when the owner byte `+0x319` is set, the event carries an explicit time stored at
+   `+0x29C` and the round clock is not consulted at all.
+   ⇒ Hard rule for your port: never mix `+0x10` (round-clock ms) with real-ms action deadlines
+   unless `+0x319 == 0`. Keep the manager clock-source-agnostic (it takes `clockSeconds` in), but
+   feed it per **dispatched event**, not per wall-ms frame. Do not resurrect the old `IWorldServer`
+   slot-0 reading — that was a
    decompiler artifact and C-23 is closed: `World+0x70` is a double `worldSimSeconds`, and the
    pump's seconds-carry is the authoritative advance in the reimpl. If the *original's* cadence
    value still matters, that is a research question (T-010), not a license to invent.

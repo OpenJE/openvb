@@ -36,12 +36,23 @@ Full evidence: `discoveries/2025-10-20-T010a-behind-test-is-wrap-not-threshold.m
    Δeuler components by π/180, and compute the flag as the range/wrap test the doc describes.
 3. Keep the observable seam: the resulting flag still selects `kReactionAnimMoving` /
    `kReactionAnimIdleFlag(Set)` front/back and `SpawnedEntity::queuedAnimEvent`.
-4. **Do not resolve the open sub-question by invention.** §3 leaves one thing unsettled: whether
-   the `fpatan` result feeding the chain is in radians or degrees (which decides whether the
-   `±180/360` compares are taken literally or after another scale). If your implementation needs
-   that to pick a branch, message the coordinator and it routes back to research — the flag's
-   consumer (`vft+80` + the damage-type switch) is the disambiguating evidence, and HappyWolf is
-   re-deriving exactly that.
+4. **The consumer is now resolved — read `discoveries/2025-10-20-T010a-behind-test-is-wrap-not-threshold.md`
+   §5 (canonical §13 context) BEFORE coding, because it changes the shape of this task.**
+   Apply @0x45c30c–0x45c358 selects the reaction anim as **(wrap-flag × target-order)**, not an arc:
+   outer branch on `effect+0xAD` (multi-target/AoE), inner on `effect+0xAC` (is-last-target) — both
+   are the session-21 §7 drain markers, not new fields. Yields `33 + wrapFlag` → **{33,34}**, or via
+   the `+0xAC == 0` path `37 + (flag ? 0 : -flag & 3)` → **{37,38,39,40}**.
+
+   Consequence for the existing tables: `kReactionAnimIdleFlag {37,38}` and
+   `kReactionAnimIdleFlagSet {38,39}` are **wrong in two ways** — they split the pair on the
+   front/back axis instead of target-order, and they omit anim **40**. Replace them with the
+   shipped derivation rather than renaming my guesses. `kReactionAnimMoving {33,34}` is right
+   but its selector must become the wrap flag, not `fromBehind`.
+
+   The rad-vs-deg question in §3 is **moot for this consumer** (it only tests flag ∈ {0,1}) but it
+   still decides *when* the flag is ever 1. Keep the single quarantined helper for exactly that,
+   with the default and its consequence documented — do not resolve it by invention.
+
 5. Update the header's deviation note: it currently says the constants are "not yet extracted".
    They are extracted; the rule is now known. Record that the old guess is dead so nobody
    reintroduces it.
@@ -50,7 +61,9 @@ Full evidence: `discoveries/2025-10-20-T010a-behind-test-is-wrap-not-threshold.m
 
 ## Acceptance
 
-- No `2.356`, `3*pi/4`, or `135` remains anywhere in `src/F3/GameActionAttack.*`
+- No `2.356`, `3*pi/4`, or `135` remains anywhere in `src/F3/GameActionAttack.*`, and no
+  two-way `{37,38}`/`{38,39}` idle table remains either (acceptance check: grep for
+  `kReactionAnimIdleFlag` shows a derivation, not two paired arrays).
   (`grep -n "2.356\|3.pi/4\|135" src/F3/GameActionAttack.*` returns nothing).
 - The five constants above appear as named values with their EAs, cited in comments.
 - SpawnMove green; all 9 suite rows OK (`=> 10 pass, 0 fail` incl. app-boot); `msvc-build` exit 0.
