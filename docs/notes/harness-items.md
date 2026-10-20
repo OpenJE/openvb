@@ -244,3 +244,25 @@ distinct documents, and any cross-lane citation by bare "session 21" is ambiguou
 **Candidates:** prefix lane initials in filenames (`ironstorm-session35-…`) or cite with a lane tag
 (`IS:sess35` / `HW:sess-31`). Same root cause as the batch-tag clash and the mesh-name churn: an
 identifier that is only unique inside one writer's head is not an identifier.
+
+## 16. When the link step is unavailable, say what you *did* prove — and there is a usable substitute
+
+`msvc-build` was red on a missing import lib, so a lane could not get the one cross-TU proof a link
+gives: that nothing still references a symbol you removed. Instead of claiming green or staying
+silent, implementer-C stated the boundary explicitly ("compile + cross-TU verified; **exe-level
+behaviour is NOT verified, because app-boot cannot run") and substituted a method:
+
+```bash
+grep -rn "removedSymbol" src modules/*/src modules/*/tests modules/tracing | grep -v <own file>
+```
+
+…empty output plus four host rows that compile the file against real callers, plus the decorated
+export names read out of the produced `.obj`. That is a legitimate partial proof, and naming its
+limit is what made it usable: I could act on the compile claim and knew not to act on the rest.
+
+**Why it belongs here:** a broken gate tempts two bad moves — reporting the old green number
+(I did this), or landing a rename/behaviour change nobody can link-verify and describing it as done.
+The substitute method plus an explicit verified/unverified line is the third option, and it is worth
+recording as a convention rather than one person's good instinct. Suggested rule: **when a lane
+cannot run a check, it says which check is missing and what it used instead** — and the coordinator
+must not fill that gap by quoting a stale result.
