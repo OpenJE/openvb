@@ -30,5 +30,9 @@ next blocked-on-link lane does not have to think of it.
 
 ## Refs
 - `tasks/T-021-...` (verification without a linker, as a boundary not a green)
-- `docs/notes/bugs-found.md` BUG-007 (forward-decl keyword vs definition — the probe should also
-   catch struct/class mismatch; try, and say if it cannot)
+- **Reference corrected after C flagged it:** the forward-decl keyword defect is recorded at
+  `docs/DEFERRED-NOTES.md:389` ("MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST
+  match keyword"), **not** in `docs/notes/bugs-found.md`, which does not exist — my row pointed at a
+  phantom file, the same dangling-reference class as item 15. Test the struct/class mismatch as asked and
+  report honestly whether a host compiler can see it at all; if it cannot, that is a stated limit of the
+  probe, not a pass.
