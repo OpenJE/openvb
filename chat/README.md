@@ -83,9 +83,12 @@ the mesh: `send` is append-only by nature, so no one edits anyone else's message
 
 Engram is the third channel: **mesh = live coordination, `discoveries/` = committed evidence,
 Engram = recall**. Both agents share one store, so a finding saved by A is searchable by B
-without a message and without waiting for a commit. The binary + data dir come from devenv
-(`devenv/packages/engram.nix`, `ENGRAM_DATA_DIR` in `devenv/environment/openvb.nix`), so nothing
-is installed by hand and no session has to remember a port.
+without a message and without waiting for a commit. The binary comes from
+`devenv/packages/engram.nix` (plus the out-of-shell shim below); the store is the platform
+default `~/.engram` and **`ENGRAM_DATA_DIR` is deliberately not set** — see the note in
+`devenv/environment/openvb.nix`: pinning a repo path would create a second store for sessions
+booted outside the devenv, and the extension fails closed on the resulting instance-id mismatch.
+Project separation comes from the tracked `.engram/config.json`, not from the directory.
 
 Use `mem_save` for exactly the things that are expensive to re-derive and not yet file material:
 
@@ -113,6 +116,28 @@ Rules that keep it from rotting into a second source of truth:
 - The **discovery agent does not write memories.** It writes `discoveries/*.md` (reviewable,
   committed, citable) and we ingest the conclusions ourselves. Don't route a durable finding
   into Engram and stop there — that is how evidence gets lost.
+
+### Engram binary: two paths, and one manual machine-level shim
+
+- **Inside the devenv shell**: `engram` comes from `devenv/packages/engram.nix` (fully
+  declarative, pinned 3.5.1).
+- **Outside it** (any `pi` started from a plain login shell — including this project's agents
+  today): `engram` is not on PATH, and the extension fails closed with *"The Engram binary
+  'engram' could not be found"*. `~/.pi/agent/bin` is first on PATH but did not exist, so it is
+  the shim location:
+
+```bash
+mkdir -p ~/.pi/agent/bin
+cp "$(nix-build -E 'let pkgs = import <nixpkgs> {}; in
+      pkgs.callPackage ./devenv/packages/engram.nix {}' --no-out-link | tail -1)/bin/engram" \
+  ~/.pi/agent/bin/engram && chmod +x ~/.pi/agent/bin/engram
+```
+
+This is a **copy, not a symlink**, so it survives nix GC — but that also means it silently pins
+3.5.1 forever. **Re-run the command after bumping `devenv/packages/engram.nix`**, otherwise the
+in-shell and out-of-shell binaries diverge (the extension compares instance-ids, and a
+version-drifted binary is exactly the kind of thing that then fails closed). Verified: after the
+shim, a fresh headless boot reports `🧠 openvb · ready` and auto-spawns the server.
 
 ## Bootstrap — one-time, per agent (already done in this repo by implementer-A)
 

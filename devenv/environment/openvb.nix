@@ -25,18 +25,19 @@ in {
     OPENVB_IDA_REIMPL_MCP_PORT = "8746";
     OPENVB_IMHEX_MCP_PORT = "31337";
 
-    # Engram memory (agent memory server). Absolute on purpose: the pi extension
-    # compares the running server's instance-id against `$ENGRAM_DATA_DIR/.instance-id`
-    # and FAILS CLOSED (no adopt, no spawn, no kill) on a mismatch, so a relative value
-    # would split into two stores the moment a session is booted from a subdirectory
-    # (e.g. modules/openje) instead of the repo root. Same reason it is declared here
-    # rather than left to the ~/.engram default: both agents must resolve one store.
-    ENGRAM_DATA_DIR = "${toString ./.}/.devenv/state/engram";
-    # Port of the local server the extension probes and auto-spawns when ENGRAM_URL is
-    # unset. Leave ENGRAM_URL unset; setting it marks the server externally managed and
-    # skips the ownership check entirely.
-    ENGRAM_PORT = "7437";
-    # The release binary phones home for updates at startup; offline determinism wins.
+    # Engram memory (agent memory server). NOTE: deliberately NO ENGRAM_DATA_DIR here.
+    # The pi extension compares the running server's instance-id against
+    # `$ENGRAM_DATA_DIR/.instance-id` and FAILS CLOSED (no adopt, no spawn, no kill) on a
+    # mismatch, so pinning a repo-local path would hand in-shell sessions one store and
+    # out-of-shell sessions the ~/.engram default: two stores, two instance-ids, and memory
+    # that silently stops working for anyone booted outside the devenv (which is exactly what
+    # happened to a live session). One canonical store (~/.engram); project separation comes
+    # from the tracked .engram/config.json (verified: GET /project/current returns
+    # project_source "config"), not from the directory. `engram sync` still exists if
+    # memories ever need to travel through the repo.
+    # ENGRAM_URL stays unset: setting it marks the server externally managed and skips the
+    # ownership check. ENGRAM_PORT 7437 is already the extension default, so it is unset too.
+    # The release binary phones home for update checks at startup; offline determinism wins.
     ENGRAM_NO_UPDATE_CHECK = "1";
   };
 }
