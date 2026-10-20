@@ -6,6 +6,7 @@
 #include <string.h>
 #include "F3/MapEntitySpawn.hpp"
 #include "JE/Map.hpp"
+#include "JE/ResourceSystem.hpp"
 #include "JE/PathManager.hpp"
 #include "JE/HostHooks.hpp"
 #include "JE/ActionMoveTo.hpp"
@@ -212,19 +213,20 @@ namespace F3 {
 			e->yawRad = 0.0f;
 			// Ground-truth class from the template's chunk signature (demand the resource).
 			e->classId = ClassIdForResourceName( r.name );   // default (extension heuristic)
+			// Template demand goes through the managed cache (original: Demand(managed=1)
+			// during entity file load; multi-instance critters read their .CRT once).
 			if ( JE::g_resource_system && r.name ) {
-				void* tb = NULL;
-				int tl = 0;
-				if ( JE::g_resource_system->ReadResource( r.name, &tb, &tl ) ) {
-					e->classId = ClassIdFromTemplateChunks( (const unsigned char*)tb, (unsigned)tl );
+				JE::ResourceSystem::Res* t = JE::g_resource_system->Demand_0x49b750( r.name, 1 );
+				if ( t ) {
+					e->classId = ClassIdFromTemplateChunks( (const unsigned char*)t->data, (unsigned)t->size );
 					int gf[8];
-					if ( ParseGentBlock( (const unsigned char*)tb, (unsigned)tl, gf ) ) {
+					if ( ParseGentBlock( (const unsigned char*)t->data, (unsigned)t->size, gf ) ) {
 						e->gentF[0] = gf[0]; e->gentF[1] = gf[1]; e->gentF[2] = gf[2];
 						e->gentF[3] = gf[3]; e->gentF[4] = gf[4]; e->gentF[5] = gf[5];
 						e->statMax = gf[6];
 						e->statCur = gf[7];
 					}
-					free( tb );
+					JE::g_resource_system->Release_0x498eb0( t );
 				}
 			}
 			e->classIdTag = e->classId;   // Entity+0x15C runtime tag mirrors the factory case
