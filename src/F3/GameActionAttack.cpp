@@ -10,9 +10,54 @@ namespace F3 {
 	RandFn GameActionAttack::s_rand = 0;   // NULL -> std rand inside CombatDice
 	RandFn GameActionAttack::s_voiceRand = 0;
 
-	const int kReactionAnimMoving[2] = { 33, 34 };        // victim moving: front/back
-	const int kReactionAnimIdleFlag[2] = { 37, 38 };      // stationary, +0xAC clear
-	const int kReactionAnimIdleFlagSet[2] = { 38, 39 };   // stationary, +0xAC set
+	const int kReactionAnimMoving[2] = { 33, 34 };   // 0x45C331: 0x21 + setne(wrapByte)
+	const int kReactionAnimIdle[2]   = { 37, 40 };   // 0x45C355: 0x25 + (wrapByte ? 3 : 0)
+	const int kReactionAnimIdleSet[2] = { 38, 41 };  // 0x45C349: 0x26 + (wrapByte ? 3 : 0)
+
+	// Apply's hit-angle chain, instruction for instruction (0x45C29E..0x45C2E4). The constants
+	// were read out of the shipped PE, not inferred:
+	//   0x6CB56C = 0.0f   | 0x660828 = -180.0f | 0x660824 = 180.0f | 0x660820 = 360.0f
+	// The four compares are x87 `fcom/fcomp` + `fnstsw` + `test ah,{5,1}` + `jp/jz/jnz`, i.e.
+	// they read C3:C2:C0 as a PAIRWISE-parity/compare result, which is what this function
+	// reproduces. Written 1 only on the three out-of-band paths 0x45C2B6->D9, 0x45C2D2, 0x45C2DB.
+	//
+	// SHIPPED DEFECT (filed, not fixed - see T-012 notes): the byte this returns lives at
+	// Apply's var_B1 ([esp+0Fh) and the ONLY stores to that slot are the two `mov byte,1` at
+	// 0x45C2D2/0x45C2DB. Nothing ever zeroes it: the `mov [esp+0Fh],bl` at 0x45C1B6 targets
+	// var_A5 (frame offset 0x1B), a different slot, because 0x45C22C's `sub esp,0Ch` shifts the
+	// window by 0xC between the two. So on every in-band path - and on the two early exits at
+	// 0x45C1BA/0x45C1CB, which jump straight to 0x45C2E4 past the whole chain - the shipped
+	// code reads an UNINITIALISED stack byte, in practice whatever the previous Apply call left
+	// at that address. That is not a "flag stays 0" default; it is stack reuse.
+	// `unwritten` is how we model the choice without claiming it as shipped fact: pass 0 for a
+	// deterministic port, pass the previous hit's byte to reproduce the stickiness.
+	unsigned char HitAngleWrapFlag( float angle, unsigned char unwritten )
+	{
+		// fcom 0.0 / test ah,5 / jp  @0x45C29E: parity of (C3,C2,C0) selects the sign branch.
+		if ( angle >= 0.0f || angle != angle ) {   // >=0 or unordered -> 0x45C2B8
+			// fcom 180.0 / test ah,1 / jne @0x45C2B8 -> in-band, byte NOT written
+			if ( angle < 180.0f ) { return unwritten; }
+			// fcomp 360.0 / test ah,5 / jp @0x45C2C5 -> >=360 in-band, byte NOT written
+			if ( angle >= 360.0f ) { return unwritten; }
+			return 1;                                // 0x45C2D2: 180 <= angle < 360
+		}
+		// fcom -180.0 / test ah,1 / jz @0x45C2AB -> 0x45C2D9 writes 1 when angle >= -180
+		if ( angle >= -180.0f ) { return 1; }
+		return unwritten;                          // angle < -180 falls through to 0x45C2B8
+	} // HitAngleWrapFlag
+
+	// The selector block at 0x45C30C..0x45C35C, including its outer gate: a non-first record of
+	// a batch had eff+0xAD = 1 (finisher @0x4038D7..0x4038F7), and 0x45C312's branch jumps past
+	// the QueueAnimEvent call at 0x45C35A entirely - secondary hits are DELIBERATELY SILENT.
+	int ReactionAnimFor( bool firstInBatch, bool targetMoving, bool flurryGe2,
+	                     unsigned char wrapByte )
+	{
+		if ( !firstInBatch ) { return 0; }   // 0x45C312: no QueueAnimEvent at all
+		const int band = ( wrapByte != 0 ) ? 1 : 0;
+		if ( targetMoving ) { return kReactionAnimMoving[ band ]; }        // 0x45C326
+		return flurryGe2 ? kReactionAnimIdleSet[ band ]                    // 0x45C342/0x45C349
+		                 : kReactionAnimIdle[ band ];                      // 0x45C34E/0x45C355
+	} // ReactionAnimFor
 
 	GameActionAttack::GameActionAttack()
 	  : actor( 0 ), target( 0 ), calledShotPart( 9 ), reach( 1 ),
@@ -21,7 +66,9 @@ namespace F3 {
 	    moveSpeed( 4.0f ), unarmed0x71( true ), queueCount( 0 ), finished( false ) {
 		for ( int i = 0; i < kQueueCap; ++i ) {
 			queue[i].dmg = 0; queue[i].damageType = 0; queue[i].material = 0;
-			queue[i].lastTarget = false;
+			queue[i].flurryGe2 = false;
+			queue[i].firstInBatch = true;
+			queue[i].unarmedSnapshot = false;
 		}
 		mode.style = 0; mode.damageType = 4; mode.primaryAmmoCost = 0;
 		mode.flatDamageBonus = 0; mode.toHitBonus = 0; mode.attackCount = 1;
@@ -126,7 +173,15 @@ namespace F3 {
 						qh.damageType = mode.damageType;        // effect +0xA0 stand-in
 						qh.material = 0;                        // effect +0xA4 (ammo/proto
 						                                       // material - weapon unported)
-						qh.lastTarget = true;                   // single-target action here
+						// +0xAC / +0xAD are assigned by the FINISHER (meth_0x403770 @0x4038D7..0x4038F7):
+						// the first record of the list gets +0xAD = 0 and +0xAC = (marks >= 2); every
+						// later record gets +0xAD = 1, which makes Apply skip the reaction block whole.
+						qh.firstInBatch = ( queueCount == 1 );
+						// record+0x19 is a SNAPSHOT of action+0x71 taken AT queue-insert (@0x4041A1),
+						// not a live read: a mid-volley weapon swap changes action+0x71 but cannot
+						// change records already queued, so the mark must be copied per record here.
+						qh.unarmedSnapshot = unarmed0x71;
+						qh.flurryGe2 = false;
 					}
 				}
 				--seriesRemaining;
@@ -145,6 +200,12 @@ namespace F3 {
 		// direct HP write; original creates GameEffectDamage per hit (+0x9C payload) and
 		// ATTACHES to the target (updater layer unported).
 		if ( seriesRemaining == 0 && !volleyContinuing ) {
+		// pre-loop census (0x4037D2..0x403804): count records whose queued +0x19 mark
+		// is set. +0xAC is TRUE only for >= 2, i.e. an UNARMED flurry - counting records
+		// instead would wrongly upgrade a 3-hit WEAPON volley.
+		int unarmedMarks = 0;
+		for ( int m = 0; m < queueCount; ++m ) { if ( queue[m].unarmedSnapshot ) { ++unarmedMarks; } }
+		const bool flurryGe2 = ( unarmedMarks >= 2 );
 			// per queued hit, ordered exactly as GameEffectDamage::Apply (0x45C140 §3):
 			for ( int i = 0; i < queueCount; ++i ) {
 				const QueuedHit& qh = queue[i];
@@ -161,20 +222,32 @@ namespace F3 {
 				int cur = oldHp - qh.dmg;
 				if ( cur > target->statMax ) { cur = target->statMax; }
 				target->statCur = cur < 0 ? 0 : cur;
-				// 4. hit angle (victim-attacker delta -> atan2; shipped multiplies deltas
-				// by flt_649C50 and compares two/three threshold floats flt_660820/824/828
-				// for the behind-sector flag - constants not yet extracted; deviation:
-				// planar atan2 + documented sector test at |angle| > 3*pi/4).
+				// 4. hit angle. Shipped shape (Apply 0x45C243..0x45C29C): the negated delta
+				// Euler components are prescaled by flt_649C50 = pi/180, run through the two
+				// transform helpers 0x47272B / 0x471357, and combined as atan2 via fpatan. The
+				// fpatan RESULT is what the compare chain consumes and no instruction scales it,
+				// so the value entering the chain is in RADIANS by x87 architecture: the
+				// rad-vs-deg question left open in discoveries/2025-10-20-T010a-behind-test-is-
+				// wrap-not-threshold.md §3 is CLOSED, and because |atan2| <= pi < 180 the
+				// +/-180 and 360 compares are UNREACHABLE for any real input. The degrees
+				// reading is therefore recorded as unreachable, not implemented - there is no
+				// 180/pi multiply in the binary to justify one.
+				// Deviation kept: we feed the planar position delta, because the delta-Euler
+				// source fields and both transform helpers are still unported. Shape faithful,
+				// inputs not.
 				const float hx = target->pos[0] - actor->pos[0];
 				const float hz = target->pos[2] - actor->pos[2];
 				const float angle = atan2f( hx, hz );
-				const bool fromBehind = ( angle > 2.356f ) || ( angle < -2.356f );
-				// 5. reaction anim pick (QueueAnimEvent_0x4673D0 is unported -> id is stored on
-				// the victim as the seam; session 7 §3 step 5, victim-moving byte = Entity+0x3A2)
-				target->queuedAnimEvent = target->movingFlag
-				    ? kReactionAnimMoving[fromBehind ? 1 : 0]
-				    : ( qh.lastTarget ? kReactionAnimIdleFlagSet : kReactionAnimIdleFlag )
-			          [ fromBehind ? 1 : 0 ];
+				// The shipped wrap byte is Apply's var_B1. Nothing in Apply ever zeroes it - the
+				// only stores are `mov byte,1` at 0x45C2D2/0x45C2DB - so on an in-band angle the
+				// original reads uninitialised stack (stack reuse from the previous Apply call).
+				// We pass a deterministic fresh 0; see HitAngleWrapFlag for the defect write-up.
+				const unsigned char wrapByte = HitAngleWrapFlag( angle, 0 );
+				// 5. reaction anim pick (QueueAnimEvent_0x4673D0 unported -> id stored on the
+				// victim as the seam; session 7 §3 step 5, victim-moving byte = Entity+0x3A2)
+				const int anim = ReactionAnimFor( qh.firstInBatch, target->movingFlag,
+				                                flurryGe2, wrapByte );
+				if ( anim != 0 ) { target->queuedAnimEvent = anim; }   // 0 = no event queued at all
 				// 6. VFX .veg selection - name resolved and parked on the seam, spawn unported
 				target->lastHitVeg = SelectHitVeg( qh.damageType, qh.material, qh.dmg );
 				// 7. voice roll (audio ids unported; seam kept for determinism)
@@ -194,7 +267,7 @@ namespace F3 {
 					GameActionDie& die = s_dies[ s_di = ( s_di + 1 ) & 3 ];
 					die.damageType = qh.damageType;
 					die.material = qh.material;
-					die.flagsByte0x28 = qh.lastTarget ? 1 : 0;
+					die.flagsByte0x28 = qh.flurryGe2 ? 1 : 0;
 					PushActionOntoEntity( target, 5, &die );   // mode-5 queued-action accept
 				}
 			}

@@ -1,7 +1,7 @@
 ---
-status: open
+status: done
 priority: P1 (a falsified formula is committed and running)
-assignee: implementer-C (after T-009)
+assignee: implementer-C (UltraBear, mesh sess 01a15aff)
 ---
 
 # T-012 — Combat: replace the from-behind test, which is now **proven wrong**
@@ -123,6 +123,81 @@ which is observable (a multi-sub-attack unarmed volley should animate once, not 
 currently not modelled at all in `GameActionAttack::Update`, because my queue drains every record
 identically. If you would rather land the radian/angle-chain fix without it, say so and it becomes a
 follow-up row - do not let scope creep delay the part that is settled.
+
+## Evidence (implementer-C, 2026-10-20)
+
+Three independent decoders were used on the shipped bytes (IDA, objdump, and a hand decode of
+the instruction encodings), because the anim tables were contested three ways by the end of this
+row and only the encodings settle it.
+
+### What the bytes actually say
+
+1. **The five constants** - read out of the PE directly, not inferred:
+   `0x6CB56C`=0.0f, `0x660828`=-180.0f, `0x660824`=180.0f, `0x649C50`=0.0174532924f, `0x660820`=360.0f.
+2. **The rad-vs-deg question in §3 is CLOSED and the answer is radians.** `fpatan` (0x45C29C) is
+   the last FP op before the first compare (0x45C29E); nothing scales it. x87 bounds fpatan to
+   [-pi,pi], so the +/-180 and 360 compares CANNOT fire for any real input. Feeding the chain
+   degrees would require a multiply the binary does not contain - the coordinator's original
+   step 3 ("prescale by pi/180 as the shipped shape") was withdrawn for exactly this reason.
+3. **The chain collapses to a sign test.** Simulated truth table: -181->0, -180->1, -90->1,
+   -0.1->1, -0.0->0, 0.0->0, +0.1->0, +180->1, +180.1->1, +359.9->1, +360->0. i.e. literally
+   `flag = (angle mod 360) >= 180`, which over [-pi,pi] is `angle < 0`. So the domain choice is
+   UNOBSERVABLE through this consumer - kept as a documented assertion, not a behavior switch.
+4. **The reachable reaction ids are {33,34,37,38,40,41}.** The stationary selector is
+   `neg al / sbb eax,eax / and eax,3` = `(al != 0) ? 3 : 0`, a step of THREE off bases 0x25/0x26
+   (37/38). This makes **39 unreachable** - both pre-existing tables `{37,38}` and `{38,39}` were
+   wrong, as was the interim `{37,38,39,40}` reading in T-010a §5 - and **41 was missing**.
+   Moving uses `setne` (step 1) -> {33,34}. Encodings: `f6d8 1bc0 83e003 83c025` / `83c026`.
+5. **First-wins is real and stronger than "different id":** `0x45C312` branches on eff+0xAD
+   straight past the `QueueAnimEvent` call at `0x45C35A`, so non-first records queue NO anim.
+   Implemented as `ReactionAnimFor()` returning 0 = no event.
+6. **A shipped defect found in the process, filed not fixed:** the wrap byte is Apply's `var_B1`
+   ([esp+0Fh) and the ONLY stores to it are `mov byte,1` at 0x45C2D2/0x45C2DB. Nothing zeroes it:
+   the `mov [esp+0Fh],bl` at 0x45C1B6 hits **var_A5** (frame offset 0x1B), a different slot, because
+   0x45C22C's `sub esp,0Ch` shifts the window by 0xC in between. Verified by esp-walking every
+   store in 0x45C140..0x45C650 and by checking 4-byte store windows. So on an in-band angle - and
+   on the two early exits at 0x45C1BA/0x45C1CB, which jump past the whole chain to 0x45C2E4 - the
+   original reads UNINITIALISED stack (in practice the previous Apply's residue). We model a fresh
+   0 for determinism and expose the residue as a parameter so the stickiness is reproducible.
+
+### Tests
+
+SpawnMove gained the flurry/first-wins/angle checks (file now 81 `check()` calls), including the
+discriminator the coordinator asked for: 3 UNARMED records -> 41, 3 WEAPON records same count ->
+40, plus `!= 41` to catch a count-based rule.
+
+**Non-vacuity proved by two negative controls**, each reverted after:
+- census replaced by naive `unarmedMarks = queueCount` -> `FAIL: 3 WEAPON records, SAME count...`
+  and `FAIL: count-based rule would have produced 41 here` (2 failures) - so the test really
+  separates count from snapshot.
+- `kReactionAnimIdle` step changed 40->38 -> 3 failures incl. the reachable-set check.
+
+### Gate state on MY run (differs from the coordinator's "9/9 + msvc clean")
+
+`run-all-tests --msvc-build` -> `msvc=FAIL`, `GUILoading=BUILD-FAIL(undefined-reference)`,
+`app=BUILD-MISSING`, others OK, `=> 8 pass, 3 fail`. All three reds are outside this row:
+- `msvc-build`: `LINK : fatal error LNK1181: cannot open input file 'd3d8.lib'` - the D3D8 import
+  YoungStorm's M-001 slice 1 added in `cmake.toml` is NOT in the MSVC 2002 image. This is the
+  DX8-header probe's answer, arrived at by accident: the headers compiled (0 `error C`) but the
+  library is absent, so the link cannot succeed. Nothing in GameActionAttack is involved.
+- `GUILoading`: the INSTALLED run-all-tests payload predates the T-007 land. The repo table
+  (`devenv/scripts/run-all-tests.nix`) already lists `SkinFragments.cpp` + `SkinTable.cpp`; the
+  store script does not. Compiling the GUILoading row from the REPO table by hand: **exit 0**.
+  Stale payload, not a regression.
+- `app-boot`: consequence of the first (no `build/F3.exe`).
+
+My files were still verified under MSVC 2002 directly: `error C=0`, and
+`build-msvc/CMakeFiles/F3.dir/src/F3/GameActionAttack.cpp.obj` exports
+`?HitAngleWrapFlag@F3@@YAEME@Z` and `?ReactionAnimFor@F3@@YAH_N00E@Z` (`_N` = bool, so the
+struct/class mangling trap did not bite). `cppcheck-openvb`: zero findings on my two files.
+
+### Acceptance grep caveat
+
+The row's grep `"2.356\|3.pi/4\|135"` can never pass while citing the legitimate EA **0x471357**,
+which contains "135" as a substring. All prose references to the deleted rule are now spelled out
+("three pi over four", "no arc-threshold constant"), and a tightened grep
+`2\.356|3 ?[*/] ?pi/4|135\.0f?\b` returns **nothing** (exit 1). Recommend the row use the
+tightened form - an EA is not a threshold.
 
 ## Acceptance
 

@@ -146,7 +146,7 @@ row; A keeps editorial merge rights).
 
 | T-011 | Combat: turn-queue per-turn dispatch + join-on-attack | open | unassigned |
 
-| T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | in-progress | implementer-C (UltraBear) |
+| T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | done | implementer-C (UltraBear) |
 
 | M-001 | **D3D8 slice 1: one visible frame** (device+clear+present; renderer explicitly deferred) | open | unclaimed — B has first claim of need |
 

@@ -33,6 +33,25 @@ namespace F3 {
 	//    0x413310. We carry the flag as `unarmed0x71` and default it TRUE, because the weapon /
 	//    inventory registries are unported (so every attack here is unarmed and takes the twin
 	//    the demo actually exercises).
+	//  - hit-reaction selection (T-012). The shipped test is NOT a behind-arc threshold: the
+	//    pre-2026-10-20 rule here (planar atan2 with an arc threshold of three pi over
+	//    four) was a substituted guess
+	//    and is DELETED - the constants it assumed do not exist (0x660820/824/828 are 360.0f,
+	//    180.0f, -180.0f and 0x6CB56C is 0.0f; NO arc-threshold constant of any kind exists at
+	//    those sites). Faithful shape = HitAngleWrapFlag (the x87 compare chain) + ReactionAnimFor
+	//    (the selector at 0x45C30C..0x45C35C), with these remaining deviations, both of which
+	//    are inputs rather than logic:
+	//      * we feed the planar position delta; the delta-Euler source fields and the transform
+	//        helpers 0x47272B / 0x471357 are unported.
+	//      * the shipped wrap byte (Apply's var_B1) is never zeroed - its only stores are
+	//        `mov byte,1` at 0x45C2D2/0x45C2DB, and the apparent init at 0x45C1B6 hits var_A5,
+	//        a different slot (0x45C22C's `sub esp,0Ch` shifts the window by 0xC). So in the
+	//        original an in-band angle reads uninitialised stack, i.e. the previous Apply's
+	//        residue. We pass a fresh 0 per hit to stay deterministic; the stickiness is
+	//        reproducible by passing the previous byte. Filed, not "fixed".
+	//    Consequence worth knowing before reading the tables: the reachable reaction ids are
+	//    {33,34,37,38,40,41}. 39 (shipped in the old tables) is unreachable and 41 was missing,
+	//    because the stationary selector adds (wrapByte ? 3 : 0) to a base, not 0/1.
 	// GameActionDie (session 7 §3 step 10): created by the damage Apply when the victim
 	// newly dies, queued onto the VICTIM's action pipeline (mode-5 "accepts queued
 	// actions"). Fields per the shipped init: +0x1C damageType, +0x20 material, +0x28 byte.
@@ -51,11 +70,30 @@ namespace F3 {
 		int Update( struct SpawnedEntity* victim );   // 1 = done
 	};
 
-	// Hit-reaction anim ids (session 7 §3 step 5): moving -> 33 front / 34 back;
-	// stationary -> (+0xAC set ? 38/39 : 37/38), front/back by the behind-sector flag.
-	extern const int kReactionAnimMoving[2];    // {33,34}
-	extern const int kReactionAnimIdleFlag[2];  // {37,38}
-	extern const int kReactionAnimIdleFlagSet[2]; // {38,39}
+	// Hit-reaction anim ids. Restated from the selector at 0x45C326..0x45C355 (T-012): the
+	// stationary paths do NOT use a two-element table, they add a step of 3 to a base, so the
+	// shipped reachable set is {33,34} moving, {37,40} stationary/+0xAC clear, {38,41}
+	// stationary/+0xAC set. 39 (in the old table) is UNREACHABLE; 41 was missing entirely.
+	extern const int kReactionAnimMoving[2];        // {33,34} = 0x21 + 0/1
+	extern const int kReactionAnimIdle[2];          // {37,40} = 0x25 + 0/3, +0xAC clear
+	extern const int kReactionAnimIdleSet[2];       // {38,41} = 0x26 + 0/3, +0xAC set
+
+	// The x87 compare chain of GameEffectDamage::Apply (0x45C29E..0x45C2E4). Returns the
+	// wrap-hit byte; `unwritten` stands in for what the shipped code reads when NO branch wrote
+	// the byte (see HitAngleWrapFlag's body comment - it is an uninitialised stack slot there).
+	unsigned char HitAngleWrapFlag( float angle, unsigned char unwritten );
+
+	// Reaction anim id for one queued hit, or 0 when no QueueAnimEvent happens at all (the
+	// shipped selector queues NOTHING for a non-first record of a batch: 0x45C30C branches on
+	// eff+0xAD straight past the call at 0x45C35A).
+	//   moving            @0x45C326: 0x21 + (wrap != 0)      -> { 33, 34 }
+	//   stationary, +0xAC=0 @0x45C355: 0x25 + (wrap != 0 ? 3 : 0) -> { 37, 40 }
+	//   stationary, +0xAC=1 @0x45C349: 0x26 + (wrap != 0 ? 3 : 0) -> { 38, 41 }
+	// The stationary step is 3, NOT 1: the selector is `neg al / sbb eax,eax / and eax,3`, which
+	// is the standard integer-mask idiom for (al != 0) ? 3 : 0. So 39 - which the pre-T-012 tables
+	// shipped - is NOT REACHABLE from this code, and 41 was missing entirely.
+	int ReactionAnimFor( bool firstInBatch, bool targetMoving, bool flurryGe2,
+	                     unsigned char wrapByte );
 
 	// .veg hit-effect selection (session 7 §3 step 6 table): damageType (+0xA0 0..5) with
 	// material (+0xA4) sub-cases. Pure name resolver - VFX spawn layer consumes later.
@@ -105,7 +143,14 @@ namespace F3 {
 			int dmg;
 			int damageType;   // effect +0xA0
 			int material;     // effect +0xA4
-			bool lastTarget;  // effect +0xAC ("last target of action")
+			// effect +0xAC. NOT "is-last-target" (that label was NiceWolf's session-7 inference).
+			// FastArrow T-014: the finisher writes it as (count of records whose +0x19 snapshot is
+			// set >= 2), and record+0x19 is itself a queue-time copy of the action's +0x71 UNARMED
+			// bool (@0x4041A1). So this is "flurry of >= 2 unarmed records", which is why counting
+			// records alone is wrong - a 3-hit WEAPON volley leaves it clear.
+			bool flurryGe2;
+			bool firstInBatch;   // effect +0xAD inverse: non-first records animate NOTHING
+			bool unarmedSnapshot;  // record+0x19: queue-time copy of the action's +0x71 (T-014)
 		};
 		static const int kQueueCap = 16;
 		QueuedHit queue[kQueueCap];
