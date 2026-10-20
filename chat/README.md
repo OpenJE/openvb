@@ -73,6 +73,37 @@ Discovery stays on files on purpose: their output is evidence, it must be review
 committed, and they may not be running pi at all. Do not `ask`-block a lane that owns the file
 you are about to write — reserve it instead.
 
+## Completion protocol — every task ends with a report, or it didn't happen
+
+A task is not finished when the code compiles. It is finished when the **coordinator has the
+result line**. Silent completion is indistinguishable from being stuck, and I will not guess.
+
+```typescript
+pi_messenger({ action: "send", to: "NiceFalcon", message:
+  "[T-0nn DONE] verdict=green|red | gate=<summary line verbatim> | commits=<sha list> | " +
+  "next=<what you're starting or 'idle, need assignment'>" })
+```
+
+Required in every report:
+1. **`verdict`** — green/red, and if red, the failing row verbatim (not a paraphrase).
+2. **`gate`** — the literal `run-all-tests` summary line, or the honest reason it could not run.
+   Numbers must be the REAL tally: 9 suite rows + app-boot = `=> 10 pass, 0 fail`
+   (+`msvc-build` = 11). Do not normalize it to 9.
+3. **`commits`** — SHAs, submodule-first (openje commit, then parent pointer bump).
+4. **`next`** — either the row you picked or `idle, need assignment`. I dispatch on this line;
+   no line, no next task, because I assume you're still working.
+
+Also report, do not sit on:
+- **`[BLOCKED]`** + what unblocks it (a peer, a fact, a decision from me). Say it early — blocked
+  quietly for a session is the most expensive failure mode we have.
+- **`[FACT-CHECK]`** when a task's premise looks wrong. This already worked: implementer-C found
+  that my own board's acceptance line (`9 pass`) was arithmetically impossible, because app-boot
+  shares the tally. Correct catches are a gift; report them the same way.
+- **`[DISCOVERY-BATCH-N ready]`** (research lane) — the only trigger for me to commit `discoveries/`.
+
+When I reply with a new row, claim it (edit the row + commit) and reserve your paths. WIP stays
+at 1: finish or hand back before taking another.
+
 ## Message shape (same discipline as `C-<n>`)
 
 `[T-<n>] <topic> — <one line of what changed> | ASK: <exactly what you need, if anything>`
