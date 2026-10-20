@@ -158,3 +158,4 @@ row; A keeps editorial merge rights).
 | T-016 | One debug session, three pinned runtime reads (naming / World+0x160 vft / Map Name fallback) | open | unclaimed — Read 1 optional now |
 | T-017 | F3 UI surface: Command* -> GameInterfaces slot / root-Open mapping | in-progress | HappyWolf (research) |
 | T-018 | Data read: shipped helmet record's `GameItem+0xA8` required-slot vector | in-progress | IronStorm (research) |
+| T-019 | Does any shipped weapon record set both v5 flags (consumed+thrown -> FatalError)? | open | FastArrow (research) |
