@@ -68,7 +68,11 @@ namespace F3 {
 		SpawnedEntity*  target;             // +0x34/+0x38
 		AttackModeRecord mode;              // +0x30 record (MODE row; unarmed default)
 		AmmoMods        ammo;               // weapon+0x3B4.. stand-in (§7 stats block)
-		int             calledShotPart;     // +0x73+3 (9 = unset, shipped default)
+		int             calledShotPart;     // +0x78 (9 = unset, shipped default). Was written
+		                              // +0x73+3 here, which is an IDA int-index artifact: the
+		                              // raw instruction at 0x4025db is 83 7E 78 09 =
+		                              // `cmp dword [esi+0x78], 9` (T-010c, FastArrow; the
+		                              // enclosing gate reads mode+0x41 at 0x4025d4).
 		int           reach;                // +0x72 melee range (-1 = ranged)
 		unsigned      firstStrikeDueMs;     // +0x5e (anim lead)
 		unsigned      nextSubAttackDueMs;   // +0x65 dword (DM-beat release time)
