@@ -2,24 +2,52 @@
 
 #include "tracing.hpp"
 #include <math.h>
+#include <time.h>        // time() for the shipped lazy seed (sub_48CCC0 calls __time32)
 #include "JE.hpp"             // JE::LogDebugString - the shipped debug strings are part of the port
 #include "F3/CombatMath.hpp"
 
 namespace F3 {
+	// The two shipped globals sub_48CCC0 reads: F3::start_time (the LCG state dword, which is
+	// ALSO the variable the engine names as the startup time) and byte_707C64, the one-time
+	// "seeded" flag that F3::SetStartupTime writes at 0x48CCA9.
+	static unsigned int g_lcgState = 0;
+	static int g_lcgSeeded = 0;
+
+	// Test-only reseed, mirroring F3::SetStartupTime (0x48CCA0: state = t, flag = 1). Shipped
+	// code has no other writer of the state and no way to reseed mid-session; see the deviation
+	// note in docs/DEFERRED-NOTES.md.
+	void SeedShippedRand( unsigned int seed ) {
+		g_lcgState = seed;
+		g_lcgSeeded = 1;
+	}
+
+	// sub_48CCC0 verbatim: lazily seed from the wall clock (seconds) on first use, advance the
+	// state, emit (state >> 8) & 0x7FFF. The advance happens BEFORE the emit, so the first draw
+	// of a process is a function of the seed rather than the seed itself. Arithmetic is on
+	// unsigned 32-bit, which wraps exactly like the shipped imul/add pair.
+	int ShippedRand() {
+		if ( !g_lcgSeeded ) {
+			SeedShippedRand( (unsigned int)time( NULL ) );
+		}
+		g_lcgState = 1664525u * g_lcgState + 1013904223u;
+		return (int)( ( g_lcgState >> 8 ) & 0x7FFFu );
+	}
+
 	// Per-target-id armour penalty (dword_64F858). THE INDICES ARE TARGET IDS, not body parts:
 	// {5,6} are the head-family equip-slot pair, and which of the two is HEAD versus EYES is still
 	// INFERRED (120 at index 6 favours an EYES reading). Names are deliberately withheld here, for
 	// the same reason the DT row is called dtRowB - 10c settled the GROUP, not the per-id anatomy.
 	const int kCalledShotMods[8] = { 10, 40, 40, 40, 40, 60, 120, 60 };  // dword_64F858
 
-	// 0x48CD00: v3=min, v2=max; equal -> param_1; return min + rand % (max-min+1).
+	// 0x48CD00: v3=min, v2=max; equal -> param_1; return min + draw % (max-min+1), where draw
+	// comes from sub_48CCC0 (ShippedRand) unless a test injects its own generator.
 	int CombatDice( int a, int b, RandFn rnd ) {
 		if ( a == b ) {
 			return a;
 		}
 		int lo = a, hi = b;
 		if ( b < a ) { lo = b; hi = a; }
-		return lo + ( rnd ? rnd() : (int)rand() ) % ( hi - lo + 1 );
+		return lo + ( rnd ? rnd() : ShippedRand() ) % ( hi - lo + 1 );
 	}
 
 	// GameCreature::GetTotalSkill_0x409830 - base rank points + SPECIAL combos

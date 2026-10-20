@@ -450,3 +450,32 @@ original is a different game, and the divergence reads as our bug.
 Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachment index space, not
 the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's
 `socketIdx = id+1` bridge was retracted.
+
+## Port deviations (deliberate, registered — T-027)
+
+The mirror rule says do not silently improve the original. These are the places where the reimpl is
+structurally different from the shipped code **on purpose**, so the next reader does not have to
+discover them by diffing.
+
+**D-1 — the random-draw seam.** (`docs/f3/CombatRngSeam.md` §2/§4 is the mechanism; `src/F3/CombatMath.{hpp,cpp}`.)
+
+1. **`RandFn` parameters do not exist in the original.** Shipped `sub_48CD00` takes two ints and reads
+   one global dword; all 18 consumers share that single stream. Our `CombatDice`/`CalculateDamage`/
+   `CalculateToHit*` take an optional third argument so a test can pin the stream. It is
+   behaviour-neutral when `NULL` — which is what every app path passes.
+2. **`SeedShippedRand(unsigned)` is a reseed the shipped binary cannot do.** `F3::start_time` has exactly
+   one writer, `F3::SetStartupTime` (0x48CCA0), reached once from `sub_48CCC0` with `time32(NULL)`.
+   Nothing in `src/F3/*` other than tests calls `SeedShippedRand`; if production code ever does, that is
+   a fidelity break and must be reverted, not documented.
+3. **This row *removed* a deviation rather than adding one.** Before T-027 the un-injected fallback was
+   `std::rand()` — same 0..32767 window, different stream, so the app path drew numbers the original
+   could not have produced. It now draws `sub_48CCC0` verbatim. Recorded here because "it used to be
+   wrong" is the information a reader needs when comparing old captures against new output.
+4. **Known-unmirrored bias, kept.** `Dice(0,100)` maps 32768 values onto 101 buckets with the low 8 bits
+   discarded (32768 % 101 = 104), so the shipped to-hit roll is not uniform. We mirror the modulo
+   exactly. Do not "fix" it — a uniform draw is a different game's combat.
+
+**Standing rule from this row:** no test may assert a damage value (or any drawn value) while the draw
+comes from the live global stream — pin the seed or inject the generator, assert the exact number, and
+keep a sensitivity control (a different seed must give a different answer). Range-only assertions on an
+unseeded stream are how two lanes signed off on a test that asserted nothing.

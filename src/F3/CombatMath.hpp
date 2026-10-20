@@ -11,10 +11,32 @@ namespace F3 {
 	// independently of the full GameCreature/GIWP/MODE layers.
 	//
 	// Rand seam: original dice use sub_48CD00(a,b) = min + sub_48CCC0() % (max-min+1)
-	// (verified decompile; args auto-swap, equal -> constant). The shipped generator
-	// sub_48CCC0 is a global LCG - this port takes an injectable fn for determinism.
+	// (verified decompile; args auto-swap, equal -> constant).
 	typedef int (*RandFn)();
 	int CombatDice( int a, int b, RandFn rnd );   // 0x48CD00
+
+	// ---- the shipped global draw, sub_48CCC0 (0x48CCC0..0x48CCF6) -----------------
+	// It is NOT rand(). Disassembly of the shipped binary:
+	//   48ccc0  mov al, byte_707C64 / test / jnz      -> one-time "already seeded" flag
+	//   48cccb  call __time32(0) ; call F3::SetStartupTime   (0x48CCA0: state = t, flag = 1)
+	//   48ccde  imul eax, 19660Dh                    -> * 1664525
+	//   48cce4  add  eax, 3C6EF35Fh                  -> + 1013904223
+	//   48cce9  mov  F3__start_time, eax             -> state IS the startup-time dword
+	//   48ccee  shr  eax, 8 / and eax, 7FFFh         -> returns (state >> 8) & 0x7FFF
+	// So: one global dword, lazily seeded from the wall clock in SECONDS on the first draw,
+	// Knuth/MMIX LCG advance, 15-bit output (0..32767). Every dice site in the game shares
+	// this single stream, so a draw sequence is a pure function of that one seed.
+	// Our port used to fall back to std rand() when no RandFn was injected - the same output
+	// range but a different stream, i.e. a silent fidelity deviation. It now falls back to
+	// this, so the un-injected app path draws what the original drew.
+	int ShippedRand();
+
+	// Test-only: force the LCG state, mirroring what F3::SetStartupTime (0x48CCA0) stores.
+	// Registered as a deliberate deviation in docs/DEFERRED-NOTES.md (item D-3): the shipped
+	// code has no way to reseed, and no per-call generator - the injection points below are
+	// ours. Passing NULL to a CombatMath entry point uses the global stream above, which is
+	// the shipped behaviour; seeding is only ever done by tests.
+	void SeedShippedRand( unsigned int seed );
 
 	// F3 skill ids used by combat math (values are this port's keys, NOT shipped enum
 	// numbers; the shipped enum order is still open - see C-26 question).
