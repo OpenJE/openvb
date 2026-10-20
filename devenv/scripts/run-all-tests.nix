@@ -196,6 +196,18 @@ in {
 
           applog="$(cd "$dataDir" && timeout "$timeout_s" "${wine}" "$boot_copy" 2>&1)"
           rstat=$?
+          # Wine-prefix lock contention (two implementers booting into one prefix) makes the
+          # loader answer 126/1 occasionally. Retry once after 3s before calling it a
+          # regression (chat/from-A.md C-13); a real crash reproduces and still fails.
+          if [ $rstat -ne 124 ]; then
+            sleep 3
+            applog2="$(cd "$dataDir" && timeout "$timeout_s" "${wine}" "$boot_copy" 2>&1)"
+            rstat2=$?
+            if [ $rstat2 -eq 124 ]; then
+              printf 'note: app-boot retried after %d (prefix contention) -> 124\n' "$rstat"
+              rstat=124; applog="$applog2"
+            fi
+          fi
           [ $keep -eq 1 ] || rm -f "$boot_copy"
           statline="$("${statBin}" -c '%y %s' "$appexe")"
           if [ $rstat -eq 124 ]; then
