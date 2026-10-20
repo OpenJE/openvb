@@ -369,6 +369,14 @@ or, as it turned out, when it says CombatMath is red.
   name — `Failed to send: ["UltraBear", "YoungStorm"] (invalid name)`. Use **`broadcast: true`**, which
   enumerates active agents inside the handler and is the supported all-lane path at one unit.
 
+**And `broadcast: true` is unavailable from the tool surface.** `handlers.ts` implements it, but the MCP tool
+schema pi exposes has no `broadcast` property, so the call returns `specify 'to' or 'broadcast: true'`. Combined
+with the array marshalling above, **there is no multi-recipient send reachable from this harness** — every all-lane
+notice is N individual sends. That is why the budget cliff mattered: with 30 lanes' worth of coordination the old
+40-unit cap was spent on routing, not content. Both defects are in the *vendored* extension under `.pi/`
+(gitignored), so they do not travel with the repo and will reappear on any reinstall or another machine — recorded
+here rather than filed as a task, because the fix belongs upstream.
+
 The general rule, since this is the third tooling assumption I have had to correct by reading source today:
 when a limit or a failure mode matters, read the implementation instead of the description — the description
 in this case explicitly promised something the marshalling does not deliver.
