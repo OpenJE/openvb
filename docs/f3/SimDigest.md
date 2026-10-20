@@ -98,9 +98,13 @@ Mechanism, read from our own code: `World::Update_0x544a90(ms)` computes
 entire uptime into `mbr_0x44`, and the step-6 carry (`World.cpp:99-106`) adds ~29,000 world seconds in
 one frame. The value then sticks (only deltas accumulate), so the sim runs with an 8-hour-old clock.
 
-Whether that is *our* deviation or shipped behaviour is a parity question, not a fix I should make
-inside a tooling row: the original may initialise `+0x48` to the first observed tick, or its `ms`
-source may be a per-session timer rather than uptime. Settled by either (a) the ctor of the world
-object at the `mbr_0x48` offset, or (b) one lockstep read of `+0x48` before and after the first
-`Update` call. Logged in `docs/DEFERRED-NOTES.md` and routed to the coordinator; every digest comparison
-until it is settled carries this as a shared constant, not a bug in the comparison.
+Checked on the shipped side before blaming our code: `JE::World::ctor_0x548a80` zeroes the dword range
+covering `+0x44`/`+0x48` (stores 0x548b1d..0x548b43) and `World::PackState_545930` **persists `+0x48`**
+(usage 0x545958). So the original has the same zero-initialised stamp and restores it on load - the
+first-`Update` jump is structurally available there too. What decides faithfulness is what the original's
+pump passes as `ms`: absolute `JE_TickMilliseconds_0x56af50` (uptime, as ours does) or a session-relative
+delta. `Update_0x544a90` has **no direct caller** (only the vftable data xrefs 0x668584 and 0x6919fc), so
+it is a virtual call from the game pump - that call site, or one lockstep read of `World+0x48` plus the
+clock across a first `Update`, settles it. Not fixed in this row: the mirror rule forbids silently
+improving the original, and a tooling row is the wrong place to change the world's time base. Until it is
+settled, every digest comparison carries this as a shared constant rather than a bug in the comparison.

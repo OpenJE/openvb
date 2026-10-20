@@ -461,11 +461,20 @@ therefore folds the whole uptime into the accumulator and the step-6 clock carry
 `frame=0 tickMs=29242857 clock=29242` in an app digest run. Later frames only add deltas, so the
 value sticks and the sim runs on an 8-hour-old clock.
 
-NOT fixed here because it is a parity question, not a tooling change, and because the mirror rule
-forbids silently improving the original: the shipped code may seed `+0x48` with the first observed
-tick, or its `ms` source may be a per-session timer instead of uptime. What settles it: (a) the
-world object's ctor at the `+0x48` offset, or (b) one lockstep read of `+0x48` around the first
-`Update` call. Until then every digest comparison carries this as a shared constant.
+**Shipped-side statics, checked before calling it ours** (`docs/f3/SimDigest.md` cites the EAs): the
+original's `JE::World::ctor_0x548a80` zeroes the contiguous dword range that covers `+0x44`/`+0x48`
+(stores at 0x548b1d..0x548b43), and `World::PackState_545930` **persists `+0x48`** (usage at 0x545958).
+So the shipped engine has the same zero-initialised stamp, and it recovers the stamp on load — meaning
+the first-`Update` jump is structurally available in the original too, and would be *worse* on a long-
+uptime machine. NOT fixed here for that reason plus the mirror rule (never silently improve).
+
+What still decides whether we are faithful: what the original's pump passes as `ms` — absolute
+`JE_TickMilliseconds_0x56af50` (uptime, like ours) or a session-relative delta — and `Update_0x544a90`
+is reached only through vftables (0x668584, 0x6919fc are data xrefs, no direct caller), so it is a
+virtual call from the game pump. Reads that settle it: (a) find the pump's `call [vft+N]` site and what
+register feeds it, or (b) one lockstep read of `World+0x48` and `Gregorian::totalSeconds` across the
+first `Update` of a new game. Until then every digest comparison carries this as a shared constant, not
+as a bug in the comparison.
 See `docs/f3/SimDigest.md`.
 
 ## Port deviations (deliberate, registered — T-027)
