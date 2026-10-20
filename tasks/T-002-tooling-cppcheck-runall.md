@@ -1,7 +1,7 @@
 # T-002 — Tooling: fix `cppcheck-openje`, add `run-all-tests`
 
-status: open
-assignee: —
+status: in-progress
+assignee: implementer-B
 
 ## Objective
 Two known tooling papercuts, both self-contained:
