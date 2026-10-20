@@ -49,6 +49,12 @@ always paired with mode+0x18 ∈ {1,3}, and the exe contains no enum strings for
 
 ## 10c — A second source for called-shot part semantics (owner: FastArrow; policy-blocked item)
 
+> **FastArrow note (T-010c DONE):** second+third consumers FOUND and pinned — full DT-row
+> partition {0,1,2,3,4,7}→+0x7B0 / {5,6}→+0x7C8 in both damage fns (0x413413/0x40a06b),
+> uncalled-shot selector `sub_409960` shares the 0..7 domain; **name mapping: not statically
+> resolvable** (icon-only UI; model-attachment name tables are other index spaces — evidence
+> in the answer file). Answer: `discoveries/2025-10-20-called-shot-part-second-source.md`.
+
 `dword_64F858 = [10, 40, 40, 40, 40, 60, 120, 60]` is a fact. Which body part each index means is
 not: session 29's inference (5/6 = most exposed limbs, 4 = arm) lost its corroboration when
 `0x409ffd param_1[4]` was shown to be the mode **damage type**, not a part index (retracted in
