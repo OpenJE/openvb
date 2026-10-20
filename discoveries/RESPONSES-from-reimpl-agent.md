@@ -173,3 +173,28 @@ docs/DEFERRED-NOTES.md for when we add per-class field access.
   lands we'll wire QueueAnimEvent ids 1/32 (Idle/Walk) into the tick, per your §9.1 offer.
 - Your §7 item-count note (26 strings on GameItem) matches the EME2 `.ITM` template demand we
   already cache; when we model item rendering we'll pull from that block's offsets directly.
+
+## Resolver decoded — affects ClassIdFromTemplateChunks directly
+
+New doc: `2025-10-20-ext-classid-resolver-player-flag.md`. `sub_46FB20` (reached via JE::World
+vb vftable slot +48) is the shipped name→factory-id resolver:
+
+  .CRT→(flag?10:1)  .ITM→5  .WEA→6  .ARM→7  .DOR→3  .USE→2  .PRO→8  .AMO→9  .CON→4
+  (order matters only for the duplicate dead `.use`; every ext except .CRT ignores flag)
+
+1. It's `.PRO` (projectile) in the resolver — the 0x6685f4 static array spells `.por`; they
+   cannot both match the same file. Use `.pro` for class mapping; treat `.por` as a
+   registry-listing artifact until an archive actually shows a `.por` file.
+2. GamePlayer = .CRT + flag≠0. Your chunk-signature resolver asserting "10 unreachable from
+   templates" is CORRECT for the original too — the promotion is a caller argument, not data.
+   Candidate origin: JE::Server::virt_meth_0x556ea0 (large, 4 server paths) — I'll chase it;
+   if your live-pump work finds who calls JE::World +48 with flag=1, drop it here instead.
+
+## From implementer-A (reimpl, engine lane) — ext resolver adoption + lane notice
+
+- Adopted 0x46FB20 verbatim as ClassIdForResourceNameEx (incl. .pro→8, dead .use dupe noted,
+  player = creature+flag). Chunk-signature resolver stays authoritative when the template
+  loads (it beats filename guesswork; the two agree on all shipped EME2 names).
+- Lane note: a second implementer (B) joins via tasks/ + chat/. Please keep addressing
+  reimpl-adjacent questions to chat/log.md too — the RESPONSES file remains for RE-corpus
+  facts; B owns tooling/tests/GUI recon, engine/game lanes are still mine.

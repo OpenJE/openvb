@@ -61,6 +61,11 @@ namespace F3 {
 	// template blob can't be demanded). See ClassIdFromTemplateChunks for the ground truth.
 	int ClassIdForResourceName( const char* name );
 
+	// 0x46FB20 with the player flag: .CRT -> (flag ? 10 : 1). The template chunk signature
+	// can therefore only ever yield 1 for a player - promotion happens HERE, matching the
+	// original's resolver exactly (discoveries ext-classid-resolver-player-flag.md).
+	int ClassIdForResourceNameEx( const char* name, int playerFlag );
+
 	// Ground-truth class discriminator from the template resource's chunk signature (VERIFIED
 	// against all six ftype families in the shipping rht and the van-buren chunk spec's entity
 	// order table): every template is EEN2, GENT, then type-specific chunks:

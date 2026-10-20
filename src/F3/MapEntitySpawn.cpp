@@ -23,7 +23,11 @@ namespace F3 {
 	// The ORIGINAL takes the id from the parsed template resource (the EME2 name resolves to a
 	// .CRT/.USE/... blob whose GCRE-style chunk carries the class); until template parsing is
 	// reconstructed we map by resource extension, which matches every shipped EME2 name.
-	int ClassIdForResourceName( const char* name ) {
+	// EXT RESOLVER 0x46FB20 (JE::World vb 0x668494 slot[12]/+48), verbatim semantics:
+	//   .CRT -> (flag ? GamePlayer(10) : GameCreature(1))  [player = creature + flag]
+	//   .itm 5, .wea 6, .arm 7, .dor 3, .use 2, .pro 8, .amo 9, .con 4; else fallback chain.
+	// (duplicate .use compare in the original is dead code; ".pro" NOT ".por".)
+	int ClassIdForResourceNameEx( const char* name, int playerFlag ) {
 		if ( !name ) {
 			return kClassGameEntity;
 		}
@@ -33,19 +37,21 @@ namespace F3 {
 		}
 		++dot;
 		if ( _stricmp( dot, "CRT" ) == 0 ) {
-			// Default_PC.CRT is the player in shipped maps; the template's class field is the
-			// real selector (template parse TODO). Creature is the faithful-size match for the
-			// demo records we can observe (all critters).
-			return kClassGameCreature;
+			return playerFlag ? kClassGamePlayer : kClassGameCreature;
 		}
-		if ( _stricmp( dot, "USE" ) == 0 ) return kClassGameUsableObject;
 		if ( _stricmp( dot, "ITM" ) == 0 ) return kClassGameItem;
-		if ( _stricmp( dot, "DOR" ) == 0 ) return kClassGameDoor;
-		if ( _stricmp( dot, "CON" ) == 0 ) return kClassGameContainer;
 		if ( _stricmp( dot, "WEA" ) == 0 ) return kClassGameWeapon;
-		if ( _stricmp( dot, "AMR" ) == 0 ) return kClassGameArmor;
+		if ( _stricmp( dot, "ARM" ) == 0 ) return kClassGameArmor;
+		if ( _stricmp( dot, "DOR" ) == 0 ) return kClassGameDoor;
+		if ( _stricmp( dot, "USE" ) == 0 ) return kClassGameUsableObject;
+		if ( _stricmp( dot, "PRO" ) == 0 ) return kClassGameProjectile;
 		if ( _stricmp( dot, "AMO" ) == 0 ) return kClassGameAmmo;
+		if ( _stricmp( dot, "CON" ) == 0 ) return kClassGameContainer;
 		return kClassGameEntity;
+	}
+
+	int ClassIdForResourceName( const char* name ) {
+		return ClassIdForResourceNameEx( name, 0 );   // flagless default = creature for .CRT
 	}
 
 	// Walk the top-level {fourcc,ver,size} chunk stream and inspect the marker chunk set.
