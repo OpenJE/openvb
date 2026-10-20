@@ -79,7 +79,12 @@ namespace F3 {
 		bool          subAttackPending;     // +0x60 b2
 		bool          volleyContinuing;     // +0x80 next-attack pending
 		bool          ammoDeducted;         // +0x58 per-volley guard
-		int           seriesRemaining;      // +0x78 series list remainder (count modelled)
+		int           seriesRemaining;      // +0x78 per session-21's layout - COLLIDES with
+		                              // calledShotPart above, which the raw bytes at 0x4025db
+		                              // now prove owns +0x78. One of the two is mislabeled;
+		                              // routed for confirmation, do not trust either offset
+		                              // as load-bearing (flat storage, so no compile error
+		                              // will ever reveal this).
 		float         moveSpeed;            // step-toward fallback (deviation above)
 		bool          unarmed0x71;          // +0x71 unarmed/weapon fork (see header notes)
 
