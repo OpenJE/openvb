@@ -101,24 +101,32 @@ the table numerically and never name parts, which is the standing policy in §12
 > §12 policy, not a repeal.
 
 
-> **NEW CONFLICT on 10c, raised by the coordinator, needs the two lanes to converge.** IronStorm's
-> socket-order mapping puts `{5,6}` = **FEET, WAIST**. FastArrow's armor-addendum reasoning makes
-> `{5,6}` = row B == armor **slot-class 1**, and offers **head-family** as the leading naming
-> hypothesis. Those cannot both be right, and the second one is the stronger evidence (a shipped
-> aggregation function, `GameCreature::meth_0x40A670`, keyed on the equip node's class byte ∈ {0,1})
-> while the first rests on a name-list coincidence. Two ways out, both cheap and both static:
-> (a) if row B really is helmet coverage, then either the socket list is NOT the called-shot index
-> space — killing IronStorm's `socketIdx = id+1` bridge, which was already the unproven link — or
-> the socket enum order differs from the list's display order;
-> (b) if the Shins/helmet log-diff fingerprint and the equip-diff both land, one hypothesis dies on
-> its own. Until then 10c stays **one-evidence-short and code indexes numerically**; nobody should
-> name parts in a comment as if settled. IronStorm + FastArrow: converge in one file, not two.
+> **10c status after both lanes converged (coordinator, replacing the conflict note).** IronStorm
+> retracted the `socketIdx = id+1` bridge as unsubstantiated after independently verifying
+> FastArrow's chain at the raw: `GameInventory::ctor_0x46b970` memsets `mbr_0x14` for `0x18` bytes =
+> the 6-dword equip-slot array, and `vft[+40]` = `0x46A860` loops `v3 < 6` handing the loop counter to
+> `sub_433760` → **node+8 is the slot index 0..5**. So row A / row B are **equip-slot coverage**, not
+> an anatomy partition.
 >
-> Also banked from the addendum, independent of naming: the two DT rows are **6 values each**, not 8,
-> and are **contiguous** (+0x7B0..+0x7C7, +0x7C8..+0x7DF) — which is why out-of-range damage indices
-> read the neighbouring row instead of faulting. The reimpl keeps 8-wide arrays on purpose; masking to
-> 6 would silently change the default-case behaviour, so the width is documented, not "fixed".
-
+> What survives the retraction, order-free and still proven: (i) the called-target id SET is exactly
+> the 9 names, ids 0..8, with 9 = UNSET; (ii) the numeric grouping `{0,1,2,3,4,7}`→row A,
+> `{5,6}`→row B, default→log+row A; (iii) rows are 6 DT values.
+>
+> What the naming question has narrowed to: **one datum** — which equip slot the UI/action hands to
+> helmets, owned by FastArrow's `GameActionEquip` slot-choice pass. Two useful consequences of
+> IronStorm's sharpening: (a) the class byte is the inventory slot index assigned at equip time and
+> **not** item-record data, so there is no GIAR field feeding it and the "alternative pure-static
+> path" from the B7 addendum is closed — do not spend effort there; (b) the pass decides both
+> directions, so if slot 1 turns out to be leg gear then `{5,6}` = FEET/WAIST and part of the
+> retracted socket ordering returns as corroboration rather than being wasted.
+>
+> Code stance unchanged meanwhile: numeric indexing in code, names in comments marked unproven.
+> The Shins log-diff and the helmet-slot datum are complementary, and T-016 Read 1 is **optional** —
+> a decompile beating a debugger is the right ordering. Bonus from the same trace, for the `.item`
+> lane: `GameArmor::ReadFromFile` @0x408970 tests `*(a2+8) == 1380010311` = fourcc **GIAR** and
+> routes to `sub_4088B0`, fallback string "Error reading armor game data from item file." — pins the
+> GIAR tag value and the record parse dispatch.
+>
 ## 10d — Close the GW+0x40 writeback channel (owner: HappyWolf; gates T-011's clock model)
 
 A global-window scan found no in-exe writer of `[GameWorld+0x40]`, but the clock object stored at

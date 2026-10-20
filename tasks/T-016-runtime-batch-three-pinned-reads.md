@@ -19,7 +19,15 @@ which is exactly the state 10c is in now. So: take them together, in one session
 `$OPENVB_REIMPL_GDB_PORT`); nobody on the team has used it yet, so budget discovery time for the
 harness itself. Run against the **original** — every question below is about shipped behaviour.
 
-## Read 1 — does the called-shot part id index the socket-name list? (closes T-010c / 10c)
+## Read 1 — OPTIONAL as of this turn, do not schedule it first
+
+Status changed after this row was written: IronStorm retracted the socket bridge and the naming question
+collapsed to one static datum (which equip slot receives helmets), now owned by FastArrow's
+`GameActionEquip` pass. Run this read only if that pass is inconclusive.
+
+### Original content
+
+Does the called-shot part id index the socket-name list? (closes T-010c / 10c)
 
 The `{5,6}` group is proven to be armor **slot-class** partition (`GameCreature::meth_0x40A670`),
 while IronStorm's naming rests on an unproven `socketIdx = id + 1` bridge to the ART-SOCKET name
