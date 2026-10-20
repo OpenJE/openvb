@@ -55,3 +55,61 @@ stat -c '%y %s' build/F3.exe                # unchanged => the booted binary is 
 
 Note: an up-to-date tree makes `msvc-build` a silent no-op (0 `Building`/`Linking` lines), so the
 mtime stays someone else's — always `rm -f build/F3.exe` first when you need attribution.
+
+## T-002 — `run-all-tests` + `cppcheck-openje` (tooling lane)
+
+Files: `devenv/scripts/run-all-tests.nix` (new, registered in `devenv/scripts/default.nix`),
+`devenv/scripts/cppcheck-openje.nix` (rewritten).
+
+`run-all-tests` behaviour:
+- builds + runs the six suites and the app-boot check; one line per suite; `summary:` line;
+  exit 1 on any failure. Exes go to `.devenv/state/tests/<Suite>.exe` (never a shared
+  `tests/je/**` name, so it cannot collide with A's or my manual `.A`/`.B` binaries).
+- every suite is `rm -f`'d then compiled, and compile status + file existence are both checked
+  before wine is invoked (stale-exe invariant).
+- flags: `--only Suite[,Suite]`, `--no-app`, `--keep`, `--timeout N`, `-v` (compiler/wine output).
+- env overrides (added so the tool can be pointed at a *different* checkout):
+  `OPENVB_TEST_WINEPREFIX`, `OPENVB_TEST_DATA_DIR`, `OPENVB_TEST_EXE`.
+- app boot: copies `build/F3.exe` to `<dataDir>/F3.run-all-tests.exe` and runs the copy
+  (chat/from-A.md C-10: the shared exe is often mid-link). The copy must live in the data dir,
+  not `/tmp`, because the engine resolves `granny2.dll`/`binkw32.dll` next to the exe. It also
+  stats the source before/after the copy and prints a WARNING if it changed = concurrent build.
+- listed sources that don't exist yet are skipped with a `note:` line, because `JE/SpatialGrid.cpp`
+  is A-lane and untracked at the time of writing while `JE/Map.cpp` already references it.
+- Current source table requires `src/F3/MapEntitySpawn.cpp` for `PathManager` and `ActionMoveTo`
+  (`F3::GetActiveMap()` is defined there, openje `18a8e00`) and `JE/SpatialGrid.cpp` for every
+  suite that links `Map.cpp`. Expect to update the table whenever A adds a new cross-module call.
+
+### devenv reload reality (this harness)
+`devenv shell` hot reload does NOT reach my tool shells: each `bash` call is a fresh child of the
+harness process, whose PATH is the frozen env snapshot from shell start (reload files in
+`/tmp/devenv-reload-<pid>.sh` were rewritten, but only the interactive shell sources them).
+Manual reload that works, ~6s:
+
+```sh
+cd <repo root> && devenv print-dev-env > /tmp/env.sh 2>/dev/null && source /tmp/env.sh
+command -v run-all-tests   # -> /nix/store/<new hash>-run-all-tests/bin/run-all-tests
+```
+Verify the *payload* not the wrapper when checking that a reload took:
+`.../bin/<script>` is a 2-line stub that execs `/nix/store/...-<script>`; grep that file.
+
+### Proving green while the other implementer is mid-edit
+`git worktree add --detach /tmp/B-head HEAD` +
+`git -C /tmp/B-head submodule update --init modules/openje` (then, because A's commits are local
+only: `git -C /tmp/B-head/modules/openje fetch <main>/modules/openje <sha> && git checkout FETCH_HEAD`;
+same trick for `modules/tracing`) + `run-all-tests` with the `OPENVB_TEST_*` overrides. Cleanup:
+`git worktree remove --force /tmp/B-head`. This is how I ran the deliberate-typo negative test
+without touching A's files.
+
+### cppcheck findings owned by lane A (as of parent d4a9e30 / openje 18a8e00)
+`cppcheck-openje modules/openje/src/JE/Map.cpp` = 16 findings: 11 `cstyleCast`, 2 `memsetClassFloat`,
+2 `constVariablePointer`, 1 `invalidPointerCast` (from `Map.hpp:128`'s reinterpret_cast).
+Changed-set sweep over A's in-flight files = 30 (PathManager.cpp 25, ActionMoveTo.cpp 4, Map.hpp 1).
+I do not fix engine sources and I did not suppress them; filed in chat instead.
+
+### Counting pitfalls (bit me once, and A's C-10 warns about the same class)
+- cppcheck prints findings to **stderr**; `cmd 2>/dev/null | grep -c ...` reports 0 findings and
+  exit 0. Use `2>&1`.
+- `grep -c` exits 1 on zero matches, so never put `&& cp`/`&& run` behind a count grep (same
+  class of bug A hit per chat/from-A.md C-10; it silently skipped my verification once too).
+- a finding count is therefore: `cppcheck ... 2>&1 | grep -cE ' (style|warning|portability|performance): '`.

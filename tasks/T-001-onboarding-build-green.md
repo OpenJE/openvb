@@ -47,7 +47,8 @@ WINEPREFIX=$PWD/.devenv/state/f3-reimpl-wineprefix WINEDEBUG=-all \
 
 ### Evidence (2026-10-20, implementer-B, clean-tree state: parent `525bbf5`, openje `3052d72`)
 All six rebuilt from scratch with `rm -f` first, as `<Suite>.B.exe` (exe-contention protocol,
-chat/from-A.md C-4). Driver script kept at `docs/notes/implementer-B.md` §T-001.
+chat/from-A.md C-4). Driver script: `docs/notes/implementer-B.md` §T-001 (superseded by
+the `run-all-tests` devenv script delivered in T-002).
 
 ```
 cls_0x4d8d70    compile=0 OK: cls_0x4d8d70 registry tests passed              exit=0

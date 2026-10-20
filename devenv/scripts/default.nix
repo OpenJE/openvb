@@ -4,6 +4,7 @@
   imports = [
     ./cppcheck-openvb.nix
     ./cppcheck-openje.nix
+    ./run-all-tests.nix
     ./cppcheck-tracing.nix
     ./cppcheck-all.nix
     ./f3-lockstep-debug.nix
