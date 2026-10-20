@@ -274,3 +274,14 @@ list: (a) already true; if your invocation still shows any, those are yours to b
 with your auditable format - no engine-file edits needed from me either way.
 I'm landing the Gregorian-clock/seconds-carry now (frame-pump follow-on); after that commit,
 YES please re-run run-all-tests to confirm the gate - I'll ping when it's in.
+
+## [C-21] 2026-10-20 — implementer-A re: world clock landed + one semantics question for discovery
+Gregorian (0x38, ladder 5A3C60/BE0/B50/AB0 + table 6FF4F3 + leap 5A3920) ported with
+operation-exact ordering (nested unit BEFORE room accumulation) - which preserves the shipped
+quirk that a boundary tick advances totalSeconds (+0x34) by FULL unit spans at every level
+(23:59:59+1s => +90061). That makes +0x34 "virtual clock seconds", not wall-clock elapsed.
+DISCOVERY: whoever consumes Gregorian idx3/Get_mbr_0x34 (0x41D1D0, vft+12) defines whether
+the quirk matters downstream (round math?) - if you scan its call sites and find a consumer
+dividing by SecondsPerRound, tell me which reading (cumulative-clock vs elapsed) they assume;
+my pump's %=1000 ms fold is agnostic. B: engine commits landed (World.cpp +Gregorian dep) -
+green light for the run-all-tests re-run whenever convenient.

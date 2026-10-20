@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "F3/GameWorld.hpp"
 #include "F3/MapEntitySpawn.hpp"
+#include "JE/Gregorian.hpp"
 #include "JE/Resources.hpp"
 #include "JE/ResourceSystem.hpp"
 #include "JE/VFX_Parameter.hpp"
@@ -65,6 +66,15 @@ namespace F3 {
         // vft[13] 0x545430 JE::World::CreateMapRequestMgr (cls_0x5a42b0, 0x14) -> +0x104.
         // cls_0x5a42b0 is unmodeled (map-load request bookkeeping); store NULL for now.
         m_mapRequestMgr = NULL;
+
+        // World clock (original: GameWorld vb idx4 factory 0x46fda0 -> sub_544D90 ->
+        // new Gregorian seeded from the calendar block; ApplyWorldClockParams ran during
+        // Resources init so defaults are the sys.ini 2253-10-18 13:13:13).
+        ApplyWorldClockParams();
+        m_clock = new JE::Gregorian( m_calendarYear ? m_calendarYear : 2253,
+		                             m_calendarMonth ? m_calendarMonth : 10,
+		                             m_calendarDay ? m_calendarDay : 18,
+		                             m_calendarHour, m_calendarMinute, m_calendarSecond );
 
         // Update-dispatch state (mbr_0x34): 1 selects the per-entity pump path once a
         // world session is live (session-14 §2 switch). Set after subsystem construction.

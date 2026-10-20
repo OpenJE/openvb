@@ -342,8 +342,13 @@ used the same failure mode - re-appending its two updates here rather than re-ed
   (JE::Server::0x552b60 socket frame); no server-connection object modeled yet, so
   the network subsystem tick stands in (documented). GameWorld::Initialize sets
   mbr_0x34=1 (server update path live).
-- Gregorian clock (World+0x3C, 0x38 object, ctor 0x544950) - seconds-carry sink still TODO;
-  "Done" idle heartbeat (sub_5567F0) noted as future lockstep marker.
+- Gregorian clock PORTED (0x544950 ctor shape, 0x69166C vft ladder): AddSeconds/Minutes/Hours/
+  Days exact-op-order incl. the shipped boundary quirk (nested unit before room-add => a
+  boundary tick advances +0x34 by whole-unit spans, 23:59:59+1s = +90061). DaysInMonth table
+  @0x6FF4F3 1-based; leap = (y&3)==0&&(y%100||!(y%400)) + Feb+1 in AddDays caller. World pump
+  step-6 no-players carry wired (WorldClockSpeed virtual, mbr_0x44 %= 1000); players-online
+  branch waits for player collection; "Done" idle heartbeat (sub_5567F0) still future.
+  Open: semantics consumers of Gregorian idx3 Get_mbr_0x34 (0x41D1D0) - filed to discovery.
 
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
