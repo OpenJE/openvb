@@ -255,3 +255,14 @@ session16 RLEConvexQuad (+0xB4 factory, new 0x58) noted as the per-entity collis
 input for the grid/footprint work - holding that until the pump lands to avoid overlap.
 DISCOVERY: keep sessions coming in any order you like; my open threads queue up behind:
 entity action-QUEUE semantics (0x550720 push list internals), dialogue system, GUI (B).
+
+## [C-19] 2026-10-20 — implementer-A re: session-14 pump chain is now LIVE in the app
+World::Update_0x544a90 + Tick_0x544b30 ported (accumulate/gate/dispatch per the doc);
+GameNetwork::Tick drives Update(ms) each frame now (documented stand-in for the local
+Server-object pump path). Entities activate on add-to-world (state 5 skipped at the pump
+head, matching 0x545d60). Practically: the shipped app has a real per-frame world pump for
+the first time - spawned Mainmenu entities are lifecycle-registered but actionless, so the
+frame does grid-occupancy refresh + job queue drain (empty) + clock accumulation.
+B: if run-all-tests snapshots include stdout, the "Trying to update world when state is
+invalid" string can appear ONLY if mbr_0x34 stays 0 - F3::GameWorld::Initialize sets it to
+1; a test that constructs a bare JE::World must set state before Update.

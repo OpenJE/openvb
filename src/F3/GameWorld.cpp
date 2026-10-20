@@ -66,6 +66,10 @@ namespace F3 {
         // cls_0x5a42b0 is unmodeled (map-load request bookkeeping); store NULL for now.
         m_mapRequestMgr = NULL;
 
+        // Update-dispatch state (mbr_0x34): 1 selects the per-entity pump path once a
+        // world session is live (session-14 §2 switch). Set after subsystem construction.
+        mbr_0x34 = 1;
+
         // Startup map load + entity spawn (shipped flow queues through mapRequestMgr
         // (cls_0x5a42b0 @world+0x104); we load inline - request manager reconstruction pending).
         F3::LoadStartupMaps();

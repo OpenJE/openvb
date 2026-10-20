@@ -329,6 +329,22 @@ used the same failure mode - re-appending its two updates here rather than re-ed
   original flow (server gate logs vs throws - deviation; sticky fail latch; unknown => 0).
   Host::IsServerContext() added. New Scripting test suite green (suite total now 7 dirs).
 
+### Frame pump chain landed (session 14 parity)
+- World::Update_0x544a90 (pause skip on mbr_0x2c==4, ms accumulate mbr_0x44 w/ pause
+  credit mbr_0x54, vft3[+0x14] gate seam WorldUpdateGate, dispatch mbr_0x34: 0 log(deviate
+  vs FatalError), 1 -> ServerUpdate_0x545d60(dt) per-entity pump, 2/3 stage virtuals;
+  mbr_0x64 elapsed + mbr_0x68 frame counter) and World::Tick_0x544b30 (same accumulate +
+  PlayersPump_0x545ff0 virtual seam) ported; World zero-ctor added (calendar defaults 6s).
+- Pump ordering fix per session-14 §2: entities born SPAWNED(5) are NOT pumped;
+  SpawnMapEntities flips to ACTIVE(4) at add-to-world (RegisterOccupancy site).
+- App wiring: F3::GameNetwork::Tick -> world->Update_0x544a90(TickMilliseconds()).
+  Parity note: original reaches Update through the LOCAL Server object's pump
+  (JE::Server::0x552b60 socket frame); no server-connection object modeled yet, so
+  the network subsystem tick stands in (documented). GameWorld::Initialize sets
+  mbr_0x34=1 (server update path live).
+- Gregorian clock (World+0x3C, 0x38 object, ctor 0x544950) - seconds-carry sink still TODO;
+  "Done" idle heartbeat (sub_5567F0) noted as future lockstep marker.
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).

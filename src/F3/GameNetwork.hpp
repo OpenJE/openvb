@@ -27,6 +27,13 @@ namespace F3 {
 	class GameNetwork : public JE::Network {
 		//: Methods
 		public:
+			// Subsystem tick (slot 4 of the table). Parity note: the original reaches
+			// World::Update_0x544a90 through the LOCAL Server object's frame pump
+			// (JE::Server::virt_meth_0x552b60 = socket pump + IWorldServer+0x18);
+			// no server-connection object is modeled in the demo yet, so GameWorld's
+			// update frame is driven here when a world server instance exists.
+			virtual undefined4 Tick();
+
 			virtual undefined4 virt_meth_0x5437b0();  // vft[4] = 0x45E040
 			virtual undefined4 virt_meth_0x543820();  // vft[5] = 0x45DFD0
 	}; // GameNetwork

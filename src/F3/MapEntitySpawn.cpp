@@ -282,8 +282,11 @@ namespace F3 {
 					break;      // DEAD still pumps normal update while linked
 				case kStateRemoved:
 					return;   // 0x550ad0 deep tail unmodeled
+				case kStateSpawned:
+					return;     // 0x545d60 head gate: state==5 entities are NOT pumped
+				              // until the add-to-world activation flips them to ACTIVE
 				default:
-					break;      // ACTIVE/SPAWNED
+					break;      // ACTIVE
 			}
 			// FIFO: the original runs ONE active action per entity (head of its action
 			// queue; the step-aside Wait must gate the MoveTo behind it). Process the
@@ -407,13 +410,13 @@ namespace F3 {
 			if ( JE::g_resource_system && r.name ) {
 				JE::ResourceSystem::Res* t = JE::g_resource_system->Demand_0x49b750( r.name, 1 );
 				if ( t ) {
-					e->classId = ClassIdFromTemplateChunks( (const unsigned char*)t->data, (unsigned)t->size );
+					e->classId = ClassIdFromTemplateChunks( static_cast<const unsigned char*>( t->data ), (unsigned)t->size );
 					if ( e->classId == kClassGameDoor ) {
-						ParseGdor( (const unsigned char*)t->data, (unsigned)t->size,
+						ParseGdor( static_cast<const unsigned char*>( t->data ), (unsigned)t->size,
 						           &e->doorByte0xBC, &e->doorByte0xBD, &e->doorLock0xC0 );
 					}
 					int gf[8];
-					if ( ParseGentBlock( (const unsigned char*)t->data, (unsigned)t->size, gf ) ) {
+					if ( ParseGentBlock( static_cast<const unsigned char*>( t->data ), (unsigned)t->size, gf ) ) {
 						e->gentF[0] = gf[0]; e->gentF[1] = gf[1]; e->gentF[2] = gf[2];
 						e->gentF[3] = gf[3]; e->gentF[4] = gf[4]; e->gentF[5] = gf[5];
 						e->statMax = gf[6];
@@ -433,6 +436,9 @@ namespace F3 {
 				map->m_entities[map->m_entityCount++] = e;
 			}
 			RegisterOccupancy( e, map );
+			e->entityState = kStateActive;   // add-to-world activation (map load leaves
+			                               // entities at ctor birth 5; the pump head skips
+			                               // them until this flip - session 14 §2)
 			if ( map == GetActiveMap() ) { /* keep latest active registration fresh */ }
 
 			if ( g_spawnedEntityCount < 128 ) {
@@ -444,7 +450,7 @@ namespace F3 {
 		}
 		// verbatim log shape from Map::Create_0x57bc33
 		JE::LogDebugString( NULL, "Map %s contains %d entities,\n",
-		                   (char*)mapName, spawned );
+		                   const_cast<char*>( mapName ), spawned );
 		return spawned;
 	}
 
@@ -464,7 +470,7 @@ namespace F3 {
 			void* buf = NULL;
 			int len = 0;
 			if ( JE::g_resource_system->ReadResource( map->mbr_0x4C, &buf, &len ) ) {
-				map->LoadRleGrid( (const unsigned char*)buf, (unsigned)len );
+				map->LoadRleGrid( static_cast<const unsigned char*>( buf ), (unsigned)len );
 				free( buf );
 			}
 		}
@@ -475,7 +481,7 @@ namespace F3 {
 	void LoadStartupMaps() {
 		tracing::instrument( tracing::LOCATION, "" );
 
-		JE::VFX_Parameter* sys = static_cast<JE::VFX_Parameter*>( JE::Host::GetParameterTree() );
+		const JE::VFX_Parameter* sys = static_cast<const JE::VFX_Parameter*>( JE::Host::GetParameterTree() );
 		JE::Map* map = new JE::Map();
 		if ( !map ) {
 			return;

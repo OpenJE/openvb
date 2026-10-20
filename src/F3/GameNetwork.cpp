@@ -2,6 +2,9 @@
 
 #include "tracing.hpp"
 #include "F3/GameNetwork.hpp"
+#include "F3.hpp"
+#include "F3/GameWorld.hpp"
+#include "JE/HostHooks.hpp"
 
 namespace F3 {
 
@@ -19,4 +22,13 @@ namespace F3 {
 		return 0;
 	} // virt_meth_0x543820
 
+
+	undefined4 GameNetwork::Tick() {
+		tracing::instrument( tracing::LOCATION, "" );
+		F3::GameWorld* w = F3::GetWorldServerInstance();
+		if ( w ) {
+			w->Update_0x544a90( (int)JE::Host::TickMilliseconds() );
+		}
+		return 0;
+	} // Tick
 } // namespace F3
