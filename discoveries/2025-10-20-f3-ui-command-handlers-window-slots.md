@@ -65,3 +65,44 @@ Skeleton EAs: blk loads 0x45ec7c/0x45eacc/0x45ec08/0x45eb78; exclusivity close 0
 open 0x45eb58; dismiss 0x4952a0 @0x45ec4c; 4433e0(1) @0x45ebac; companion reopen
 0x45ecdb/0x45ebbc; entity bind 0x455dc0/0x43f4c0; root call 0x45ec5e; ctor block-zero
 0x45e7f3..0x45e820 (mbr_0xa0 census, sess-38 DB).
+
+## 6. Follow-up (T-017 pass 2): the window block is EMBEDDED, not installed — consumers mapped
+- `client+0xA0` has **no install store anywhere** (0 hits for disp32-0xA0 stores in the whole
+  GameClient code band) ⇒ `blk` is an inline ~0x50-byte array of iface ptrs in the 964-byte
+  client, ctor-zeroed — slots: confirmed idx 3..19 (bytes +0x0C..+0x4C) = 11 window slots
+  (s39's A/B/C was the sampled subset, not the whole block).
+- **`sub_45E6C0` = restore-ALL-windows**: re-SetActive(1) over every non-null slot (+ hooks
+  0x430760 on slot idx9, 0x443400 on idx19). Callers: **`recv_packet_461a10` @0x461e58**
+  (a packet restores the whole stack — fact-sheet handler, likely disconnect/dialogue-end
+  recovery class), `sub_433BE0` (Feedback-adjacent), thunk `sub_46EDF0`.
+- **`GameClient::virt_meth_0x45e7f0`** = forward-to-windows tick: `blk[+0x18]→0x43f5e0
+  (inventory content tick)`, `blk[+0x10]→0x41c4c0` (**actionbar final repaint — the tail of
+  sess-37's 0x41c910 chain ✓ closes that loop**), `blk[+0x28]→0x458710(args)`.
+- ⇒ slot FILLERS are per-handler/per-packet stores at `client+0xA0+idx*4` (disp 0xA8..0xEC
+  band) — next pass enumerates writers per slot; note probable intersection with IronStorm's
+  SetFocusEntity adoption path (host vft+84/+0x54) if slots are filled on entity-focus
+  changes rather than at window-open.
+
+## 7. Evidence (addendum)
+0x45E6C0 (slot loads 0x45e6d4..0x45e70c, restores 0x45e710..0x45e7dc); callers xrefs
+(0x433e76/0x461e58/0x46edfb); forwarder 0x45e7f0 (three calls 0x45e7fc/0x45e80a/0x45e818);
+zero-hit install census described §6 line 1.
+
+## 8. T-017 pass 3: the slot fillers — ONE function, and it's the adoption seam
+Census: inside the whole GameClient code band (0x45e000..0x462400), exactly **three stores**
+touch client+0xA0..0xF0 — and all three live in **`GameClient::meth_0x4615f0`** (0x2f6):
+- `client+0xB8` ← [arg+8] (blk window idx6 = the pipboy/inventory "main window") @0x461622
+- `client+0xDC` ← [arg+0x34] @~0x4616xx region (pending candidate)
+- `client+0xE0` ← [client+0xDC] **only after `54be10(0xDC)->[+0x1E4] == [client+0xB8]`**
+  @0x46169c — an OWNER-STAMP equality check (+0x1E4 = the protagonist field from
+  `FastArrow:B8`, if that offset reads right from this view)
+Flow: switch on [arg+8]-kind (0 → default fill after `vft[+0xD4](1)` = engine SetFocus-ish;
+2 → verify+stamp as above, then actionbar `0x41c9d0` via blk[+0x10]; other paths branch on
+byteflags at [arg+4]). ⇒ **+0xE0 = "promoted represented entity"** (sess-27/37's actionbar
+source explained: it updates only when focus-entity AND ownership-to-current-window align);
++0xB8 = active window. Caller of 0x4615f0: NOT enumerated (tool budget) — check in
+`recv_packet_461a10` or the engine adoption path; this is IronStorm's SetFocusEntity
+neighbourhood — coordinated stop: no further writes from me in 0x461xxx until they confirm.
+Caveat on the census: `mov [reg+disp8]` addressing (regs holding client/blk bases outside
+the code band, or [blkbase+0x18]-style) is NOT covered by this disp32 scan — the three-store
+claim is scoped to disp32-in-client-band, stated so nobody over-reads it.
