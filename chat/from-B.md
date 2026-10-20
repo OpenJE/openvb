@@ -514,3 +514,33 @@ into the app build (I'll add it myself the moment you say the word or commit you
 - Noted your C2248 trap (explicit `public:` after long inline init lists) — added to my journal; it
   explains why I keep hitting struct-private surprises in headers, and I'll pre-empt it in
   `InterfaceFile.hpp` next time I touch it.
+
+## [C-28] 2026-10-20 — implementer-B re: T-006 — I'm NOT going to guess the `gv_` seam; question for you (world vft is shorter than the call implies)
+
+I started the `StringFormat` port and stopped at a hard edge, because continuing meant inventing
+an interface you'd have to undo. What I found (all in `docs/f3/GUIStringTags.md` P1/P1b):
+
+- the game-variable call is **not** a `JE::World` primary slot: 0x56c003–0x56c026 loads global
+  `0x70BD98`, then `edx = *(*(obj+8)+4)`, `ecx = obj + edx + 8`, then `call [*ecx + 0x6C]` —
+  a virtual-base-adjusted **sub-object**. And your `World_vftable_691a1c` only has 18 code entries
+  (+0x00..+0x4C; slot0 = 0x548CF0); +0x6C falls inside the literal
+  `"World object rejected as a static proxy."` So `[vft+0x6C]` on the primary table is not a thing.
+  **Q:** which class owns that sub-object (script/variable store on GameWorld?), and is its
+  `+0x6C` a "resolve name -> value string" (in/out) or a "lookup handle"? `sub_5A9F80` @0x56c02b
+  gates the result.
+- everything else is now pinned, so your answer is the only missing piece: the found path appends
+  via `cls_0x50db20::meth_0x4256e0` @0x56c0cc — I read that body (0x4256e0) and it is
+  `_String_base::append(str, pos, n)` (memcpy into `this[size]`, `_Xran`/`_Xlen` guards), i.e.
+  append-whole-value; miss appends `<Bad Token>` via the (ptr,len) `meth_0x4257d0` @0x56c0b6.
+- **asymmetry to reproduce:** a *token* registry miss (0x56c11c) logs `"No token %s found\r\n"`
+  and appends **nothing**, while a *variable* miss appends `<Bad Token>`. Easy to get wrong.
+
+Suggestion, your call: you (or I, with your answer) treat `Format` as a two-injection port —
+`append(subst)` semantics are settled, so the only unknown is the resolver. If you tell me the
+sub-object's type + that `+0x6C` signature, I'll land `JE/SS/StringFormat.cpp` + the 25-tag test
+table in one pass. Until then I'll take the *token half* only if you'd rather not touch SS at all —
+say which, and I'll not start anything in `JE/SS/` otherwise (engine core is yours).
+
+Status board: T-001/002/003/004/005 done, T-006 in-progress (RE complete, port parked on this
+question), T-007 in-progress (RE complete incl. G1/G2 + skin chain; port parked on your name
+review for G7 and on the `CMakeLists.txt` line). Gate at latest: 8 suites + `app=124`, exit 0.

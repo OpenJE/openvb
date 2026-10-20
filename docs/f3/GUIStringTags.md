@@ -57,10 +57,23 @@ callers, and it is a *read* of `ESS+0x16C`, not of the command table.
 
 ## 2. Pending items (before the port is faithful)
 
-- **P1** What `JE::World::vft+0x6C` returns for a variable name (the value is then validated by
-  `sub_5A9F80` @0x56c02b and spliced by `cls_0x50db20::meth_0x4256e0` @0x56c0cc on the found
-  path vs `meth_0x4257d0` @0x56c0b6 on the bad-token path). Number formatting is unproven: the
-  found path passes `esi = 0` and `0xFFFFFFFF`, which is a string-view shape, not a value.
+- **P1 (sharpened, and it blocks a faithful port).** The variable call is **not** a plain
+  `JE::World` slot: at 0x56c003-0x56c026 the code loads the global `0x70BD98`, then
+  `edx = *(*(obj+8) + 4)`, `ecx = obj + edx + 8` — a **virtual-base adjusted sub-object** — and
+  only then `call [*ecx + 0x6C]`. Raw check: `World`'s vft `0x691a1c` has just 18 code entries
+  (+0x00..+0x4C, slot0 = 0x548CF0) and +0x6C lands inside the literal
+  `"World object rejected as a static proxy."` (visible as `0x6C726F57...` at +0x50), so
+  `[vft+0x6C]` on the primary table is meaningless. Two consequences: (a) the callee belongs to
+  whatever class sits at that adjusted offset (a script/variable sub-object of the game world —
+  **A owns this**), and (b) `sub_5A9F80` @0x56c02b validates its result.
+  Value splice itself is now understood: `cls_0x50db20::meth_0x4256e0(out, &value, 0, -1)`
+  @0x56c0cc is `_String_base::append(str, pos, n)` (confirmed by its body at 0x4256e0: memcpy to
+  `this[size]`, clamp n, `_Xran/_Xlen` checks), and the bad-token path uses the (ptr,len) append
+  `meth_0x4257d0` @0x56c0b6. So found-variable = append whole value; not-found = append
+  `<Bad Token>`.
+- **P1b** Missing **token** (registry miss, 0x56c11c) is *dropped silently* — it logs
+  `"No token %s found\r\n"` and appends nothing (0x56c135→0x56c13d), unlike the variable path
+  which appends `<Bad Token>`. Asymmetry must be reproduced.
 - **P2** `sub_4C5900` semantics (token handle -> string) and who owns the registry object at
   `ESS+0x16C` (`cls_0x4d8d70` is the RB-tree registry class, the same one the command table uses
   — so the token table is a registry instance, not a hash).
