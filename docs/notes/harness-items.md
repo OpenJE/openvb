@@ -245,13 +245,27 @@ distinct documents, and any cross-lane citation by bare "session 21" is ambiguou
 (`IS:sess35` / `HW:sess-31`). Same root cause as the batch-tag clash and the mesh-name churn: an
 identifier that is only unique inside one writer's head is not an identifier.
 
-**Resolved by ownership rather than by renaming (2026-10-20).** The seven files turned out to belong
-to `lane:discovery`, whose counter predates the `session15-36` lane's, and `discoveries/README.md`
-already carries an author column that distinguishes them. So the mapping exists in the index and in
-filename prefixes, and every index row now resolves to a tracked file. Standing citation form for all
-lanes: self-cite `lane:sessNN`, cross-cite by **filename**, and treat a bare `session NN` as ambiguous
-until proven otherwise — which is also why untracked-but-indexed files are a coordination bug and not
-a cosmetic one: they hide exactly this.
+**Partly resolved, and my first "resolved" claim was over-stated — recording the correction.** The
+seven untracked-but-indexed files were claimed in full by one lane and in part by another: four
+(`attack-state-machine-damage-formula`, `hp-damage-wire-and-game-ids`, `tohit-apply-tail`,
+`tohit-formulas-complete`) to the combat-counter lane, three (`map-chunk-table-eme2-spawn-handler`,
+`gameclient-vft-demand-ui-factories`, `gui-root-cls-0x4b28a0-map`) to HappyWolf's counter. I asserted
+the ownership question was settled from the documents' own header style; it was not — **both** lanes
+write `Session NN` headers, so style discriminates nothing, and the index author column reads
+`discovery` for every one of them, which discriminates nothing either. Three counters (this lane's,
+the combat lane's, IronStorm's `session15-36`) now coexist.
+
+So what is actually settled: every index row resolves to a tracked **file**, which was the coordination
+bug. What is **not** settled is whose prose is whose, and the fix is not me guessing from filenames —
+it is the two lanes naming a discriminator between themselves (a batch line that already named the
+file, or an internal cross-reference only one of them would have written). Standing citation form:
+self-cite `lane:sessNN`, cross-cite by **filename**, and treat a bare `session NN` as ambiguous until
+proven otherwise.
+
+The meta-lesson belongs with 8b and 16: I converted an *unverified* inference (header style implies
+author) into a *recorded resolution* within one message, and the second time today. Both times the
+check that would have caught it was one command away, and both times I ran it only after stating the
+conclusion.
 
 ## 16. When the link step is unavailable, say what you *did* prove — and there is a usable substitute
 
