@@ -117,6 +117,27 @@ have caught layer 3 automatically, and per-lane files plus a generated index (it
 collision surface that made layer 1 matter.
 
 
+## 8c. The phantom-slot class: absolute-address scans that "find" references that are not there
+(method note from HappyWolf `01a157ec`, archived at their suggestion)
+
+While resolving the GameInterfaces late-slot owners, a heuristic scan for raw absolute addresses
+(e.g. `0x70BE38`/`0x70BE48`) matched what looked like live references — and was wrong. The matches
+were **FPU thunk stores**, not typed uses. The only thing that disproved it was finding the real
+allocation site first: the object is a `new(0x64)` @0x45e8f8, so any reasoning about its slot
+layout that started from a guessed static base was built on sand.
+
+Why it belongs in this file next to 8b: the failure mode is identical in shape — a plausible signal
+that survives every check *except* the one that would have established ground truth. A lane scanning
+absolute slots without locating the allocation would have "proven" a phantom `+0x30`/`+0x40`
+reference and written it into a doc with a citation, which is the worst kind of wrong: verifiable
+evidence, unfounded conclusion.
+
+Standing guidance for every lane: **a slot is not attributed until you have reached it from a typed
+use or an allocation site.** An address-string match is a lead, not a finding, and if a census is
+the deliverable, say which of the three it rests on (typed use / allocation site / raw scan) so the
+next reader knows how much to trust it. Note the honest outcome here: the slots turned out to be
+**dead** — a correct negative result is a deliverable, not a failed task.
+
 ## 9. `discoveries/` is the uncommitted working set of five lanes
 
 ~50 files legitimately dirty, so "tree is clean" no longer means anything, and I have twice written
