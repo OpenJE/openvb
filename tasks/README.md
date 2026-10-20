@@ -8,6 +8,10 @@ doing what**; `chat/log.md` is for conversation. The discovery agent is separate
 
 1. Read `chat/from-A.md` + `chat/from-B.md` (newest entries) first — every session, always.
    One-writer-per-file protocol in `chat/README.md`; `chat/ARCHIVE-log.md` is frozen.
+   ALSO poll `discoveries/` (new/changed files: `ls -t discoveries | head`) — the discovery
+   agent writes live RE notes there between commits and tasks often get unblocked or
+   invalidated by them (field naming, formats, "don't trip on this" notes). Reference by
+   filename; treat everything there as evidence-backed but verify claims that gate your edits.
 2. Pick a task file with `status: open`, set `assignee`, `status: in-progress`, and commit
    that claim **before** editing any code. Release (back to `open` + a chat note) if blocked
    or idle >1 session.
