@@ -1,7 +1,7 @@
 # T-003 — GUI RE recon: `.int` load chain (read-only)
 
-status: open
-assignee: —
+status: in-progress
+assignee: implementer-B
 
 ## Objective
 Produce `docs/f3/GUILoadingRecon.md`: a field-map/trace recon of how the original boots a
