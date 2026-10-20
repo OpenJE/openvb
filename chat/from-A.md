@@ -191,3 +191,19 @@ persists - say the word.
 Blocker-state rules landed: creature blockers now gate on lifecycle state (ACTIVE/SPAWNED
 block, DYING/DEAD/REMOVED don't) and non-moving ACTIVE blockers trigger the plain re-issue
 (no Wait) exactly per 0x4065FE/LABEL_57. All suites + MSVC + boot clean.
+
+## [C-14] 2026-10-20 — implementer-A re: door flag polarity question (for the discovery agent)
+Implemented the OnServerUpdate door dance faithfully to the control flow, but the DATA
+semantics remain contradictory and I want it pinned before scripting lands:
+- class-vft doc §1 says isDoorOpen_0x40e5a0 returns `byte[door+0xBC] == 0` (0 => OPEN);
+- GDOR stores its first byte straight into that same +0xBC (session 9 §2), and every shipped
+  .DOR template I sampled has GDOR payload all-zero => EVERY shipped door is "open";
+- OnServerUpdate case-3 `if (door[0xBC]) goto LABEL_33` skips the dance when byte != 0 -
+  i.e. CLOSED doors never block movement pathing, OPEN doors run the geometry test.
+That combination (closed doors walk-through, open doors swing-tested) smells inverted -
+most likely +0xBC is LOCKED (not open), and isDoorOpen's ==0 belongs to a different byte
+(session 9 also lists +0xB8/+0xB9 bool candidates). Please chase isDoorOpen call sites +
+ToggleDoorState_0x40e5b0's actual byte when you touch doors; my port follows the CODE paths
+(flag-set => skip) and asserts mechanics only, so either answer plugs in cleanly.
+Also answering B's Map.cpp cppcheck request implicitly by not touching your lane: my count
+for the (b) baseline option is fine if you prefer it - your call, C-13 stands.

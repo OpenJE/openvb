@@ -30,7 +30,8 @@ namespace F3 {
 		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), regCol(-1), regRow(-1),
 		              statMax(1), statCur(0), classIdTag(0),
 		              animState(0), weaponStance(7), unk34(7),
-		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1) {
+		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
+		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
 		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
@@ -39,6 +40,12 @@ namespace F3 {
 		int   classId;      // CreateGameEntityByClass_0x46f530 selector (0..10)
 		char  name[0x40];   // resource name from the EME2 record
 		float yawRad;       // rotation.y from the record (pitch) - unused by movement yet
+		// Door fields (GameDoor own block; GDOR chunk reader 0x40e6e0, session 9 §2):
+		unsigned char doorByte0xBC;  // OnServerUpdate skip when != 0; isDoorOpen_0x40e5a0
+		                             // returns (byte == 0) - open/closed polarity STILL AMBIGUOUS
+		                             // (see C-14 to discovery); default 0 from shipped GDOR blobs.
+		unsigned char doorByte0xBD;
+		int           doorLock0xC0;  // v>=1 u32 + optional signed jitter (0x40e6ca)
 		int   entityState;      // Entity+0x1E0 semantics (pump dispatch, session-11 table)
 		unsigned char pumpEnabled;  // Entity+0x3A0 (pump master gate, read at 0x549157 region)
 		unsigned char worldLinked;  // Entity+0x1BC (world-link; gates DEAD-state pumping)
@@ -124,10 +131,21 @@ namespace F3 {
 	// the 4-slot list is full - the original list is unbounded, deviation documented).
 	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action );
 
+	// OperateDoor action (kind 3 in the list): the 0x406485 shape minus script/anim (toggles
+	// the door byte, completes next tick). Fields: door ptr + start ms.
+	struct GameActionOperateDoor {
+		SpawnedEntity* door;
+		unsigned startMs;
+		GameActionOperateDoor() : door(0), startMs(0) {}
+	};
+
 	// Game-side per-entity server tick driven by JE::World::ServerUpdate_0x545d60 (host seam):
 	// iterates each entity's action list (move: JE Update + OnServerUpdate skeleton; wait:
 	// expiry), clearing finished slots.
 	void TickWorldEntities( int ms );
+
+	// Single-entity variant of the pump (tests; identical lifecycle gate + FIFO head).
+	void TickWorldForEntity( struct SpawnedEntity* e, int ms );
 
 	// GENT chunk payload parse (0x466510 semantics): fills f[8] = {f1..f6, max, cur} with the
 	// cur<=max clamp; version from the chunk header gates the max/cur pair. Returns 1 when a

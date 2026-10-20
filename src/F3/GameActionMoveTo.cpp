@@ -6,6 +6,7 @@
 #include "F3/MapEntitySpawn.hpp"
 #include "JE/Map.hpp"
 #include "JE/PathManager.hpp"
+#include <stdio.h>
 #include "JE/SpatialGrid.hpp"
 
 namespace F3 {
@@ -111,10 +112,39 @@ namespace F3 {
 						return 1;
 					}
 				case kClassGameDoor:
-					// 0x4061C4-0x406659 segment-plane test (door yaw @+496*0.017453292,
-					// open byte +188, dot tests 0x4062F2-0x406395) -> OperateDoor + Wait +
-					// fresh MoveTo. Needs GameDoor geometry: TODO, door occupant ignored.
-					continue;
+					// 0x4061C4: RTTI GameDoor; `if (door[188]) goto LABEL_33` - the flag-set
+					// door is SKIPPED. Flag-clear doors face the segment-plane test (hinge
+					// points door[+0x10..+0x24], yaw +0x1F0 * 0.017453292, side-dot pair
+					// 0x4062F2-0x406395). Point-field semantics NOT pinned (C-14 to
+					// discovery) - conservative shipped-flow reading: flag-clear door in our
+					// cell => dance OperateDoor + Wait(1000) + fresh MoveTo (0x406485-0x406659).
+					if ( b->doorByte0xBC != 0 ) {
+						continue;   // LABEL_33 skip path
+					}
+					{
+						static GameActionOperateDoor s_ods[4];
+						static GameActionWait s_ws2[4];
+						static int s_oi = 0;
+						s_oi = ( s_oi + 1 ) & 3;
+						s_ods[s_oi].door = b;
+						s_ods[s_oi].startMs = (unsigned)ms;
+						PushActionOntoEntity( static_cast<SpawnedEntity*>( mover ), 3, &s_ods[s_oi] );
+						GameActionWait& w = s_ws2[s_oi];
+						w.Start( (unsigned)ms, 1000 );
+						PushActionOntoEntity( static_cast<SpawnedEntity*>( mover ), 2, &w );
+						GameActionMoveTo* next = new GameActionMoveTo();
+						next->speed = speed;
+						next->CopyTargetFrom( this );
+						next->mover = mover;
+						next->job   = job;
+						next->requestedFlag = 1;
+						next->lastUpdateMs  = (int)ms;
+						next->lastRequestMs = lastRequestMs;
+						PushActionOntoEntity( static_cast<SpawnedEntity*>( mover ), 1, next );
+						job = 0;
+						finished = 1;
+						return 1;
+					}
 				default:
 					continue;   // 0x4061AF switch default: skip
 			}

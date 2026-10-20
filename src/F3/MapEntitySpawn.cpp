@@ -56,6 +56,35 @@ namespace F3 {
 	}
 
 	// Walk the top-level {fourcc,ver,size} chunk stream and inspect the marker chunk set.
+	// GDOR payload (session 9 §2): {u8 @0xBC, u8 @0xBD, string(key, 0xC8 base per ctor),
+	// v>=1: u32 @0xC0 + jitter}. Missing/failed fields stay at ctor defaults.
+	static void ParseGdor( const unsigned char* data, unsigned len,
+	                       unsigned char* bBC, unsigned char* bBD, int* lock ) {
+		unsigned pos = 0;
+		while ( pos + 12 <= len ) {
+			dword fourcc, ver, sz;
+			memcpy( &fourcc, data + pos, 4 );
+			memcpy( &ver,    data + pos + 4, 4 );
+			memcpy( &sz,     data + pos + 8, 4 );
+			if ( sz < 12 || pos + sz > len ) { break; }
+			if ( fourcc == 0x524F4447u /*GDOR*/ ) {
+				const unsigned char* b = data + pos + 12;
+				unsigned bl = sz - 12;
+				if ( bl >= 1 ) { *bBC = b[0]; }
+				if ( bl >= 2 ) { *bBD = b[1]; }
+				// key string: u16 length at +2 (StreamReadString format), may be empty
+				unsigned o = 2;
+				if ( o + 2 <= bl ) {
+					unsigned short sl; memcpy( &sl, b + o, 2 );
+					o += 2 + sl;
+				}
+				if ( ver >= 1 && o + 4 <= bl ) { memcpy( lock, b + o, 4 ); }
+				return;
+			}
+			pos += sz;
+		}
+	}
+
 	int ClassIdFromTemplateChunks( const unsigned char* data, unsigned len ) {
 		bool seenCRE=0, seenITM=0, seenWP=0, seenAR=0, seenAM=0, seenOBJ=0, seenDOR=0, seenCON=0;
 		unsigned pos = 0;
@@ -73,7 +102,7 @@ namespace F3 {
 				case 0x52414947u /*GIAR*/: seenAR  = 1; break;
 				case 0x4D414947u /*GIAM*/: seenAM  = 1; break;
 				case 0x4A424F47u /*GOBJ*/: seenOBJ = 1; break;
-				case 0x524F4447u /*GDOR*/: seenDOR = 1; break;
+
 				case 0x4E4F4347u /*GCON*/: seenCON = 1; break;
 				default: break;   // EEN2, GENT, GCHR, ...
 			}
@@ -194,6 +223,10 @@ namespace F3 {
 		return 0;   // original list is unbounded; 4-slot cap documented
 	}
 
+	static void TickOneEntity( SpawnedEntity* e, int ms );
+
+	void TickWorldForEntity( SpawnedEntity* e, int ms ) { TickOneEntity( e, ms ); }
+
 	void TickWorldEntities( int ms ) {
 		tracing::instrument( tracing::LOCATION, "ms=%d", ms );
 		for ( int i = 0; i < g_spawnedEntityCount; ++i ) {
@@ -201,6 +234,12 @@ namespace F3 {
 			if ( !e ) {
 				continue;
 			}
+			TickOneEntity( e, ms );
+		}
+	}
+
+	static void TickOneEntity( SpawnedEntity* e, int ms ) {
+		{
 			RegisterOccupancy( e, GetActiveMap() );
 			int acted = 0;
 			// Lifecycle gate (session 11/12 pump switch on Entity+0x1E0):
@@ -213,26 +252,26 @@ namespace F3 {
 			//  - 7 DEAD => pumps only while worldLinked (+0x1BC) per the switch
 			//  - 8 REMOVED => deep cleanup tail (0x550ad0); actions not pumped here yet
 			if ( !e->pumpEnabled ) {
-				continue;
+				return;
 			}
 			switch ( e->entityState ) {
 				case kStateInvalid:
 					JE::LogDebugString( NULL,
 					    "Trying to update entity when its state is invalid\n" );
-					continue;
+					return;
 				case kStateCreated:
 				case kStateCreatedAlt:
 					e->entityState = kStateActive;   // handlers end in ChangeState(4)
-					continue;                        // do not also pump this frame (fidelity)
+					return;                          // do not also pump this frame (fidelity)
 				case kStateDying:
-					continue;   // OnDeath_0x5509b0: script + server-only dereg TODO
+					return;   // OnDeath_0x5509b0: script + server-only dereg TODO
 				case kStateDead:
 					if ( !e->worldLinked ) {
-						continue;
+						return;
 					}
 					break;      // DEAD still pumps normal update while linked
 				case kStateRemoved:
-					continue;   // 0x550ad0 deep tail unmodeled
+					return;   // 0x550ad0 deep tail unmodeled
 				default:
 					break;      // ACTIVE/SPAWNED
 			}
@@ -251,6 +290,14 @@ namespace F3 {
 					if ( mv->finished ) {
 						a.kind = 0; a.action = 0;   // slot drop (original deletes here)
 					}
+				} else if ( a.kind == 3 ) {
+					GameActionOperateDoor* od = static_cast<GameActionOperateDoor*>( a.action );
+					if ( od->door ) {
+						// CloseDoor-side effect (0x40e5b0 sets a byte; RunScript("OnUse") and
+						// the open/close anims deferred with the script layer)
+						od->door->doorByte0xBC = ( od->door->doorByte0xBC == 0 ) ? 1 : 0;
+					}
+					a.kind = 0; a.action = 0;
 				} else if ( a.kind == 2 ) {
 					F3::GameActionWait* w = static_cast<F3::GameActionWait*>( a.action );
 					if ( w->startMs == 0u && w->durationMs ) {
@@ -262,7 +309,7 @@ namespace F3 {
 				}
 			}
 		}
-	}
+	} // TickOneEntity
 
 	int ParseGentBlock( const unsigned char* data, unsigned len, int f[8] ) {
 		tracing::instrument( tracing::LOCATION, "" );
@@ -347,6 +394,10 @@ namespace F3 {
 				JE::ResourceSystem::Res* t = JE::g_resource_system->Demand_0x49b750( r.name, 1 );
 				if ( t ) {
 					e->classId = ClassIdFromTemplateChunks( (const unsigned char*)t->data, (unsigned)t->size );
+					if ( e->classId == kClassGameDoor ) {
+						ParseGdor( (const unsigned char*)t->data, (unsigned)t->size,
+						           &e->doorByte0xBC, &e->doorByte0xBD, &e->doorLock0xC0 );
+					}
 					int gf[8];
 					if ( ParseGentBlock( (const unsigned char*)t->data, (unsigned)t->size, gf ) ) {
 						e->gentF[0] = gf[0]; e->gentF[1] = gf[1]; e->gentF[2] = gf[2];
