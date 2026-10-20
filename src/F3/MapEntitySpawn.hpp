@@ -17,10 +17,11 @@ namespace F3 {
 	// F3 classes (GameEntity 0x47C / GameCreature 0xBDC / ...); classId records which shipped
 	// class the resource would map to.
 	struct SpawnedEntity : public JE::Mover {
-		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), moveAction(0),
+		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0),
 		              statMax(1), statCur(0), classIdTag(0),
 		              animState(0), weaponStance(7), unk34(7) {
 		name[0] = 0;
+		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
 		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
 		gentF[4]=4;   // GameEntity mbr_0x18 ctor default (discovery session 1 §2)
 	}
@@ -42,9 +43,11 @@ namespace F3 {
 		int   classIdTag;     // Entity+0x15C runtime tag (== factory case for 1..9; player
 		                      // keeps 1 - discovery full-geometry §3/§5). Door/Container are
 		                      // UsableObject SIBLINGS, not a chain.
-		class JE::ActionMoveTo* moveAction;   // per-entity action slot driven by the server
-		                    // pump (original: entity action queue iterated in ServerUpdate's
-		                    // per-entity loop, vft+96 sync + ServerUpdate calls)
+		// Entity action list (original push = JE::Entity::meth_0x550720, iterated by the
+		// server pump; blocker paths push Wait(1000ms)+fresh MoveTo, see GameActionMoveTo
+		// header). Caller-owned objects; slots auto-clear on completion/fetch.
+		struct ActionEntry { int kind; void* action; };   // kind 0 empty, 1 move, 2 wait
+		ActionEntry actions[4];
 	};
 
 	enum {
@@ -89,8 +92,13 @@ namespace F3 {
 	JE::Map* FindLoadedMap( int id );
 	int   LoadedMapCount();
 
+	// Push an action onto an entity's list (JE::Entity::meth_0x550720 port; returns 0 when
+	// the 4-slot list is full - the original list is unbounded, deviation documented).
+	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action );
+
 	// Game-side per-entity server tick driven by JE::World::ServerUpdate_0x545d60 (host seam):
-	// updates every spawned entity that has a moveAction attached.
+	// iterates each entity's action list (move: JE Update + OnServerUpdate skeleton; wait:
+	// expiry), clearing finished slots.
 	void TickWorldEntities( int ms );
 
 	// GENT chunk payload parse (0x466510 semantics): fills f[8] = {f1..f6, max, cur} with the

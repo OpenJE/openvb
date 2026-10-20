@@ -10,6 +10,7 @@
 #include "JE/PathManager.hpp"
 #include "JE/HostHooks.hpp"
 #include "JE/ActionMoveTo.hpp"
+#include "F3/GameActionMoveTo.hpp"
 #include "JE/Resources.hpp"
 #include "JE/VFX_Parameter.hpp"
 #include "JE.hpp"
@@ -141,12 +142,49 @@ namespace F3 {
 		return 1;
 	}
 
+	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action ) {
+		tracing::instrument( tracing::LOCATION, "kind=%d", kind );
+		if ( !e ) {
+			return 0;
+		}
+		for ( int i = 0; i < 4; ++i ) {
+			if ( e->actions[i].kind == 0 ) {
+				e->actions[i].kind = kind;
+				e->actions[i].action = action;
+				if ( kind == 2 ) {
+					static_cast<F3::GameActionWait*>( action )->Start( (unsigned)0,
+						static_cast<F3::GameActionWait*>( action )->durationMs );
+				}
+				return 1;
+			}
+		}
+		return 0;   // original list is unbounded; 4-slot cap documented
+	}
+
 	void TickWorldEntities( int ms ) {
 		tracing::instrument( tracing::LOCATION, "ms=%d", ms );
 		for ( int i = 0; i < g_spawnedEntityCount; ++i ) {
 			SpawnedEntity* e = g_spawnedEntities[i];
-			if ( e && e->moveAction ) {
-				e->moveAction->Update_0x55b600( (unsigned)ms, 0 );
+			if ( !e ) {
+				continue;
+			}
+			for ( int s = 0; s < 4; ++s ) {
+				SpawnedEntity::ActionEntry& a = e->actions[s];
+				if ( a.kind == 1 ) {
+					JE::ActionMoveTo* mv = static_cast<JE::ActionMoveTo*>( a.action );
+					mv->Update_0x55b600( (unsigned)ms, 0 );
+					if ( mv->finished ) {
+						a.kind = 0; a.action = 0;   // slot drop (original deletes here)
+					}
+				} else if ( a.kind == 2 ) {
+					F3::GameActionWait* w = static_cast<F3::GameActionWait*>( a.action );
+					if ( w->startMs == 0u && w->durationMs ) {
+						w->startMs = (unsigned)ms;   // lazily stamp start on first tick
+					}
+					if ( w->Expired( (unsigned)ms ) ) {
+						a.kind = 0; a.action = 0;
+					}
+				}
 			}
 		}
 	}
@@ -254,7 +292,6 @@ namespace F3 {
 			if ( map->m_entityCount < 128 ) {
 				map->m_entities[map->m_entityCount++] = e;
 			}
-			e->moveAction = 0;
 
 			if ( g_spawnedEntityCount < 128 ) {
 				g_spawnedEntities[g_spawnedEntityCount++] = e;
