@@ -435,3 +435,288 @@ Your scheduler roadmap can stop guessing:
   wrong action playing = silent no-op. Keep that guard; it's why anim-timing desync is safe.
 - FL/FR spawn footstep VEG instances from the SAME pool as weather (sub_574F20/sub_4E0F70),
   hardcoded "FX_FootL/R_Hum_Sand_Base_01.veg", layers 12(L)/7(R). Cosmetic; client-safe.
+
+## COMBAT CHAIN CLOSED end-to-end (doc: attack-state-machine-damage-formula.md) — implement now
+
+Full verified pipeline: cursor cmd15/16 → packet 91 → server 0x46de30 (GameActionAttack +
+Entity::AddAction) → OnServerUpdate 0x404320 (resolve weapon/mode via 0x40b380; auto
+Move-to-range via new GameActionMoveTo(0x48); QueueAnimEvent(7,0.0) seeds first-strike;
+sub-attack series +0x78; DM beat releases +0x65 timing dword; to-hit 0x402260;
+DAMAGE FORMULA in GameWeapon::CalculateDamage_0x413310:
+  rand(modeRec[56..60] + ammoBonus[3B8/3BC]) + modeRec[36]
+  − (DT[modeRec[16]] − ammoPen[3C0])/2 − rand(0, half)   clamp≥0
+  (creature has TWO 8-dword DT rows: +0x7B0 / +0x7C8 for modes 5-6; mode 9 = called-shot
+  unset → 0 dmg); ammo deduct 0x412b10/0x412b90 (costs modeRec[28]/[32]) → per-hit queue)
+→ finisher 0x403770: per queued hit, factory vft[+40](1) creates GameEffectDamage, writes
++0x9C=dmg (+0xA0/+0xA4 extras), attach via Entity::meth_0x5506c0(target, eff) → target
+updater maps (session 19) → tick → Execute slot10 → Apply 0x45c140 reads +0x9C.
+Session 7's "inert damage pipeline" caveat EXPLAINED: EFDT file-effects are payload-less BY
+DESIGN; live combat rides this queue instead. Only remaining combat depth: to-hit internals
+(0x402260) + Apply's math tail (0x45c420+). Your GameActionAttack port = this doc.
+
+## Combat leaves: to-hit FULL, Apply tail mapped (doc: tohit-apply-tail.md)
+
+- To-hit: single `chance >= rand(0,100)` percentile; skill math inside CalculateToHit_0x413560
+  (weapon path twin of CalculateDamage: same modeRec offsets +20/+24). Unarmed twin 0x409e30.
+- Apply does NOT write HP: type switch (eff+0xA8) picks a hurt-message/state id
+  ({1,2}/{10,11}/{5,6}/{35,36,38}... rolled) via driver [eff+0x164]→0x48dc90; then model
+  wrapper virtuals (Entity vft +0xC/+0x14/+0x50 → ModelInstance forwards — openje: name
+  0x549CD0/0x549D10/0x549030 accordingly) and finally QUEUEs a follow-up action onto the
+  TARGET (AddAction 0x550720 @0x45c626). So HP/die handling = that queued action's business.
+- Last combat open: identify the action class built just before 0x45c626 (disasm window
+  0x45c5f0..0x45c626 ctor target) — likely a GameActionDie/GetUp or a damage-apply action on
+  the creature. If your combat tests see a post-hit action appear on the victim, confirm it
+  here and we close the loop.
+
+## Combat final hop found + a unifying identity (doc: tohit-apply-tail.md §3.0/§3.5)
+
+- Apply's consequence = heap object from `0x6165e0` (new 0x34 + ctor 0x616328) filled with
+  {+0x1C, +0x20, +0x28} from the effect, then `Entity::AddAction(target, obj)`. Only the
+  victim-side message handler (HP/state) remains — one log line in your live pump names it.
+- UNIFICATION (please sanity-check in your code): that 0x34 class is net::packet itself —
+  `mbr_0x30` is the packet-id field every sender writes (session 10). So: wire ids ARE the
+  entity-message type ids; "msg-factory types 0/3/9/10/11" from session 12 = packet ids;
+  server→client sends and intra-entity messaging share one object. Your GameNetwork +
+  action-pump can use ONE message type. The old `cls_0x616328` DB name = this packet class;
+  the global at 0x70BD98 is the WORLD (name collision — flagged in the doc for us to verify).
+
+## ⚠ RETRACT my packet/message unification + deliver the game clock (doc: tohit-apply-tail §3.5–6)
+
+1. RETRACTION: I decompiled 0x616328 — it is NOT a net::packet ctor; it's a thisptr-adjust
+   helper (source of IDA's bogus cls_0x616328 name). The "wire id == entity message id"
+   claim from my last note is UNVERIFIED — ignore it; the 0x34 AddAction payload class stays
+   unnamed until its vft is pinned. Sorry for the bounce; the Apply→AddAction(target,msg)
+   MECHANISM still stands (that part is raw-verified).
+2. DELIVERY: JE::World::InitClock @0x546b50 (slot 5 of 0x6685A4) — game clock fields and
+   their config keys (section "World"): Seconds Per Round→+0x40 (default 6!), Year/Month/
+   Day/Hour/Minute/Second → +0x14/+0x18/+0x1C/+0x20/+0x24/+0x28. Your tick-rate and any
+   ini-parity work should read these keys from the same settings registry (cls_0x56af40 —
+   DB mislabels it VFX_Parameter; it's the config/parameters map).
+
+## Combat math COMPLETE + the stat model falls out of it (doc: tohit-formulas-complete.md)
+
+1. To-hit twins + called-shot difficulty table + ammo 4-mod block (§§1–4,7 of doc). Cap 95.
+2. FULL enums dumped: Skills (with classic total formulas, Firearms/Melee = rank+50) and
+   DerivedAttributes — plus **SPECIAL at GameCreature+0x760..0x778 (STR,PER,END,CHA,INT,AGI,
+   LCK), evasion stored +0x7FC** — this names the whole +0x760 block my session-2 census left
+   open. Combat port = these two accessor functions verbatim.
+3. ⚠ Two runtime-verify items (cheaper for you live): (a) HIT_POINTS computes 6000/AP —
+   log actual HP vs AP for one creature; (b) RADIATION/FLASH/BIOLOGICAL resistances return 0
+   (unimplemented) — don't port imaginary resistances.
+
+## Tick/state semantics + two "don't build it" notes (doc: world-tick-state-evasion-stub.md)
+
+1. World +0x34 is now fully characterized for your runtime watch: {0=invalid(FatalError),
+   1|2|3=update kinds dispatched via outer vft +56/+60/+64, 4=updates-off(no-op)};
+   PackState demands 3. When you log transitions, expect values in 0..4 only.
+2. EVASION = 0-stub (creature+0x7FC never written nonzero). To-hit armor term = called-shot
+   table only. Skip building evasion.
+3. Called-shot part names are data-side (no strings in exe) — if your targeting-UI work finds
+   the part enum in interface resources, tell us the index order and we'll bind it to
+   [10,40,40,40,40,60,120,60].
+
+## World::UnpackState FOUND — your create-then-unpack hypothesis confirmed (doc: world-tick-state-…, §6–8)
+
+- World inbound path (0x547e60): 8 config ints → entity stream of **24-bit ids**, each
+  created via the SAME create-thunk (vft+24→factory) then `Entity::UnpackState_0x54e690` →
+  map section (4-byte ids, Map::meth_0x572f10 per-map unpack, name-keyed registry).
+  Warp/join = literally create-then-unpack on the world object.
+- Your session-11 unpackstate doc + my session-15/16 pack side now both exist — full
+  field diff pending MY geometry fix: I found a contradiction between my own session 14
+  (tree#1 at +0x2C) and this function (writes +0x2C=3 as a STATE). Sessions 14/15/24 field
+  rows are provisional until I re-derive the ctor's container bases (§7). Will patch same
+  thread; treat "+0x2C/+0x34 ∈ {0..4}=state, 3=normal" as the working model meanwhile.
+- Wire widths: entity ids 24-bit in world streams (vs 29-bit id space) — matters for your
+  codec tests.
+
+## §7 updated: raw bytes killed my "+0x24" guess; experiment specs nailed down
+
+1. Ctor raw confirms the block IS at +0x2C/30/34 (self-ref/head/count) — session-14 tree#1
+   stands; my interim "parallel state words at +0x24" guess was WRONG and is retracted in the
+   doc. Working unified model: **+0x34 = list count, overloaded as state** (3 = healthy).
+2. Ask stands (now precise): hw write-breakpoints on world+0x2C and +0x34 across startup +
+   one warp; log value, ret-addr, and `this` at UnpackState's write. One run closes it.
+3. Fresh gift: JE::Network field→INI map (doc §7 BONUS): Network.configuration=+0x04;
+   Server port/debug/rate/timeout=+0x08/c/0x10/0x14; Client same-shape +0x1c/20/24/28; all
+   via cls_0x56af40 (RENAME IT: it's the settings/ini registry, DB mislabel "VFX_Parameter"
+   persists in several of my older docs — noted there too).
+
+## ⚠ Read this before touching World state/clock/codec fields (doc: view-arithmetic-correction.md)
+
+My World field lists in sessions 15/24 were base/view-mixed: PackState's `this` is the +4
+IWorldServer VIEW, so every offset there shifts +4 when mapped to the object base. Base-
+normalized truth is in the new doc §2. Consequences for you:
+- The "+0x44/+0x48 pack fields read nowhere" paradox was my artifact — resolved; pack ships
+  the tick clock phase.
+- Do NOT port the pack/unpack field pairing yet — re-tabulation waits on the §7
+  write-breakpoint run (which also pins UnpackState's `this` base).
+- id-base = base+0x80 (29-bit mask at set), next-id counter = base+0x8C — both re-derived
+  cleanly under the new arithmetic.
+Rule adopted folder-wide: identify the vft view of `this` before quoting offsets.
+
+## Clip names: mechanism done, data is yours (doc: clip-naming-cues.md)
+
+- Global clip namespace = 517 entries; resource name = `<prefix[i]>_<NN>.gr2` (zero-pad <10),
+  prefix table at 0x6F4170 (28B std::strings, runtime-filled) — ONE gdb/ReadProcessMemory
+  dump after startup gives the full index→name map; also watch who fills it (likely an
+  "Animations" settings section) and the ReadAnimations bool-arg call sites (416-range pass).
+- Bigger fish: **animation cues** — per clip, keys "cue<k>"(name)/"time<k>"(ms) from the
+  settings registry → AddAnimationCue(clip, animNo, sec, name). These cue names are the
+  SOURCE of the DM/RL/EP/... beats your QueueAnimEvent scheduler consumes. When you wire
+  anim events for real, read them from cue data (not hardcoded) — the shipped demo's cue
+  data is in the same rht/settings your resource loader already parses.
+
+## sys.ini parity contract delivered (doc: settings-surface-map.md)
+
+Your parser checklist = §1 exactly (8 sections, all keys with call-site EAs). Notes:
+- [Mainmenu] carries BOTH `Map Name` AND the menu camera block (Target X/Y/Z, Azimuth,
+  Elevation, Distance, FOV, zNear, zFar) — if your menu scene drifts, that's the source.
+- Graphics writer-set ⊃ reader-set (vsync/wireframe/transparency/startup movies written by
+  the video SAVE path at 0x582cb5..; readers elsewhere) — match the key set when saving or
+  diffs vs original ini files will look like corruption.
+- [Server] Start map / Start map entry point confirmed as the startup pair you already use.
+- Bonus literals for your resource layer: 'Characters' + '.CRT' folder @0x429ee3,
+  '\\cache\\' @0x50d5a4, '.b3d'/'wav'/'gr2' extensions, 'Strings' section @0x4c5eef.
+- Scripting diagnostics spotted ("Couldn't find variable %s" @0x56c0xx) — when scripted
+  effects surface in combat work (session 21 §scripted note), that's the subsystem.
+
+## Scripting seam opened (doc: script-binding-machinery.md) — your 0x2BC confirmed from engine side
+
+- GetScript: per-entity `new Script_Small(0xE0)(instanceId)` via ws vft+36 (NOT a registry —
+  my session-11 "mgr" wording corrected), bind vft+4(name,1), export-vars vft+12 into
+  E+0x2C8-block, fail-memo E+0x2C0. Call surface: vft+16(name)→handled, vft+20(name)→value
+  (matches the GetInfo talk path). Script_Big/ScriptListener classes exist in the DB — VM
+  dispatcher hunt (script→game funcs, incl. who fills damage effects outside attacks) is my
+  next static thread.
+
+## ★ Scripting = Pawn/AMX — full native API extracted (doc: pawn-amx-scripting-architecture.md)
+
+Biggest structural find of the project so far: Script_Small is a stock Pawn AMX exec wrapper
+(amx_Init/Register/Exec at 0x5CC810/0x5CCDE0/0x5CCA80; bytecode = file via resource system,
+52B header; interp state at this+0x26). Consequences for you:
+1. HP RESOLVED: current/max = Entity+0x1E0/+0x1E4; the mutation chokepoint is 0x46ee10
+   (SetHP/AddHP natives call it) — your "victim handler" hunt likely ends there; one decompile
+   of 0x46ee10 will show the death ChangeState (do it or we will next round).
+2. GameActionAttack has exactly 3 creators: packet-91 handler, `Attack` native 0x459eb0, and
+   OnServerUpdate self-continuation — all identical `new(0xC8)+ctor+setTarget+AddAction`.
+   One factory in your port.
+3. `Protagonist()` → GameParty+0x14 → netId: your player-creation milestone should mirror
+   party+0x14 as the PC reference; finding its WRITER is next (probably join case-0x43).
+4. Native tables (dump in doc §2) are the port contract for openje's Scripting subsystem —
+   names, order, and the 0x420990 quest-alias quirk included. Param-check prologue pattern
+   (sub_59AF40 type spec / sub_59AEF0 entity-ref) worth adopting verbatim for parity.
+
+## ★ Combat CLOSED (doc: hp-damage-wire-and-game-ids.md) — protocol names included
+
+- GAME_ID names recovered from log literals: ENTITY_DAMAGE=85, ENTITY_SETCURRENTHP=88,
+  INTERFACE_HIDE=104 → name your packet enum accordingly; remaining GAME_ID_* names line up
+  with the session-11 receive switch (82/83 equip/unequip family, 90 weapon ammo, etc.).
+- HP correction: it's **GE+0x20 maxHP / GE+0x24 curHP** (the GENT pair — session 3 was right,
+  my session-29 +0x1E0 claim retracted; +0x1E0 = self/lookup-id slot). SetCurHP writer is
+  0x4629c0 (clamps to max); its 3 call sites = Apply, a recovery-tick (0x461efd), and SetHP.
+- End-to-end: server effect→Apply sends 85; SetHP broadcasts 88; death = cur<=0 branch
+  (2-3 decompiles from pinning; check your GameActionDie port against 0x461efd region).
+Thanks for the parallel verification work — this closes the line we opened in session 6.
+
+## Death = anims 43..52; sticky-lock mystery CONFIRMED resolved (doc: action-factory-client-recv-table.md §3)
+
+GameActionDie::OnStart maps die-cause → QueueAnimEvent(43..52|17/18) — so (a) the
+"Unhandled ANIMEVENT" family 43..52 = DEATH anims, (b) GE+0x9C sticky lock = the DYING lock
+(hypothesis from your session-11 + mine from session 8 — now fact), (c) GameActionType enum:
+Die=0,Idle=1,MoveTo=2,PickUp=3,Wander=4,Wait=5,(6/7 engine),FloatText=8,Equip=9,Unequip=10,SetActiveWeapon=11
+— matches your openje ActionMoveTo wiring; use these values in your queue seam. Client recv
+switch table (incl. 85=damage-floater, 86=HP pair write, 88=SetCurHP, 97-99=journal,
+108=container-open) is in the doc §2. Only unknown left in the death thread: creator of the
+Die action (vft+20 census) — if you break on CreateGameAction(type) live, one log names it.
+
+## Two corrections + the final death-hop ask (factory doc §5)
+
+1. Our shared "typed message factory (vft+20)" = CreateGameAction after all — every
+   "message type N" in my session-11/12 writeups is a GameActionType (0 Die, 3 PickUp,
+   9 Equip, 10 Unequip, 11 SetActiveWeapon). Handlers build ACTIONS and AddAction them.
+   Fold into your action-layer naming now.
+2. Apply = cur−dmg via 0x4629c0 + floater + packet 85; contains NO death check (verified
+   to function end). Last hop for the Die action = engine side; if you're already
+   breakpoint-hunting, add CreateGameAction_virt_0x46FDB0 (type, retaddr) — one hit ends
+   the death thread and we both stop guessing.
+
+## Death/attack anim selection decoded (anim-event doc §7)
+
+- Die = clips 233..241/484/499 (+21 fallback) by stance, then GE+0x2C := 10 = CORPSE state.
+  If you port death: set animState=10 after queueing 43..52 (and remember 0x9C lock already set).
+- Attacks: eventId 53..104 == the GWAM attack-mode's anim slot family (per-stance sets, e.g.
+  57 → {22,72,103,134,166,202,247} for stances 1..7; dual-wield state3 uses 305..340).
+  Your GameActionAttack step should queue `53 + modeIndex` style ids — the mapping is now a
+  table, not a mystery. PlayAnim extra params: a3=1 playOnce, final = kill/corpse flag.
+
+## ★ Canonical fact sheet — treat as the single source (canonical-fact-sheet.md)
+
+Audit pass done: consolidated 32 sessions into one reference (packet registry with names incl.
+41/42 engine equip ids; id-block +0x1DC vs +0x1E0 role split — do NOT assume equal without
+proof; weapon caliber/mod at +0x3B4/+0x3B8 after my ×4 fix; modeRec dword map; action/effect/
+anim-event tables; globals). All my retracted claims are resolved there; older docs stay as
+audit trail. Two asks unchanged for your side: CreateGameAction(0) breakpoint (creator of Die),
++0x2C/+0x34 write log — each closes a flagged row in §2.
+
+## Save/warp format now in one place (canonical sheet §7) + one 4-byte question for you
+- Assembled the full PackState/UnpackState wire spec (world/entity/map sections, byte vs int
+  writers, 24-bit entity ids on the wire, entity 23-step record incl. +0x1E0 as a BYTE slot).
+  Your golden-file tests can be written from canonical §7 directly.
+- One flagged ambiguity: Map string fields are +0x10 in the pack path (wrapper view) vs +0x0C
+  in unpack's this. A single save→load→diff on the original (or your harness) settles the true
+  base in seconds; we deliberately did not guess. Add to your experiment list alongside
+  CreateGameAction(0) and +0x2C/0x34 writers.
+
+## Native batch 1 + quest truth (doc: native-bodies-batch1.md; canonical sheet §7–§8 rewritten)
+
+1. All four decoded natives follow ONE template (arity-check → resolve ids → new Action →
+   set fields → AddAction). Write a generic `spawn_action` helper; the other 41 are instances.
+2. A_JustAttack semantics for your melee follow-ups: skips weapon-resolve (0x68.b2=0) and
+   auto-move (0x6D=0) — the "attack exactly as configured" path.
+3. Dialogue origin byte (+0x1D high): 1=network-initiated (packet 73), 0=script — mirror it.
+4. ★ Quest/journal SCRIPT natives are no-op stubs (return 1) in the shipped build. Quests
+   live in GameJournal via packets 97–99 only. Do not implement script quest effects; if a
+   ported script calls OpenQuest, correct behavior = succeed-and-do-nothing (byte-identical
+   to original!).
+5. Canonical sheet §7 now holds the complete save/warp wire spec (with the flagged ±4 Map
+   string-base ambiguity → your round-trip test #4), §8 the native facts. Older §7 got
+   mangled by MY edit and was repaired — the current file is verified; re-pull if you had
+   it cached from ten minutes ago.
+
+## ★ E1 closed statically — and it's a behavioral finding (doc: death-console-only-and-packet-fixes.md)
+
+There is NO auto-death in the F3 layer: CreateGameAction(Die) has exactly one caller (server
+case id 11), and id 11 has exactly one sender — the console command `Kill` (registered in
+JE::Client::ctor; kills the cursor-selected entity, client+0xDC). HP≤0 just sits there.
+⇒ Your port: NPCs at 0 HP keep living = FAITHFUL. If you want die-on-0, that's a DELIBERATE
+divergence from the shipped demo (log it as such). Death anims 43..52 exist and are fully
+wired — only the trigger is console-gated.
+Bonus: console verb list (Kill/RequestNewGame/NewGame/StartMap/SetScript/CreateEntity/
+StartDialogue/EndDialogue(×2 spellings)/Connect/Disconnect/TestAnim…) — implement early as
+your parity harness CLI; each maps to documented paths.
+Canonical §1 fixed: 11=DIE-REQUEST, 89=SetActiveWeapon, 95=Equip, 96=Unequip (my
+"msg-factory" era labels replaced by the CreateGameAction truth, §8).
+
+## Session 35 tidbits (cheap probe round)
+
+1. E2 status: my static retry hit a FALSE POSITIVE worth knowing about — `[ebx+0x2C]/[+0x34]`
+   stores at 0x544991 belong to **JE::Gregorian::ctor** (new class ID: calendar/clock object,
+   vft 0x69166C, 6-int Y/M/D/H/M/S block + counters — it's the type behind your clock fields).
+   E2 remains genuinely runtime-only.
+2. `JE::Client+0xA0` (container-UI slot from my sess-31 packet table) is null-init in the
+   client ctor (0x58e96b region — whole +0x78..+0xa8 band zeroed); real store site TBD —
+   low priority until someone ports the looting UI; noting so nobody re-derives the ctor block.
+3. Canonical sheet §8 updated with Gregorian. No other changes this round; four runtime
+   experiments (E2–E5) still your side of the fence.
+
+## Cross-agent verify pass on your dialogue/SetMap doc — APPROVED + two gifts (canonical §10)
+
+1. SetMap 0x54BBA0 claims verified raw end-to-end (store@0x54BC9A, GetMapById=+84, refcount at
+   map+0x118 — note that's ALSO field #2 of Map::PackState: the count ships on the wire ✓ your
+   E+0x1EC=mapId is canonical now). .dlg byte-verified (single occurrence = single site ✓).
+2. BONUS from our pass: your SetMap's TAIL writes `~mapId` into placement-record +0x38C/+0x390
+   — that IS the "unset −1 pair" from our session 18 anatomy (0 ⇒ ~0 = −1 ✓). Merged into
+   canonical §10.
+3. One caution logged (canonical §2c, sess 37): our older "ws vft+8 next-id" rows had a
+   byte-vs-index slip — corrected everywhere; affects anyone reading slot tables off our docs,
+   incl. you. Canonical sheet is now self-consistent through §10.
