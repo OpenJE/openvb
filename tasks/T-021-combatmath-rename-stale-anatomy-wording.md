@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: implementer-C (UltraBear)
 depends: nothing (validatable without a link step)
 ---
@@ -52,6 +52,41 @@ greps for and believes. Comment-and-rename work, so it needs no green link.
 - Cross-TU verification as in T-012 (grep the removed identifier against real callers), since MSVC
   cannot confirm it while `d3d8.lib` is missing.
 - Host rows compiling these files stay green; `cppcheck-openvb` reports no new findings.
+
+## Evidence (implementer-C, 2026-10-20)
+
+Landed: openje `8a60ed5` (the two granted lines) + parent `a6b3cf4`.
+
+- **Rename** `dtParts56` -> `dtRowB` at all five sites (declaration, ctor zero loop, the two
+  `case 5: case 6:` rows in `CalculateDamage`/`CalculateUnarmedDamage`, and B's suite line).
+- **Logic provably untouched**: `git diff` filtered to non-comment lines shows *only* the
+  identifier rename. Nothing else in either file's executable text changed.
+- **Cross-TU substitute for the missing link step** (MSVC is red on a peer's `d3d8.lib`):
+  `grep -rn dtParts56 src modules/*/src modules/*/tests modules/tracing` -> only the
+  explicitly-historical `Formerly dtParts56` note. No dangling reference.
+- **Host rows green**: CombatMath, PathManager, ActionMoveTo, SpawnMove (all four compile
+  these files and LINK the renamed member against real callers under mingw). Overall
+  `8 pass, 1 fail`; the single fail is GUILoading from the stale installed payload, which
+  compiles **exit 0** when the row is replayed from `devenv/scripts/run-all-tests.nix`.
+- **cppcheck**: no findings on any changed file.
+- **Shipped literal verified against the binary, not just preserved**: the string is present
+  byte-identical at PE file offset `0x24fb48` in the shipped `F3.exe`, so our copy still
+  matches what the original logs. Marked `shipped string verbatim, do not "fix"`.
+- **Acceptance grep as rewritten**: every surviving `body part|anatomy` hit is a comment that
+  *negates or attributes* the phrase ("not body parts", "10c disproved", "the ORIGINAL'S OWN
+  wording", "do not fix") — i.e. explicitly historical, which the row permits. A raw
+  `grep -niE "body part|anatomy"` returning zero would only be achievable by editing the
+  shipped string, which is the corruption the row now forbids.
+
+### Two things a future reader should not re-litigate
+
+1. Sites the original row did not list, fixed anyway because they carried the same falsified
+   claim: the `CombatStats` preamble ("+0x7C8 used for attack **modes** 5/6" — the row is
+   picked by target id, and `AttackModeRecord`'s own NOTE three lines below says so, so the
+   file contradicted itself) and the `kCalledShotMods` table header.
+2. `{5,6}` are named **head-family as a group** only. Which id is HEAD versus EYES stays
+   inferred (penalty 120 favours EYES); ids 0-4/7-8 remain numeric; the code indexes
+   numerically. Naming the pair further than that is not supported by 10c.
 
 ## References
 - 10c close: `discoveries/2025-10-20-session35-helmet-slot-data-closes-10c.md`;

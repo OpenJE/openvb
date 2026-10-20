@@ -158,6 +158,6 @@ row; A keeps editorial merge rights).
 | T-016 | One debug session, three pinned runtime reads (naming / World+0x160 vft / Map Name fallback) | open | unclaimed — Read 1 optional now |
 | T-017 | F3 UI surface: Command* -> GameInterfaces slot / root-Open mapping | in-progress | HappyWolf (research) |
 | T-018 | Data read: shipped helmet record's `GameItem+0xA8` required-slot vector | in-progress | IronStorm (research) |
-| T-021 | Retire the anatomy wording 10c disproved (rename + comments, no link needed) | open | implementer-C (UltraBear) |
+| T-021 | Retire the anatomy wording 10c disproved (rename + comments, no link needed) | done | implementer-C (UltraBear) |
 | T-020 | Verify the reachable reaction-id set {33,34,37,38,40,41}; 39 unreachable | open | NiceWolf (research) |
 | T-019 | Consumed+thrown FatalError on shipped data — **answered: 0/57, never fires** (B11) | done | FastArrow (research) |
