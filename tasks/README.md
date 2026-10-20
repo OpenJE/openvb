@@ -74,3 +74,5 @@ row; A keeps editorial merge rights).
 | T-011 | Combat: turn-queue per-turn dispatch + join-on-attack | open | unassigned |
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | in-progress | implementer-C (UltraBear) |
 | M-001 | **D3D8 slice 1: one visible frame** (device+clear+present; renderer explicitly deferred) | open | unclaimed — B has first claim of need |
+| T-013 | Engine texture registry (`cls_0x55dc80` @byte_70B200) = T-007 tail | open | implementer-B (after M-001 slice 1) |
+| T-014 | Who sets the sub-attack record's +0x19 "marked" byte (volley-batch loose end) | open | FastArrow (research) |
