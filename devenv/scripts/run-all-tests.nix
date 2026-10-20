@@ -13,7 +13,9 @@ in {
 
       # Build/run every host suite in modules/openje/tests/je (seven as of openje 66cd256:
       # eight as of T-005: cls_0x4d8d70 PathManager ResourceSystem StringSystem ActionMoveTo
-      # Scripting SpawnMove GUILoading).
+      # Scripting SpawnMove GUILoading). Engine-side deps the headers never mention live in the
+      # rows below: JE/Action.cpp, JE/SpatialGrid.cpp, JE/Gregorian.cpp, F3/MapEntitySpawn.cpp
+      # (F3::GetActiveMap) and F3/CombatManager.cpp (turn seams from World.cpp).
       # Source lists live HERE (not in the test headers, which are stale/missing for most — see
       # tasks/T-001 Notes and docs/notes/implementer-B.md §T-001). Exes go to .devenv/state/tests/,
       # so this script never
@@ -93,7 +95,7 @@ in {
       # cross-module reference: add the defining .cpp here rather than weakening the test.
       suites=(
         "cls_0x4d8d70|modules/openje/tests/je/cls_0x4d8d70/cls_0x4d8d70.cpp|$JE/cls_0x4d8d70.cpp"
-        "PathManager|modules/openje/tests/je/PathManager/PathManager.cpp|$JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/Resources.cpp $JE/VFX_Parameter.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp $JE/Action.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp"
+        "PathManager|modules/openje/tests/je/PathManager/PathManager.cpp|$JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/Resources.cpp $JE/VFX_Parameter.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp $JE/Action.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp src/F3/CombatManager.cpp"
         "ResourceSystem|modules/openje/tests/je/ResourceSystem/ResourceSystem.cpp|$JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $SRC"
         "StringSystem|modules/openje/tests/je/StringSystem/StringSystem.cpp|$JE/SS/StringSystem.cpp $JE/SS/EngineStringSystem.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Strings.cpp $JE/VFX_Parameter.cpp $JE/World.cpp $JE/Gregorian.cpp $JE/Subsystem.cpp $SRC $JE/Common/Chunk.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/Action.cpp"
         "ActionMoveTo|modules/openje/tests/je/ActionMoveTo/ActionMoveTo.cpp|$JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp"

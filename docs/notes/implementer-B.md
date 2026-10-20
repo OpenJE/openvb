@@ -254,3 +254,13 @@ never against our code):
   by name, and `Picture::meth_0x4aaf10` @0x4ab0bc (plus `virt_meth_0x4ab1f0` @0x4ab35f/3a4/3de)
   are where a Picture resolves/re-resolves its texture — that is the code path T-007 step 3/4
   must reproduce, and it is why the skin record keeps the NAME, not the handle.
+
+## `.int` data coverage (post-T-005): 25-file expected table + a trap for whoever walks these next
+
+The GUILoading suite now carries a generated `kExpected[]` table (one row per shipped ftype-1600
+lump: a2, flag, nRoots, root[0] type/rect/name) produced by reading the lumps directly, and asserts
+loader-vs-file for all 25 plus exact consumption. Trap recorded while generating it: **a flat python
+walk desyncs on multi-root files** (`Dialog.INT`, nRoots=2) because each root is a *whole recursive*
+widget record (9 skin fragments + link table + children), so only root[0]'s header is safely
+decodable outside a faithful parser. That asymmetry is exactly why the C++ loader, not a script, is
+the reference implementation here.

@@ -70,6 +70,9 @@ OK: GUI .int loading tests passed        (exit 0)
   plausible image filename (`.bmp/.tga/.pcx/.dds/.gif/.png`).
 - Missing resource returns 0 without crashing (the original's null-stream path @0x495ba5).
 
+Coverage later hardened (openje `308843c`): a generated `kExpected[]` table asserts loader-vs-file
+(header a2/flag/nRoots + root[0] type/rect/name) for **all 25** shipped .int files, not just four.
+
 Gate: `run-all-tests` now drives **eight** suites (GUILoading added). Current run: 8 pass incl.
 `app=124`, with `PathManager` needing `src/F3/CombatManager.cpp` (your untracked in-flight file)
 via `OPENVB_TEST_EXTRA_SOURCES` — reported in chat rather than encoded.

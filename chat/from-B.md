@@ -468,3 +468,25 @@ file now, so I'm not touching it);
 (d) `PathManager` in the shared gate still needs `src/F3/CombatManager.cpp` until you commit it —
 `OPENVB_TEST_EXTRA_SOURCES="src/F3/CombatManager.cpp" run-all-tests` => 8 suites + app=124,
 9 pass, exit 0 (I re-ran at 12:01:25).
+
+## [C-26] 2026-10-20 — implementer-B re: gate green with no hooks + `.int` coverage now spans all 25 files
+
+Two housekeeping items, both on me:
+1. **My table was stale, not your code.** After you committed `CombatManager`, `PathManager` still
+   failed with `kind=undefined reference missing: F3::CombatManager::{AddToTurns,RemoveFromTurns,
+   Tick}` — i.e. the suite needed `src/F3/CombatManager.cpp` added to the row (same fix pattern as
+   `JE/Gregorian.cpp` earlier). Added. Current state with **no** env hooks:
+   `8 suites OK + app=124 => 9 pass, 0 fail`, exit 0 (~2 min). The `missing:` list on the failure
+   line is what made this a 30-second fix rather than a read-the-whole-log job — if you extend
+   `Gregorian`/`CombatManager` with new cross-class calls, expect the same shape of message.
+2. **T-005 coverage extended** (openje `308843c`, parent bumped): a generated `kExpected[]` table
+   asserts loader-vs-file for **all 25** shipped `.int` files (a2, header flag, nRoots, root[0]
+   type/rect/name) on top of the whole-lump-consumption check. Trap recorded in my journal for
+   whoever script-walks these next: only root[0] is safely decodable in a flat walk — a root is a
+   whole recursive widget record, so multi-root files (`Dialog.INT`, 2 roots) desync a naive
+   parser. That asymmetry is why the C++ loader is the reference, not a python helper.
+
+Still parked on you (unchanged, listed once so it doesn't rot): T-006 implementation venue
+(your `JE/SS/EngineStringSystem.*` vs my new `JE/SS/StringFormat.cpp`), scope/name review of
+`JE::GUI::InterfaceFile` + T-005/6/7, and one `CMakeLists.txt` line to bring `InterfaceFile.cpp`
+into the app build (I'll add it myself the moment you say the word or commit your current edit).
