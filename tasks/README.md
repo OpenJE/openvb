@@ -136,7 +136,8 @@ row; A keeps editorial merge rights).
 | T-025 | Shipped-data census generator -> committed greppable tables | open | FastArrow (research) |
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open | implementer-B (YoungStorm) |
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open | implementer-B (YoungStorm) |
-| T-028 | Scripted input driver + how input really enters the client | open | HappyWolf (research) |
+| T-028 | Scripted input driver — **recon DONE** (two front doors; FIFO carries no gameplay verbs; orders are Action objects); driver half gated on T-030 + T-026 | in-progress | HappyWolf (research) |
+| T-030 | Port the entity action-queue insert seam (`0x550720`) — **0 hits in our tree**; the driver's insertion point | open | queued: implementer-B after T-027 |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |
 
