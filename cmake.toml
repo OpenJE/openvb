@@ -22,15 +22,23 @@ sources = [
     "modules/openje/src/JE/Action.cpp",
     "modules/openje/src/JE/ActionAnim.cpp",
     "modules/openje/src/JE/AnimationCache.cpp",
+    "modules/openje/src/JE/ModelCache.cpp",
+    "modules/openje/src/JE/PathManager.cpp",
     "modules/openje/src/JE/cls_0x4d8d70.cpp",
     "modules/openje/src/JE/cls_0x50db20.cpp",
-    "modules/openje/src/JE/cls_0x585c00.cpp",
     "modules/openje/src/JE/Common/Chunk.cpp",
     "modules/openje/src/JE/MemorySystem.cpp",
     "modules/openje/src/JE/Network.cpp",
     "modules/openje/src/JE/Resources.cpp",
+    "modules/openje/src/JE/ResourceSystem.cpp",
     "modules/openje/src/JE/Scripting.cpp",
     "modules/openje/src/JE/Strings.cpp",
+    "modules/openje/src/JE/VFX_Parameter.cpp",
+    "modules/openje/src/JE/World.cpp",
+    "modules/openje/src/JE/Map.cpp",
+    "modules/openje/src/JE/SS/StringSystem.cpp",
+    "modules/openje/src/JE/SS/EngineStringSystem.cpp",
+    "modules/openje/src/JE/Subsystem.cpp",
 ]
 private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
 msvc.private-compile-options = ["/EHsc", "/wd4234"]
@@ -43,7 +51,7 @@ msvc.private-compile-options = ["/EHsc", "/wd4234"]
 
 [target.F3]
 type = "executable"
-sources = ["src/main.cpp", "src/F3.cpp", "src/F3/GameWorld.cpp", "src/F3/GameAnimationCache.cpp"]
+sources = ["src/main.cpp", "src/F3.cpp", "src/F3/GameWorld.cpp", "src/F3/GameAnimationCache.cpp", "src/F3/GamePathManager.cpp", "src/F3/GameNetwork.cpp"]
 private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
 private-link-libraries = ["openje", "tracing"]
 windows.private-link-libraries = ["user32", "gdi32", "winmm", "shell32"]

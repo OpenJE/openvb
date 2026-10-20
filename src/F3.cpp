@@ -3,12 +3,14 @@
 #include <ios>
 #include <windows.h>
 #include <direct.h>
+#include <io.h>
 #include <shlobj.h>
 #include <cstdio>
 
 #include "JE.hpp"
 #include "F3.hpp"
 #include "JE/cls_0x4d8d70.hpp"
+#include "JE/Subsystem.hpp"
 #include "JE/cls_0x50db20.hpp"
 #include "tracing.hpp"
 #include "JE/MemorySystem.hpp"
@@ -18,24 +20,51 @@
 #include "JE/Network.hpp"
 #include "F3/GameAnimationCache.hpp"
 #include "F3/GameWorld.hpp"
+#include "JE/ModelCache.hpp"
+#include "F3/GameNetwork.hpp"
+#include "JE/HostHooks.hpp"
+#include "JE/SS/EngineStringSystem.hpp"
+#include "JE/VFX_Parameter.hpp"
 
 namespace F3 {
 	// Global variable definitions
 
-	void* g_initFuncTable[] = {
-		reinterpret_cast<void*>(InitializeMemorySystem),
-		reinterpret_cast<void*>(InitializeResources),
-		reinterpret_cast<void*>(InitializeScripting),
-		reinterpret_cast<void*>(InitializeStrings),
-		reinterpret_cast<void*>(InitializeNetwork),
-		reinterpret_cast<void*>(Initialize_cls_0x585c00),
-		reinterpret_cast<void*>(InitializeGameAnimationCache),
-		reinterpret_cast<void*>(InitializeGameWorld),
+	// Mirror of the original .data table at 0x6FF6C8..0x6FF70C (8 interleaved {factory, object}
+	// pairs, stride 8). Factory addresses observed in the original data section: 0x5B3270
+	// (InitializeMemorySystem), 0x45E110, 0x45E1C0, 0x45E330 (InitializeStrings), 0x45E170,
+	// 0x45E270 (InitializeModelCache), 0x45E2D0, 0x45E210 (InitializeGameWorld); the object slots
+	// start zeroed and are filled by F3::Startup (0x5ACD60). See JE/Subsystem.hpp for the vft
+	// contract (vft[1] Initialize after construction, vft[3] Tick per frame, vft[2] Terminate +
+	// vft[0] deleting destructor at shutdown). Slot->initializer mapping for 0x45E110/0x45E170/
+	// 0x45E1C0/0x45E2D0 is inferred (Resources/Scripting/Network/GameAnimationCache) pending
+	// per-factory verification against the original.
+	SubsystemSlot g_subsystemSlots[ 8 ] = {
+		{ InitializeMemorySystem, NULL },
+		{ InitializeResources, NULL },
+		{ InitializeScripting, NULL },
+		{ InitializeStrings, NULL },
+		{ InitializeNetwork, NULL },
+		{ InitializeModelCache, NULL },
+		{ InitializeGameAnimationCache, NULL },
+		{ InitializeGameWorld, NULL },
 	};
 
-	JE::cls_0x4d8d70* g_commandRegistryRoot = NULL;
-	char* g_initTableEnd = NULL;  // Use NULL instead of hardcoded address
-	char* g_commandArrayEnd = NULL;  // Use NULL instead of hardcoded address
+	// 0x70C668 — the command registry. The original builds this during static initialisation
+	// (F3::GLOBAL__I_command_registry @ 0x643f60 -> JE::cls_0x4d8d70::ctor_0x59f500, then _atexit of the
+	// 0x646b90 thunk -> JE::cls_0x4d8d70::meth_0x59f4d0). It is a real object, never heap-allocated and
+	// never NULL, so a namespace-scope instance with the reconstructed constructor/destructor is the
+	// faithful model: MSVC runs the ctor before WinMain and registers the dtor with atexit, exactly like
+	// the hand-rolled _GLOBAL__I_ walker in the original.
+	JE::cls_0x4d8d70 g_commandRegistryRoot;
+
+	// 0x70C2C0/0x70C2CC region (F3::global_vfx_parameter_*) - the engine parameter tree; the
+	// original statically constructs it before WinMain (GLOBAL__I). sys.ini is parsed into it by
+	// JE::Resources::ctor (after ResourceSystem init, matching 0x59c1e9 ordering).
+	JE::VFX_Parameter g_vfxParameterTree;
+
+	// 0x70C2D8 (F3::global_ess_0x70c2d8) - static EngineStringSystem; constructed by the
+	// original GLOBAL__I stub at 0x643560 with _atexit thunk 0x646910.
+	JE::SS::EngineStringSystem g_engineStringSystem;
 
     // Initialize* function implementations
     void* InitializeMemorySystem() {
@@ -70,17 +99,20 @@ namespace F3 {
     	return strings;
     }
 
+    // 0x45E170 - original: new(0x30) + JE::Network::ctor_0x543890, then patches the vftptr to
+    // F3::GameNetwork::vftable_0x663efc. Modeled directly as constructing the derived object.
     void* InitializeNetwork() {
-    	JE::Network* network = new JE::Network();
+    	F3::GameNetwork* network = new F3::GameNetwork();
     	if ( network ) {
     		network->ctor_0x543890();
     	}
     	return network;
     }
 
-    void* Initialize_cls_0x585c00() {
-    	JE::cls_0x585c00* obj = new JE::cls_0x585c00();
-    	return obj;
+    // 0x45e270 - creates the JE::ModelCache singleton (operator new(0x20) + ctor_0x585c00)
+    void* InitializeModelCache() {
+    	JE::ModelCache* model_cache = new JE::ModelCache();
+    	return model_cache;
     }
 
     void* InitializeGameAnimationCache() {
@@ -98,6 +130,103 @@ namespace F3 {
     	}
     	return world;
     }
+
+	// 0x619E42 - CreateDirectoryA wrapper: 0 on success, -1 (with _dosmaperr) on failure.
+	// NOTE: the original resolves to the CRT import thunks area; the reimplementation uses the
+	// Win32 API directly, matching observed behavior (ERROR_SUCCESS -> 0).
+	static int CreateDirectoryWithErrorMapping( const char *path ) {
+		DWORD lastError;
+
+		if ( CreateDirectoryA( path, NULL ) ) {
+			lastError = 0;
+		} else {
+			lastError = GetLastError();
+		}
+		if ( !lastError ) {
+			return 0;
+		}
+		return -1;
+	} // CreateDirectoryWithErrorMapping
+
+	// 0x4C56B0 - "directory entry exists": _findfirst/_findnext over the path pattern, returning 1
+	// when some match carries the directory attribute (0x10), 0 otherwise.
+	static char PathIsDirectoryExists( LPCSTR lpFileName ) {
+		struct _finddata_t entry;
+		long handle;
+
+		handle = _findfirst( lpFileName, &entry );
+		if ( handle == -1L ) {
+			return 0;
+		}
+		while ( ( entry.attrib & _A_SUBDIR ) == 0 ) {
+			if ( _findnext( handle, &entry ) == -1L ) {
+				_findclose( handle );
+				return 0;
+			}
+		}
+		_findclose( handle );
+		return 1;
+	} // PathIsDirectoryExists
+
+	// 0x4C5750 - recursive directory creation ("MakeAllDirectories"): strips a trailing separator,
+	// skips the drive/UNC prefix, then creates every separator-delimited prefix that does not
+	// exist yet; finally ensures the full path. Returns 1 when the full directory exists.
+	static char CreateAllDirectories( const char *a1 ) {
+		char  path[ MAX_PATH + 4 ];
+		char *pPath;
+		size_t length;
+
+		strcpy( path, a1 );
+		length = strlen( path );
+		if ( path[ length ] == '\\' || path[ length ] == '/' ) {
+			path[ length ] = 0;
+		}
+
+		pPath = path;
+		if ( path[0] == '\\' || path[0] == '/' ) {
+			if ( path[1] == '\\' || path[1] == '/' ) {
+				// UNC \\server\share\...: skip two path components.
+				int components = 2;
+				pPath = path + 2;
+				do {
+					while ( *pPath != '\\' ) {
+						if ( *pPath == '/' ) {
+							break;
+						}
+						++pPath;
+					}
+					++pPath;
+					--components;
+				} while ( components );
+			}
+		} else {
+			// Local "C:\...": step past the drive portion.
+			char c = *pPath;
+			while ( c != '/' ) {
+				c = *++pPath;
+				if ( c == '\\' ) {
+					++pPath;
+					break;
+				}
+			}
+		}
+		while ( *pPath == '\\' || *pPath == '/' ) {
+			++pPath;
+		}
+
+		if ( *pPath ) {
+			do {
+				if ( *pPath == '\\' || *pPath == '/' ) {
+					*pPath = 0;
+					if ( !PathIsDirectoryExists( path ) && CreateDirectoryWithErrorMapping( path ) == -1 ) {
+						return 0;
+					}
+					*pPath = '\\';
+				}
+			} while ( *++pPath );
+		}
+		return PathIsDirectoryExists( path ) || CreateDirectoryWithErrorMapping( path ) != -1;
+	} // CreateAllDirectories
 
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath ) {
@@ -125,7 +254,9 @@ namespace F3 {
 			nCharIndexAbsolute = nCharIndexAbsolute + 1;
 		} while ( cCurrentCharAbsolute );
 
-		//sub_61ADFA( pcSaveDirectoryRelative, (char *)0x0, (char *)0x0, szPersonalFolderPath, (char *)0x0 );
+		// 0x56B087: the save folder name is the MODULE FILE NAME (without extension), not the
+		// personal folder again - _splitpath reuses the szPersonalFolderPath buffer as the file part.
+		_splitpath( pcModulePath, NULL, NULL, szPersonalFolderPath, NULL );
 
 		nCharIndexRelative = 0;
 		do {
@@ -136,9 +267,9 @@ namespace F3 {
 
 		pcSaveDirectoryRelative = GetSaveDirectoryRelative();
 		F3::PathConcat( g_szSaveDirectoryAbsolute, pcSaveDirectoryRelative );
-		//cResult = sub_4C56B0( g_szSaveDirectoryAbsolute );
+		cResult = PathIsDirectoryExists( g_szSaveDirectoryAbsolute );
 		if ( !cResult ) {
-			//cResult = sub_4C5750( g_szSaveDirectoryAbsolute );
+			cResult = CreateAllDirectories( g_szSaveDirectoryAbsolute );
 			if ( !cResult ) {
 				JE::FatalError( "Unable to create save folder." );
 			}
@@ -156,29 +287,20 @@ namespace F3 {
 	int SetupLogFile() {
 		tracing::instrument( tracing::LOCATION, "" );
 		char* pcSaveDirectoryAbsolute;
-		int   nFileNameOffset;
-		char  cCurrentChar;
-		char* pcSaveDirectoryRelative;
-		char* pcExtension;
-		char  cExtension;
 		char  szFilePath[ MAX_PATH ];
 
+		// The original inlines a strcpy of the absolute save dir into the stack buffer
+		// (IDA shows the pointer-difference loop `pcSaveDirectoryAbsolute[nFileNameOffset]`).
 		pcSaveDirectoryAbsolute = GetSaveDirectoryAbsolute();
-		nFileNameOffset = (int)( szFilePath - pcSaveDirectoryAbsolute );
-		do {
-			cCurrentChar = *pcSaveDirectoryAbsolute;
-			pcSaveDirectoryAbsolute[ nFileNameOffset ] = *pcSaveDirectoryAbsolute;
-			++pcSaveDirectoryAbsolute;
-		}
-		while ( cCurrentChar );
-		pcSaveDirectoryRelative = GetSaveDirectoryRelative();
+		strcpy( szFilePath, pcSaveDirectoryAbsolute );
+		char* pcSaveDirectoryRelative = GetSaveDirectoryRelative();
 		PathConcat( szFilePath, pcSaveDirectoryRelative );
-		pcExtension = &cExtension;
-		while ( *++pcExtension ) {
-			;
-		}
-		strcpy( pcExtension, ".log" );
-		//return OpenLogFile( FileName );
+		// The original writes the extension at the NUL terminator of szFilePath: IDA shows
+		// cExtensionBuffer at [ebp-0x109] - the byte directly in front of szFilePath[0] - and scans
+		// `while (*++ptr)` from there, which terminates exactly at szFilePath's NUL. Well-defined
+		// equivalent: append at strlen(szFilePath).
+		strcpy( szFilePath + strlen( szFilePath ), ".log" );
+		//return F3::OpenLogFile( szFilePath );   // 0x498000, not reconstructed yet
 		return 0;
 	} // SetupLogFile
 
@@ -220,20 +342,25 @@ namespace F3 {
 	}
 
 	// 0x4C58A0
+	// NOTE on the original's typed decompilation: IDA renders the destination as
+	// &string_a[strlen(string_a)] where string_a is viewed as `const char *`; the concrete instance
+	// is always the writable global g_szSaveDirectoryAbsolute, i.e. the function appends
+	// "\\" + string_b in place onto the first argument's buffer.
 	unsigned int PathConcat( const char *pcPathA, const char *pcPathB ) {
 		tracing::instrument( tracing::LOCATION, "pcPathA=\"%s\", pcPathB=%s", pcPathA, pcPathB );
 
+		char *pcDst = (char *)pcPathA;
 		unsigned int nPathALen;
 		char cLastCharPathA;
 		unsigned int nPathBLen;
 
-		nPathALen = strlen( pcPathA );
-		cLastCharPathA = pcPathA[ nPathALen - 1 ];
+		nPathALen = strlen( pcDst );
+		cLastCharPathA = pcDst[ nPathALen - 1 ];
 		if ( cLastCharPathA != '\\' && cLastCharPathA != '/' ) {
-			strcpy( (char *)&pcPathA[ nPathALen ], "\\" );
+			strcpy( pcDst + nPathALen, "\\" );
 		}
 		nPathBLen = strlen( pcPathB ) + 1;
-		memcpy( (void *)&pcPathB[ strlen( pcPathA ) ], pcPathB, nPathBLen );
+		memcpy( pcDst + strlen( pcDst ), pcPathB, nPathBLen );
 		return nPathBLen;
 	}
 
@@ -314,119 +441,99 @@ namespace F3 {
 	}
 
 	// 0x5ACD60
-	int (*F3::Startup())(void) {
+	// Original walk (0x5ACD60): initialize = 0x6FF6C8; while (initialize < 0x6FF708): if (factory) {
+	// obj = factory(); initialize[1] = obj (0x5ACD7B); call [obj_vft + 4] = vft[1] (0x5ACD82); }
+	void* Startup() {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::LogDebugString( NULL, "Startup()\r\n" );
 
-		void** initialize = g_initFuncTable;
-		void* result = NULL;
+		JE::Subsystem* result = NULL;
 
-		while ( initialize < reinterpret_cast<void**>(g_initTableEnd) ) {
-			if ( *initialize ) {
-				typedef void* (*InitFunc)(void);
-				InitFunc func = reinterpret_cast<InitFunc>(*initialize);
-				result = func();
-
-				initialize[1] = result;
-
-				typedef void (*CleanupFunc)(void*);
-				CleanupFunc cleanup = reinterpret_cast<CleanupFunc>(
-					*(int**)((char*)result + 4)
-				);
-				cleanup(result);
+		for ( int i = 0; i < 8; ++i ) {
+			if ( g_subsystemSlots[i].factory ) {
+				JE::Subsystem* object = reinterpret_cast<JE::Subsystem*>( g_subsystemSlots[i].factory() );
+				g_subsystemSlots[i].object = object;   // 0x5ACD7B: initialize[1] = result
+				result = object;
+				object->Initialize();                  // 0x5ACD82: (*(*v2 + 4))(v2) -> vft[1]
 			}
-
-			initialize += 2;
 		}
 
-		return reinterpret_cast<int (*)(void)>(result);
-	}
+		return result;
+	} // Startup
 
 	// 0x59F5D0
-	void F3::RegisterCommand( const char* ArgList, void (__stdcall *func_ptr)() ) {
+	// Original flow (disasm 0x59f5d0..0x59f6c4):
+	//   0x59f5fc-0x59f60c  build a stack tempString (cls_0x50db20: string sub-object at +4 with
+	//                      capacity=15 @+0x18, size=0 @+0x14, buffer[0]=0 @+0x04)
+	//   0x59f623           cls_0x50db20::meth_0x401bd0(ArgList, strlen(ArgList))  (assign)
+	//   0x59f63a           v2 = cls_0x4d8d70::meth_0x545710 lower_bound over the registry (0x70C668)
+	//   0x59f649           if (v2 == header) skip the duplicate test entirely (header key never read)
+	//   0x59f674           _stricmp(query, nodeKey) >= 0 (lower_bound guarantees nodeKey >= query, so
+	//                      this means equality) -> FatalError("Command %s already registered.")
+	//   0x59f6b5           *cls_0x4d8d70::meth_0x59f540(&clone) = func_ptr  (insert-or-get returns the
+	//                      node's value slot at node+0x28; the clone/insert path is folded into
+	//                      InsertOrGet here)
+	//   0x59f6bd           if (capacity >= 0x10) free(heap buffer)
+	void RegisterCommand( const char* ArgList, void (__stdcall *func_ptr)() ) {
 		tracing::instrument( tracing::LOCATION, "ArgList=%s", ArgList );
 
+		// tempString in SSO state, mirroring 0x59f5fc-0x59f60c (object word, buffer[0], size, capacity).
 		JE::cls_0x50db20 tempString;
-		reinterpret_cast<byte*>(&tempString)[0] = 0;
-		tempString.meth_0x401bd0(ArgList, strlen(ArgList));
+		byte* raw = reinterpret_cast<byte*>( &tempString );
+		raw[0] = 0;
+		raw[4] = 0;
+		*reinterpret_cast<dword*>( raw + 0x14 ) = 0;    // size
+		*reinterpret_cast<dword*>( raw + 0x18 ) = 15;   // capacity (inline)
 
-		int* v2 = reinterpret_cast<int*>(g_commandRegistryRoot->meth_0x545710(
-			reinterpret_cast<int*>(&tempString)
-		));
+		tempString.meth_0x401bd0( ArgList, static_cast<int>( strlen( ArgList ) ) );
 
-		const char* v3;
-		if ( v2[9] < 0x10 ) {
-			v3 = reinterpret_cast<const char*>(v2 + 4);
-		} else {
-			v3 = *reinterpret_cast<const char**>(v2 + 4);
-		}
-
-		const char* v4;
-		int v10 = static_cast<int>(strlen(ArgList));
-		if ( v10 < 0x10 ) {
-			v4 = reinterpret_cast<const char*>(&tempString);
-		} else {
-			v4 = *reinterpret_cast<const char**>(&tempString);
-		}
-
-		if ( _stricmp(v4, v3) == 0 && v2 != reinterpret_cast<int*>(g_commandRegistryRoot->mbr_0x4) ) {
-			JE::FatalError("Command %s already registered.", ArgList);
+		void* node = g_commandRegistryRoot.LowerBound( &tempString );
+		if ( node != reinterpret_cast<void*>( g_commandRegistryRoot.mbr_0x4 ) &&
+		     _stricmp( ArgList, JE::cls_0x4d8d70::NodeKeyText( node ) ) == 0 ) {
+			JE::FatalError( "Command %s already registered.", ArgList );
 			return;
 		}
 
-		int* insertionSlot = g_commandRegistryRoot->meth_0x59f3e0(reinterpret_cast<int*>(&tempString), reinterpret_cast<int*>(&v2));
-		*(void**)insertionSlot = reinterpret_cast<void*>(func_ptr);
+		void** valueSlot = reinterpret_cast<void**>( g_commandRegistryRoot.InsertOrGet( &tempString ) );
+		*valueSlot = reinterpret_cast<void*>( func_ptr );
 
-		if ( v10 >= 0x10 ) {
-			void* heapPtr = *reinterpret_cast<void**>(&tempString);
-			free(heapPtr);
+		if ( *reinterpret_cast<dword*>( raw + 0x18 ) >= 0x10 ) {
+			free( *reinterpret_cast<void**>( raw + 4 ) );   // 0x59f6c4: j__free(String1[0])
 		}
 	}
 
 	// 0x5ACDE0
+	// Original walk (0x5ACDE0): functions = 0x6FF6CC (first object slot); while (functions <
+	// 0x6FF70C): result = (*(**functions + 12))(*functions) -> obj->vft[3](obj); functions += 8.
+	// No null guard in the original - a failed construction faults identically there.
 	void GameStateLoop() {
 		tracing::instrument( tracing::LOCATION, "" );
 
-		char* functions = reinterpret_cast<char*>(g_commandRegistryRoot);
-		do {
-			JE::cls_0x4d8d70* node = *reinterpret_cast<JE::cls_0x4d8d70**>(functions);
-			if ( node ) {
-				typedef void (*CommandFunc)( JE::cls_0x4d8d70* );
-				CommandFunc func = reinterpret_cast<CommandFunc>(
-					*(int**)((char*)(uintptr_t)node + 12)
-				);
-				func( node );
-			}
-			functions += 8;
-		} while ( functions < g_commandArrayEnd );
-	}
+		for ( int i = 0; i < 8; ++i ) {
+			g_subsystemSlots[i].object->Tick();   // vft[3], 0x5ACDEA: call *[eax+0Ch]
+		}
+	} // GameStateLoop
 
-	// 0x5ACDA0
-	void F3::Shutdown() {
+	// Original walk (0x5ACDA0): esi = 0x6FF70C; do { ecx = [-8] (obj); call [obj_vft + 8] (vft[2])
+	// unconditionally at 0x5ACDB8; if (ecx) { push 1; call [obj_vft + 0] -> scalar deleting destructor
+	// at 0x5ACDC6 } ; store slot = 0 (0x5ACDC8); esi -= 8; } while (esi > 0x6FF6CC).
+	void Shutdown() {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::LogDebugString( NULL, "Shutdown()\r\n" );
 
-		// Walk reverse init table from &off_6FF70C down to F3::functions
-		void** terminate = reinterpret_cast<void**>(&g_commandArrayEnd);
-
-		do {
-			terminate -= 2; // Move back one {func, result} pair (8 bytes)
-			void* resultPtr = *terminate; // The result from Startup's init call
-
-			if ( resultPtr ) {
-				// Call cleanup on the result: method at offset +8 of vtable
-				typedef void (*CleanupFunc)(void*, int);
-				CleanupFunc func = reinterpret_cast<CleanupFunc>(
-					*(int**)(static_cast<char*>(resultPtr) + 8)
-				);
-				func(resultPtr, 1);
+		for ( int i = 7; i >= 0; --i ) {
+			JE::Subsystem* object = g_subsystemSlots[i].object;
+			// The original calls vft[2] unguarded (0x5ACDB8); a null object would already have faulted
+			// inside Startup (0x5ACD82), so the guard below is behaviorally unreachable.
+			if ( object ) {
+				object->Terminate();                       // 0x5ACDB8: call [vft + 8]
+				delete object;                             // 0x5ACDC6: vft[0] deleting destructor, flag 1
 			}
-
-			*terminate = NULL; // Clear the result slot
-		} while ( terminate > reinterpret_cast<void**>(&g_commandRegistryRoot) );
-	}
+			g_subsystemSlots[i].object = NULL;              // 0x5ACDC8: slot cleared
+		}
+	} // Shutdown
 
 	/*
 	// 0x497B70
@@ -647,3 +754,15 @@ namespace F3 {
 	} // namespace Display
 
 } // namespace F3
+
+// JE::Host hooks - the original engine code is linked into the same binary and touches the F3
+// globals directly (sub_56AF20 / sub_56AF30); the reimplementation routes through this seam.
+namespace JE {
+	namespace Host {
+		char* GetCurrentWorkingDirectory() { return F3::g_szCurrentWorkingDirectory; }
+		void* GetParameterTree() { return &F3::g_vfxParameterTree; } // 0x70C2C0/0x70C2CC (sub_56AF30/56AF40)
+		void* GetEngineStringSystem() { return &F3::g_engineStringSystem; } // 0x70C2D8
+		int TickMilliseconds() { return (int)timeGetTime(); }               // 0x56AF50
+	} // namespace Host
+} // namespace JE
+

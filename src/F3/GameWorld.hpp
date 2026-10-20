@@ -6,6 +6,9 @@
 #include "F3.hpp"
 #include "JE/World.hpp"
 
+namespace JE { class Encyclopedia; class StoreManager; class PathManager; class VFX_Parameter; }
+namespace F3 { struct GameParty; struct GameJournal; }
+
 namespace F3 {
 	struct GameWorld : public JE::World {
 		//: Members
@@ -14,7 +17,26 @@ namespace F3 {
 			dword mbr_0x4;
 			dword mbr_0x8;
 			dword mbr_0xc;
+		//: Members (subsystem pointers created by the Initialize cascade; original offsets shown)
+		public:
+			JE::PathManager*      m_pathManager;    // +0xF0  vft[7] CreatePathManager_0x46f9e0
+			F3::GameParty*        m_party;          // +0xF4  vft[8] CreateParty_0x46f820
+			F3::GameJournal*      m_journal;        // +0xF8  vft[9] CreateJournal_0x46f880
+			JE::Encyclopedia*     m_encyclopedia;   // +0xFC  vft[10] CreateGameEncyclopedia (vft -> GameEncyclopedia 0x668430)
+			JE::StoreManager*     m_storeManager;   // +0x100 vft[11] CreateGameStoreManager  (vft -> GameStoreManager 0x668448)
+			void*                 m_mapRequestMgr;  // +0x104 vft[13] JE::World::CreateMapRequestMgr_0x545430
+			                                        //        (cls_0x5a42b0, 0x14; unmodeled - stored NULL)
+			// vft[12] 0x46F980 CreateGameWorldMap (JE::WorldMap 0x80 + vft -> GameWorldMap
+			// 0x668480) is NOT part of the Initialize cascade; caller/location to be found.
 		//: Methods
+		public:
+			// vft[1] = JE::World::Initialize_0x546690 (generic subsystem Initialize slot).
+			virtual undefined4 Initialize();
+			// The game config trees: globals.ini + locals.ini parse into the world-owned
+			// parameter tree at world+0x90 (separate from the engine 0x70C2C0 tree).
+		private:
+			void* m_worldParamsPad;  // placeholder for the +0x90 VFX_Parameter (layout pending)
+		public:
 			void dtor_0x46f190();
 			undefined4 virt_meth_0x46f820();
 			undefined4 virt_meth_0x46f880();

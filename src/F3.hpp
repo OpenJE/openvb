@@ -7,8 +7,8 @@
 #include <ctime>
 #include <fstream>
 
-// Forward declaration (full include in F3.cpp)
-namespace JE { class cls_0x4d8d70; }
+// Forward declarations (full includes in F3.cpp)
+namespace JE { class cls_0x4d8d70; class Subsystem; }
 
 namespace F3 {
 	// 0x70BFA0 (F3::global_hInstance_0x70bfa0)
@@ -46,15 +46,27 @@ namespace F3 {
 	// 0x70FD41 (CHAR_0070fd41)
 	static char CHAR_0070fd41[ 2 ];
 
-	// ptr_F3::InitializeMemorySystem table — array of {func_ptr, result} pairs ending at sentinel 0x619089
-	extern void* g_initFuncTable[];
+	// Initialization / per-frame subsystem slot table. Mirrors the original .data array at
+	// 0x6FF6C8..0x6FF70C: 8 interleaved {factory, object} pairs (stride 8). F3::Startup (0x5ACD60)
+	// runs each factory, stores the constructed object into the pair's second slot, and calls
+	// vft[1] (JE::Subsystem::Initialize); F3::GameStateLoop (0x5ACDE0) calls vft[3] (Tick) on every
+	// object slot each frame; F3::Shutdown (0x5ACDA0) walks the object slots in reverse calling
+	// vft[2] (Terminate) then the vft[0] deleting destructor.
+	struct SubsystemSlot {
+		void* (*factory)();
+		JE::Subsystem* object;
+	};
+	extern SubsystemSlot g_subsystemSlots[ 8 ];
 
-// F3::functions BST root for command registry — starts at 0x6FF6CC
-	extern JE::cls_0x4d8d70* g_commandRegistryRoot;
+	// 0x70C668 (F3::global_cls_0x4d8d70_0x70c668) — the command registry, a statically constructed
+	// JE::cls_0x4d8d70 object (see JE/cls_0x4d8d70.hpp). Constructed before WinMain by the _GLOBAL__I_
+	// stub at 0x643f60 and destroyed by its _atexit thunk at 0x646b90, so it is never NULL. The +0x04
+	// member is the tree header node, which is also the end sentinel that RegisterCommand compares
+	// against (byte_70C66C in the original).
+	// NOTE: this is NOT related to 0x6FF6CC. 0x6FF6CC is only the 'result' slot of pair [0] of the F3
+	// init table at 0x6FF6C8; the old comment here calling it the command registry BST root was wrong.
+	extern JE::cls_0x4d8d70 g_commandRegistryRoot;
 
-// End markers (sentinel values from binary data section)
-	extern char* g_initTableEnd;
-	extern char* g_commandArrayEnd;
 
 	// Initialization functions (from original binary)
 	void* InitializeMemorySystem();
@@ -62,7 +74,8 @@ namespace F3 {
 	void* InitializeScripting();
 	void* InitializeStrings();
 	void* InitializeNetwork();
-	void* Initialize_cls_0x585c00();
+	// 0x45e270 (JE::ModelCache singleton)
+	void* InitializeModelCache();
 	void* InitializeGameAnimationCache();
 	void* InitializeGameWorld();
 
@@ -87,7 +100,7 @@ namespace F3 {
 	// 0x56AFF0
 	void Quit();
 	// 0x5ACD60
-	int (*Startup())(void);
+	void* Startup();
 	// 0x59F5D0
 	void RegisterCommand(const char* ArgList, void (__stdcall *func_ptr)());
 	// 0x5ACDE0

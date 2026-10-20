@@ -3,19 +3,32 @@
 #ifndef F3_GAMENETWORK_HPP_
 #define F3_GAMENETWORK_HPP_
 
-#include "F3.hpp"
 #include "JE/Network.hpp"
 
 namespace F3 {
-	struct GameNetwork : public JE::Network {
-		//: Members
-			word mbr_0x1c;
-			word mbr_0x8;
+	// Game-side network object. The original factory F3::InitializeNetwork (0x45E170) allocates
+	// sizeof 0x30, runs JE::Network::ctor_0x543890, then patches the vftptr to
+	// F3::GameNetwork::vftable_0x663efc - the C++ equivalent is this derived class (adds no data).
+	//
+	// vftable 0x663efc (8 slots):
+	//   [0] 0x45E0B0 scalar deleting dtor (game) - compiler-generated from the virtual dtor;
+	//       completing dtor is 0x45E0D0
+	//   [1] 0x543A40 JE::Network::Initialize (inherited)
+	//   [2] 0x543730 JE::Network::Terminate  (inherited)
+	//   [3] 0x543770 JE::Network::Tick       (inherited - the real netcode pump)
+	//   [4] 0x45E040 GameNetwork override (engine slot 4; body not reconstructed)
+	//   [5] 0x45DFD0 GameNetwork override (engine slot 5; body not reconstructed)
+	//   [6] 0x543AC0 inherited
+	//   [7] 0x5441F0 inherited
+	// GameNetwork adds NO data (factory allocates the same 0x30); the database's word fields at
+	// +0x08/+0x1C are re-typed aliases of JE::Network's port words (documented in Network.hpp).
+	// NOTE: overrides MUST reuse the base virtual names/signatures (C++ keeps the slot), hence
+	// virt_meth_0x5437b0/0x543820 here map to the game bodies 0x45E040/0x45DFD0.
+	class GameNetwork : public JE::Network {
 		//: Methods
-			undefined4 virt_meth_0x45dfd0();
-			undefined4 virt_meth_0x45e040();
-			undefined4 virt_meth_0x45e0b0();
-			void dtor_0x45e0d0();
+		public:
+			virtual undefined4 virt_meth_0x5437b0();  // vft[4] = 0x45E040
+			virtual undefined4 virt_meth_0x543820();  // vft[5] = 0x45DFD0
 	}; // GameNetwork
 } // namespace F3
 
