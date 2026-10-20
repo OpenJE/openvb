@@ -33,14 +33,14 @@ ONE allocation containing the World prefix; `world` member at GameWorld+0.
 | off | init | note |
 |-----|------|------|
 | +0x00..+0x14 | vft/vbptr header | §1 |
-| +0x14 | 0 | |
+| +0x14 | 0 | clock Year (InitClock) |
 | +0x18 | **1** | |
 | +0x1C | **1** | |
 | +0x20 | 0 | |
 | +0x24, +0x28 | 0, 0 | pair — timer pair? |
 | +0x2C | RbTree head #1 (sentinel; head→+0x30, count→+0x34) | first of 4 containers |
 | +0x38, +0x3C | 0, 0 | |
-| **+0x40** | **6** | |
+| **+0x40** | **6** | `Seconds Per Round` (InitClock 0x546b50, session-22 §3.6) |
 | +0x44 | 0 | |
 | +0x58..+0x60 | 0 ×3 | |
 | **+0x64** | **30 (0x1E)** | strong tick-rate candidate |
