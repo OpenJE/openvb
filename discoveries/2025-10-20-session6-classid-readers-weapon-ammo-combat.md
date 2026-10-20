@@ -185,16 +185,70 @@ derived formulas above are the shipped ones (note: HP from AP is `6000/AP`, not 
 1. **Entity+0x3C0 stack count** (§4) — please check your inventory port: if you model stack count
    anywhere else, that's a deviation; the original keeps it on the Entity vb tail (all entity
    classes have it, not just items).
-2. Still open, nobody's turf: **GameEntity+0x30/+0x34 = 7,7** — no readers, no GENT source (§3).
-   We'll grep for immediate `7` comparisons near entity creation next; if your per-entity GENT
-   path finds these values changing, ping us.
+2. ~~Still open, nobody's turf: **GameEntity+0x30/+0x34 = 7,7**~~ → CLOSED by the parallel
+   discovery line: `2025-10-20-gameentity-vft-decode-activation-and-inventory.md` §2 decodes
+   +0x2C=AnimationState/+0x30=WeaponStance semantics; see that doc + README index.
 3. GameEntity+0x18 = GENT dword[4] (unnamed semantics). Candidates we'll chase: something compared
    with 4 (default) in net/GUI code. *(inferred)*
-4. Effect-node dispatch (cls_0x55a280 concrete recipients sub_468310/sub_55ADC0) — **still open,
-   next session's main item.**
+4. ~~Effect-node dispatch~~ → **CLOSED**, see
+   [2025-10-20-session6b-effect-node-dispatch.md](2025-10-20-session6b-effect-node-dispatch.md)
+   and the parallel `2025-10-20-gameworld-interfaces-effect-pipeline-closed.md` (agree on
+   0x66856C; the trampoline target vft+20 is a shipped no-op stub).
 5. Armor equipping (`GameArmor` own block at 0x3B4..0x3CF) — the damage formula shows armor is
    consulted per body part via `0x7B0/0x7C8` arrays on the **creature**, so armor→creature
-   application is somewhere in `GameActionEquip` — unchased.
-6. We still haven't found where the weapon's `+0x3C8/+0x3EC` reload durations are initialized —
-   GENT (extra stats) is dead (§3, stub reader), so they're likely written by an
-   `GameWeapon::Load(GITM/GIWP)` chunk parser we haven't reached. Next session together with (4).
+   application is somewhere in `GameActionEquip` — unchased. NOTE: the parallel GCRE doc names
+   +0x7B0/+0x7C8 as current/base damage-resistance mirror sets (6 body entries each), matching
+   my §5 use of them as per-part DR arrays.
+6. ~~where the weapon's +0x3C8/+0x3EC reload durations are initialized~~ → **CLOSED (addendum
+   below)**: reload duration = anim-event 120 duration, not a weapon field.
+
+## 9. Addendum — GIWP wire layout (weapon own-block init) + §4 corrections
+
+`GameWeapon::ReadFromFile_virt_0x415660` dispatches fourcc `GIWP` (1347897671) to
+`GameWeapon::ReadData_0x415190`, whose unconditional block `sub_412CD0` reads **15 fields**
+(2003-style, weapon base = GameWeapon−0x430, i.e. Entity-vb; all offsets below are
+weapon-base-relative bytes), then a version-gated pair, then a GWAM sub-chunk list:
+
+| wire # | offset | role (per §4 usage) |
+|---|---|---|
+| f1 | +0x3B0 | (unused pad) |
+| f2 | +0x3B4 | primary caliber |
+| f3 | +0x3B8 | primary magazine capacity *(replaces my 0x3BC guess)* |
+| f4 | +0x3BC | primary ammo modifier |
+| f5 | +0x3C0 | (primary damage bonus? — read at 0x4133d6-adj sites, unconfirmed) |
+| f6 | +0x3C4..+0x3DF | **std::string** (StreamReadString_0x49c8d0) |
+| f7 | +0x3E8 | secondary caliber |
+| f8 | +0x3EC | secondary modifier |
+| f9 | +0x3F0 | secondary magazine capacity |
+| f10 | +0x3F4 | secondary damage value |
+| f11 | +0x3F8 | (ammo-related flag?) |
+| f12 | +0x3FC | attack/anim type — `sub_438500` consumer + `[eax+244h]` @0x424c53 |
+| f13 | +0x400 | **GWAM attack-mode record count** |
+| f14,f15 | +0x404, +0x408 | trailer |
+| gate `v4≥1` | +0x3B8, +0x3C4 re-overwrite | ReadData_0x415190 @0x4151f8 (`v4=*(chunkHdr+12)`) |
+
+Role anchors (confidence): f2/f4 = primary (caliber, modifier) and f7/f8/f9/f10 = secondary
+(caliber, modifier, capacity, damage) are **evidence-locked** by `ReloadPrimaryAmmo_413A90`
+(caliber cmp @0x413ada, capacity @0x413aae `*(this+252)`, cur @0x413b10 `*(this+251)`) and
+`OnServerUpdate_0x407270` (`*(this+240/241)` `*(this+253)` @0x41382c+ = secondary trio). The
+f5/f11/f14/f15 rows are positional only *(inferred)*.
+
+Post-read in the dispatcher @0x41556b-0x4155cb:
+- `[this+0x3F0] = registry lookup result` — **weapon netId field is initialized at load**, and
+- when the (caliber,modifier) pair is nonzero, the ammo-prototype cache is filled:
+  `[Weapon+0x3C4] = sub_408110(primaryCaliber, primaryModifier)`, `[+0x3E0] = (secondary pair)`.
+  → these are the "cached loaded-ammo instance ptr" slots I noted in §4; they are NOT serialized.
+- `sub_4148A0(weapon, chunkHdr, res)` per GWAM record (count at +0x400) — field map already in
+  `2025-10-20-gcre-versions-gwam-queueanimevent-table.md` (creature and weapon share the
+  attack-mode record machinery; if the +0x400 collision with the Creature GWAM count bothers
+  anyone, re-verify the `this` rebases there).
+
+**Reload duration (my §8.6):** `GameActionReload::meth_0x407250` = 
+`GameEntity::QueueAnimEvent_4673d0(creature, animId=120, 0.0)` → returns the *scheduled
+reload animation's duration* (fallback 1). So there are no weapon duration fields to initialize —
+the cooldown is the anim-event 120 duration from the GWAM/clip tables (cross-ref
+`2025-10-20-anim-event-scheduling-pipeline.md`). §4 rows +0x3C8/+0x3EC/+0x3F4 are therefore
+re-tagged: +0x3C8 = cached-prototype-2 (not a field), +0x3EC/+0x3F4 = secondary capacity/damage
+per the GIWP table above. The `OnServerUpdate` reads at weapon dword idx 242/243 (bytes +0x3C8/
++0x3CC, "reload-delay primary/secondary") are **outside** the GIWP table — they read live state
+(the cache/space fields above), not serialized durations; treat those two §4 rows as superseded.

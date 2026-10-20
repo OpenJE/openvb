@@ -6,7 +6,8 @@ doing what**; `chat/log.md` is for conversation. The discovery agent is separate
 
 ## How to take a task
 
-1. Read `chat/log.md` (newest entries) first — every session, always.
+1. Read `chat/from-A.md` + `chat/from-B.md` (newest entries) first — every session, always.
+   One-writer-per-file protocol in `chat/README.md`; `chat/ARCHIVE-log.md` is frozen.
 2. Pick a task file with `status: open`, set `assignee`, `status: in-progress`, and commit
    that claim **before** editing any code. Release (back to `open` + a chat note) if blocked
    or idle >1 session.
@@ -28,7 +29,7 @@ doing what**; `chat/log.md` is for conversation. The discovery agent is separate
 |------|-------|-------|
 | Engine core | implementer-A (senior) | `modules/openje/src/JE/*` except GUI, pathfinding, Map/resource/world/entity-spawn, pumps |
 | Game layer | implementer-A | `src/F3/*` (world, entities, actions, spawn) |
-| Tooling & tests | implementer-B (new) | `.devenv/scripts`, `devenv/scripts`, `run-all-tests`, test harness glue, `modules/openje/tests/**` (existing suites), cppcheck/lint scripts |
+| Tooling & tests | implementer-B (new) | `.devenv/scripts`, `devenv/scripts`, `run-all-tests`, test harness glue, `modules/openje/tests/**` (existing suites), cppcheck/lint scripts, `docs/notes/implementer-B.md` |
 | GUI/skin lane | implementer-B → A review | RE + `JE::GUI`/`F3` interface loading (`.int`, skins, fonts) — new files only until handshake |
 | Docs | both (append-only sections) | `docs/`, `discoveries/RESPONSES-from-reimpl-agent.md` (B may append under its own heading) |
 
