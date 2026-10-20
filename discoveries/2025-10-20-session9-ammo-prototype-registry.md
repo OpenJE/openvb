@@ -39,7 +39,8 @@ Decoded body (0x470220..0x4702d6):
 weapon `Reload/Unload` site uses it as "ammo template for (caliber,modifier)"
 (session 6 §4). With §1, the storage is now identified — the reload chain's
 `sub_408110(param_1[236], param_1[237])` returns the prototype whose stack-count at
-Entity+0x3C0 is the per-round data used for the transfer cap.
+Entity+0x3BC (raw disp 0x3C0 with the Entity−4 base bias) is the per-round data used for the
+transfer cap.
 
 ## 3. Cross-references / donation
 

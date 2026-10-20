@@ -73,6 +73,12 @@ gated calls land on `net::client::virt_meth_0x409bb0`, a stub that `return 1` an
 
 ## 4. Weapon/ammo/reload field map (NEW — unlocks the reimpl Reload work)
 
+> **⚠ SUPERSEDED-IN-PART (2025-10-20 later round):** the byte offsets for the weapon magazine
+> trio + caches in this §4 table were derived from inconsistent decompiler `this+N` units and
+> are corrected in `2025-10-20-session17-tohit-subsystem.md` §10 (raw-verified: current
+> +0x3EC/+0x3F4, capacity +0x3F0/+0x3F8, caches **+0x424/+0x428**, ammo to-hit bonus +0x3C4).
+> Roles/flow below remain valid; trust session17 §10 for offsets.
+
 All offsets below are **byte offsets in the most-derived class** (`*(this + N)` in the decompile
 was dword-indexed; converted to bytes). Verified via `OnServerUpdate_0x407270`,
 `UnloadPrimaryAmmo_0x4135c0`, `sub_413810` (=UnloadSecondary), `ReloadPrimaryAmmo_413A90`,
@@ -100,9 +106,9 @@ was dword-indexed; converted to bytes). Verified via `OnServerUpdate_0x407270`,
 |---|---|---|
 | +0x3B0 | caliber | `param_1[236] != weapon 0x3B4 → "Wrong caliber of ammo passed for reload."` @0x413ae1 |
 | +0x3B4 | modifier/type | matched against weapon +0x3B8 |
-| Entity-vb +0x3C0 (Entity+0x3C0) | **stack count** (dword) | reload takes `min(space, count)` @0x413b7e; on empty removes the stack (`meth_0x551b60` @0x413c44 = destruction path); `GameServer::meth_0x552d40(netId(Entity+0x1E0), count)` @0x413c75; **equip UI sorts stacks by it** @0x43e92e/0x43e945; ammo→net pack reads `[3B4h]` @0x408240 |
+| Entity-vb **Entity+0x3BC** (raw `[entity−4 + 0x3C0]`, same −4 bias as classId 0x160→0x15C) | **stack count** (dword) | reload takes `min(space, count)` @0x413b7e; on empty removes the stack (`meth_0x551b60` @0x413c44 = destruction path); `GameServer::meth_0x552d40(netId(Entity+0x1E0), count)` @0x413c75; **equip UI sorts stacks by it** @0x43e92e/0x43e945; ammo→net pack reads `[3B4h]` @0x408240 |
 
-So: ammo instances and items share a common Entity-vb tail field **Entity+0x3C0 = quantity** —
+So: ammo instances and items share a common Entity-vb tail field **Entity+0x3BC = quantity** (raw disp 0x3C0 on the Entity−4 base) —
 strong new candidate for reimpl's "stack count" storage (Mover excerpt +0x31C if their base is
 Entity−4, i.e. the interface minus vftptr).
 
@@ -116,7 +122,7 @@ Entity−4, i.e. the interface minus vftptr).
    (caliber,modifier) == weapon's primary (or secondary when action flag `BYTE2(mbr_0x28)` set).
 4. when the queued duration elapses: `GameWeapon::ReloadPrimaryAmmo_413a90` /
    `ReloadSecondaryAmmo_413ca0`; moves `min(magazine_free, stack_count)` rounds, updates the
-   weapon's +0x3C0 and the stack's Entity+0x3C0, server-syncs by netId.
+   weapon's +0x3EC and the stack's Entity+0x3BC, server-syncs by netId.
 5. debug HUD string `"Calling weapon's Reload function now."` emitted through the global
    interface logger `cls_0x558740::meth_0x5583e0`.
 
@@ -132,12 +138,20 @@ unloading a loaded weapon with no matching stack in inventory).
 - **Weapon damage** `GameWeapon::CalculateDamage_413310(attackDesc*, …, target, calledTarget, part)`:
   `dmg = rand(count@desc+0x38, sides@desc+0x3C) + skillBonus@desc+0x24`;
   if `attack flag desc+0x10` (uses-ammo): ammo (from prototype cache +0x3C4) adds
-  `bonus1 = ammo[Entity+0x3C0]` to the dice sides and `pierce = ammo+0x3BC`;
-  body-part resistance `DR = target[part*4 + (0x7B0 | 0x7C8)]` (0x7C8 array when calledTarget is
-  5/6 — *(inferred: legs/torso vs arms alternate armor array)*);
+  ammo bonuses (raw @0x4133d0-0x4133e0): `count adder = ammo+0x3B8`,
+  `sides adder = ammo+0x3BC`, `DT-pierce = ammo+0x3C0`;
+  body-part DR `= target[4·part + (0x7B0 | 0x7C8)]` — **row selector is the CALLED-SHOT PART**
+  (param_5): parts 5/6 → +0x7C8, parts 0-4/7 → +0x7B0, `default:` logs
+  "GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered." and **still computes**
+  (falls back to the 0x7B0 row, does NOT return 0) — raw 0x413414-0x413442 (implementer-B
+  C-33 verified; my earlier style-reading/*(inferred)* labels superseded);
   `dmg -= DR/2 + rand(0, DR/2)`, floor 0. `calledTarget == 9` ("no body part") → damage 0.
 - **Unarmed** `GameCreature::CalculateUnarmedDamage_409f90`: same skeleton; `+MELEE_DAMAGE`
-  derived when `part==4` *(inferred: arm/hand)*; vs `GameUsableObject` targets DR =
+  derived when descriptor slot `[4] == 4` — **[4] = MODE DAMAGE TYPE, not part (coordinator
+  ruling 2026-10-20; my earlier arm/hand inference VOID)**; **the zero-on-9 guard here is CONDITIONAL**:
+  `if (param_4 == 9 && !RTTI(usable))` → only creatures with unset part return 0;
+  GameUsableObject targets fall through to usable-DR math (implementer-A C-27 raw note @0x409fec;
+  the WEAPON-path guard at 0x41333d stays unconditional — the two sites differ); vs `GameUsableObject` targets DR =
   `usable[part*4 + 0xA4]` (the 6-zeroed-dword ctor block — doors/containers take full damage by
   default).
 - `GameActionAttack::CalculateAndQueueDamage_0x404060` builds record
@@ -182,7 +196,7 @@ derived formulas above are the shipped ones (note: HP from AP is `6000/AP`, not 
 
 ## 8. Queue for next session / questions to the reimpl agent
 
-1. **Entity+0x3C0 stack count** (§4) — please check your inventory port: if you model stack count
+1. **Entity+0x3BC stack count** (§4; raw disp 0x3C0 with the Entity−4 base bias) — please check your inventory port: if you model stack count
    anywhere else, that's a deviation; the original keeps it on the Entity vb tail (all entity
    classes have it, not just items).
 2. ~~Still open, nobody's turf: **GameEntity+0x30/+0x34 = 7,7**~~ → CLOSED by the parallel
@@ -230,8 +244,16 @@ weapon-base-relative bytes), then a version-gated pair, then a GWAM sub-chunk li
 Role anchors (confidence): f2/f4 = primary (caliber, modifier) and f7/f8/f9/f10 = secondary
 (caliber, modifier, capacity, damage) are **evidence-locked** by `ReloadPrimaryAmmo_413A90`
 (caliber cmp @0x413ada, capacity @0x413aae `*(this+252)`, cur @0x413b10 `*(this+251)`) and
-`OnServerUpdate_0x407270` (`*(this+240/241)` `*(this+253)` @0x41382c+ = secondary trio). The
-f5/f11/f14/f15 rows are positional only *(inferred)*.
+`OnServerUpdate_0x407270` (`*(this+240/241)` `*(this+253)` @0x41382c+ = secondary trio).
+The f5/f11/f14/f15 rows are positional only *(inferred)*.
+
+> **⚠ rebase caveat added later:** session17 §10 raw reads put primary current/capacity at
+> **+0x3EC/+0x3F0** and the caches at **+0x424/+0x428** — i.e. the absolute layout contradicts
+> treating this reader's `this` as the weapon base. The absolute-offset column above therefore
+> needs re-derivation (solve the reader's base delta from one anchor) before use. The
+> field ROLES and order are unchanged. **UPDATE (session18): rebase solved — reader base ==
+> weapon base; final table in `2025-10-20-session18-weapon-layout-final-giwp.md` (fixes the
+> f3/f4/f5/f13 rows in §9 above: cap=+0x3F0, mod=+0x3B8, secCal=+0x3C0, GWAM count=+0x404).**
 
 Post-read in the dispatcher @0x41556b-0x4155cb:
 - `[this+0x3F0] = registry lookup result` — **weapon netId field is initialized at load**, and

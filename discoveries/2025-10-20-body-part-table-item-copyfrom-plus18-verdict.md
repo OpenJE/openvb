@@ -35,8 +35,16 @@ entries) are DIFFERENT capacities — so the DR arrays are NOT one-per-part as l
 they likely group parts (e.g. torso/limbs/head) or index an armor-slot class. The exact
 mapping is unproven; what IS solid is the part-name ORDER for the registry: Chest=0, Feet=1,
 Hands=2, Head=3, Legs=4, UpperArms=5, Waist=6, ForeArms=7, Shins=8, file-extras 9..11.
-Pin that enum order in the reimpl; treat the 6-slot DR arrays as a separate index space until
-a consumer proves the grouping.
+Pin that enum order in the reimpl; ~~treat the 6-slot DR arrays as a separate index space until
+a consumer proves the grouping~~ **RESOLVED (T-010c arc; 10c CLOSED)**: the DR indexing keys
+on EQUIP SLOT, not anatomy — FastArrow's aggregation reads the equip node's class byte with a
+6-dword array at `GameInventory+0x14..+0x2C`, and IronStorm's shipped-data read confirmed
+`GITM.eqslot = 1` for every head-worn piece vs `0` for suits (eqslot IS the slot: scalar, not
+vector). The +0x7B0/+0x7C8 creature-side sets then live in that same slot-index space (not
+separately asserted here). Proven: row B = head-family, so {5,6} are the two head-family ids
+of six equip slots; still inferred: which of 5/6 is HEAD vs EYES, the rest of the id order —
+code stays numeric, comments may name the head-family pair with the pairing marked inferred.
+This closes the caveat raised in this section; see the B8→B9 chain for the derivation.
 
 ## 2. GameItem CopyFrom @0x411330 (xref of GE CopyFrom body) — the 26-string block confirmed
 

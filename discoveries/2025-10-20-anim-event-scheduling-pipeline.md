@@ -120,3 +120,21 @@ each frame: vft+0x48 step walks dword_6F3960 queue, gate=cls_0_467780::meth per 
   3. `sub_54EB40` push semantics (Entity+0x1A8 queue — per-entity pending-anim list;
      contrast vs global dword_6F3960 next-table: one is per-entity records, other global
      scheduler links).
+
+## 7. HANDLER BODIES DECODED (session-31 addendum, same folder rule: cite by filename)
+
+`sub_464940` (events 43..52 — DEATH) and `sub_463c80` (53..104 — ATTACK) are one pattern:
+`PlayAnim = sub_5505F0(entity, clip, 0, 1, 0, 0.0, killFlag)` keyed by (animState GE+0x2C,
+weaponStance GE+0x30, eventId):
+- 43..52: state2 → clips 233..241 (per eventId 44..52; default clip 21), **then
+  GE+0x2C := 10 (corpse state)**; state7 → 484; state8 → 499; state10 → no-op; other states
+  → set 2 + recurse (so any entity dies into stance-2 corpse).
+- 53..104: attack clips per stance — 53/54/55 → {7|229, 8|230, 9|231} (stance7 alternate),
+  56 → {11,97,160}, 57 → {22,72,103,134,166,202,247} (full stance set!), 58 → {33,112,179,211},
+  59 → {43,116,183,215}, 60 → {50,84,146}, 61/62 → 52..(stance set), ... up to 104 →
+  285 — **~40 attack clip slots** = weapon-combo attack animations; state3 branch (dual?)
+  → 305..340 set. Clip numbers double-check Query/Queue tables from sessions 8/23.
+- The a3=1 param (previously "flags") now reads as **playOnce**; last param = corpse/die flag.
+⇒ Attack animation selection = (attack mode id from GWAM record) → 53..104 → clip; death =
+43..52 → clip + state→10. Reimpl: GameActionAttack step must map its modeRec to 53..104 ids
+(the 17/18/19-42 aliases from §1 remain stance-generic attacks).

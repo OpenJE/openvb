@@ -1,6 +1,9 @@
 # Session 7 — effect pipeline CLOSED end-to-end + GameEffectDamage::Apply full body
 
 Target: ORIGINAL_REFERENCE (`ida_original_f3`). Read-only; no IDB/source edits.
+> ⚠ FRAMING UPDATE (session 25): the mode flag `[0x70BD90]+4 bit0` IS SET during demo
+> play (connect handshake, 0x58a6d6) — the server-gated paths described here as "inert /
+> client-skip" are LIVE in the shipped single-player (loopback host). Mechanism details stand.
 Extends `2025-10-20-session6b-effect-node-dispatch.md` and the parallel
 `2025-10-20-gameeffect-damage-anatomy.md` (fills their two open items: pump caller + Apply body
 0x45c420+). Also settles the +0x20/+0x24 health question with a decisive new consumer.

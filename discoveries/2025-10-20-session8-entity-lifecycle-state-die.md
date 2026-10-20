@@ -1,6 +1,9 @@
 # Session 8 — Entity lifecycle state machine + GameActionDie (death flow closed)
 
 Target: ORIGINAL_REFERENCE (`ida_original_f3`). Read-only; no IDB/source edits.
+> ⚠ FRAMING UPDATE (session 25): the mode flag `[0x70BD90]+4 bit0` IS SET during demo
+> play (connect handshake, 0x58a6d6) — the server-gated paths described here as "inert /
+> client-skip" are LIVE in the shipped single-player (loopback host). Mechanism details stand.
 Closes session 7 §6 item "Entity+0x1E0 == 7 state writer"; everything below evidence-addressed.
 
 ## 1. `Entity::ChangeState` @0x5507f0 — the state machine at Entity+0x1E0

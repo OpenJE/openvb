@@ -39,9 +39,16 @@ and distinguishable** (for T-013): console dispatch = command-name → fixed han
 branching). No new stubs. Stub census unchanged: the 4 return-stub commands (sess-38).
 
 ## 4. Residuals
-- ⚠ `*0x70BE08` vs `*0x70BD90` +0x2C: same access pattern from two globals (IDB names
-  `global_area_map_icons[0]` on both — the misnomer family). Which holds the client (vs a
-  session/lobby object) needs one dtor-path check; flagged, not guessed.
+- ~~⚠ `*0x70BE08` vs `*0x70BD90` two-globals ambiguity~~ **RESOLVED same-day (data-file
+  lesson!)**: raw loads census — `0x70BD90` is the only loaded base (253 direct loads, first
+  site = GetWorldServerInstance 0x401150); `0x70BE08` is never a load-target — it appears
+  as a `mov ecx,imm` this-argument (0x551839) = a STATIC embedded object the engine entity
+  ctor registers into (distinct from the heap GameInterfaces of sess-36 `new(0x64)` — three
+  neighbouring globals, three roles),
+  and every sess-39 "`global_area_map_icons[0]`" site literally encodes `mov edi,
+  [eax+0x2C]` off the 0x70BD90 value (verified bytes @0x45eac9/0x45ec05: `8b 78 2c 8b …
+  a0`). So ONE client global: `[clientbase]+0x2C`, exactly sess-28's statement; the
+  0x70BE08 label is IDA display sugar (base+disp folding / misnomer family). No check needed.
 - blk identity: who ALLOCATES client+0xA0's block & fills A/B/C with which boot ifaces
   (pipboy=blk+0x18-or-0x4C?) — next pass, likely GameWorld::Initialize UI wiring.
 - gate@+0x9C `sub_592630` predicate body unverified; companion semantics (B vs C) by call

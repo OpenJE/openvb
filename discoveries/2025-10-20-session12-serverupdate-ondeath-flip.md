@@ -1,6 +1,9 @@
 # Session 12 — `F3::ServerUpdate` pump dispatch decoded: the 6→7 DEAD flip located
 
 Target: ORIGINAL_REFERENCE (`ida_original_f3`). Read-only; no IDB/source edits.
+> ⚠ FRAMING UPDATE (session 25): the mode flag `[0x70BD90]+4 bit0` IS SET during demo
+> play (connect handshake, 0x58a6d6) — the server-gated paths described here as "inert /
+> client-skip" are LIVE in the shipped single-player (loopback host). Mechanism details stand.
 Closes: session 8 §7 "who flips state 6→7"; session 9 §4 same item; refines
 `2025-10-20-serverupdate-pump-unpackstate-state-census.md` §1 with the exact slot dispatch +
 correction of `door-rebase-correction-changestate-machine.md` §callers claim that 0x550ad0
