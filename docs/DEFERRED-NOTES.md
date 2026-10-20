@@ -431,13 +431,17 @@ original is a different game, and the divergence reads as our bug.
    question, and the answer only matters for whether we can ever observe it.
 
 5. **Read of an uninitialised stack slot in `GameEffectDamage::Apply` — `var_B1`, the wrap/sector
-   byte.** It has **no zero initialiser**: the only stores are `mov byte ptr ...,1` at 0x45C2D2 and
-   0x45C2DB, and the apparent `mov [esp+0Fh], bl` at 0x45C1B6 targets a *different* slot (`var_A5`)
-   because the `sub esp,0Ch` at 0x45C22C shifts the window by 0xC. So an in-band angle, and both
-   early exits at 0x45C1BA / 0x45C1CB, read whatever the previous `Apply` left on the stack. Unlike
-   entries 1-2 this one is *reachable*: reaction anims can depend on residue. The reimpl mirrors it as
-   an explicit residue parameter rather than pretending it is zero — an intentional observable
-   difference from any "clean" implementation. (UltraBear, T-012.)
+   byte — on the MAJORITY of reachable paths.** It has **no zero initialiser**: the only stores are
+   `mov byte ptr ...,1` at 0x45C2D2 and 0x45C2DB, and the apparent `mov [esp+0Fh], bl` at 0x45C1B6
+   targets a *different* slot (`var_A5`) because the `sub esp,0Ch` at 0x45C22C shifts the window by
+   0xC. An esp-walk of every store in 0x45C140..0x45C650, **including four-byte store windows**,
+   finds nothing that initialises it. So the read is not confined to the two early exits at
+   0x45C1BA / 0x45C1CB: the whole `+0x10 == 0` / `meth_0x54be10 -> 0` pair jumps straight to
+   0x45C2E4 past the entire compare chain and consumes the residue too. Reachable and
+   behaviour-affecting, since reaction anims depend on it. The reimpl mirrors this as an explicit
+   residue parameter rather than choosing a quiet default — an intentional observable difference from
+   any "clean" implementation. *(Wording broadened from an earlier, narrower claim of "in-band angles
+   and the two early exits" on UltraBear's correction; the esp-walk is their evidence.)*
 
 6. **`FatalError("A weapon can't be both consumed and thrown.")` is the one self-diagnosed entry**
    — see item 4 above; parity means **crash parity**, not tolerance. Whether any shipped v5 record can
