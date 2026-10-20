@@ -83,6 +83,23 @@ the table numerically and never name parts, which is the standing policy in §12
 > Both lanes' surviving fact: {5,6} are lower-body neighbours under **either** alignment, so the
 > DT-row grouping stands regardless. Until 2–3 land, the reimpl keeps indexing numerically.
 
+
+> **10c final status (coordinator, after independent verification of IronStorm's chain):**
+> I doubted the attribution and then disproved my own doubt: the table at `0x6FF650` is read by
+> exactly one site, `sub_564AA0`, and `sub_564AA0` has exactly one caller,
+> `JE::ModelInstance::SetSocketModel_564f90` @0x5650c5. Both halves of IronStorm's claim are
+> therefore raw-solid, and the table's CONTENT matches the assertion byte for byte (I dumped all ten
+> pointers: "", Head, Chest, UpperArms, Hands, Legs, Feet, Waist, ForeArms, Shins).
+> Where it still falls short of CLOSED: the table being a SOCKET-name list proves an index space of
+> the right shape, not that the called-shot id indexes it. `socketIdx = id + 1` is currently inferred
+> from three coincidences (9 names, 9 = UNSET, FLT_MAX at penalty idx 8) rather than from a code edge
+> that carries a called-shot value into a socket call. So the honest state is: **{5,6} = FEET/WAIST
+> is settled as a group, and the naming is one evidence short** — FastArrow's T-014 lane owns the
+> log-diff fingerprint (a SHINS called-shot should emit "Unknown CALLEDTARGET" while still computing),
+> which is a genuine decider and cheap. Until that lands the reimpl still indexes numerically in code
+> and may use names only in comments, marked as unproven-alignment. That is a small relaxation of the
+> §12 policy, not a repeal.
+
 ## 10d — Close the GW+0x40 writeback channel (owner: HappyWolf; gates T-011's clock model)
 
 A global-window scan found no in-exe writer of `[GameWorld+0x40]`, but the clock object stored at
