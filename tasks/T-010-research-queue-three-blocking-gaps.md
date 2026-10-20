@@ -120,7 +120,26 @@ the table numerically and never name parts, which is the standing policy in §12
 > directions, so if slot 1 turns out to be leg gear then `{5,6}` = FEET/WAIST and part of the
 > retracted socket ordering returns as corroboration rather than being wasted.
 >
-> Code stance unchanged meanwhile: numeric indexing in code, names in comments marked unproven.
+> **Update after B8 (FastArrow, 0b605c0): the conflict is resolved structurally, and 10c's last gap
+> is one DATA read.** Equip DR coverage keys off the item's required-slot vector at `GameItem+0xA8`
+> through a pair table (`sub_469430`, jump table read raw) that collapses req{2,3,4,5}→phys2 and
+> reserves phys0/phys1 for req0/req1 alone. Row B is therefore exactly ONE requirement class, and
+> feet+waist cannot be one class while hands/arms/legs/feet sit in the other, DR-invisible bucket:
+> **{5,6}=FEET/WAIST dies structurally, not probabilistically; head-family survives.** IronStorm's
+> socket table stays valid as the model-attachment index space (10f stands) — it is simply not the
+> called-shot space, and no slot↔socket citation exists or is needed.
+>
+> Remaining gap, assign to whoever is warm on shipped item records: **one GRP read of a helmet
+> record's `+0xA8` required-slot vector** (prediction: contains 1). Static work is finished here.
+>
+> Consequence for the reimpl, and it is mine to apply: `CombatMath`'s second row is named
+> `dtParts56` — anatomy-flavoured, and now known to be wrong at the level of what it represents.
+> It is equip-slot/requirement coverage, so the field and its comments should be renamed on the next
+> touch, and the port must keep **two** rows (mirroring req-class 0 and 1) rather than inventing
+> six per-part rows. Same file: the T-014/T-012 flurry notes and the `calledShotPart` comments should
+> stop describing 5/6 as body parts.
+>
+> Code stance meanwhile: numeric indexing in code, names in comments marked unproven.
 > The Shins log-diff and the helmet-slot datum are complementary, and T-016 Read 1 is **optional** —
 > a decompile beating a debugger is the right ordering. Bonus from the same trace, for the `.item`
 > lane: `GameArmor::ReadFromFile` @0x408970 tests `*(a2+8) == 1380010311` = fourcc **GIAR** and

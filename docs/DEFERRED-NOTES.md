@@ -392,3 +392,28 @@ used the same failure mode - re-appending its two updates here rather than re-ed
 - LNK lines are not 'error C...': build greps must include LNK/MSB patterns.
 - cmake objs live in obj/ at repo ROOT (build/ is exe output).
 - /tmp/F3*.exe copies are private & must be rm'd before cp (stale copy masqueraded as pass).
+
+
+## Shipped-defect ledger (candidates found by statics; reimpl mirrors, never "fixes")
+
+Three findings where the shipped binary is wrong, incomplete, or unreachable-by-data. The rule for
+all of them: **mirror the shipped behaviour and cite the site.** A reimpl that silently improves the
+original is a different game, and the divergence reads as our bug.
+
+1. **Null-page addend, unarmed damage.** `GameCreature::CalculateUnarmedDamage_0x409f90`
+   @0x40a045 = `03 35 24 00 00 00` → `add esi, ds:0x24`. `MEMORY[0x24]` is literal, VA 0x24 is the
+   null page, so the branch **faults on execution** whenever its guard holds
+   (`param_5 != null AND mode+0x18 ∈ {1,3} AND weapon+0x3B0 ∈ {9,10}`). Demo data never satisfies
+   the guard. Permanently unported; do not "recover" a base register. (canonical §11; C-40.)
+2. **Armor in requirement slots 2..5 contributes nothing to DR.** Coverage is aggregated over the
+   pair table `sub_469430`, which collapses req{2..5}→phys2 while only phys0/phys1 are summed
+   (`GameCreature::meth_0x40A670`, node class byte ∈ {0,1}; values >1 silently ignored). Either a
+   deliberate two-zone body+head model or a silent bug; indistinguishable statically, and the reimpl
+   must carry **two** DT rows, not six. (FastArrow B7/B8.)
+3. **Four console commands register to return-stubs.** `AttackModeSelect`, `CharacterRecordWindow`,
+   `SneakToggle`, `WeaponLinkToggle` — stealth/mode UI shipped unimplemented. Parity is
+   register-and-stub; omitting them diverges from the shipped console surface. (HappyWolf B38.)
+
+Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachment index space, not
+the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's
+`socketIdx = id+1` bridge was retracted.
