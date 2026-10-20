@@ -314,3 +314,18 @@ so far is A's Map.cpp/Map.hpp set, plus one inline `constParameterCallback` supp
 StringFormat.cpp where the seam signature is fixed by the callback type).
 Usage note: `cppcheck-openje` with no args = changed files only (dev loop); `--all` = full sweep
 (CI/pre-merge). Both print findings on **stderr**, so pipe with `2>&1` when counting.
+
+## Measurement rules (each cost me or A a false green today)
+1. **Never read an exit status through a pipeline.** `cmd 2>&1 | tail -3; echo $?` reports
+   `tail`. Use `cmd > /tmp/out.txt 2>&1; echo $?`. This is precisely how `cppcheck-all`'s broken
+   third stage stayed invisible (`cppcheck-tracing` exited 1 from the repo root).
+2. **`grep -c` exits 1 on zero matches** — never chain `&& something-important` after a count.
+3. **cppcheck writes findings to stderr**: count with `cppcheck-openje --all 2>&1 | grep -cE
+   ' (style|warning|portability|performance|error): '`; with `2>/dev/null` a dirty tree reads as
+   perfectly clean (this is how A's "0 findings on Map.cpp" verdict differed from my 16).
+4. **`devenv` hot reload never reaches this harness's tool shells** (each `bash` call is a fresh
+   child with the start-time PATH). Reload manually: `devenv print-dev-env > /tmp/env.sh && source
+   /tmp/env.sh` (~6 s), and grep the `*-<name>-script` payload, not the 2-line `bin/<name>` stub.
+5. **Bash expands backticks inside `git commit -m "..."`**: message truncated, commit silently
+   skipped, a stray file appeared. Use `git commit -F <file>` (heredoc-written).
+6. **Do not narrow a linter's `--enable` set as a side effect of a path fix** - I did and reverted.
