@@ -21,9 +21,7 @@
 "FX_HitFire_01.veg"
 "FX_HitLaser_01.veg"
 
-# --- CombatMath log strings, claimed HERE not in the file (lane courtesy) -----------------------
-# src/F3/CombatMath.cpp carries live uncommitted work from T-027 (implementer-B) while this wave
-# runs, so its markers wait for that landing rather than smuggling their hunks into my commit.
-# The byte claim is identical either way; only the location of the assertion changes.
-"GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered.\n"
-"GameCreature::CalculateUnarmedDamage() - Unknown CALLEDTARGET encountered.\n"
+# --- CombatMath log strings: MOVED BACK INTO THE FILE (T-022 follow-up, coordinator-granted) -----
+# They were parked here only while src/F3/CombatMath.cpp carried implementer-B's uncommitted T-027
+# work. That landed (openje e2befed), so the claims now live next to the literals they describe,
+# discovered by the do-not-"fix" marker. Count of claims is unchanged: 3 markers + 6 manifest = 9.

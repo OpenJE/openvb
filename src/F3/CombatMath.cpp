@@ -158,6 +158,7 @@ namespace F3 {
 		case 5: case 6:               // head-family equip-slot pair -> row B, not "parts"
 			row = target.dtRowB; break;
 		default:
+			// shipped string verbatim, do not "fix" - the original's own wording
 			JE::LogDebugString( NULL,
 			    "GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered.\n" );
 			row = target.dt; break;
@@ -215,6 +216,7 @@ namespace F3 {
 			case 5: case 6:           // head-family equip-slot pair -> row B, not "parts"
 				row = target.dtRowB; break;
 			default:
+				// shipped string verbatim, do not "fix" - the original's own wording
 				JE::LogDebugString( NULL,
 				    "GameCreature::CalculateUnarmedDamage() - Unknown CALLEDTARGET encountered.\n" );
 				row = target.dt; break;
