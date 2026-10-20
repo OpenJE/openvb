@@ -184,3 +184,23 @@ Two related conventions that would prevent the softer half of this:
 - **status strings age silently.** `open | research (10a X, 10b Y, 10c Z)` was wrong within one
   turn. Prefer one row per sub-item if sub-items are going to be claimed and closed independently —
   which is exactly how 10a–10e drifted.
+
+## 13. "Needs a debugger" often means "nobody opened the data files" — lesson from T-018
+
+Three lanes converged on the view that called-shot part naming required a runtime observation
+(which equip slot receives a helmet, plus a log-diff fingerprint at a breakpoint). It required
+neither: the answer was **in `build/data/_ARM.grp`**, statically readable in minutes — every head-worn
+piece has `GITM.eqslot = 1`, every suit `0`, which closed the question outright and *killed* the
+runtime read as unnecessary. The `.grp` layout is now documented for reuse, with a trap noted:
+compressed records contain stray `GITM` strings that decode to garbage `equip = 0` values, so sweeps
+must filter on `equip == 1`.
+
+Same shape as 8c from the other side: there, a static scan produced a phantom from the wrong source
+(absolute-address matching); here, a static *limit* was assumed when a different static source had the
+answer. Both are the same rule: **before requesting a runtime read, enumerate what on-disk data could
+settle it.** Data is cheaper than a debugger, reproducible by every later session, and does not
+depend on anyone holding a debug window.
+
+Corollary for the coordinator: T-016 was created to batch three runtime reads. One of the three is now
+closed without a debugger, and the row shrank on its own. Ask "is this data?" before "is this
+observable?".

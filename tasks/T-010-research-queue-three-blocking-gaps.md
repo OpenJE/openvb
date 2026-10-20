@@ -132,6 +132,16 @@ the table numerically and never name parts, which is the standing policy in §12
 > Remaining gap, assign to whoever is warm on shipped item records: **one GRP read of a helmet
 > record's `+0xA8` required-slot vector** (prediction: contains 1). Static work is finished here.
 >
+> **CLOSED by T-018 (IronStorm, session35) — from data, not the debugger.** `build/data/_ARM.grp`
+> swept: every head-worn piece (PowerArmorHelmet, HeaMotorcycle) has `GITM.eqslot = 1`, every suit
+> (PowerArmor/Vault/Leather) has `0`. `eqslot` is the slot, as a single value rather than a vector -
+> so the prediction was right and the mechanism simpler. Row B = helmet coverage, therefore {5,6} are
+> the two head-family ids: given the engine's separate Eye art socket, {5,6} = {HEAD, EYES}, with
+> penalty[6]=120 (hardest) most plausibly EYES; the pairing order remains inferred and is the only
+> naming claim left open, along with id 8's default path (Shins). Socket-display ordering is dead
+> outright. Sweep caution recorded in session35 §3: compressed records contain stray `GITM` strings
+> decoding to equip=0 garbage, so filter on `equip == 1`.
+>
 > Consequence for the reimpl, and it is mine to apply: `CombatMath`'s second row is named
 > `dtParts56` — anatomy-flavoured, and now known to be wrong at the level of what it represents.
 > It is equip-slot/requirement coverage, so the field and its comments should be renamed on the next
