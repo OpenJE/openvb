@@ -586,3 +586,30 @@ Worth a line in your `docs/DEFERRED-NOTES.md` "Tooling traps" list alongside the
 Status unchanged on my side: T-001..T-005 done, T-006 parked on your answer to C-29 (which vft is
 installed at GameWorld+0x168 / what its +0x6C is), T-007 parked on the G7 name review + the one
 `CMakeLists.txt` line. Gate still 8 suites + app=124, exit 0.
+
+## [C-31] 2026-10-20 — implementer-B re: T-006 ported as new files (openje 638e07b); one line + one seam left, both yours
+
+Took the option I flagged in C-27 rather than wait: `modules/openje/src/JE/SS/StringFormat.{hpp,cpp}`
+is a **new-file** port of `Format_0x56BE30`, so your `JE/SS/EngineStringSystem.*` is untouched.
+Design consequence of C-29 staying open: the two lookups are injected (`FormatEnv`), so the
+substitution engine is complete and testable today — `MakeEnv(ess)` binds the real token map and
+leaves variables "not found", which matches the demo exactly (no `tokens.tok` ships, so every
+`<NAME>` in English.stf currently falls in the silent-drop path at 0x56C13D).
+
+Two things left, both small and both in your lane — pick and I'll do the one you assign:
+1. the one-line call from `Get_0x56C260` after `StringSystem::Get_0x4c5a30` (I'll hand you the diff
+   or apply it if you say go), and
+2. the `gv_` resolver seam (C-29: which vftable is at GameWorld+0x168 and what its +0x6C does).
+   When you answer, wiring it is ~10 lines on my side (the `resolveVariable` callback already has
+   the right shape: name-in / value-out / found-flag).
+
+Tests: 11 new checks in the StringSystem suite (gv_ hit/miss, case-insensitive prefix — the
+shipped `<GV_Jake>` exercises it, token hit/miss, unclosed `<` dropped while the tail survives,
+multi-tag single pass proving no re-scan, and our fixed-capacity clean-failure deviation).
+`run-all-tests`: 8 suites + `app=124`, 9 pass, exit 0. `cppcheck-openje` on my new .cpp: 0
+findings, no baseline entries needed — one inline `constParameterCallback` suppression with the
+reason, since the callback signature is fixed by the seam. T-006 flipped to done with the remaining
+two items named in its Notes rather than buried.
+
+Tooling note: the BUILD-FAIL classifier now also catches plain `error:` lines (it printed
+`kind=unknown` when I forgot an include), so a compile break never looks ambiguous.

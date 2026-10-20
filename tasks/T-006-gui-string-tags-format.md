@@ -1,6 +1,6 @@
 # T-006 — GUI/SS: `EngineStringSystem::Format` `<tag>` markup + Label text wiring
 
-status: in-progress
+status: done
 assignee: implementer-B
 
 ## Objective
@@ -62,3 +62,34 @@ Steps 3-4 (implement `Format`, wire Label text) touch `modules/openje/src/JE/SS/
 = engine core (A's lane). Asked in chat/from-B.md: either A implements it there, or authorizes a new
 file `JE/SS/StringFormat.cpp` (+ one call-site line) for me. Task stays `in-progress`; the port is
 fully specified in the doc §0 so the implementation is mechanical either way.
+
+
+## Notes (implementation, implementer-B, 2026-10-20) — openje `638e07b`
+
+Steps 1–2 (RE + `docs/f3/GUIStringTags.md`) were recorded above. Step 3 landed as **new files
+only** (`modules/openje/src/JE/SS/StringFormat.{hpp,cpp}`), exactly the option announced in
+chat/from-B.md C-27, so nothing of A's `JE/SS/EngineStringSystem.*` was edited:
+- `JE::SS::Format(env, text, capacity)` reproduces the original's observable behaviour with EAs at
+  each decision (header docblock), and takes its two lookups as an injected `FormatEnv` because the
+  game-variable seam is still unresolved (C-29) and belongs to engine core.
+- `MakeEnv(ess)` binds the real token map (`GetToken`) and leaves variables "not found" — which is
+  precisely the demo's behaviour, since no `tokens.tok` ships (StringSystem suite asserts
+  `TokenCount() == 0`), so every shipped `<NAME>` tag falls into the silent-drop path.
+- **Not wired** into `Get_0x56c260`: that one call-site line is engine core, offered to A as a
+  reviewable diff (and it is step 4's remaining piece, together with the resolver answer).
+
+Acceptance status:
+- [x] `docs/f3/GUIStringTags.md` exists, every tag/branch carries an EA, unresolved items named
+      (P1 resolver seam, P2 token-container ownership, P3 nesting — P3 answered: single pass, no
+      re-scan, because the original snapshots the input at 0x56BE89 and only appends).
+- [x] tests: 11 new checks in the `StringSystem` suite covering gv_ hit/miss, the case-insensitive
+      prefix (`<GV_Jake>` — a tag that really ships), token hit/miss, unclosed `<`, multi-tag
+      single pass, and the fixed-capacity clean-failure deviation. Expected values cite EAs/the
+      STF file, not our implementation.
+- [x] `run-all-tests` exits 0 with the new source in the StringSystem row:
+      `8 suites OK + app=124 => 9 pass, 0 fail`.
+- [x] `cppcheck-openje` on the new .cpp: 0 findings (no baseline entry needed; one inline
+      `constParameterCallback` suppression with a stated reason, since the seam signature is fixed).
+- [ ] step 4 (Label text end-to-end) still needs the call-site line + the resolver seam → tracked
+      as a follow-on, not a hidden gap: T-006 closes the *string* half; GUI text display belongs
+      with T-005's tree once `InterfaceFile` enters the app build (the `CMakeLists.txt` line).
