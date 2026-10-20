@@ -410,6 +410,14 @@ original is a different game, and the divergence reads as our bug.
    (`GameCreature::meth_0x40A670`, node class byte ∈ {0,1}; values >1 silently ignored). Either a
    deliberate two-zone body+head model or a silent bug; indistinguishable statically, and the reimpl
    must carry **two** DT rows, not six. (FastArrow B7/B8.)
+   **Dominated by data now (IronStorm session36):** shipped GITM taxonomy is type 0=tools /
+   2=armor / 4=weapons and eqslot 0=body / 1=head / 2=weapon-or-tool, and **nothing uses 3..5** — so
+   the 2..5 blind spot is unreachable by shipped content. Downgraded from "probably a bug" to
+   "harmless-by-data, still mirrored as two rows". The same sweep also **KILLED T-010b**: there are
+   zero stores to `weapon+0x3B0`, the weapon ctor initialises only +0x3E0..+0x428, all 51
+   `_WEA.grp` records show 9/10 at eight *different* GIWP offsets rather than one class field, and
+   the demo ships no limb-type weapon at all. The `{9,10}×{1,3}` guard is permanently-dead code
+   sitting behind the already-ledgered fault at 0x40a045 — mirror, and do not invent the field.
 3. **Four console commands register to return-stubs.** `AttackModeSelect`, `CharacterRecordWindow`,
    `SneakToggle`, `WeaponLinkToggle` — stealth/mode UI shipped unimplemented. Parity is
    register-and-stub; omitting them diverges from the shipped console surface. (HappyWolf B38.)
@@ -421,6 +429,19 @@ original is a different game, and the divergence reads as our bug.
    diverged from a shipped behaviour the original considers fatal, and any shipped data that trips
    it should crash identically. Whether any shipping record actually trips it is an open data
    question, and the answer only matters for whether we can ever observe it.
+
+5. **Read of an uninitialised stack slot in `GameEffectDamage::Apply` — `var_B1`, the wrap/sector
+   byte.** It has **no zero initialiser**: the only stores are `mov byte ptr ...,1` at 0x45C2D2 and
+   0x45C2DB, and the apparent `mov [esp+0Fh], bl` at 0x45C1B6 targets a *different* slot (`var_A5`)
+   because the `sub esp,0Ch` at 0x45C22C shifts the window by 0xC. So an in-band angle, and both
+   early exits at 0x45C1BA / 0x45C1CB, read whatever the previous `Apply` left on the stack. Unlike
+   entries 1-2 this one is *reachable*: reaction anims can depend on residue. The reimpl mirrors it as
+   an explicit residue parameter rather than pretending it is zero — an intentional observable
+   difference from any "clean" implementation. (UltraBear, T-012.)
+
+6. **`FatalError("A weapon can't be both consumed and thrown.")` is the one self-diagnosed entry**
+   — see item 4 above; parity means **crash parity**, not tolerance. Whether any shipped v5 record can
+   trip it is open as T-019.
 
 Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachment index space, not
 the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's

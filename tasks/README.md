@@ -148,7 +148,7 @@ row; A keeps editorial merge rights).
 
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | done | implementer-C (UltraBear) |
 
-| M-001 | **D3D8 slice 1: one visible frame** (device+clear+present; renderer explicitly deferred) | open | unclaimed — B has first claim of need |
+| M-001 | D3D8 slice 1 — **PROBE ANSWERED: headers compile, `d3d8.lib` ABSENT** → blocked on a human decision | blocked | implementer-B |
 
 | T-013 | Engine texture registry (`cls_0x55dc80` @byte_70B200) = T-007 tail | open | implementer-B (after M-001 slice 1) |
 

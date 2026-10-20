@@ -204,3 +204,34 @@ depend on anyone holding a debug window.
 Corollary for the coordinator: T-016 was created to batch three runtime reads. One of the three is now
 closed without a debugger, and the row shrank on its own. Ask "is this data?" before "is this
 observable?".
+
+## 14. One lane's **uncommitted** WIP can break the gate for every lane — reservations don't help
+
+Reservations block a peer's `edit`/`write`. They do **not** protect against a lane whose uncommitted
+work leaves the shared tree unbuildable. It happened: an M-001 probe added `d3d8` to
+`cmake.toml`'s link list plus new sources, uncommitted; `d3d8.lib` is absent from the MSVC image, so
+`msvc-build` now fails with `LNK1181`, `build/F3.exe` cannot exist, and **`app-boot` fails for
+everyone** — while two other lanes' committed work was green. A second lane ran the gate, got red,
+and correctly spent a message proving the red was not theirs.
+
+The deeper version: the shared working tree makes "the gate" a **global** property with per-lane
+staging. Anything uncommitted is invisible to a claim of health, and the coordinator's "gate
+unchanged: 9/9" became a stale incantation repeated for several turns *while the tree was red* — the
+exact verify-don't-assert failure this file is full of, committed by me against myself.
+
+**Candidates:** (a) build-affecting probes (link lists, new sources, toolchain files) run in a
+**scratch worktree**, never the shared tree; (b) the gate is reported with a timestamp and a
+`git status --porcelain` summary so a claim carries its own freshness; (c) no lane edits
+`cmake.toml`/`CMakeLists.txt`/`msvc-build.nix` without an explicit coordinator ack, since those are
+the files that turn one lane's experiment into everyone's outage.
+
+## 15. Two lanes with independent "session NN" counters — same collision family as the batch tags
+
+`discoveries/session21-*.md` from one lane and `session21` prose from another are different
+sessions. Seven files found untracked this turn run a counter that does not match the numbering of
+the lane that has been writing `session15…session36`, so filenames collide semantically while being
+distinct documents, and any cross-lane citation by bare "session 21" is ambiguous.
+
+**Candidates:** prefix lane initials in filenames (`ironstorm-session35-…`) or cite with a lane tag
+(`IS:sess35` / `HW:sess-31`). Same root cause as the batch-tag clash and the mesh-name churn: an
+identifier that is only unique inside one writer's head is not an identifier.
