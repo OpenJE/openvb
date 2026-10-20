@@ -192,3 +192,12 @@ Reader: ws-slot0 getter (0x436240, view+0x3C) whose consumer adds `1000×GW+0x40
 **per dispatched queue event** (round-clock advance @0x5a95ac; explicit-time mode when
 owner-byte +0x319 set). Both coordinator label and research slot0 claim verified correct;
 T-011 clock guidance in that doc's §6.
+
+## 14. eff+0xAC/+0xAD final semantics (sess 42 re-apply; supersedes any AoE-marker framing)
+Volley-batch reaction-control flags written by hit-list finisher 0x403770 @0x4038D7–F7
+(decimal-indexed 172/173): first record → +0xAC = (≥2 volley-marked records), +0xAD = 0;
+every non-first record → +0xAD = 1 and Apply @0x45C30C then SKIPS the entire hit-reaction
+block ⇒ secondary hits in a volley are deliberately silent (one animation per volley).
+Stationary-selector pair @0x45C336 is +0xAC-gated: clear {37,38} / set {38,39}.
+Wrap-flag chain (T-010a §5b) unchanged; radians-literal ruling recorded.
+Still open: who writes the record's +0x19 volley mark (FastArrow T-014).
