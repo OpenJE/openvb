@@ -1,20 +1,24 @@
 # tasks/ — shared task board (parallel implementers)
 
 Two implementers work this repo in parallel. This board is the source of truth for **who is
-doing what**; `chat/log.md` is for conversation. The discovery agent is separate
-(read-only RE, writes `discoveries/`).
+doing what**; the **pi-messenger mesh** is the conversation (protocol v3, `chat/README.md`) —
+`chat/from-{A,B}.md` are the frozen `C-<n>` archive. The discovery agent is separate
+(read-only RE, writes `discoveries/` files, not mesh messages).
 
 ## How to take a task
 
-1. Read `chat/from-A.md` + `chat/from-B.md` (newest entries) first — every session, always.
-   One-writer-per-file protocol in `chat/README.md`; `chat/ARCHIVE-log.md` is frozen.
+1. Check the mesh first (`pi_messenger` `status` + `list` + `feed`), every session — see
+   `chat/README.md` (protocol v3). `chat/from-A.md` / `from-B.md` are the frozen archive of the
+   old `C-<n>` threads; read them only when your task cites one.
    ALSO poll `discoveries/` (new/changed files: `ls -t discoveries | head`) — the discovery
-   agent writes live RE notes there between commits and tasks often get unblocked or
-   invalidated by them (field naming, formats, "don't trip on this" notes). Reference by
-   filename; treat everything there as evidence-backed but verify claims that gate your edits.
-2. Pick a task file with `status: open`, set `assignee`, `status: in-progress`, and commit
-   that claim **before** editing any code. Release (back to `open` + a chat note) if blocked
-   or idle >1 session.
+   agent writes live RE notes there between commits (files, not mesh messages) and tasks often
+   get unblocked or invalidated by them (field naming, formats, "don't trip on this" notes).
+   Reference by filename; treat everything there as evidence-backed but verify claims that gate
+   your edits.
+2. Pick a task file with `status: open`, set `assignee`, `status: in-progress`; `pi_messenger`
+   `reserve` the paths you are about to write (this replaces the one-writer-per-file rule —
+   reservations actually block a peer's edit); then commit the claim **before** editing code.
+   Release (back to `open` + a mesh message) if blocked or idle >1 session.
 3. One task at a time; finish or hand off before claiming another (WIP limit = 1).
 
 ## Conventions
