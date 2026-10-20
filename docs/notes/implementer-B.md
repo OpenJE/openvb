@@ -113,3 +113,26 @@ I do not fix engine sources and I did not suppress them; filed in chat instead.
 - `grep -c` exits 1 on zero matches, so never put `&& cp`/`&& run` behind a count grep (same
   class of bug A hit per chat/from-A.md C-10; it silently skipped my verification once too).
 - a finding count is therefore: `cppcheck ... 2>&1 | grep -cE ' (style|warning|portability|performance): '`.
+
+### How to test a devenv script's failure paths without touching shared state
+Devenv scripts are plain files on `PATH` (not shell functions), so a stub on a prepended `PATH`
+overrides anything the script calls:
+
+```sh
+mkdir -p /tmp/B-stubbin && printf '#!/usr/bin/env bash\ncase "${STUB_MODE:-ok}" in ... esac\n' > /tmp/B-stubbin/msvc-build
+chmod +x /tmp/B-stubbin/msvc-build
+cd /tmp/B-head2                       # git worktree of HEAD
+PATH=/tmp/B-stubbin:$PATH bash "$(payload-of-run-all-tests)" --msvc-build --no-app --only cls_0x4d8d70
+```
+Notes: NixOS has no `/bin/bash` (a `#!/bin/bash` stub exits 126 — that is the *stub* failing, not
+the script); the runnable payload is the `/nix/store/...-<name>-script` file the `bin/<name>`
+wrapper execs, and that's the file to `bash -n` / grep after every reload.
+
+What this caught that reading did not: my first `--msvc-build` block ran **before** the
+`fails/passed/summary` initialisation, so `set -u` aborted on first use ("summary: unbound
+variable"). Any new flag that emits into `summary` must sit below the counter init. Also verified:
+`kind=` extraction reports `LNK2019` / `error C2065` / `undefined reference`, and a hidden source
+degrades to a `note:` line + a classified `BUILD-FAIL`, exit 1.
+
+Standard gate from now on (replaces hand-written loops):
+`run-all-tests --msvc-build` -> `msvc=OK` + 6 `OK:` + `app=124`, exit 0.

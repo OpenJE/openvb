@@ -16,7 +16,8 @@ in {
       # docs/notes/implementer-B.md §T-001). Exes go to .devenv/state/tests/, so this script never
       # touches the shared tests/je/<Suite>/<Suite>.[AB].exe names (chat/from-A.md C-4).
       #
-      # usage: run-all-tests [--only Suite[,Suite]] [--no-app] [--keep] [--timeout N] [-v]
+      # usage: run-all-tests [--only Suite[,Suite]] [--no-app] [--msvc-build] [--keep]
+      #                      [--timeout N] [-v]
 
       root="$PWD"
       if [ ! -d "modules/openje/tests/je" ]; then
@@ -33,6 +34,7 @@ in {
       timeout_s=6
       only=""
       want_app=1
+      want_msvc=0
       keep=0
       verbose=0
 
@@ -40,6 +42,7 @@ in {
         case "$1" in
           --only)   only="''${2:-}"; shift 2 ;;
           --no-app) want_app=0; shift ;;
+          --msvc-build) want_msvc=1; shift ;;
           --keep)   keep=1; shift ;;
           --timeout) timeout_s="''${2:-6}"; shift 2 ;;
           -v|--verbose) verbose=1; shift ;;
@@ -79,10 +82,12 @@ in {
       SRC="modules/openje/src/JE.cpp"
 
       # name | test source | impl sources (space separated)
-      # SpatialGrid.cpp is listed for every suite that links Map.cpp; the runner skips listed
-      # sources that are not on disk yet, so the table stays valid whether or not that file has
-      # landed (it is A-lane and Map.cpp references it). MapEntitySpawn.cpp is required by the suites
-      # that link GamePathManager.cpp: F3::GetActiveMap() lives there (openje 18a8e00).
+      # Sources the test headers do NOT mention are needed transitively (docs/notes/implementer-B.md):
+      # JE/Action.cpp (JE::Action base vft + dtor), JE/SpatialGrid.cpp (JE/Map.cpp references it),
+      # src/F3/MapEntitySpawn.cpp (F3::GetActiveMap, used by GamePathManager). Listed sources that
+      # are not on disk yet are skipped with a note so the table survives A-lane churn.
+      # If a suite suddenly BUILD-FAILs with kind=LNK after an engine commit, that is a NEW
+      # cross-module reference: add the defining .cpp here rather than weakening the test.
       suites=(
         "cls_0x4d8d70|modules/openje/tests/je/cls_0x4d8d70/cls_0x4d8d70.cpp|$JE/cls_0x4d8d70.cpp"
         "PathManager|modules/openje/tests/je/PathManager/PathManager.cpp|$JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/Resources.cpp $JE/VFX_Parameter.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Action.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp"
@@ -96,6 +101,27 @@ in {
       fails=0
       passed=0
       summary=""
+
+      if [ $want_msvc -eq 1 ]; then
+        # Opt-in full rebuild with correct attribution + error classification: an up-to-date tree
+        # makes msvc-build a silent no-op (the exe mtime stays the other implementer's), and LNK
+        # failures are not 'error C' (chat/from-A.md C-10 item 2, C-11 item 3).
+        rm -f "$root/build/F3.exe"
+        blog=$(msvc-build 2>&1); bstat=$?
+        cerr=$(printf '%s' "$blog" | grep -oE 'error C[0-9]+' | wc -l)
+        lnk=$(printf '%s' "$blog" | grep -oE 'LNK[0-9]+' | sort -u | tr '\n' ' ')
+        if [ $bstat -eq 0 ] && [ "$cerr" -eq 0 ] && [ -z "$lnk" ]; then
+          printf 'msvc-build      OK   exit 0, error C=%s, no LNK\n' "$cerr"
+          summary="$summary msvc=OK "
+          passed=$((passed + 1))
+        else
+          printf 'msvc-build      FAIL exit %d (error C=%s, LNK=%s)\n' "$bstat" "$cerr" "''${lnk:-none}"
+          [ $verbose -eq 1 ] && printf '%s\n' "$blog" | tail -30
+          summary="$summary msvc=FAIL "
+          fails=$((fails + 1))
+        fi
+      fi
+
 
       for entry in "''${suites[@]}"; do
         name="''${entry%%|*}"
@@ -122,9 +148,13 @@ in {
               $srcs -o "$exe" 2>&1)"
         cstat=$?
         if [ $cstat -ne 0 ] || [ ! -f "$exe" ]; then
-          printf '%-15s BUILD-FAIL (exit %d)\n' "$name" "$cstat"
+          # Classify, do not just count: an 'error C' grep misses link failures (LNK2019 /
+          # undefined reference), which is exactly what a missing source looks like
+          # (docs/DEFERRED-NOTES.md "Tooling traps", chat/from-A.md C-11 item 3).
+          kind=$(printf '%s' "$log" | grep -oE 'error [A-Z]+[0-9]+|LNK[0-9]+|undefined reference' | head -1)
+          printf '%-15s BUILD-FAIL (exit %d) kind=%s\n' "$name" "$cstat" "''${kind:-unknown}"
           [ $verbose -eq 1 ] && printf '%s\n' "$log"
-          summary="$summary$name=BUILD-FAIL "
+          summary="$summary$name=BUILD-FAIL(''${kind:-unknown}) "
           fails=$((fails + 1))
           continue
         fi

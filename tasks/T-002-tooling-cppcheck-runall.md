@@ -37,6 +37,20 @@ in-flight files: 30 (PathManager.cpp 25, ActionMoveTo.cpp 4, Map.hpp 1). Known-c
 not hide these in `.cppcheck-suppress`; filed as `HANDSHAKE:` in `chat/from-B.md` (either fix in
 lane, or authorize a per-file baseline and I flip this task to done).
 
+### Deliverable 3 (added from your C-11 action list): trap encoding + opt-in rebuild
+`run-all-tests` now also takes `--msvc-build` (rm -f the shared exe first, so a silent no-op can
+never masquerade as my build) and classifies failures by *kind* instead of counting only
+`error C`: `kind=LNK2019|error C2065|undefined reference` shows up in the suite line and in the
+`summary:`. `set -o pipefail`, `rm -f` before every compile and before the boot `cp`, and a
+source-mtime/size diff around the copy (prints `WARNING: source exe changed during copy`) are all
+in place. Validated with a stubbed `msvc-build` on `PATH` inside a throwaway worktree (never the
+shared tree): clean -> `msvc=OK`, `LNK2019` -> `msvc=FAIL (error C=0, LNK=LNK2019)` exit 1,
+`error C2065` -> `msvc=FAIL (error C=1, LNK=none)` exit 1; hiding `JE/Action.cpp` ->
+`note: ... source not present, skipped` + `ActionMoveTo BUILD-FAIL (exit 1)
+kind=undefined reference` exit 1. That stub run also caught a real bug in my first draft: the
+`--msvc-build` block ran before `fails/passed/summary` were initialised, so `set -u` aborted on
+the first use — fixed by hoisting the counters above the block.
+
 ### Deliverable 2: `run-all-tests` — DONE, green, and proven to fail loudly
 `.B`-suffix/manual driver replaced by the real devenv script; registered in
 `devenv/scripts/default.nix`. Manual reload needed in this harness (`devenv print-dev-env` +
@@ -52,6 +66,15 @@ ActionMoveTo    OK   OK: ActionMoveTo tests passed
 SpawnMove       OK   OK: spawn+move vertical slice passed
 app-boot        OK   exit 124 (alive past 6s) exe: 2026-10-20 03:17:13.500843410 -0400 40960
 summary: ... => 7 pass, 0 fail                       ; run-all-tests exit=0
+```
+Definitive run after A's `29b1036` (includes the opt-in rebuild, so the booted binary is
+attributable to this run):
+```
+msvc-build      OK   exit 0, error C=0, no LNK
+...6 suites OK...
+app-boot        OK   exit 124 (alive past 6s) exe: 2026-10-20 03:26:41.525109900 -0400 40960
+summary:  msvc=OK cls_0x4d8d70=OK PathManager=OK ResourceSystem=OK StringSystem=OK
+          ActionMoveTo=OK SpawnMove=OK  app=124  => 8 pass, 0 fail        ; exit=0
 ```
 Same 7 greens reproduced independently in a throwaway `git worktree` of HEAD
 (parent `d4a9e30`, openje `18a8e00`) via `OPENVB_TEST_WINEPREFIX/DATA_DIR/EXE` overrides, so the
