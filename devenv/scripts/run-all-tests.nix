@@ -15,7 +15,9 @@ in {
       # eight as of T-005: cls_0x4d8d70 PathManager ResourceSystem StringSystem ActionMoveTo
       # Scripting SpawnMove GUILoading). Engine-side deps the headers never mention live in the
       # rows below: JE/Action.cpp, JE/SpatialGrid.cpp, JE/Gregorian.cpp, F3/MapEntitySpawn.cpp
-      # (F3::GetActiveMap) and F3/CombatManager.cpp (turn seams from World.cpp).
+      # (F3::GetActiveMap), F3/CombatManager.cpp + F3/CombatMath.cpp + F3/GameActionAttack.cpp
+      # (combat seams). When a row prints kind=undefined-reference, add the defining .cpp there -
+      # never weaken the test. Grows with the engine; that is expected, not drift.
       # Source lists live HERE (not in the test headers, which are stale/missing for most — see
       # tasks/T-001 Notes and docs/notes/implementer-B.md §T-001). Exes go to .devenv/state/tests/,
       # so this script never
@@ -101,7 +103,7 @@ in {
         "ActionMoveTo|modules/openje/tests/je/ActionMoveTo/ActionMoveTo.cpp|$JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp"
         "Scripting|modules/openje/tests/je/Scripting/Scripting.cpp|$JE/Scripting.cpp $JE/ActionMoveTo.cpp $JE/Action.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/Gregorian.cpp $SRC"
         "GUILoading|modules/openje/tests/je/GUILoading/GUILoading.cpp|$JE/GUI/InterfaceFile.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/PathManager.cpp $JE/Gregorian.cpp $JE/Action.cpp $SRC"
-        "SpawnMove|modules/openje/tests/je/ActionMoveTo/SpawnMove.cpp|src/F3/MapEntitySpawn.cpp src/F3/GameActionMoveTo.cpp $JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp"
+        "SpawnMove|modules/openje/tests/je/ActionMoveTo/SpawnMove.cpp|src/F3/MapEntitySpawn.cpp src/F3/GameActionMoveTo.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp"
         "CombatMath|modules/openje/tests/je/CombatMath/CombatMath.cpp|src/F3/CombatMath.cpp"
       )
 
@@ -163,7 +165,7 @@ in {
           # Classify, do not just count: an 'error C' grep misses link failures (LNK2019 /
           # undefined reference), which is exactly what a missing source looks like
           # (docs/DEFERRED-NOTES.md "Tooling traps", chat/from-A.md C-11 item 3).
-          kind=$(printf '%s' "$log" | grep -oE 'error [A-Z]+[0-9]+|LNK[0-9]+|undefined reference|error: ' | head -1 | tr -d ' :')
+          kind=$(printf '%s' "$log" | grep -oE 'error [A-Z]+[0-9]+|LNK[0-9]+|undefined reference|error:' | head -1 | tr -d ':' | tr ' ' '-')
           # Name the missing symbols right on the summary line: a new engine file that is not in
           # the table below shows up as exactly this, and the fix is to add that .cpp (or to pass
           # OPENVB_TEST_EXTRA_SOURCES while the author is still mid-edit), never to weaken a test.
