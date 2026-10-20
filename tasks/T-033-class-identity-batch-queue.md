@@ -17,6 +17,19 @@ a name written into the IDB and `artifacts/F3.json`, which propagates into every
 census number, and every literal/symbol verification. It is the cheapest structural win available and it is
 currently nobody's job.
 
+## Premise caveat, pre-registered (HappyWolf, batch-1)
+
+**Two of the top-six "biggest anonymous classes" look like IDA over-attribution artifacts, not class mass.** If
+that is right, the ~2,000-function premise above is inflated exactly where it reads most impressively — so the
+batch carries a stated prediction to be beaten or confirmed, not a vibe: **typed-stub tier 26.4% → ~23%
+(~24.5% under inflation).** The census delta is therefore only meaningful against a number written down in
+advance, which is what makes this row falsifiable instead of a counting game. A naming batch that fails to move
+the tier either means the classes were mis-attributed or the work was decoration; both are useful answers, and
+neither is allowed to be reported as progress.
+
+Also adopted: **single-writer split** — HappyWolf proposes identity decisions, IronStorm applies them to the
+IDB/`F3.json` and runs the census. Two lanes writing one database is how attribution gets lost.
+
 ## Scope (one batch = 20 classes, ordered by function count)
 1. Take the next N anonymous classes by member count. For each, read **only** what the database already
    holds: member offsets/sizes, vftable slots, method names, and which shipped data blobs reference it.
