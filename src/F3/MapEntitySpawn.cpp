@@ -126,6 +126,21 @@ namespace F3 {
 		return s_loadedMapCount;
 	}
 
+	int PlaceEntityAtEntryPoint( SpawnedEntity* e, JE::Map* map, unsigned entryId, unsigned ringSlot ) {
+		tracing::instrument( tracing::LOCATION, "entry=%u slot=%u", entryId, ringSlot );
+		if ( !e || !map || ringSlot > 5 ) {
+			return 0;
+		}
+		float ring[18];
+		if ( map->GetEntryPoint( entryId, ring ) == 0 ) {
+			return 0;
+		}
+		e->pos[0] = ring[ringSlot * 3 + 0];
+		e->pos[1] = ring[ringSlot * 3 + 1];
+		e->pos[2] = ring[ringSlot * 3 + 2];
+		return 1;
+	}
+
 	void TickWorldEntities( int ms ) {
 		tracing::instrument( tracing::LOCATION, "ms=%d", ms );
 		for ( int i = 0; i < g_spawnedEntityCount; ++i ) {

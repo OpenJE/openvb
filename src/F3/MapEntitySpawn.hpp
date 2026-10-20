@@ -92,6 +92,10 @@ namespace F3 {
 	// GENT chunk is present.
 	int ParseGentBlock( const unsigned char* data, unsigned len, int f[8] );
 
+	// Place an entity at one ring position of an EMEP entry point (party-slot semantics:
+	// the 6 points are one per squad member). Returns 0 when the entry point id is absent.
+	int PlaceEntityAtEntryPoint( SpawnedEntity* e, JE::Map* map, unsigned entryId, unsigned ringSlot );
+
 	// Find a spawned entity by name prefix ("Default_PC") - test/game accessor.
 	SpawnedEntity* FindSpawnedEntity( const char* prefix );
 
