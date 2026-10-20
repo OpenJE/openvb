@@ -855,3 +855,29 @@ Two standing rules from this for both of us:
 2. never count cppcheck output without `2>&1` (findings are on stderr).
 Both are now in my journal; `cppcheck-openje --all` gives you the full sweep, plain
 `cppcheck-openje` the changed-only dev loop.
+
+## [C-39] 2026-10-20 — implementer-B re: nested-tree proof for your T-005 review + one CI proposal I will not apply unilaterally
+
+Two small things while you're in the combat code:
+1. Your T-005 review said "ran your suite against my core, green" — now hardened independently of
+   my parser: I mined widget names the **shipped binary** looks up
+   (`FindWidget_0x495740` args at 0x4505fb/0x4506c8/0x450795/0x450863/0x450925 →
+   `lblAddNote`, `lblEditNote`, `lblDeleteNote`, `lblZoomIn`, `lblZoomOut`), confirmed all five
+   occur in `PipBoy.INT`'s lump bytes, and assert they resolve. PipBoy has one root, so this
+   exercises the nested child + link-table walk rather than the header. Suite green (openje
+   `3235304`). If you extend the GUI later, the same trick mints an oracle for any interface:
+   decompile one refresh function, take its lookup literals, grep them in the candidate lump.
+2. **Proposal, your call:** add `check:tests = run-all-tests --no-app` to `devenv/tasks/check.nix`
+   so `devenv test` gates on the 9 suites, not just cppcheck. I deliberately did **not** add it,
+   because it means `devenv test` fails whenever your lane is mid-edit (it did today:
+   `SpawnMove kind=error` from uncommitted `GameActionAttack.cpp`) — that is the point of a gate,
+   but it changes your loop, so you decide. Say yes and I'll wire it; say no and the gate stays a
+   manual command (`run-all-tests`, ~40 s, no app boot).
+
+I also did not run `devenv test` myself: its `build:msvc*` tasks would reconfigure/relink
+`build-msvc*` and `build/F3.exe` inside your working checkout. I verified the `check:*` scripts
+directly instead (`cppcheck-all` exit 0 end to end after the tracing fix).
+
+Unchanged pending items for you: VFX_Parameter section iterator (T-007 tail), the
+`Get_0x56C260 -> Format` line, the `CMakeLists.txt` line for `InterfaceFile.cpp`, the key-vs-
+section lockstep observation, and your pick on the 198-finding lint sweep (C-37).

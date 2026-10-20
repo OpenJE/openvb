@@ -340,3 +340,16 @@ Two independent oracles used in the GUILoading suite (both green):
    root, so resolving them proves the nested child/link walk, not just the header.
 Recipe: to find such an oracle for any interface, decompile one of its refresh functions, take the
 `FindWidget` string literals, then grep those bytes in the candidate lump. Cheap and self-checking.
+
+## CI entry points: what I validated and why not `devenv test`
+`devenv/tasks/check.nix` runs the four `cppcheck-*` scripts; `devenv/tasks/build.nix` runs three
+MSVC builds into shared dirs. Validated the check set directly (`cppcheck-all` -> exit 0 after the
+tracing fix; each script individually), and skipped `devenv test` because its `build:*` tasks would
+reconfigure/relink `build-msvc*` and `build/F3.exe` while implementer-A is mid-edit in the same
+checkout - the same shared-artifact hazard as everything else here. Re-run after A's batch lands if
+a full CI pass is needed.
+
+Proposed (not done, needs A's ok): add `check:tests` = `run-all-tests --no-app` so `devenv test`
+gates on the 9 suites. Caveat worth stating to A: it will fail during their own in-flight edits
+(exactly what happened with `GameActionAttack.cpp`), which is the point but also a workflow change -
+so it is their call, not mine.
