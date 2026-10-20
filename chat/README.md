@@ -118,35 +118,31 @@ Rules that keep it from rotting into a second source of truth:
   written into `discoveries/` and committed. Engram is an index over that corpus, not a
   replacement for it: don't route a durable finding into a memory and stop there.
 
-### Engram binary: two paths, and one manual machine-level shim
+### Engram binary: the PATH fact that decides everything
 
-- **Inside the devenv shell**: `engram` comes from `devenv/packages/engram.nix` (fully
-  declarative, pinned 3.5.1).
-- **Outside it** (a `pi` started from a plain login shell): `engram` is not on PATH, and the
-  extension fails closed with *"The Engram binary 'engram' could not be found"*. A plain login
-  PATH puts `~/.pi/agent/bin` first, so that is the shim location:
+- **Inside the devenv shell** (how these agents actually run: `nvim -> devenv shell -> zsh ->
+  pi`), `engram` must come from `devenv/packages/engram.nix`. `~/.pi/agent/bin` is **not** on
+  that PATH, so a shim there does nothing for in-shell sessions.
+- The directory that *is* on the in-shell PATH but does not exist by default is
+  `~/.local/state/nix/profile/bin`. Creating it and putting the binary there is the fix that
+  works **without restarting anything** — verified: `mem_doctor` went from
+  *"The Engram binary 'engram' could not be found"* to 10/10 ok in the same live session.
 
 ```bash
-mkdir -p ~/.pi/agent/bin
+mkdir -p ~/.local/state/nix/profile/bin
 cp "$(nix-build -E 'let pkgs = import <nixpkgs> {}; in
       pkgs.callPackage ./devenv/packages/engram.nix {}' --no-out-link | tail -1)/bin/engram" \
-  ~/.pi/agent/bin/engram && chmod +x ~/.pi/agent/bin/engram
+  ~/.local/state/nix/profile/bin/engram && chmod +x ~/.local/state/nix/profile/bin/engram
 ```
 
-This is a **copy, not a symlink**, so it survives nix GC — but that also means it silently pins
-3.5.1 forever. **Re-run the command after bumping `devenv/packages/engram.nix`**, otherwise the
-in-shell and out-of-shell binaries diverge.
+**Do not believe the earlier claim in this file that a failed probe is cached for the process
+lifetime.** It is not: the extension resolves `engram` through PATH *at spawn time on each
+call*, so `mem_doctor` re-probes and recovers. The only genuine restart requirement is for
+`ENGRAM_URL`/`ENGRAM_PORT`/`ENGRAM_BIN`, which are read at extension load.
 
-**Why a running session cannot be fixed in place.** `ENGRAM_BIN`/`ENGRAM_URL`/`ENGRAM_PORT` are
-read from `process.env` when the extension *loads*, the binary is looked up through that
-process's PATH, and a failed init is **cached for the lifetime of the process** (`mem_doctor`
-replays the cached failure instead of re-probing). Note also that `pi` launched inside
-`devenv shell` does **not** inherit a login shell's PATH — `~/.pi/agent/bin` is absent there —
-so the shim does not help in-shell sessions; only the nix module does. So after a version bump,
-or the first time this lands: **re-enter the devenv shell** (letting devenv rebuild on the
-changed `devenv/*.nix`), then restart `pi` (`pi --continue` keeps the conversation). Verified:
-a fresh boot inside a shell that has `engram` reports `🧠 openvb · ready` and auto-spawns the
-server; the 3 memories already in `~/.engram` survive because the store is the platform default.
+These shim copies are real files (survive nix GC) and therefore **silently pin 3.5.1** — re-run
+the command after bumping `devenv/packages/engram.nix`, or re-enter the devenv shell so the nix
+module provides the binary instead.
 
 ## Bootstrap — one-time, per agent (already done in this repo by implementer-A)
 
