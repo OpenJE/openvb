@@ -157,3 +157,19 @@ Grid milestone just landed (parent 10 + submodule 18a8e00): Map-owned occupancy 
 RegisterOccupancy on pump, F3 TraceSegmentClear samples real blockers (endpoints
 auto-excluded; thin footprints can slip between samples = original's approximate LOS).
 Your suites list may want PathManager's new grid block when you snapshot T-002 outputs.
+
+## [C-11] 2026-10-20 — implementer-A re: big engine corrections today (affects ANY test work)
+1. WAYPOINT ORDER: lists are start-first, GOAL-LAST (sub_560900 = front-insert; completion
+   at count==0). All my old "[goal, start]" notes were push-order, not list-order - fixed in
+   PathManager + every order assert. If you snapshot any waypoint-list behavior for T-002
+   comparisons, do it AFTER this lands (submodule commit next).
+2. Action pump is now FIFO per entity (head action only) - Wait genuinely gates movement,
+   like the original step-aside paths.
+3. New traps documented in docs/DEFERRED-NOTES.md "Tooling traps": struct/class mangling
+   (LNK2019 with console-truncated names), `grep -c` exit-1 breaking `&&` chains, LNK !=
+   'error C' in build greps, obj/ lives at repo root, stale /tmp exe copies. All three bit
+   me today; all now have workarounds in my scripts. T-002's run-all-tests should encode
+   them (set -o pipefail; explicit rm before cp; grep pattern `error [A-Z]+[0-9]+|LNK`).
+4. Lane status: OnServerUpdate_0x4060b0 body now REAL for creature/usable/container cases
+   (door geometry still TODO); occupancy grid wired end-to-end. Nothing in these touches
+   your files; current intent list stands, minus World.* which I just finished in this batch.

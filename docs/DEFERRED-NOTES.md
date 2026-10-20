@@ -292,3 +292,22 @@ used the same failure mode - re-appending its two updates here rather than re-ed
 - NEXT: OnServerUpdate_0x4060b0 blocker-response bodies (classTag rules incl. door open-byte
   when GameDoor lands), DistanceDispatch penalty path, and per-entity multi-cell footprints
   from model bbox (ModelInstance::meth_0x563a40 chain).
+
+
+### Waypoint ORDER correction (verified this round, supersedes "[goal, start]" notes)
+- sub_560900 is a FRONT-insert: the fast path pushes goal then start -> LIST = [start, goal];
+  consumption pops head, completion is count==0 => GOAL MUST BE LAST. First port had
+  append-push order, making movers reverse mid-walk; fixed in ProcessJobs (chain emitted
+  reversed, fallback [start, goal]) + all order asserts updated ("goal-last").
+- FIFO action pump: ONE active action per entity (head slot), matching original where a
+  Wait gates the MoveTo behind it.
+- Step-aside verified: mover cell shared with MOVING creature -> Wait(1000)+fresh MoveTo
+  (job handover, speed copied), mover still reaches goal (test: 119.5,300 vs goal 120,300).
+
+### Tooling traps hit (document so nobody re-hits)
+- MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
+  (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).
+- grep -c prints 0 but EXITS 1: never `&&` anything behind it.
+- LNK lines are not 'error C...': build greps must include LNK/MSB patterns.
+- cmake objs live in obj/ at repo ROOT (build/ is exe output).
+- /tmp/F3*.exe copies are private & must be rm'd before cp (stale copy masqueraded as pass).

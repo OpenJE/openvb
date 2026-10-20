@@ -202,8 +202,16 @@ namespace F3 {
 				continue;
 			}
 			RegisterOccupancy( e, GetActiveMap() );
-			for ( int s = 0; s < 4; ++s ) {
+			int acted = 0;
+			// FIFO: the original runs ONE active action per entity (head of its action
+			// queue; the step-aside Wait must gate the MoveTo behind it). Process the
+			// first non-empty slot only.
+			for ( int s = 0; s < 4 && !acted; ++s ) {
 				SpawnedEntity::ActionEntry& a = e->actions[s];
+				if ( a.kind == 0 ) {
+					continue;
+				}
+				acted = 1;
 				if ( a.kind == 1 ) {
 					JE::ActionMoveTo* mv = static_cast<JE::ActionMoveTo*>( a.action );
 					mv->Update_0x55b600( (unsigned)ms, 0 );

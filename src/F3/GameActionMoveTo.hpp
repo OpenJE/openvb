@@ -41,8 +41,22 @@ namespace F3 {
 	// PORT: action-list plumbing implemented; the blocker pipeline degrades EXACTLY like the
 	// original with grid==NULL (step 1 return) until the spatial grid (map+364) lands.
 	struct GameActionMoveTo : public JE::ActionMoveTo {
+		GameActionMoveTo() : speed(8.0f) {}   // 8.0f = GE+0x94 ctor default (candidate source)
+
+		// JE hook (secondary vft +0x14): the original routes it into the F3
+		// OnServerUpdate_0x4060b0 through the entity's action loop; ms = entity ServerUpdate
+		// timestamp (v16 world time in the original).
+		virtual void OnMoveServerUpdate( unsigned ms ) { OnServerUpdate_0x4060b0( ms ); }
+
+		// Movement speed source. The un-named GE+0x94 (ctor 8.0f, discovery session 1 §2 —
+		// "needs first consumer") is our leading candidate for the entity's move speed; the
+		// JE::Entity-side consumer is unconfirmed, so F3 carries an explicit field until the
+		// first read site proves the mapping (then it becomes a mover+0x94 load).
+		float speed;
+		virtual float GetMoveSpeed() { return speed; }
+
 		// OnServerUpdate vft slot on the entity-facing interface; called by the world pump
-		// after the JE movement update. Faithful null-grid early return documented above.
+		// after the JE movement update.
 		virtual int OnServerUpdate_0x4060b0( unsigned ms );
 
 		// fresh re-issue copy (original writes +24 job, +36..44 goal, +48 flag on the new
