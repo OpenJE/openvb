@@ -41,31 +41,44 @@ namespace F3 {
 		int skills[kSkillCount];
 		int special[7];
 		int dt[8];
-		int dtParts56[8];   // second row when CALLED-SHOT PART is 5/6 (per 0x409f90
-	                    // decompile switch; doc §3 "mode" wording was loose)
+		int dtParts56[8];   // second row when the CALLED-SHOT PART is 5/6 (raw 0x413413/
+	                    // 0x40a06b switch on the PART; doc §3's "mode" wording was loose)
+		int dtUsable[8];    // GameUsableObject DT array at +0xA4, indexed by damage type -
+	                    // read instead of the creature rows when the target is a usable
+	                    // object (0x409f90 @0x40a052: v8[4*param_1[4] + 164])
 		int evasion;
 		float pos[3];
 
 		CombatStats() : evasion(0) {
 			for ( int i = 0; i < kSkillCount; ++i ) { skills[i] = 0; }
 			for ( int i = 0; i < 7; ++i ) { special[i] = 0; }
-			for ( int i = 0; i < 8; ++i ) { dt[i] = 0; dtParts56[i] = 0; }
+			for ( int i = 0; i < 8; ++i ) { dt[i] = 0; dtParts56[i] = 0; dtUsable[i] = 0; }
 			pos[0] = pos[1] = pos[2] = 0.0f;
 		}
 	};
 
 	// Attack-mode record (MODE/GWAM record; byte offsets verified session 23 §5).
+	// NOTE: `style` does NOT pick the DT row - the called-shot BODY PART does (raw switch on
+	// param_5 at 0x413413 / 0x40a06b; chat C-33 + session 29). Kept here because style==2
+	// (throwing) still selects the MELEE skill + 3*STR range in the to-hit twins.
+	//
+	// FIELD ORDER IS LOAD-BEARING: this is a C++98 aggregate and the suites brace-initialize it
+	// POSITIONALLY (`{ 0, 0, 0, 2, 0, 1, 3, 7, 0 }`). Inserting a field in the middle silently
+	// reassigns every later value (it cost 10 test failures to learn that) - append new fields
+	// at the end instead. The offsets in the comments are documentation, not layout.
 	struct AttackModeRecord {
 	public:
-		int   style;          // +0x08 (2 = throwing; 5/6 select the second DT row)
-		int   damageType;     // +0x10 (0..7 DT column)
-		int   primaryAmmoCost;// +0x1C (nonzero -> ammo to-hit mod applies)
-		int   flatDamageBonus;// +0x24
+		int   style;          // +0x08 (2 = throwing)
+		int   damageType;     // +0x10 (also the DT index INSIDE the row; 4 = hand-to-hand)
+		int   primaryAmmoCost;// +0x1C (param_1[7]: nonzero -> the whole ammo block runs)
+		int   flatDamageBonus;// +0x24 (param_1[9])
 		int   toHitBonus;     // +0x28
-		int   attackCount;    // +0x30 (1 = single, no continuation)
-		int   damageMin;      // +0x38
-		int   damageMax;      // +0x3C
+		int   attackCount;    // +0x30 (1 = single, no continuation; param_1[3] in §21)
+		int   damageMin;      // +0x38 (param_1[14])
+		int   damageMax;      // +0x3C (param_1[15])
 		int   ammoExtra;      // +0x50
+		int   ammoReqType;    // +0x18 (param_1[6]; gates the unarmed bonus-vs-extra-object branch,
+		                      // which is not modeled - see CalculateUnarmedDamage)
 	};
 
 	// Ammo prototype modifiers (session 23 §7: GameAmmo +0x3B8/+0x3BC/+0x3C0/+0x3C4).
@@ -84,10 +97,27 @@ namespace F3 {
 	// shipped oddity, runtime verification pending per their §8.4).
 	int GetDerived( const CombatStats& c, DerivedAttr a );
 
-	// GameWeapon::CalculateDamage_0x413310 core (session 21 §3). calledShotPart 9 =
-	// "no body part" -> 0 ("No body part was targeted."). Returns >= 0.
+	// GameWeapon::CalculateDamage_0x413310 core (session 21 §3 + raw decompile re-read).
+	// calledShotPart == 9 is an UNCONDITIONAL zero here (@0x41333d, inside the else-branch of
+	// the param_1 && param_3 && param_2 validity check) with the shipped log line - the
+	// CONDITIONAL form (`param_4 == 9 && !usable`) is the UNARMED twin @0x409f90, a different
+	// function. The two sites genuinely differ (session 29 §3, chat C-33 §3).
 	int CalculateDamage( const AttackModeRecord& m, const CombatStats& target,
 	                     const AmmoMods& ammo, int calledShotPart, RandFn rnd );
+
+	// GameCreature::CalculateUnarmedDamage_0x409f90 - the UNARMED twin, which is what the
+	// shipped attack path actually calls for an unarmed actor (fork on the action's +0x71
+	// "unarmed" bool at 0x4040a8/0x4040d4). Differences from the weapon twin, all raw-verified:
+	//   - no ammo block at all (min/max come straight from the mode record)
+	//   - damageType == 4 (hand-to-hand) adds the ATTACKER's MELEE_DAMAGE derived to damageMax
+	//   - part 9 zeros only when the target is NOT a GameUsableObject
+	//   - usable-object targets read their own DT array (+0xA4) instead of the creature rows
+	//   - the style/extra-object bonus branch (0x40a024-0x40a045) is skipped when the extra
+	//     object is absent, which is the unarmed case; the shipped `MEMORY[0x24]` addend in that
+	//     branch is a decompiler artifact and is NOT modeled (routed to discovery as C-40)
+	int CalculateUnarmedDamage( const AttackModeRecord& m, const CombatStats& attacker,
+	                            const CombatStats& target, int calledShotPart,
+	                            bool targetIsUsableObject, RandFn rnd );
 
 	// GameWeapon::CalculateToHit_0x413560 dispatcher -> ranged 0x413150 / melee 0x412fe0
 	// (session 23 §2/§3). effectiveRange: weapon.GetEffectiveRange_0x412f50 (or throwing

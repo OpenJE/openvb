@@ -33,6 +33,7 @@ namespace F3 {
 		              statMax(1), statCur(0), classIdTag(0),
 		              animState(0), weaponStance(7), unk34(7),
 		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
+		              queuedAnimEvent(0), lastHitVeg(0),
 		              frameDt0x300(0), actedLatch0x319(0), turnDeadline0x29C(0),
 		              noTurn0x1E4(0), busy0x314(0),
 		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
@@ -88,10 +89,18 @@ namespace F3 {
 		int   classIdTag;     // Entity+0x15C runtime tag (== factory case for 1..9; player
 		                      // keeps 1 - discovery full-geometry §3/§5). Door/Container are
 		                      // UsableObject SIBLINGS, not a chain.
+		// Anim-event seam (GameEntity::QueueAnimEvent_0x4673D0 is unported: no model/Gfx anim
+		// layer yet). These hold the id the shipped code WOULD queue, so the hit-reaction and
+		// death-anim selection rules (session 7 §3 step 5, session 8 §3) are testable now and
+		// the anim layer can consume them later without re-deriving the selection logic.
+		int   queuedAnimEvent;      // last QueueAnimEvent id (33/34/37/38/39 hit reactions,
+		                            // 43..52 death set)
+		const char* lastHitVeg;     // .veg name resolved by SelectHitVeg (VFX spawn unported)
 		// Entity action list (original push = JE::Entity::meth_0x550720, iterated by the
 		// server pump; blocker paths push Wait(1000ms)+fresh MoveTo, see GameActionMoveTo
 		// header). Caller-owned objects; slots auto-clear on completion/fetch.
-		struct ActionEntry { int kind; void* action; };   // kind 0 empty, 1 move, 2 wait
+		struct ActionEntry { int kind; void* action; };   // kind 0 empty, 1 move, 2 wait,
+		                                                   // 3 operate-door, 4 attack, 5 die
 		ActionEntry actions[4];
 	};
 

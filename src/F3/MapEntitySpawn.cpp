@@ -12,6 +12,8 @@
 #include "JE/HostHooks.hpp"
 #include "JE/ActionMoveTo.hpp"
 #include "F3/GameActionMoveTo.hpp"
+#include "F3/GameActionAttack.hpp"   // kind 4 attack + kind 5 die actions (pump below)
+#include "JE/Scripting.hpp"          // OnDeath / OnDamage script hooks
 #include "JE/Resources.hpp"
 #include "JE/VFX_Parameter.hpp"
 #include "JE.hpp"
@@ -274,7 +276,14 @@ namespace F3 {
 					e->entityState = kStateActive;   // handlers end in ChangeState(4)
 					return;                          // do not also pump this frame (fidelity)
 				case kStateDying:
-					return;   // OnDeath_0x5509b0: script + server-only dereg TODO
+					// OnDeath_0x5509b0 (session 12 §2): RunScript("OnDeath") -> world-server
+					// registry dereg (net broadcast unported) -> ChangeState(7). The 6->7 edge is
+					// SERVER-ONLY in the original (it throws otherwise), so it is gated here too.
+					JE::EntityRunScript( e, "OnDeath", ms, 0, 0 );
+					if ( JE::Host::IsServerContext() ) {
+						e->entityState = kStateDead;   // the one legal 6->7 site
+					}
+					return;
 				case kStateDead:
 					if ( !e->worldLinked ) {
 						return;
@@ -322,6 +331,20 @@ namespace F3 {
 					}
 					if ( w->Expired( (unsigned)ms ) ) {
 						a.kind = 0; a.action = 0;
+					}
+				} else if ( a.kind == 4 ) {
+					// kind 4 = GameActionAttack (session 21 state machine). gameMs is the world
+					// frame ms, the same clock the original feeds OnServerUpdate.
+					GameActionAttack* at = static_cast<GameActionAttack*>( a.action );
+					if ( at->Update( (unsigned)ms ) == 1 ) {
+						a.kind = 0; a.action = 0;   // caller-owned (stack or pool) object
+					}
+				} else if ( a.kind == 5 ) {
+					// kind 5 = GameActionDie, queued by the damage Apply onto the VICTIM's list
+					// ("mode 5 = accepts queued actions", session 7 §3 step 10).
+					GameActionDie* die = static_cast<GameActionDie*>( a.action );
+					if ( die->Update( e ) == 1 ) {
+						a.kind = 0; a.action = 0;   // static pool: no delete
 					}
 				}
 			}

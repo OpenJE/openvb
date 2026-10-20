@@ -26,7 +26,41 @@ namespace F3 {
 	//    creating+attaching GameEffectDamage objects (effect/updater layer unported).
 	//    HP write follows GameEntity::meth_0x4629C0 semantics: cur in [0..max] at
 	//    +0x24/+0x20 == our statCur/statMax; death -> kStateDying then kStateDead.
-	//  - hit test: d100 roll <= chance (CombatDice(1,100) through the rand seam).
+	//  - hit test: chance >= RandRange(0,100) per RollToHit_0x402260 (session 17 §1) - note the
+	//    inclusive 0..100 range (101 outcomes), NOT 1..100 (chat C-33 §1).
+	//  - the shipped damage fork is the action's +0x71 "unarmed" bool (0x4040a8/0x4040d4):
+	//    unarmed -> GameCreature::CalculateUnarmedDamage_0x409f90, otherwise the weapon twin
+	//    0x413310. We carry the flag as `unarmed0x71` and default it TRUE, because the weapon /
+	//    inventory registries are unported (so every attack here is unarmed and takes the twin
+	//    the demo actually exercises).
+	// GameActionDie (session 7 §3 step 10): created by the damage Apply when the victim
+	// newly dies, queued onto the VICTIM's action pipeline (mode-5 "accepts queued
+	// actions"). Fields per the shipped init: +0x1C damageType, +0x20 material, +0x28 byte.
+	// DEVIATION: shipped death pipeline (anim/loot/fade) unported; this action performs
+	// the lifecycle flip ACTIVE -> DYING, and the DYING -> DEAD edge runs in the entity pump
+	// (OnDeath_0x5509b0, server-gated - session 12 §2), NOT here.
+	// NB: src/F3/GameActionDie.hpp is the DB-generated stub for the same shipped class (its
+	// mbr_0x1c / mbr_0x20 / mbr_0x28 are exactly these three fields). It is included nowhere;
+	// if it ever is, delete the stub rather than renaming this port.
+	struct GameActionDie {
+	public:
+		int damageType;   // +0x1C (from effect +0xA0)
+		int material;     // +0x20 (effect +0xA4)
+		unsigned char flagsByte0x28;  // +0x28 (effect +0xAC-derived)
+		GameActionDie() : damageType(0), material(0), flagsByte0x28(0) {}
+		int Update( struct SpawnedEntity* victim );   // 1 = done
+	};
+
+	// Hit-reaction anim ids (session 7 §3 step 5): moving -> 33 front / 34 back;
+	// stationary -> (+0xAC set ? 38/39 : 37/38), front/back by the behind-sector flag.
+	extern const int kReactionAnimMoving[2];    // {33,34}
+	extern const int kReactionAnimIdleFlag[2];  // {37,38}
+	extern const int kReactionAnimIdleFlagSet[2]; // {38,39}
+
+	// .veg hit-effect selection (session 7 §3 step 6 table): damageType (+0xA0 0..5) with
+	// material (+0xA4) sub-cases. Pure name resolver - VFX spawn layer consumes later.
+	const char* SelectHitVeg( int damageType, int material, int dmg );
+
 	struct GameActionAttack {
 	public:
 		// shipped offsets in comments; flat storage here
@@ -43,11 +77,18 @@ namespace F3 {
 		bool          ammoDeducted;         // +0x58 per-volley guard
 		int           seriesRemaining;      // +0x78 series list remainder (count modelled)
 		float         moveSpeed;            // step-toward fallback (deviation above)
+		bool          unarmed0x71;          // +0x71 unarmed/weapon fork (see header notes)
 
-		// damage queue (+0xbc): {dmg} per hit; caster/weapon netId keys omitted (single
-		// actor/target pair per action object).
+		// damage queue (+0xbc): full queued-hit records (effect payload stand-ins:
+		// dmg/DT/material/+0xAC marker per session 7 §3 drain-config idx1..3).
+		struct QueuedHit {
+			int dmg;
+			int damageType;   // effect +0xA0
+			int material;     // effect +0xA4
+			bool lastTarget;  // effect +0xAC ("last target of action")
+		};
 		static const int kQueueCap = 16;
-		int   queue[kQueueCap];
+		QueuedHit queue[kQueueCap];
 		int   queueCount;
 
 		bool  finished;
@@ -69,6 +110,9 @@ namespace F3 {
 
 		// rand seam for deterministic tests (NULL = std rand)
 		static RandFn s_rand;
+		// voice-roll coin flip seam (session 7 §3 step 7) - anim/sound ids pending audio
+		// layer; exposed for determinism in tests.
+		static RandFn s_voiceRand;
 	};
 } // namespace F3
 

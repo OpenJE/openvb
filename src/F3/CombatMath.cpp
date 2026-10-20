@@ -2,6 +2,7 @@
 
 #include "tracing.hpp"
 #include <math.h>
+#include "JE.hpp"             // JE::LogDebugString - the shipped debug strings are part of the port
 #include "F3/CombatMath.hpp"
 
 namespace F3 {
@@ -23,8 +24,9 @@ namespace F3 {
 		tracing::instrument( tracing::LOCATION, "skill=%d", (int)s );
 		const int base = c.skills[s];
 		const int STR = c.special[0], PER = c.special[1], END = c.special[2],
-		          CHA = c.special[3], INT = c.special[4], AGI = c.special[5],
-		          LCK = c.special[6];
+		          CHA = c.special[3], INT = c.special[4], AGI = c.special[5];
+		// No shipped skill formula reads LUCK (0x409830's 13 cases don't touch +0x778) - it is
+		// read only by GetDerived's CRITICAL_CHANCE, so it is deliberately not bound here.
 		switch ( s ) {
 		case kSkillMelee:
 		case kSkillFirearms:
@@ -77,32 +79,99 @@ namespace F3 {
 		}
 	}
 
-	// 0x413310 core (session 21 §3):
-	//   raw = Dice(min + ammoMin, max + ammoMax) + flatBonus        [min<=max clamp]
-	//   dt  = (calledShotPart 5/6 ? second row : generic row)[damageType] - row select by
-	//   PART per the 0x409f90 decompile (doc §3's "mode==5||6" was the loose reading)
-	//   if dt>0 { dt -= pen; floor 0 }
-	//   dmg = raw - dt/2 - Dice(0, dt/2);  return max(dmg, 0)
+	// 0x413310 core, ported against a fresh raw re-read (chat C-33 Â§3 + session 29 Â§3 corrected
+	// my earlier reading):
+	//   if (part == 9) -> LogDebugString("...No body part was targeted.") + return 0   UNCONDITIONAL
+	//   ammo block runs ONLY when mode+0x1C (primaryAmmoCost) != 0; max takes the ammo max bonus
+	//     and min takes its bonus only while it stays BELOW that bonused max (0x4133eb) - the min
+	//     is NOT clamped upward when the bonus would overshoot.
+	//   raw  = Dice(min, max) + flatBonus(mode+0x24)
+	//   row  = part switch (0,1,2,3,4,7 -> +0x7B0 | 5,6 -> +0x7C8 | default -> log + +0x7B0 and
+	//          STILL computes, it does not return 0), indexed by mode+0x10 (damage type) INSIDE it
+	//   if (dt > 0) { dt -= ammoPenetration; floor 0 }   (penetration is 0 without an ammo block)
+	//   dmg  = raw - dt/2 - Dice(0, dt/2); return max(dmg, 0)
 	int CalculateDamage( const AttackModeRecord& m, const CombatStats& target,
 	                     const AmmoMods& ammo, int calledShotPart, RandFn rnd ) {
 		tracing::instrument( tracing::LOCATION, "part=%d dt=%d", calledShotPart,
 		                     m.damageType );
-		// part 9 guard (session 21 §3) is a game-layer preflight cancel in the original
-		// ("No body part was targeted." + action cancel @0x404983 region), and 0x409f90
-		// skips it for usable-object targets - so the FORMULA does not zero on 9; the
-		// armed action guarantees a concrete part. (Reimpl: GameActionAttack::Start
-		// resolves 9 -> 0.)
-		int lo = m.damageMin + ammo.damageMinBonus;
-		int hi = m.damageMax + ammo.damageMaxBonus;
-		if ( lo > hi ) { hi = lo; }              // shipped "clamp min <= max" direction
+		// 0x41333d sits in the else-branch of the param_1 && param_3 && param_2 validity check
+		// (our POJOs cannot be null, so that guard is structurally satisfied here). The part-9
+		// rejection is UNCONDITIONAL in this twin; the conditional form (`part == 9 && !usable`)
+		// belongs to the unarmed twin @0x409f90 - the two sites genuinely differ.
+		if ( calledShotPart == 9 ) {
+			JE::LogDebugString( NULL, "GameWeapon::CalculateDamage - No body part was targeted.\n" );
+			return 0;
+		}
+		int lo = m.damageMin;
+		int hi = m.damageMax;
+		int pen = 0;
+		if ( m.primaryAmmoCost != 0 ) {            // mode+0x1C; the shipped ammo lookup + its
+			hi += ammo.damageMaxBonus;          // "Unable to find ammo" FatalError are unported
+			if ( lo + ammo.damageMinBonus < hi ) {
+				lo += ammo.damageMinBonus;      // 0x4133eb direction
+			}
+			pen = ammo.dtPenetration;            // ammo+0x3C0
+		}
 		int raw = CombatDice( lo, hi, rnd ) + m.flatDamageBonus;
 
-		const int* row = ( calledShotPart == 5 || calledShotPart == 6 )
-		                 ? target.dtParts56 : target.dt;
+		const int* row;
+		switch ( calledShotPart ) {
+		case 0: case 1: case 2: case 3: case 4: case 7:
+			row = target.dt; break;
+		case 5: case 6:
+			row = target.dtParts56; break;
+		default:
+			JE::LogDebugString( NULL,
+			    "GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered.\n" );
+			row = target.dt; break;
+		}
 		int dt = row[ m.damageType & 7 ];
 		if ( dt > 0 ) {
-			dt -= ammo.dtPenetration;
+			dt -= pen;
 			if ( dt < 0 ) { dt = 0; }
+		}
+		int dmg = raw - dt / 2 - CombatDice( 0, dt / 2, rnd );
+		return dmg > 0 ? dmg : 0;
+	}
+
+	// 0x409f90 GameCreature::CalculateUnarmedDamage - the twin the shipped attack path actually
+	// calls for an unarmed actor (fork on the action's +0x71 bool at 0x4040a8/0x4040d4). Raw
+	// differences from the weapon twin: no ammo block at all, MELEE_DAMAGE rides on damageMax
+	// when the mode's damage type is 4 (hand-to-hand), part 9 zeros only for NON-usable targets,
+	// and a GameUsableObject target contributes its own +0xA4 DT array instead of the creature
+	// rows. DEVIATION: the 0x40a024-0x40a045 extra-object bonus branch is not modeled - its
+	// addend decompiles as `MEMORY[0x24]` (base register lost) and it is provably inert when the
+	// extra object is absent, which is the unarmed case. Routed to discovery as C-40.
+	int CalculateUnarmedDamage( const AttackModeRecord& m, const CombatStats& attacker,
+	                            const CombatStats& target, int calledShotPart,
+	                            bool targetIsUsableObject, RandFn rnd ) {
+		tracing::instrument( tracing::LOCATION, "part=%d dt=%d usable=%d", calledShotPart,
+		                     m.damageType, (int)targetIsUsableObject );
+		if ( calledShotPart == 9 && !targetIsUsableObject ) {
+			return 0;                            // 0x409fec - silent, no log line at this site
+		}
+		int hi = m.damageMax;
+		if ( m.damageType == 4 ) {
+			hi += GetDerived( attacker, kDerivedMeleeDamage );   // 0x409ffd-0x40a00a
+		}
+		int raw = m.flatDamageBonus + CombatDice( m.damageMin, hi, rnd );
+
+		int dt;
+		if ( targetIsUsableObject ) {
+			dt = target.dtUsable[ m.damageType & 7 ];            // 0x40a052: v8[4*type + 164]
+		} else {
+			const int* row;
+			switch ( calledShotPart ) {
+			case 0: case 1: case 2: case 3: case 4: case 7:
+				row = target.dt; break;
+			case 5: case 6:
+				row = target.dtParts56; break;
+			default:
+				JE::LogDebugString( NULL,
+				    "GameCreature::CalculateUnarmedDamage() - Unknown CALLEDTARGET encountered.\n" );
+				row = target.dt; break;
+			}
+			dt = row[ m.damageType & 7 ];
 		}
 		int dmg = raw - dt / 2 - CombatDice( 0, dt / 2, rnd );
 		return dmg > 0 ? dmg : 0;
