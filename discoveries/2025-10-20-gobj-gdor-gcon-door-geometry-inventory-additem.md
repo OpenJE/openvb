@@ -65,7 +65,10 @@ Confirmed against A's spatial-grid thread (the `cls_0x57bc90` = map grid object 
   map-id field at **Entity+0x100**; then grid `meth_0x57eb40/setActive` + `meth_0x57d4f0` with
   geom id `*(owner+0x1DC)`; either model-geom add (`meth_0x580260`) or **9-float OBB/corners
   add** (`meth_0x57de50`, 3×(x,y,z) at owner+0x10..0x24 + base pos); on success
-  `intf->vft[+104]` = cell-occupant iterator → `JE::Entity::meth_0x549450(occupant, 1.0f)`
+  `intf->vft[+104]` = **GetParty()** (→ GameParty @World+0xF4; corrected by session 35 —
+  NOT a cell-occupant iterator) ⇒ iterates party members (begin@+8/end@+C) calling
+  `JE::Entity::meth_0x549450(member, 1.0f)` — i.e. door geometry changes notify the WHOLE
+  PARTY (re-path under the changing door)
   (notify/push overlapping entities). Owner = the entity whose geom is used: `self` when
   `self==240` sentinel else `Entity−236B` i.e. **the door's parent/attachment target**
   (`&v2[vbdisp−236]` = Door+0x?? — this is the door's `attachedTo`/blocker object pointer
@@ -91,11 +94,12 @@ QueueAnimEvent case 121 body = `meth_0x4667a0` @0x4667a0: state-machine on the A
 `+0x2C animState` → engine queue `sub_5505F0(entity, 359|431|442|449, 0, 1, 0, 0.0, 0)`
 (clip ids per state 4/5/6; stance 1..6 picks 442 vs 449; state 10 = no-op; default state →
 QueueToDefault then set state 5 and recurse). So OperateDoor = *timestamp + "operate"
-animation*; the actual door state flip arrives **later via the anim-event token dispatch**
-(session-6-classid doc territory or a DM-style token) — we have NOT yet found the token that
-calls slots +0x70/+0x74; ACTION(for A/B): grep the shipped action-update loop for
-`call [reg+70h]`/`+[74h]` on entity vtables when you wire door ops; discovery can chase next
-round if you don't want it.
+animation*; ~~the actual door state flip arrives later via the anim-event token dispatch~~
+**SOLVED (session 17): not a token — the door's OWN activate-slot (+0xB8) override
+`0x40ffe0` plays anim 514, backdates Entity+0x94 by clip duration, and flips collision via
+vslots +0x70/+0x74 (octree Map+0x88) — see
+`2025-10-20-entity-shape-lifecycle-door-flip-solved.md` §3.** ACTION(for A/B): ~~grep the
+shipped action-update loop~~ retired — nothing to grep; wire per session 17.
 
 ## 6. C-7.1 ANSWER — the EEOV v≥2 item-creation chain, pinned
 
@@ -134,7 +138,7 @@ vft table (first 16): +0 0x46ba10, +4 **0x4690a0 AddItem**, +8 0x469550, +0xC 0x
 
 ```
 if (item = RTTI(Entity→GameItem)(arg)) && item->(field @+40) == 5
-   && intf->vft[+104](?) iter && ...vft[+12](slot, v9)==1:
+   && intf->vft[+104](?) = GetParty → party-member iter && ...vft[+12](slot, v9)==1:  ; (sess-35)
         ; SPECIAL/quest item path: global registry add (intf->vft[+172] → sub_5A04B0(x,
         ;   item id string @item+99·4))
         itemEntity->vft[+4](itemEntity+4·?, 1)      ; item "in-carried-state" virtual
@@ -154,9 +158,10 @@ are solid.)*
   `cls_0x57bc90` grid API your spatial-grid thread is rebuilding — the +0x70/+0x74 pair is a
   ready-made consumer test once the grid lands.
 - **B**: OperateDoor skeleton (§5) + GDOR/GCON lock fields (§2/§3) feed the UI/act layer;
-  the unresolved door state-flip token (§5 ACTION) is discovery's next candidate if nobody
+  the door state-flip question → ANSWERED, session 17 (activate-slot override).
   claims it.
-- Discovery queue after this: (a) door state-flip token/consumer, (b) GOBJ 7-int consumers,
+- Discovery queue after this: ~~(a) door state-flip token/consumer~~ done session 17,
+  (b) GOBJ 7-int consumers,
   (c) +0x18 semantics (=GENT dword[4], still open per session6-classid §8), (d) GCRE v4
   sub_40B9E0 full decode, (e) Item 26-string block map (if A hasn't taken it).
 
