@@ -30,9 +30,20 @@ namespace F3 {
 		kClassGameAmmo = 9, kClassGamePlayer = 10
 	};
 
-	// Resource extension -> class selector (0x46f530 switch observed shapes: .CRT creatures,
-	// .USE usable objects, .ITM items, .DOR doors, .CON containers, .WEA/.AMR/.AMO gear...).
+	// Resource extension -> class selector heuristic (fallback only; kept for maps whose
+	// template blob can't be demanded). See ClassIdFromTemplateChunks for the ground truth.
 	int ClassIdForResourceName( const char* name );
+
+	// Ground-truth class discriminator from the template resource's chunk signature (VERIFIED
+	// against all six ftype families in the shipping rht and the van-buren chunk spec's entity
+	// order table): every template is EEN2, GENT, then type-specific chunks:
+	//   GCRE[,(GCHR)]                 -> GameCreature  (1)
+	//   GITM                           -> GameItem     (5)
+	//   GITM,GIWP / GITM,GIAR / GITM,GIAM -> Weapon(6) / Armor(7) / Ammo(9)
+	//   GOBJ                           -> GameUsableObject (2)
+	//   GOBJ,GDOR / GOBJ,GCON          -> GameDoor(3) / GameContainer(4)
+	// data/len are the demanded template bytes. Returns kClassGameEntity if no marker found.
+	int ClassIdFromTemplateChunks( const unsigned char* data, unsigned len );
 
 	extern SpawnedEntity* g_spawnedEntities[128];
 	extern int            g_spawnedEntityCount;

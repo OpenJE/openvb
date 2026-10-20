@@ -45,6 +45,45 @@ namespace F3 {
 		return kClassGameEntity;
 	}
 
+	// Walk the top-level {fourcc,ver,size} chunk stream and inspect the marker chunk set.
+	int ClassIdFromTemplateChunks( const unsigned char* data, unsigned len ) {
+		bool seenCRE=0, seenITM=0, seenWP=0, seenAR=0, seenAM=0, seenOBJ=0, seenDOR=0, seenCON=0;
+		unsigned pos = 0;
+		while ( pos + 12 <= len ) {
+			dword fourcc, sz;
+			memcpy( &fourcc, data + pos, 4 );
+			memcpy( &sz, data + pos + 8, 4 );   // {tag,ver,size}; size includes 12B header
+			if ( sz < 12 || pos + sz > len ) {
+				break;
+			}
+			switch ( fourcc ) {
+				case 0x45524347u /*GCRE*/: seenCRE = 1; break;
+				case 0x4D544947u /*GITM*/: seenITM = 1; break;
+				case 0x50574947u /*GIWP*/: seenWP  = 1; break;
+				case 0x52414947u /*GIAR*/: seenAR  = 1; break;
+				case 0x4D414947u /*GIAM*/: seenAM  = 1; break;
+				case 0x4A424F47u /*GOBJ*/: seenOBJ = 1; break;
+				case 0x524F4447u /*GDOR*/: seenDOR = 1; break;
+				case 0x4E4F4347u /*GCON*/: seenCON = 1; break;
+				default: break;   // EEN2, GENT, GCHR, ...
+			}
+			pos += sz;
+		}
+		if ( seenCRE ) return kClassGameCreature;
+		if ( seenITM ) {
+			if ( seenWP ) return kClassGameWeapon;
+			if ( seenAR ) return kClassGameArmor;
+			if ( seenAM ) return kClassGameAmmo;
+			return kClassGameItem;
+		}
+		if ( seenOBJ ) {
+			if ( seenDOR ) return kClassGameDoor;
+			if ( seenCON ) return kClassGameContainer;
+			return kClassGameUsableObject;
+		}
+		return kClassGameEntity;
+	}
+
 	SpawnedEntity* g_spawnedEntities[128] = { 0 };
 	int            g_spawnedEntityCount = 0;
 
@@ -69,7 +108,16 @@ namespace F3 {
 			e->pos[2] = r.pos[2];
 			e->yaw   = r.rotDeg[0];
 			e->yawRad = 0.0f;
-			e->classId = ClassIdForResourceName( r.name );
+			// Ground-truth class from the template's chunk signature (demand the resource).
+			e->classId = ClassIdForResourceName( r.name );   // default (extension heuristic)
+			if ( JE::g_resource_system && r.name ) {
+				void* tb = NULL;
+				int tl = 0;
+				if ( JE::g_resource_system->ReadResource( r.name, &tb, &tl ) ) {
+					e->classId = ClassIdFromTemplateChunks( (const unsigned char*)tb, (unsigned)tl );
+					free( tb );
+				}
+			}
 			strncpy( e->name, r.name ? r.name : "", sizeof(e->name) - 1 );
 			e->name[sizeof(e->name) - 1] = 0;
 			// map identity: EME2 records live in one map; the pipeline compares mapId between
