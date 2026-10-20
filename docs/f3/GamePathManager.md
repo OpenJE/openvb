@@ -226,3 +226,8 @@ pool/heap/closed-set/waypoints. ActionMoveTo re-requests after 2000 ms when the 
   an int overflows IntSqrt and fakes a trivially-clear line (fast path swallows A*). Fixed.
 - DistanceDispatch param_3 is a node context (cell @+16/+20, spatial grid @+80); NULL grid is
   the original early-exit; modeled as PathManager::NodeContext.
+
+## Consumer implemented: JE::ActionMoveTo
+- OnAdd_0x55b4f0 / Update_0x55b600 ported (job issue through the world queue, speed*dt
+  interpolation over the CellToWorld chain, yaw = acos(dz)*57.295776 sign-by-dx, entity field
+  writes at +4/+0x178/+0x3A2, drift>20 & >=2000ms re-request). Tests: modules/openje/tests/je/ActionMoveTo.

@@ -78,6 +78,8 @@ namespace F3 {
 	void* InitializeModelCache();
 	void* InitializeGameAnimationCache();
 	void* InitializeGameWorld();
+	class GameWorld;
+	GameWorld* GetWorldServerInstance();   // original 0x401150 slot (0x70BD98 singleton)
 
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath );

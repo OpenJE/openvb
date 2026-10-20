@@ -44,6 +44,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE.cpp"
 	"modules/openje/src/JE/Action.cpp"
 	"modules/openje/src/JE/ActionAnim.cpp"
+	"modules/openje/src/JE/ActionMoveTo.cpp"
 	"modules/openje/src/JE/AnimationCache.cpp"
 	"modules/openje/src/JE/ModelCache.cpp"
 	"modules/openje/src/JE/PathManager.cpp"

@@ -123,10 +123,16 @@ namespace F3 {
     	return cache;
     }
 
+    // World-server singleton slot (original 0x70BD98 - GetWorldServerInstance_0x401150 reads
+    // *(0x70BD98)+16; our GameWorld stands in until the full MI layout is reconstructed).
+    static F3::GameWorld* g_worldServerInstance = NULL;
+    F3::GameWorld* GetWorldServerInstance() { return g_worldServerInstance; }
+
     void* InitializeGameWorld() {
     	F3::GameWorld* world = new F3::GameWorld();
     	if ( world ) {
     		world->ctor_0x470340();
+    		g_worldServerInstance = static_cast<F3::GameWorld*>( world );
     	}
     	return world;
     }
@@ -763,6 +769,13 @@ namespace JE {
 		void* GetParameterTree() { return &F3::g_vfxParameterTree; } // 0x70C2C0/0x70C2CC (sub_56AF30/56AF40)
 		void* GetEngineStringSystem() { return &F3::g_engineStringSystem; } // 0x70C2D8
 		int TickMilliseconds() { return (int)timeGetTime(); }               // 0x56AF50
+
+		// ActionMoveTo job registration target (world-server subobject vft+100 in the
+		// original). Our architecture: the GameWorld's PathManager at +0xF0 IS the queue owner.
+		JE::PathManager* GetPathJobQueue() {
+			F3::GameWorld* w = F3::GetWorldServerInstance();
+			return w ? w->m_pathManager : NULL;
+		}
 	} // namespace Host
 } // namespace JE
 
