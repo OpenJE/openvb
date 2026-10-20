@@ -32,7 +32,7 @@ on every one at startup:
 | +0x5C | `"OptionsMultiplayer"` | 0x40 | 0x4491f0 | mbr_0x5C |
 | +0x60 | `"OptionsVideo"` | 0x100 | 0x4496a0 | mbr_0x60 |
 | +0x28 | `"Container"` | 0x1B8 | JE CWorldContainerInterface 0x457db0 | mbr_0x28 |
-| +0x14/+0x2C/+0x30/+0x34/+0x3C | (5 more ptr slots, zeroed in ctor, set later — ⚠ NOT Dialogue/CSMenu: session-28 showed those are CLIENT-factory virtuals (GameClient vft 0x664804 slots 43/47/48/50); owners of these 5 slots still unattributed — see `2025-10-20-gameclient-vft-demand-ui-factories.md`) | | | |
+| +0x14/+0x24/+0x2C/+0x30/+0x34/+0x3C/+0x40 | **VERDICT (sess 37): DEAD SLOTS in the shipped build** — typed-use census: these seven appear ONLY at ctor-zero (0x439925..0x439946); no accessors, no virtual bodies, no other refs; instance is HEAP (`operator new(0x64)` @0x45e8f8 in `GameClient::virt_meth_0x45e8e0` → ctor 0x4398e0), so any real access would be `this`-typed and census-visible. Dialogue/CSMenu are GameClient factories (sess 28, above); these seven are reserved/cut features (skin slots etc.). Reimpl: model as zero-init padding or omit. | | | |
 
 (Every ctor'd entry gets `SetActive(1)` @0x439a03/0x439aa1/0x439b81/… — so the ORIGINAL
 pre-registers ALL these interfaces at startup; late slots (+0x14 etc.) are the
