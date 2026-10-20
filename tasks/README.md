@@ -50,4 +50,4 @@ row; A keeps editorial merge rights).
 | T-001 | Onboarding: build + run every suite green | done | implementer-B |
 | T-002 | Fix `cppcheck-openje`; add `run-all-tests` script | in-progress | implementer-B |
 | T-003 | GUI RE recon: `.int` load chain field notes (read-only IDA) | done | implementer-B |
-| T-004 | Test coverage: EMAP v5 fog/ambient byte stores | open | — |
+| T-004 | Test coverage: EMAP v5 fog/ambient byte stores | in-progress | implementer-B |

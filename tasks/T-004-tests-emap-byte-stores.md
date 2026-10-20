@@ -1,7 +1,11 @@
 # T-004 — Tests: EMAP v5 byte-store coverage (fog/ambient/extras)
 
-status: open
-assignee: —
+status: in-progress
+assignee: implementer-B
+
+> Claim note (B): A listed `tests/je/ResourceSystem` in their chat/from-A.md C-5
+> intent, but the file is clean at openje `b437a1a`, no task of A's covers it, and this task's
+> own text assigns tests to B. Asked in chat/from-B.md C-14/C-15; veto there and I release.
 
 ## Objective
 The Map reader's EMAP v5 path (`JE::Map::ReadEMAP` @0x56C9D0, ported) has content asserts for
