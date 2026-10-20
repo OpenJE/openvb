@@ -312,6 +312,12 @@ used the same failure mode - re-appending its two updates here rather than re-ed
   no-ops pending OnDeath (server-only 6->7 flip, session 12 §2) and the 0x550ad0 tail, DEAD
   pumps only while linked. Birth state 5 pumps normally => all suites unchanged + green.
 
+### Door engine-anim countdown (ge94 §2 adopted)
+- OperateDoor now ISSUES the anim window (E+0x94-style integer countdown, -1000ms fallback
+  until GetDuration_4a26d0 models exist) and completes; the DOOR's pump flips doorByte0xBC
+  when the countdown reaches 0 (GE-side completion). Test pumps door + mover independently.
+- Countdown guard (animCountdown94==0) prevents double-issue while animating.
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).

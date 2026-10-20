@@ -31,7 +31,7 @@ namespace F3 {
 		              statMax(1), statCur(0), classIdTag(0),
 		              animState(0), weaponStance(7), unk34(7),
 		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
-		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f) {
+		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
 		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
@@ -43,6 +43,12 @@ namespace F3 {
 		// Door fields (GameDoor own block; GDOR chunk reader 0x40e6e0, session 9 §2):
 		float   moveSpeed0x94;   // GameEntity+0x94 (ctor 8.0f): the mover speed read by
 		                         // GameActionMoveTo slot 7 (0x405720: <=0 => 10.0 fallback)
+		// Engine anim window (JE::Entity-vb +0x94 INTEGER countdown - NOT the GE-own +0x94
+		// float; name-collision warning per discoveries ge94 §2). Door open/close: OperateDoor
+		// issues -durMs; the per-entity pump counts elapsed up to 0 and flips doorByte0xBC
+		// there (engine anim 514 + completion, ge94 §2).
+		int   animCountdown94;      // negative while an engine anim is in flight
+		int   animLastMs;           // pump bookkeeping for the countdown
 		unsigned char doorByte0xBC;  // OnServerUpdate skip when != 0; isDoorOpen_0x40e5a0
 		                             // returns (byte == 0) - open/closed polarity STILL AMBIGUOUS
 		                             // (see C-14 to discovery); default 0 from shipped GDOR blobs.

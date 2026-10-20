@@ -241,6 +241,16 @@ namespace F3 {
 	static void TickOneEntity( SpawnedEntity* e, int ms ) {
 		{
 			RegisterOccupancy( e, GetActiveMap() );
+			// engine-anim countdown (E+0x94 semantics): elapsed accumulates toward 0; on
+			// completion the door byte flips (GE-side completion, ge94 §2)
+			if ( e->animCountdown94 < 0 ) {
+				e->animCountdown94 += ( ms - e->animLastMs );
+				e->animLastMs = ms;
+				if ( e->animCountdown94 >= 0 ) {
+					e->animCountdown94 = 0;
+					e->doorByte0xBC = ( e->doorByte0xBC == 0 ) ? 1 : 0;
+				}
+			}
 			int acted = 0;
 			// Lifecycle gate (session 11/12 pump switch on Entity+0x1E0):
 			//  - byte +0x3A0 off => never pump (0x549157 pre-switch check)
@@ -292,12 +302,16 @@ namespace F3 {
 					}
 				} else if ( a.kind == 3 ) {
 					GameActionOperateDoor* od = static_cast<GameActionOperateDoor*>( a.action );
-					if ( od->door ) {
-						// CloseDoor-side effect (0x40e5b0 sets a byte; RunScript("OnUse") and
-						// the open/close anims deferred with the script layer)
-						od->door->doorByte0xBC = ( od->door->doorByte0xBC == 0 ) ? 1 : 0;
+					// Issue the engine door anim (0x40ffe0 shape): PlayAnim(id 514, open/close)
+					// then arm the E+0x94 countdown for -durMs. Model/Gfx anim durations are
+					// unmodeled => 1000 ms fallback (documented deviation; GetDuration_4a26d0
+					// is the seam once models load). RunScript("OnUse") awaits the script layer.
+					if ( od->door && od->door->animCountdown94 == 0 ) {
+						od->door->animCountdown94 = -1000;
+						od->door->animLastMs = ms;
 					}
-					a.kind = 0; a.action = 0;
+					a.kind = 0; a.action = 0;   // action itself completes on issue, as the
+					                              // original's OperateDoor returns once queued
 				} else if ( a.kind == 2 ) {
 					F3::GameActionWait* w = static_cast<F3::GameActionWait*>( a.action );
 					if ( w->startMs == 0u && w->durationMs ) {
