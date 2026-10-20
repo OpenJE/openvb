@@ -52,6 +52,44 @@ Runtime feasibility is already established, not assumed: wine 11 in `.devenv/sta
 ships `d3d8.dll` (+ `d3d8thk.dll`), and the demo's `granny2.dll` / `binkw32.dll` are already staged
 next to our exe in the data dir.
 
+### Premise correction (implementer-B) — my escalated "vendoring decision" was wrong
+
+I told the human `d3d8.lib` is **absent** from the MSVC 2002 image and asked them to choose between
+vendoring and a `LoadLibrary` shim. It is **not absent**: it lives at
+`C:\Program Files\Microsoft Visual Studio .NET 2002\Vc7\PlatformSDK\lib\prerelease\d3d8.lib`
+(with `d3dx8.lib`; headers in `...\Include\prerelease\d3d8.h`). What is actually true is that
+`vcvars32.bat` does not put either `prerelease` directory on INCLUDE or LIB. So:
+
+1. The `LNK1181` I blamed on a missing library came from a **stale installed `msvc-build` payload** —
+   three of five `*-msvc-build` store dirs contain zero occurrences of `prerelease`. That is the same
+   staleness class that handed me a bogus `app-boot` pass this morning; twice in one day I reasoned
+   about a toolchain instead of checking which payload actually ran.
+2. The remaining question is **"append two paths that already exist in the image"** — a changefile edit
+   in the coordinator's lane, not a licensing or vendoring decision. The escalation overstated it and
+   the correction stands in its place.
+
+### The finding that really gates slice 1: no GPU driver in this harness
+
+Measured and bisected in a clean worktree with B's file as the only variable: `Direct3DCreate8`
+succeeds, `GetAdapterDisplayMode` succeeds, and **`CreateDevice` faults** (app exit 40, not 124),
+consistent with this host's `libEGL warning: pci id for fd 41: 10de:2204, driver (null)` lines — wine's
+d3d8 backend wants a GL context and the sandbox has no driver. **A visible magenta frame is not
+verifiable here as configured**, even after the two-path fix.
+
+One cheap experiment precedes any conclusion: mesa's software rasteriser is in the store
+(`/nix/store/ag2gbvb2x4v0907rxp4lcwcf426g54f3-mesa-26.1.8/lib/dri/swrast_dri.so`), so
+`LIBGL_ALWAYS_SOFTWARE=1` may give wined3d a context and let `CreateDevice` succeed. If that fails,
+slice 1's acceptance belongs on a machine with a driver — and that is a fact about our harness, not a
+property of our code, and must be recorded as such rather than as a failure.
+
+### Probe posture worth keeping
+- Rendering is **opt-in** (`OPENVB_RENDER=1`) with an **SEH guard around `CreateDevice`**, so a fault
+  becomes a logged no-device state instead of a crash; default-off keeps `app-boot` honest.
+- `JE::LogDebugString` -> `OutputDebugString` is **invisible under wine without a debugger**, and
+  **`fprintf(stderr, ...)` crashes `F3.exe`**, which links as a GUI-subsystem image where the CRT
+  leaves stderr NULL. Hence the file-based trace channel (`OPENVB_RENDER_TRACE=<native path>`). These
+  are project-wide diagnostics facts, not render-specific trivia.
+
 ### Acceptance (slice 1)
 - `msvc-build` exit 0 with `d3d8` linked; a magenta window appears under `f3-reimpl-run-data`.
 - A single `Present()` per frame: no flicker, no double-buffer confusion, and the world pump still
