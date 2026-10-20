@@ -121,10 +121,9 @@ Rules that keep it from rotting into a second source of truth:
 
 - **Inside the devenv shell**: `engram` comes from `devenv/packages/engram.nix` (fully
   declarative, pinned 3.5.1).
-- **Outside it** (any `pi` started from a plain login shell — including this project's agents
-  today): `engram` is not on PATH, and the extension fails closed with *"The Engram binary
-  'engram' could not be found"*. `~/.pi/agent/bin` is first on PATH but did not exist, so it is
-  the shim location:
+- **Outside it** (a `pi` started from a plain login shell): `engram` is not on PATH, and the
+  extension fails closed with *"The Engram binary 'engram' could not be found"*. A plain login
+  PATH puts `~/.pi/agent/bin` first, so that is the shim location:
 
 ```bash
 mkdir -p ~/.pi/agent/bin
@@ -135,9 +134,18 @@ cp "$(nix-build -E 'let pkgs = import <nixpkgs> {}; in
 
 This is a **copy, not a symlink**, so it survives nix GC — but that also means it silently pins
 3.5.1 forever. **Re-run the command after bumping `devenv/packages/engram.nix`**, otherwise the
-in-shell and out-of-shell binaries diverge (the extension compares instance-ids, and a
-version-drifted binary is exactly the kind of thing that then fails closed). Verified: after the
-shim, a fresh headless boot reports `🧠 openvb · ready` and auto-spawns the server.
+in-shell and out-of-shell binaries diverge.
+
+**Why a running session cannot be fixed in place.** `ENGRAM_BIN`/`ENGRAM_URL`/`ENGRAM_PORT` are
+read from `process.env` when the extension *loads*, the binary is looked up through that
+process's PATH, and a failed init is **cached for the lifetime of the process** (`mem_doctor`
+replays the cached failure instead of re-probing). Note also that `pi` launched inside
+`devenv shell` does **not** inherit a login shell's PATH — `~/.pi/agent/bin` is absent there —
+so the shim does not help in-shell sessions; only the nix module does. So after a version bump,
+or the first time this lands: **re-enter the devenv shell** (letting devenv rebuild on the
+changed `devenv/*.nix`), then restart `pi` (`pi --continue` keeps the conversation). Verified:
+a fresh boot inside a shell that has `engram` reports `🧠 openvb · ready` and auto-spawns the
+server; the 3 memories already in `~/.engram` survive because the store is the platform default.
 
 ## Bootstrap — one-time, per agent (already done in this repo by implementer-A)
 
