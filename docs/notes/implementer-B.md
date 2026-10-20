@@ -329,3 +329,14 @@ Usage note: `cppcheck-openje` with no args = changed files only (dev loop); `--a
 5. **Bash expands backticks inside `git commit -m "..."`**: message truncated, commit silently
    skipped, a stray file appeared. Use `git commit -F <file>` (heredoc-written).
 6. **Do not narrow a linter's `--enable` set as a side effect of a path fix** - I did and reverted.
+
+## Validating the `.int` tree walk without trusting my own parser
+Two independent oracles used in the GUILoading suite (both green):
+1. **whole-lump consumption** - a reader that mis-models any field width cannot land exactly on the
+   end of the resource; asserted for all 25 shipped `.int` files.
+2. **the binary's own lookups** - the widget names passed to `FindWidget_0x495740` by the shipped
+   interface code (`lblAddNote`, `lblEditNote`, `lblDeleteNote`, `lblZoomIn`, `lblZoomOut` at
+   0x4505fb/0x4506c8/0x450795/0x450863/0x450925) all occur in `PipBoy.INT`, which has a single
+   root, so resolving them proves the nested child/link walk, not just the header.
+Recipe: to find such an oracle for any interface, decompile one of its refresh functions, take the
+`FindWidget` string literals, then grep those bytes in the candidate lump. Cheap and self-checking.
