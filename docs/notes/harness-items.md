@@ -201,9 +201,18 @@ answer. Both are the same rule: **before requesting a runtime read, enumerate wh
 settle it.** Data is cheaper than a debugger, reproducible by every later session, and does not
 depend on anyone holding a debug window.
 
-Corollary for the coordinator: T-016 was created to batch three runtime reads. One of the three is now
+Corollary for the coordinator: T-016 was created to batch three runtime reads. Two of the three are now
 closed without a debugger, and the row shrank on its own. Ask "is this data?" before "is this
 observable?".
+
+**Footnote, added by FastArrow from the counter-example (T-019 stage 1), because it is the
+part that stops this rule becoming naive:** data first, **then verify the mapping against the code.**
+A census over `build/data/_GRP` files answered a question no debugger would have (all 57 GWAM chunks
+are v5, so the consumed+thrown `FatalError` is not dead by gating) — and the same census produced a
+plausible false positive (three records whose last two body bytes are both set) that only died on
+re-reading the checker, where the two operands are asymmetric: one is the last stream byte, the other
+byte 2 of a fixed field, not the chunk end. A data sweep is a lead generator; the field layout still
+has to be right before a count is a finding.
 
 ## 14. One lane's **uncommitted** WIP can break the gate for every lane — reservations don't help
 

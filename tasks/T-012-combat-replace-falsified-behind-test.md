@@ -75,6 +75,12 @@ marked); +0xAD = 0 } else { +0xAD = 1 }` in the finisher @0x4038D7-0x4038F7, con
 - `kReactionAnimMoving {33,34}` stays, selected by the wrap flag (sign of angle), not by a
   front/back arc.
 
+## Final status as delivered (review), superseding two of my own instructions
+1. **Withdrawn:** "restore the two-way tables as originally written". The reachable set is **{33,34,37,38,40,41}** - 39 is unreachable and 41 was missing - derived from `neg al/sbb eax,eax/and eax,3`, i.e. a step of **3** off bases 0x25/0x26. That falsifies my tables *and* the interim {37,38,39,40} reading, so restoring either would re-ship a disproved table. The byte-derived computation stands; independent confirmation requested as T-020.
+2. **Implemented beyond the row:** non-first records receive **no animation at all** (0x45C312 branches past the QueueAnimEvent call), modelled as `ReactionAnimFor() == 0` rather than a different id.
+3. **New shipped defect, ledger entry 5:** Apply's wrap byte `var_B1` has no zero initialiser, the apparent initialising store targets another slot because `sub esp,0Ch` @0x45C22C shifts the window, so in-band angles and both early exits read previous-call stack residue. Modelled as an explicit residue parameter.
+4. Domain question **closed**: `fpatan` @0x45C29C is the last fp op before the first compare, so the input is radians by architecture and degrees is an unreachable comment only.
+
 ## Second addendum - T-014 landed while you were working (FastArrow, a252575). Read this before
 ## coding the first-wins rule, because it changes the *condition*, not the shape.
 
@@ -201,7 +207,10 @@ tightened form - an EA is not a threshold.
 
 ## Acceptance
 
-- No `2.356`, `3*pi/4`, or `135` remains anywhere in `src/F3/GameActionAttack.*`, and no
+- No substituted arc rule remains anywhere in `src/F3/GameActionAttack.*`. Grep with
+  `2\.356|3 ?[*/] ?pi/4|135\.0f?\b` (expect exit 1 / no matches). **My original pattern**
+  `"2.356\|3.pi/4\|135"` was unsatisfiable: it also matches the legitimate EA **0x471357**.
+  Implementer-C tightened it; recorded so nobody re-widens it., and no
   two-way `{37,38}`/`{38,39}` idle table remains either (acceptance check: grep for
   `kReactionAnimIdleFlag` shows a derivation, not two paired arrays).
   (`grep -n "2.356\|3.pi/4\|135" src/F3/GameActionAttack.*` returns nothing).
