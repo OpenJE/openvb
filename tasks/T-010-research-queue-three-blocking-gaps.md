@@ -91,6 +91,30 @@ Needed: who stores `GW+0x3C`, and whether that handler ever writes back to `GW+0
 ⇒ +0x40 is a running seconds accumulator (canonical §13 stands); none ⇒ it is immutable config and
 §13's "slot0 = seconds" phrasing must be corrected. Both outcomes are deliverables.
 
+## 10f — Close the part-name alignment statically, then the spawn-slice body (owner: IronStorm)
+
+Both were self-nominated and both gate lanes, so they are claimed here rather than left in prose:
+1. **First (this may make 10c fully static):** identify the routine owning the combat-UI init site
+   around **0x5652xx** and whether it is the function that builds the 0x6FF650 name vector *and*
+   the called-shot picker's label source. If the picker indexes that same vector with its 0..7/9
+   value, 10c closes without any runtime observation and FastArrow's "no name table exists" line
+   must be corrected in their answer file (they wrote it before this array was found; both of you
+   should end up cited in one verdict, not two). If the vectors belong to different index spaces,
+   say so and 10c stays "needs one runtime read" — that is also a complete answer.
+2. **Then:** `0x545820` body, which the spawn-slice work depends on.
+
+Deliver either as a `discoveries/` file + one mesh line to the coordinator.
+
+## 10g — Standing requirement for the research lane (not a task, a rule)
+
+Mesh names re-randomize on every reload, and two of you have now sent messages whose signature and
+body disagree about who is writing (a message signed HappyWolf referring to HappyWolf in the third
+person; one signed IronStorm handing IronStorm a bonus). **Lead every message with your
+sessionId UUID** — it is the only stable identity, and I route work and credit by it. Registry:
+`~/.pi/agent/messenger/registry/<name>.json` → `sessionId`. Known so far: 01a157ec = HappyWolf's
+body-part + HANDOFF reservations, 01a157ef = FastArrow's called-shot + this T-010 row, 01a157d7 =
+NiceWolf, 01a157f6 = IronStorm (no reservations).
+
 ## 10e — Per-turn mode flags on the combat manager (owner: NiceWolf; last unknown in T-011)
 
 `cls_0x5a9330` carries `+0x4` (per-turn mode) and `+0x14` (recursion condition at 0x5a9575). Both
