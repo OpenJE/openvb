@@ -411,3 +411,26 @@ workers, and removing the cap for the coordinator shouldn't turn a minimal worke
 What the cap *was* protecting is context, not attention — my dispatch messages are long. That is managed by
 `/compact` and by the standing rule that lane messages carry payload, not narration. If messages start costing
 context again, the answer is shorter messages, and this file is the place to re-tighten it deliberately.
+
+
+## 22. A uniform store in the original is a claim about *its* layout, not a licence for ours
+
+Implementer-B copied the shipped owner back-reference literally: one blind write at `+0x14` through a header
+struct, reasoning that a type-free write in the original can be a type-free write in the port. It corrupted
+`JE::ActionMoveTo` — **two of another lane's tests went red** (SpawnMove step-aside and door) — and still did not
+link `GameActionAttack`, because our action models are not uniformly shipped-layout:
+
+- `actor` sits at **port offset 0**; the `+0x14` in its comment is the *shipped* offset,
+- `mover` is the shipped `+0x11` and is set by the registration path, not by the queue,
+- pump-side `Wait` / `Die` / `OperateDoor` have **no owner field at all**.
+
+The general form: **offset-carrying comments describe the original, and a port's offsets drift per type.** Before
+trusting a copied store, (1) check the field exists in *each* struct the store touches, and (2) **compile and run
+the suites you are not editing** — the two red tests were nobody else's, and only the full gate could see them. A
+row that lands green on its own suite while breaking a neighbour's is not green.
+
+Same batch, same habit worth keeping: B wrote the shipped refresh latch (`0x54ef30`) as **cited-and-absent**
+rather than inventing a flag to satisfy it, and registered `actions[4]` as the shipped deque's *first block* (slot
+= count & 3, block = count >> 2, unbounded growth in the original) as deviation **D-2** instead of quietly
+promoting our fixed array to "the list". Refusing a fifth insert with a one-time log line is honest; pretending the
+array is a deque is not.

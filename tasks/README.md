@@ -137,7 +137,7 @@ row; A keeps editorial merge rights).
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open | implementer-B (YoungStorm) |
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open | implementer-B (YoungStorm) |
 | T-028 | Scripted input driver — **recon DONE** (two front doors; FIFO carries no gameplay verbs; orders are Action objects); driver half gated on T-030 + T-026 | in-progress | HappyWolf (research) |
-| T-030 | Port the entity action-queue insert seam (`0x550720`) — **0 hits in our tree**; the driver's insertion point | open | queued: implementer-B after T-027 |
+| T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
 | T-031 | **Parity oracle** — diff the ORIGINAL's state against ours (highest leverage on board) | open | unassigned (B or IronStorm) |
 | T-032 | EA→document index: make 130 docs / ~5,100 EAs addressable | open | unassigned (offline) |
 | T-033 | **Class-identity batch queue** — ~20 naming decisions retire ~2,000 anonymous functions | open | IronStorm + HappyWolf |

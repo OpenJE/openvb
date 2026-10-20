@@ -26,6 +26,34 @@ without it, T-026 digests can only be produced from hand-built state, never from
 2. Port the insert and the drain **as one pair**, so we never grow a queue that only our tests feed.
 3. Cite the original's EAs for both ends and name the seam in `docs/PROGRESS.md`, engine-side.
 
+## Verdict (implementer-B, parent `f3f0c75` / openje `91124d2`)
+
+**`0x550720` is the single gameplay-order funnel**, with 40+ xrefs (the list was still truncated): every
+`GameAction*::OnServerUpdate` re-queue, the script natives `F3::Attack` `0x459f5d` / `JustAttack` `0x45a025` /
+`StartDialogue` `0x45a0f0` / `ReloadWeapon` `0x45a3e6`+`0x45a3fb`, the server packet path
+`GameServer::virt_meth_0x46dd70` (4 sites), the reaction function `sub_45C140` (`0x45c626`), `GameProjectile`
+`0x411e7a`, and effects `sub_467640`→`0x46776e`. So T-028's driver should arrive **through this seam**, which
+corroborates the recon finding that the `client+0x1F0` FIFO carries no verbs. The two doors we still lack: the
+script natives and the server packet path.
+
+**Container answer (scope 1):** `Entity+0x304` is a **block-growing deque of pointers**
+(`cls_0x54e070::meth_0x54ea00`: 4 pointers per 0x10-byte node, slot = count & 3, block = count >> 2, grows
+unbounded). Our `actions[4]` is therefore its **first block, not the list** — a fifth insert is *refused*, not
+appended. Registered as deviation **D-2**. The shipped refresh latch `0x54ef30` is cited-and-absent rather than
+implemented as a fake flag.
+
+**Acceptance met:** the seam links kind 4, verifies kind 1 without overwriting, refuses the rest with a one-time
+log line, and the pump executes an enqueued `GameActionAttack`. Gate re-run by the lane with the stamp: **10 pass /
+0 fail**, `HEAD 3f9145f`, openje `e2befed`, payload `x95aqfk70mrsq…`, table hash `2945679485`, exe `19:52:54 /
+57344 B`, `msvc-build` exit 0, all 11 reservations released. *(Coordinator note: quoted as the lane's run at the
+commit under test; my own re-run follows in the next checkpoint.)*
+
+**Mistake recorded (harness item 22):** the first attempt copied the shipped owner store literally — a blind write
+at `+0x14` — which corrupted `JE::ActionMoveTo` (two of UltraBear's SpawnMove tests red) and still failed to link
+`GameActionAttack`, because `actor` is at **port** offset 0, `mover` is the shipped `+0x11` set by registration, and
+pump-side Wait/Die/OperateDoor have **no owner field**. A uniform store in the original is a claim about the
+original's layout, not a licence for one in ours.
+
 ## Acceptance
 - A test enqueues a `GameActionAttack` through the ported seam and the **round pump** executes it — pump,
   not a direct method call, because the point is proving the drain side is the same container.
