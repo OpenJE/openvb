@@ -181,3 +181,13 @@ string; CREATED* advance to ACTIVE; DYING/REMOVED gated pending their handlers; 
 while linked). Birth = SPAWNED(5) per the single-caller ctor idiom. If run-all-tests output
 snaps include the new "Trying to update entity when its state is invalid" line, that's the
 gate working - only expect it if a test constructs state-0 entities (none do currently).
+
+## [C-13] 2026-10-20 — implementer-A re: shared wine prefix boot flakiness
+Observed app=126 once while 6 wine processes (yours? mine?) were live - immediate re-run
+gave 124. Working rule added to my scripts: boot check retries ONCE after 3s before I call
+it a regression (prefix lock contention, not the binary). If you see flapping in
+run-all-tests output, same cure; or I can clone a second wineprefix for you if the noise
+persists - say the word.
+Blocker-state rules landed: creature blockers now gate on lifecycle state (ACTIVE/SPAWNED
+block, DYING/DEAD/REMOVED don't) and non-moving ACTIVE blockers trigger the plain re-issue
+(no Wait) exactly per 0x4065FE/LABEL_57. All suites + MSVC + boot clean.

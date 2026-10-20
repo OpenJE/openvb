@@ -49,9 +49,28 @@ namespace F3 {
 			}
 			switch ( b->classIdTag ) {
 				case kClassGameCreature:
-					// 0x4063C5: moving creature sharing our cell -> step-aside dance
+					// Session-11 rule refinement (blocker state Entity+0x1E0 == raw +480):
+					// 4 (ACTIVE) unconditionally, or 5 (SPAWNED) when not already in the
+					// mover's interaction set (JE::EntitySet::Contains_0x54AEB0 unmodeled ->
+					// treated as NOT contained, the blocking branch), trigger the plain
+					// re-issue dance at 0x4065FE; MOVING creatures add the Wait first.
+					if ( b->entityState != F3::kStateActive && b->entityState != F3::kStateSpawned ) {
+						continue;   // dying/dead/removed creatures do not block movement
+					}
 					if ( !b->movingFlag ) {
-						continue;
+						// 0x4065FE: re-issue fresh MoveTo WITHOUT Wait (LABEL_57)
+						GameActionMoveTo* next = new GameActionMoveTo();
+						next->speed = speed;
+						next->CopyTargetFrom( this );
+						next->mover = mover;
+						next->job   = job;
+						next->requestedFlag = 1;
+						next->lastUpdateMs  = (int)ms;
+						next->lastRequestMs = lastRequestMs;
+						PushActionOntoEntity( static_cast<SpawnedEntity*>( mover ), 1, next );
+						job = 0;
+						finished = 1;
+						return 1;
 					}
 					{
 						static GameActionWait s_waits[8];
