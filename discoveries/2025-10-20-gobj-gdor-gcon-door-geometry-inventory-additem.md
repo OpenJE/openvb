@@ -160,7 +160,16 @@ are solid.)*
   (c) +0x18 semantics (=GENT dword[4], still open per session6-classid §8), (d) GCRE v4
   sub_40B9E0 full decode, (e) Item 26-string block map (if A hasn't taken it).
 
-## 9. Evidence index
+## 9. Addendum (same session): Door::OnAnimEvent rebases the dispatcher
+
+**⚠ RETRACTED — see `2025-10-20-door-rebase-correction-changestate-machine.md` §1.**
+`GameDoor::virt_meth_0x40e9b0` (Door Entity-vft +0xA4) =
+`sub_467E90(ecx − *(ecx−4) − 76, …)` — but the −76 is **structural vb arithmetic**
+(Entity@Door+0xF0 → Door+0xA4 = the handle shared GE bodies expect), used uniformly by ALL
+door stubs, NOT a dereference of GOBJ f1. GOBJ f1..f6 remain plain unnamed ints with no
+consumer found; the host-object theory is dead. Door's OnAnimEvent = the base dispatcher.
+
+## 10. Evidence Index
 
 GOBJ 0x412540/0x412558/0x412569. GDOR 0x40e6e0→0x40e5e0 (bytes 0x40e616/0x40e635, string
 0x40e63c)/0x40e660 (jitter 0x40e6ca). Door ctor string init 0x40e869/0x40e873/0x40e87d.

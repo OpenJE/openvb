@@ -14,7 +14,7 @@ cases 43..52 below; cleared elsewhere). Unhandled ids log
 | animEventId | handler | notes |
 |-------------|---------|-------|
 | 1 | Queue_Idle_0x462c50(time) | idle pose (§2) |
-| 2..6 | sub_0x463000/463040/463080/4630c0/463100(time) | five stance/time variants (candidates: combat-idle per stance group) |
+| 2..6 | sub_0x463000/463040/463080/4630c0/463100(time) | **state/stance-conditional idle overrides** — case 2 verified: `if (animState==2 && stance==7) → clip 254 else → Queue_Idle(t)`; same shape for 3..6 (clips 255..~258 range candidates) |
 | 7 | QueueToCombat_0x463140 | enter combat |
 | 9 | QueueToDefault_0x465c20 | enter default |
 | 11 | QueueToCrouch_0x465ee0 | crouch |

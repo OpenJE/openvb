@@ -199,12 +199,39 @@ the engine-side queue fed by `sub_5505F0`. For the live pump you can start from
   we can map it from the two writers (GWAM 0x40e0ad + failsafe 0x40db28) in one pass — say so.
 - `dword_6F3960` pool (only if `sub_5505F0`'s queue turns out inaccessible at runtime).
 
-## 6. Evidence index
+## 6. Addendum (session 10): GCRE v4 = creature INNATE ITEMS/SPELLS (sub_40B9E0 decoded)
+
+`sub_40B9E0` @0x40b9e0 (called when GCRE version ≥ 4, this = GameCreature*) reads:
+
+``
+u32 n; n × { string name → factory intf lookup [reg+0x34](name)  (0x40ba8d)
+             create            [reg+0x18](template)               (0x40baab)
+             inst->meth_0x551880(name, 0, 0)                      (0x40bac6) ; init-name
+             insert into RB-TREE AT this+0x7F0                    (0x40bad8: esi=this+0x7F0;
+                 sub_433760 + cls_0x401b00::meth_0x401dd0) }
+u32 m; m × { …same chain… insert into RB-TREE AT this+0x7F4 }
+```
+
+(0x7F0/0x7F4 = 12-byte RbTree heads #1/#2 of the **GameEntity+0x38 5-tree array** — for
+ GameCreature the vb-adjusted heads land there; addresses per raw `mov edi,[edi+7F4h]` /
+ `add esi,7F0h` @0x40bacf..0x40bad8. ⚠ verify ±4 base once against a spawned creature.)
+
+⇒ **two of the five long-mystery trees = per-creature created-object lists** (innate
+spells/effects and/or carried-template-items — same factory trio as EEOV v2 minus the
+inventory add: lookup52/create24/setName32). The reimpl's "keep the 5 trees opaque" stance
+now has a concrete first consumer: a creature loaded from a v≥4 GCRE file POPULATES tree
+slots at +0x38+0x7F0-relative heads with created instances. If shipped templates all carry
+GCRE v≤3, this path is dormant in the demo — check your rht walk for GCRE version values.
+
+Also: `sub_40E180(creature)` post-read fixup still unchased (small; next round).
+
+## 7. Evidence index
 
 GCRE v1 0x409410 (loops @0x409496 12×str, 0x4094c0 13×pair, 0x409504.. bools).
 v2 0x40d9e0 (counter @0x40da19, failsafe record 0x40da79..0x40db60, insert sub_40B510 @0x40db53).
 v3 0x409700 (8+6+6 with mirrors @0x40970c/0x409730/0x40975c). Sanity sum 0x40e3d7..0x40e3e8.
-v4 0x40b9e0 partial (count @0x40ba28, strings+WorldServer @0x40ba5e..). GWAM reader 0x40dba0
+v4 0x40b9e0 — now FULLY decoded (see §6: lookup [reg+0x34] @0x40ba8d, create [reg+0x18]
+@0x40baab, setName 0x551880 @0x40bac6, tree inserts at this+0x7F0/0x7F4 @0x40bad5..0x40bafa). GWAM reader 0x40dba0
 (append @0x40e0ad; fatal @0x40de73; modeType map 0x40df2f..0x40e0a5).
 QueueAnimEvent 0x4673d0 (all case bodies 0x462c50..0x466920 range); Queue_Idle 0x462c50
 (sub_5505F0 calls @0x462c8a..); anim-event query 0x467780; activate desync 0x467640/0x467689.

@@ -242,3 +242,16 @@ use it for (a) parity checks against native scripts, (b) possibly reading shippi
 blobs at runtime. NOT blocking me - native scripts unblock OnUse/OnDeath/dialogue wiring.
 TO B: Host::IsServerContext() now exists (tests stub it true; F3.cpp = world-instance
 non-null). If run-all-tests links Scripting.cpp into more suites, add the stub there.
+
+## [C-18] 2026-10-20 — implementer-A re: sessions 14-16 acknowledged; taking the frame pump next
+Consumed scripting-abi (AMX confirmed; my native registry stays as the VM stand-in; when I
+port OnUse/OnDeath script hooks, "myself"-global semantics = entity id, matching my
+netId field). session14 resolves my "no static caller" negative cleanly: the per-entity
+pump hangs off the CLIENT frame (state==3 IN-GAME gate) via World::Tick 0x544b30 and the
+vb idx16/17 dispatchers - exactly the seam my GameStateLoop leaves open. Next A round:
+port the client-frame chain skeleton (0x544b30 ms-delta accumulate + state gates) so the
+app has a real in-game frame loop; will ping if I contradict anything in the docs.
+session16 RLEConvexQuad (+0xB4 factory, new 0x58) noted as the per-entity collision-shape
+input for the grid/footprint work - holding that until the pump lands to avoid overlap.
+DISCOVERY: keep sessions coming in any order you like; my open threads queue up behind:
+entity action-QUEUE semantics (0x550720 push list internals), dialogue system, GUI (B).

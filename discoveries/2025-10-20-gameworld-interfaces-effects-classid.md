@@ -187,6 +187,12 @@ creation event ("replace protagonist entity"), reusing all Creature fields + the
 - Session 3 §1 "vft[0] 0x4080c0 = get cur-stat": it returns **+0x20 = MaxHealth** (§3).
 - GameEffectDamage has **no serialized payload** (§2) — anything "damage amount"-like is set at
   runtime (weapon table linkage pending).
+- ⚠ (same day, later pass) §2's Condition payload reading is **RESPECCED**: the 260B string is a
+  SCRIPT name (Condition = script gate; lazy-loads `conditions.amx` via srv-intf +0x24, eval is
+  server-only), C+0x64 indexes a param vector at C+0x28 → see
+  `2025-10-20-ge94-speed-door-anittimer-gentsave.md` §12c. §10 rows 25+ corrected by its §12a
+  (missed middle `sub ecx,0x230`: those getters read JE::World fields, not "GW+0x320s";
+  GameWorld own storage = +0x164..+0x393 registry only).
 
 ## 7. Queue for session 7 (proposed)
 
@@ -259,3 +265,85 @@ consistent; resolve as follows:
    names HoverSR/LookSR/NameSR/UnkwnSR, MaxHealth→+0x20, StartHealth→+0x24, clamp proof);
    World::PackState per-entity serialization of +0x15C and +0x1DC; four-interface + two-vbtable
    table; tertiary intf 0x668548 (8 JE::World accessor slots).
+
+## 10. Factory interface 0x668494 FULL slot walk (closes §7.5; 45 slots, raw-decoded)
+
+Encoding pattern for every slot: `sub ecx,[ecx-4]` (remove vb delta) then optional
+`sub ecx,0x230` (= back to GW base) then field access/jmp. `this = GW+0x398`, delta=0.
+Byte offsets below are into 0x668494. All targets decompiled/disassembled this session.
+
+| +byte | idx | target | semantics |
+|---|---|---|---|
+| 0 | 0 | 0x46FD20 | get `World+0x48` |
+| 8 | 1 | 0x46FD40 | set `World+0x48` |
+| 16 | 2 | **0x46FD60** | **get `World+0x70`** ← the GameEntity ctor net-id read (entity+0x28) |
+| 24 | 3 | 0x46FD80 | set `World+0x70` (arg) |
+| 32 | 4 | 0x46FDA0→0x544D90 | JE::World pass-through |
+| 40 | 5 | 0x46FDB0→**0x46F290** | **`CreateGameAction(GameActionType)`**: Die 0x2C/0x404e50, Idle 0x24, MoveTo 0x48, PickUp 0x30, Wander 0x44, Wait 0x24, FloatingSpeechText 0x34, Equip 0x30, Unequip 0x28, SetActiveWeapon 0x44; default → `JE::World::CreateAction`. F3 enum cases cover 10 of the GameAction* doc classes — sizes are the reimpl's allocation reference. |
+| 48 | 6 | 0x46FDC0→**0x46F530** | **CreateGameEntityByClass** (session 1 factory; sole caller site) |
+| 56 | 7 | 0x46FDD0→**0x46F7C0** | **`new GameMap (0x258)` + ctor 0x46c8e0** — CreateGameMap |
+| 64 | 8 | 0x46FDE0 | `++World+0x7C` → return `(id & 0x1FFFFFFF) \| 0x60000000` |
+| 72 | 9 | 0x46FE10 | `++World+0x80` → return `id & 0x1FFFFFFF` (no tag) |
+| 80 | 10 | 0x46FE40 | set `World+0x80 = arg & 0x1FFFFFFF` |
+| 88 | 11 | 0x46FE70 | `World+0x80 = 0` (reset) |
+| 96 | 12 | **0x46FE90→0x46FB20** | **ext→classId resolver** (the concurrent `ext-classid-resolver` doc's function; only caller confirmed) |
+| 104 | 13 | 0x470330 | **create-by-name**: unpack std::string ptr, vb-decode, re-dispatch `vft[+48](path, flag)` — the reimpl's recorded "vft+52 by-name" ✓ (chain: +52 → +48 → 0x46FB20 → factory +24) |
+| 112 | 14 | 0x46FEA0 | `++World+0x84` → `(id & 0x1FFFFFFF) \| 0x20000000` |
+| 120 | 15 | 0x46FED0 | set `World+0x84 = arg & mask` |
+| 128 | 16 | 0x46FF00 | `World+0x84 = 0` |
+| 136 | 17 | 0x46FF20 | `++World+0x88` → `(id & 0x1FFFFFFF) \| 0x40000000` |
+| 144 | 18 | 0x46FF50 | set `World+0x88 = arg & mask` |
+| 152 | 19 | 0x46FF80 | `World+0x88 = 0` |
+| 160 | 20 | 0x46FFA0→0x46FCC0 | **world reload**: `JE::World::ReloadConfig(vb)` + RTTI-cast global client → `sub_455A70` + `cls_0x41a2b0::meth_0x4172d0(1)` |
+| 168–192 | 21–24 | 0x5457E0 / 0x547C30 / 0x544CE0 / 0x5458E0 | JE::World engine pass-throughs |
+| 200 | 25 | 0x46FFF0 | get `World+0xF0` ⚠ **CORRECTED** — see ge94 doc §12a: every thunk from slot 25 down includes a middle `sub ecx,0x230` (vb→World base 0x168); true targets are World+0xF0..0x100, +0x3C, and the +0x154 deref-chain, NOT "GW+0x320s". F3::GameWorld own region is ONLY +0x164..+0x393 = the 140-slot ammo/prototype registry (their session9/10 docs) + vb-delta +0x394 + vb-vftptr +0x398. Object 0x39C fully accounted. |
+| 208–352 | 26–44 | remaining: 0x470010 (+0xF4), 0x470030/50/70/90/b0/d0/f0/0110 (`World+0xF8/FC/100` get-set family + stubs), 0x470130/140/150/160/180/1A0/1B0/1C0 (`+0x154` cursor-chain: raw ptr, `*`, `*+4`), 0x4701E0→0x4701F0 tail; JE pass-through jmp targets 0x544D90/0x5457E0/0x547C30/0x544CE0/0x5458E0/0x5477E0/0x544CA0/0x544CB0/0x544D70/0x544D80 | corrected targets per §12a; all within JE::World — no GameWorld-own storage beyond the registry |
+
+### 10.1 ID-space model (strongly implied, *name pending*)
+
+Four allocation counters in `JE::World` with mask `0x1FFFFFFF` and space-tags:
+
+| counter | tag | factory slot |
+|---------|-----|-------------|
+| World+0x7C | 0x60000000 | +64 |
+| World+0x80 | none (plain ids, set/resettable) | +72/80/88 |
+| World+0x84 | 0x20000000 | +112/120/128 |
+| World+0x88 | 0x40000000 | +136/144/152 |
+
+Entities' `+0x28` is NOT one of these (it samples `World+0x70`, a double) — so
+"net id" per entity is likely a **world/game-time stamp, not a unique handle**; unique handles
+probably come from the tagged counters when objects are registered elsewhere. The concurrent
+pipeline-closed doc's "0x46F280 = next-entity-id" should be re-read as: 0x46F280 = plain
+getter of `World+0x88` (server intf byte +0x20), whose ALLOCATOR is slot 17 (+136).
+
+### 10.2 For the reimpl
+- Your GameAction classes' sizes are in the slot-5 row — matches docs/f3/GameAction*.md set.
+- Map spawn objects should be created via the +24 chain (by-path via +52→+48→+24) to mirror
+  original ordering: name resolve → classId (ext + flag) → factory.
+- If you implement save/load ids, use the 4-counter tag model (0x20/0x40/0x60 spaces, 29-bit).
+
+## 11. Singleton assignment site + `World+0x70` semantics pass (final loose end of this session)
+
+- `JE::World`-region ctor `cls_0x4d8d70::ctor_0x548a80` (called by GameWorld::ctor at 0x470377)
+  is what writes the singleton: @0x548CCF `global_cls_0x616328_0x70bd98 = this`, guarded by
+  `"World object already exists."` throw @0x548CBD. Confirms §1: global == World-body/GameWorld
+  base pointer; all reads of it (GetWorldServerInstance etc.) are post-construction only.
+  The ctor also throws unless this is the first world → demo has exactly ONE GameWorld.
+- ctor initializers for the fields in play (dword-index decode: `this+N` = byte N*4):
+  `+0x6C=0 (this+27)`, `+0x70=0 (this+28)`, `+0x74=0x3F800000=1.0f (this+29)`, `+0x78=10
+  (this+30)`, counters `+0x7C/+0x80/+0x84/+0x88=0`.
+- **`World+0x70` is NEVER incremented anywhere** (DB: only ctor-init 0x548B43, setter 0x46F264,
+  PackState read 0x54596E; plus the factory-intf thunk 0x46FD60 sample used by entity ctor).
+  So entity+0x28 cannot be a per-entity unique handle. Model: it is a **world-level stamp**
+  written by the server via server-intf slot +8 (0x46F260) at new-game/join time, replicated
+  to clients in PackState position 4, and copied into every entity created afterwards
+  *(inferred use: session/game id or world seed; the neighbouring float +0x74=1.0 + int
+  +0x78=10 look like a small rules block)*. Adjacent engine gate 0x544A70: `if (mbr_0x68 >
+  arg && worldMode(mbr_0x34) not in {1,2}) return 0` — world mode field at +0x34 ∈ {0,1,2,3}
+  (PackState requires 3 = "normal world").
+- **Consequence for the reimpl + reconciliation with `pipeline-closed` §2**: the row
+  "next-entity-id read = 0x46F280 (World+0x88) at server-intf +8" conflates: 0x46F280 sits at
+  byte +0x20 of 0x66856C and is a plain getter; the actual ++allocator for World+0x88 is
+  factory-intf slot +136 (0x46FF30, tag 0x40000000). Entity+0x28 samples World+0x70 only.
+  If you want a unique-id analog for spawned entities, use one of the tagged allocators
+  (factory +64/+72/+112/+136), NOT the ctor-stamped +0x28 field.
