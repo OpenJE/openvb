@@ -137,7 +137,7 @@ row; A keeps editorial merge rights).
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open | implementer-B (YoungStorm) |
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open | implementer-B (YoungStorm) |
 | T-028 | Scripted input driver + how input really enters the client | open | HappyWolf (research) |
-| T-029 | IDA function census: the missing coverage denominator | open | IronStorm (research) |
+| T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |
 
 | T-005 | GUI: `.int` reader + widget tree with name lookup | done | implementer-B |
