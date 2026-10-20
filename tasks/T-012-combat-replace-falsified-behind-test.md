@@ -75,17 +75,21 @@ marked); +0xAD = 0 } else { +0xAD = 1 }` in the finisher @0x4038D7-0x4038F7, con
 - `kReactionAnimMoving {33,34}` stays, selected by the wrap flag (sign of angle), not by a
   front/back arc.
 
-## Open acceptance item, deliberately not closed (survives the pause)
+## Open acceptance item, deliberately not closed — CORRECTED 2026-10-20 (my premise was false)
 
-Everything except one claim is verified. **`build/F3.exe` has never been produced with these
-combat changes in it**, because `d3d8.lib` is missing from the shared tree's link step, so
-**app-boot has not run against any of T-012's behaviour** — including the flurry discriminator and
-the residue parameter. Host suites link the changed object against real callers and pass, which is
-strong, but it is not the exe-level check, and nobody should read "green host rows" as that.
+**Retracted:** "`build/F3.exe` has never been produced with these combat changes in it, because
+`d3d8.lib` is missing from the shared tree's link step." Both halves are wrong. `769218c` (T-012) is an
+ancestor of HEAD, and the exe that `app-boot` cites — built at **17:32:53 from a verified-clean tree** —
+therefore **contains these changes and booted at 124**. And `d3d8.lib` is present in the MSVC image; the
+only gap was `vcvars32.bat` not putting the `prerelease` dirs on INCLUDE/LIB, now fixed in
+`devenv/scripts/msvc-sdk-prerelease.bat`. I kept quoting this as a blocker for hours because it had been
+written down in a row rather than re-derived.
 
-Close condition: once the shared tree builds again, `msvc-build` exit 0, `app-boot` exit 124, and
-implementer-C runs the SpawnMove anim-id cases against the real binary. Owner: coordinator schedules
-it, UltraBear executes; recorded here rather than in chat so a reload cannot lose it.
+**What is actually still open:** the SpawnMove anim-id cases (flurry discriminator, residue parameter)
+have never been run **against** that binary — the behavior is compiled and boots, but those specific
+observations are host-suite only. Close condition: after a `devenv-reload`, `msvc-build` exit 0, `app-boot`
+exit 124, and implementer-C runs the anim-id cases against the real exe. No D3D8 involvement; nothing to
+wait for. Owner: coordinator schedules, UltraBear executes.
 
 ## Final status as delivered (review), superseding two of my own instructions
 1. **Withdrawn:** "restore the two-way tables as originally written". The reachable set is **{33,34,37,38,40,41}** - 39 is unreachable and 41 was missing - derived from `neg al/sbb eax,eax/and eax,3`, i.e. a step of **3** off bases 0x25/0x26. That falsifies my tables *and* the interim {37,38,39,40} reading, so restoring either would re-ship a disproved table. The byte-derived computation stands; independent confirmation requested as T-020.

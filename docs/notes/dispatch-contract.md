@@ -1,0 +1,44 @@
+# Dispatch contract — artifact kinds replace role labels
+
+Adopted 2026-10-20. This **replaces "implementer" vs "research" as the thing that decides what you may
+work on**. The old labels produced two documented failures: lanes stamped role labels into documents that
+weren't theirs (harness item 15), and the work that mattered most this session did not fit either label —
+implementer-B did the xref census that identified the shipped LCG, implementer-C spent two rows on pure
+tooling, researcher-HappyWolf scoped an input driver, and researcher-IronStorm wrote no code and touched no
+IDB. The label was describing nobody.
+
+## The four artifact kinds
+
+| kind | lands in | needs coordinator? | gate that judges it |
+|---|---|---|---|
+| `code` | `src/`, `modules/openje/` | reservation + review | `run-all-tests` (floors enforced) |
+| `tool` | `tools/` only | no | its own falsification test |
+| `census table` | `artifacts/`, `discoveries/` | no | re-measurable, printed boundary |
+| `answer` | one `tasks/` row or ledger entry | yes, to close | cited evidence, not prose |
+
+`build-affecting` is a subset of `code`: **`cmake.toml`, `CMakeLists.txt`, `src/F3.cpp`, `devenv/**`.**
+Exactly **two lanes** may hold build-affecting reservations at once. That limit is not a preference — an
+uncoordinated `find_package(OpenGL)` addition once made the whole tree unbuildable for everyone, and
+`devenv/**` changes invalidate every installed payload until reload.
+
+## Rules that follow from the kinds
+
+1. **Any lane may be tasked with anything.** Capability, not title, decides assignment. Say which artifact
+   kind you are producing; the row and the gate follow from that.
+2. **Cold checks are a rotating duty, not a research job.** Cross-verifying another lane's claim from raw
+   evidence took twenty minutes and retracted a four-day claim. When you have an IDB or a data file open
+   and see a claim you can break, break it and say so.
+3. **Every tool prints what it does not cover**, and ships with a demonstration that it can fail
+   (rules 2 and 3, unchanged).
+4. **No lane stamps roles into documents.** Attribution is by content graph, and it is recorded in the
+   commit message, not in a header.
+5. **A gate number is only quotable with its stamp.** Run `tools/gate-integrity.sh` first: exit 0 means the
+   payload matches the tree and carries the `GATE STAMP`. A run printing no stamp is a stale payload and
+   can produce false reds as well as false greens — it did both today.
+6. **Class identity (`T-033`) is a first-class queue**, not a side activity: ~20 naming decisions retire
+   ~2,000 functions' anonymity, which is the cheapest structural win on the board.
+
+## What I (coordinator) keep
+Gate/review/dispatch/checkpoints, `devenv/**`, closing rows, and the ledger. I do not take feature
+implementation; when I do, it gets reviewed like anyone else's — see `T-024`, where the falsification test
+I demanded of lanes found a bug in my own guard.
