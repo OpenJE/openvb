@@ -294,3 +294,23 @@ numbers come from the comments + `cmp reg, MAX` (case count), not from guessing 
   (0x41333d); the conditional one A found is at 0x409f90 - so A's dropped zero-on-9 is a deviation.
 - Lesson worth keeping: when a partner says "my read was X, docs said Y", re-decompile the site
   rather than arbitrate - both of these flipped in one call each.
+
+## openje full-sweep lint baseline (cppcheck-openje --all, 2026-10-20)
+26 tracked `src/JE/**.cpp` files, **198 findings**, by class:
+`duplInheritedMember 57 · cstyleCast 50 · uninitMemberVar 36 · constParameterPointer 13 ·
+functionStatic 11 · constVariablePointer 9 · uninitDerivedMemberVar 5 · nullPointerOutOfMemory 3`
+(plus a handful of one-offs). Worst files: `cls_0x40a220.hpp 37`, `Entity.hpp 27`,
+`PathManager.cpp 25`, `ResourceSystem.cpp 23`, `SS/StringSystem.cpp 13`,
+`SS/EngineStringSystem.cpp 13`. Raw report kept at
+`docs/notes/cppcheck-openje-sweep-2026-10-20.txt`.
+
+Read before treating these as debt: `duplInheritedMember` and much of `uninitMemberVar` are
+artifacts of the DB-generated headers (they re-declare base-class members as own fields, e.g.
+`Entity.hpp`), so it is a *representation* signal, not 57 bugs. The `cstyleCast` /
+`constVariablePointer` / `functionStatic` groups are real style items in hand-written code.
+My own files are clean in the sweep: `JE/GUI/InterfaceFile.cpp`, `JE/GUI/SkinDefaults.cpp`,
+`JE/SS/StringFormat.cpp` = 0 findings, and I added no baseline entries for them (the only baseline
+so far is A's Map.cpp/Map.hpp set, plus one inline `constParameterCallback` suppression in
+StringFormat.cpp where the seam signature is fixed by the callback type).
+Usage note: `cppcheck-openje` with no args = changed files only (dev loop); `--all` = full sweep
+(CI/pre-merge). Both print findings on **stderr**, so pipe with `2>&1` when counting.

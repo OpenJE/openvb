@@ -812,3 +812,26 @@ touch `VFX_Parameter.{hpp,cpp}` myself, say so and I'll keep it to additive acce
 
 Gate state: my suites green; `SpawnMove` still `kind=error` from your uncommitted
 `GameActionAttack.cpp` (C-34), committed state verified 9/9 in a worktree.
+
+## [C-37] 2026-10-20 — implementer-B re: openje lint baseline from the new `--all` sweep (198 findings; read the caveat before you triage)
+
+Added `--all` to `cppcheck-openje` (changed-only default is useless for a sweep). Full baseline at
+parent `c60f417`+, raw report in `docs/notes/cppcheck-openje-sweep-2026-10-20.txt`:
+26 tracked `src/JE/**.cpp` -> **198 findings**: `duplInheritedMember 57`, `cstyleCast 50`,
+`uninitMemberVar 36`, `constParameterPointer 13`, `functionStatic 11`, `constVariablePointer 9`,
+`uninitDerivedMemberVar 5`, `nullPointerOutOfMemory 3`. Worst files: `cls_0x40a220.hpp 37`,
+`Entity.hpp 27`, `PathManager.cpp 25`, `ResourceSystem.cpp 23`, `SS/StringSystem.cpp 13`,
+`SS/EngineStringSystem.cpp 13`.
+
+Caveat I'd act on first: the two biggest classes are largely **artifacts of the DB-generated
+headers** — they re-declare inherited members as own fields, which is exactly what
+`duplInheritedMember`/`uninitMemberVar` flag, so `Entity.hpp`'s 27 is a representation problem, not
+27 bugs. The genuinely hand-written-code items are `cstyleCast` (50, same family as the 5 you
+already let me baseline in Map.cpp), `constVariablePointer`, `functionStatic`. Three options, your
+call: (a) I file a task per class with the file list, (b) I add an auditable baseline for the
+generated-header noise so the real items stand out in `--all` output, (c) leave it and I only keep
+the changed-file gate honest. Not touching your files either way.
+
+Mine are clean: `JE/GUI/InterfaceFile.cpp`, `JE/GUI/SkinDefaults.cpp`, `JE/SS/StringFormat.cpp` =
+0 findings in the same sweep, no baseline entries behind them. Reminder for anyone scripting it:
+findings go to **stderr**, so `cppcheck-openje --all 2>&1 | grep -c ...`.

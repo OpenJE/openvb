@@ -1,0 +1,1036 @@
+cppcheck-openje: sweeping all 26 tracked src/JE files
+openje/src/JE/ActionAnim.cpp:10:17: warning: Member variable 'ActionAnim::entity' is not initialized in the constructor. [uninitMemberVar]
+    ActionAnim::ActionAnim() {
+                ^
+openje/src/JE/Gfx_LineSystem.hpp:21:10: warning: The class 'Gfx_LineSystem' defines member variable with name 'mbr_0x1c' also defined in its parent class 'Gfx_NodeAttribute'. [duplInheritedMember]
+   dword mbr_0x1c;
+         ^
+openje/src/JE/Gfx_NodeAttribute.hpp:12:10: note: Parent variable 'Gfx_NodeAttribute::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:21:10: note: Derived variable 'Gfx_LineSystem::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:22:10: warning: The class 'Gfx_LineSystem' defines member variable with name 'mbr_0x20' also defined in its parent class 'Gfx_NodeAttribute'. [duplInheritedMember]
+   dword mbr_0x20;
+         ^
+openje/src/JE/Gfx_NodeAttribute.hpp:13:10: note: Parent variable 'Gfx_NodeAttribute::mbr_0x20'
+   dword mbr_0x20;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:22:10: note: Derived variable 'Gfx_LineSystem::mbr_0x20'
+   dword mbr_0x20;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:53:10: warning: The class 'Gfx_LineSystem' defines member variable with name 'mbr_0xc' also defined in its parent class 'Gfx_NodeAttribute'. [duplInheritedMember]
+   dword mbr_0xc;
+         ^
+openje/src/JE/Gfx_NodeAttribute.hpp:14:10: note: Parent variable 'Gfx_NodeAttribute::mbr_0xc'
+   dword mbr_0xc;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:53:10: note: Derived variable 'Gfx_LineSystem::mbr_0xc'
+   dword mbr_0xc;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:30:10: warning: The class 'Gfx_LineSystem' defines member variable with name 'mbr_0x4' also defined in its parent class 'cls_0x4abc60'. [duplInheritedMember]
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x4abc60.hpp:13:10: note: Parent variable 'cls_0x4abc60::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:30:10: note: Derived variable 'Gfx_LineSystem::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:53:10: warning: The class 'Gfx_LineSystem' defines member variable with name 'mbr_0xc' also defined in its parent class 'cls_0x4abc60'. [duplInheritedMember]
+   dword mbr_0xc;
+         ^
+openje/src/JE/cls_0x4abc60.hpp:15:10: note: Parent variable 'cls_0x4abc60::mbr_0xc'
+   dword mbr_0xc;
+         ^
+openje/src/JE/Gfx_LineSystem.hpp:53:10: note: Derived variable 'Gfx_LineSystem::mbr_0xc'
+   dword mbr_0xc;
+         ^
+openje/src/JE/Entity.hpp:12:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x10' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x10;
+         ^
+openje/src/JE/DynamicObject.hpp:12:10: note: Parent variable 'DynamicObject::mbr_0x10'
+   dword mbr_0x10;
+         ^
+openje/src/JE/Entity.hpp:12:10: note: Derived variable 'Entity::mbr_0x10'
+   dword mbr_0x10;
+         ^
+openje/src/JE/Entity.hpp:13:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x14' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x14;
+         ^
+openje/src/JE/DynamicObject.hpp:13:10: note: Parent variable 'DynamicObject::mbr_0x14'
+   dword mbr_0x14;
+         ^
+openje/src/JE/Entity.hpp:13:10: note: Derived variable 'Entity::mbr_0x14'
+   dword mbr_0x14;
+         ^
+openje/src/JE/Entity.hpp:20:9: warning: The struct 'Entity' defines member variable with name 'mbr_0x171' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   byte mbr_0x171;
+        ^
+openje/src/JE/DynamicObject.hpp:14:9: note: Parent variable 'DynamicObject::mbr_0x171'
+   byte mbr_0x171;
+        ^
+openje/src/JE/Entity.hpp:20:9: note: Derived variable 'Entity::mbr_0x171'
+   byte mbr_0x171;
+        ^
+openje/src/JE/Entity.hpp:26:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x18' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x18;
+         ^
+openje/src/JE/DynamicObject.hpp:15:10: note: Parent variable 'DynamicObject::mbr_0x18'
+   dword mbr_0x18;
+         ^
+openje/src/JE/Entity.hpp:26:10: note: Derived variable 'Entity::mbr_0x18'
+   dword mbr_0x18;
+         ^
+openje/src/JE/Entity.hpp:40:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x1c' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x1c;
+         ^
+openje/src/JE/DynamicObject.hpp:16:10: note: Parent variable 'DynamicObject::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/Entity.hpp:40:10: note: Derived variable 'Entity::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/Entity.hpp:54:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x20' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x20;
+         ^
+openje/src/JE/DynamicObject.hpp:17:10: note: Parent variable 'DynamicObject::mbr_0x20'
+   dword mbr_0x20;
+         ^
+openje/src/JE/Entity.hpp:54:10: note: Derived variable 'Entity::mbr_0x20'
+   dword mbr_0x20;
+         ^
+openje/src/JE/Entity.hpp:64:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x24' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x24;
+         ^
+openje/src/JE/DynamicObject.hpp:18:10: note: Parent variable 'DynamicObject::mbr_0x24'
+   dword mbr_0x24;
+         ^
+openje/src/JE/Entity.hpp:64:10: note: Derived variable 'Entity::mbr_0x24'
+   dword mbr_0x24;
+         ^
+openje/src/JE/Entity.hpp:73:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x28' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x28;
+         ^
+openje/src/JE/DynamicObject.hpp:19:10: note: Parent variable 'DynamicObject::mbr_0x28'
+   dword mbr_0x28;
+         ^
+openje/src/JE/Entity.hpp:73:10: note: Derived variable 'Entity::mbr_0x28'
+   dword mbr_0x28;
+         ^
+openje/src/JE/Entity.hpp:90:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x2c' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x2c;
+         ^
+openje/src/JE/DynamicObject.hpp:20:10: note: Parent variable 'DynamicObject::mbr_0x2c'
+   dword mbr_0x2c;
+         ^
+openje/src/JE/Entity.hpp:90:10: note: Derived variable 'Entity::mbr_0x2c'
+   dword mbr_0x2c;
+         ^
+openje/src/JE/Entity.hpp:99:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x2e0' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x2e0;
+         ^
+openje/src/JE/DynamicObject.hpp:21:10: note: Parent variable 'DynamicObject::mbr_0x2e0'
+   dword mbr_0x2e0;
+         ^
+openje/src/JE/Entity.hpp:99:10: note: Derived variable 'Entity::mbr_0x2e0'
+   dword mbr_0x2e0;
+         ^
+openje/src/JE/Entity.hpp:100:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x2e4' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x2e4;
+         ^
+openje/src/JE/DynamicObject.hpp:22:10: note: Parent variable 'DynamicObject::mbr_0x2e4'
+   dword mbr_0x2e4;
+         ^
+openje/src/JE/Entity.hpp:100:10: note: Derived variable 'Entity::mbr_0x2e4'
+   dword mbr_0x2e4;
+         ^
+openje/src/JE/Entity.hpp:101:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x2e8' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x2e8;
+         ^
+openje/src/JE/DynamicObject.hpp:23:10: note: Parent variable 'DynamicObject::mbr_0x2e8'
+   dword mbr_0x2e8;
+         ^
+openje/src/JE/Entity.hpp:101:10: note: Derived variable 'Entity::mbr_0x2e8'
+   dword mbr_0x2e8;
+         ^
+openje/src/JE/Entity.hpp:102:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x2ec' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x2ec;
+         ^
+openje/src/JE/DynamicObject.hpp:24:10: note: Parent variable 'DynamicObject::mbr_0x2ec'
+   dword mbr_0x2ec;
+         ^
+openje/src/JE/Entity.hpp:102:10: note: Derived variable 'Entity::mbr_0x2ec'
+   dword mbr_0x2ec;
+         ^
+openje/src/JE/Entity.hpp:103:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x2f0' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x2f0;
+         ^
+openje/src/JE/DynamicObject.hpp:25:10: note: Parent variable 'DynamicObject::mbr_0x2f0'
+   dword mbr_0x2f0;
+         ^
+openje/src/JE/Entity.hpp:103:10: note: Derived variable 'Entity::mbr_0x2f0'
+   dword mbr_0x2f0;
+         ^
+openje/src/JE/Entity.hpp:107:9: warning: The struct 'Entity' defines member variable with name 'mbr_0x30' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   byte mbr_0x30;
+        ^
+openje/src/JE/DynamicObject.hpp:26:9: note: Parent variable 'DynamicObject::mbr_0x30'
+   byte mbr_0x30;
+        ^
+openje/src/JE/Entity.hpp:107:9: note: Derived variable 'Entity::mbr_0x30'
+   byte mbr_0x30;
+        ^
+openje/src/JE/Entity.hpp:124:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x33c' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x33c;
+         ^
+openje/src/JE/DynamicObject.hpp:27:10: note: Parent variable 'DynamicObject::mbr_0x33c'
+   dword mbr_0x33c;
+         ^
+openje/src/JE/Entity.hpp:124:10: note: Derived variable 'Entity::mbr_0x33c'
+   dword mbr_0x33c;
+         ^
+openje/src/JE/Entity.hpp:140:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x37c' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x37c;
+         ^
+openje/src/JE/DynamicObject.hpp:29:10: note: Parent variable 'DynamicObject::mbr_0x37c'
+   dword mbr_0x37c;
+         ^
+openje/src/JE/Entity.hpp:140:10: note: Derived variable 'Entity::mbr_0x37c'
+   dword mbr_0x37c;
+         ^
+openje/src/JE/Entity.hpp:141:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x380' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x380;
+         ^
+openje/src/JE/DynamicObject.hpp:31:10: note: Parent variable 'DynamicObject::mbr_0x380'
+   dword mbr_0x380;
+         ^
+openje/src/JE/Entity.hpp:141:10: note: Derived variable 'Entity::mbr_0x380'
+   dword mbr_0x380;
+         ^
+openje/src/JE/Entity.hpp:159:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x3c0' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x3c0;
+         ^
+openje/src/JE/DynamicObject.hpp:33:10: note: Parent variable 'DynamicObject::mbr_0x3c0'
+   dword mbr_0x3c0;
+         ^
+openje/src/JE/Entity.hpp:159:10: note: Derived variable 'Entity::mbr_0x3c0'
+   dword mbr_0x3c0;
+         ^
+openje/src/JE/Entity.hpp:160:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x3c4' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x3c4;
+         ^
+openje/src/JE/DynamicObject.hpp:34:10: note: Parent variable 'DynamicObject::mbr_0x3c4'
+   dword mbr_0x3c4;
+         ^
+openje/src/JE/Entity.hpp:160:10: note: Derived variable 'Entity::mbr_0x3c4'
+   dword mbr_0x3c4;
+         ^
+openje/src/JE/Entity.hpp:161:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x3c8' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x3c8;
+         ^
+openje/src/JE/DynamicObject.hpp:35:10: note: Parent variable 'DynamicObject::mbr_0x3c8'
+   dword mbr_0x3c8;
+         ^
+openje/src/JE/Entity.hpp:161:10: note: Derived variable 'Entity::mbr_0x3c8'
+   dword mbr_0x3c8;
+         ^
+openje/src/JE/Entity.hpp:162:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x3cc' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x3cc;
+         ^
+openje/src/JE/DynamicObject.hpp:36:10: note: Parent variable 'DynamicObject::mbr_0x3cc'
+   dword mbr_0x3cc;
+         ^
+openje/src/JE/Entity.hpp:162:10: note: Derived variable 'Entity::mbr_0x3cc'
+   dword mbr_0x3cc;
+         ^
+openje/src/JE/Entity.hpp:163:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x3d0' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x3d0;
+         ^
+openje/src/JE/DynamicObject.hpp:37:10: note: Parent variable 'DynamicObject::mbr_0x3d0'
+   dword mbr_0x3d0;
+         ^
+openje/src/JE/Entity.hpp:163:10: note: Derived variable 'Entity::mbr_0x3d0'
+   dword mbr_0x3d0;
+         ^
+openje/src/JE/Entity.hpp:164:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x3d4' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x3d4;
+         ^
+openje/src/JE/DynamicObject.hpp:38:10: note: Parent variable 'DynamicObject::mbr_0x3d4'
+   dword mbr_0x3d4;
+         ^
+openje/src/JE/Entity.hpp:164:10: note: Derived variable 'Entity::mbr_0x3d4'
+   dword mbr_0x3d4;
+         ^
+openje/src/JE/Entity.hpp:165:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x4' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x4;
+         ^
+openje/src/JE/DynamicObject.hpp:39:10: note: Parent variable 'DynamicObject::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/Entity.hpp:165:10: note: Derived variable 'Entity::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/Entity.hpp:166:10: warning: The struct 'Entity' defines member variable with name 'mbr_0x8' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0x8;
+         ^
+openje/src/JE/DynamicObject.hpp:41:10: note: Parent variable 'DynamicObject::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/Entity.hpp:166:10: note: Derived variable 'Entity::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/Entity.hpp:167:10: warning: The struct 'Entity' defines member variable with name 'mbr_0xc' also defined in its parent struct 'DynamicObject'. [duplInheritedMember]
+   dword mbr_0xc;
+         ^
+openje/src/JE/DynamicObject.hpp:42:10: note: Parent variable 'DynamicObject::mbr_0xc'
+   dword mbr_0xc;
+         ^
+openje/src/JE/Entity.hpp:167:10: note: Derived variable 'Entity::mbr_0xc'
+   dword mbr_0xc;
+         ^
+openje/src/JE/ActionAnim.hpp:21:9: warning: The struct 'ActionAnim' defines member variable with name 'mbr_0x4' also defined in its parent struct 'Action'. [duplInheritedMember]
+   byte mbr_0x4;
+        ^
+openje/src/JE/Action.hpp:12:9: note: Parent variable 'Action::mbr_0x4'
+   byte mbr_0x4;
+        ^
+openje/src/JE/ActionAnim.hpp:21:9: note: Derived variable 'ActionAnim::mbr_0x4'
+   byte mbr_0x4;
+        ^
+openje/src/JE/ActionMoveTo.cpp:55:4: portability: Using memset() on struct which contains a floating point number. [memsetClassFloat]
+   memset( nj, 0, sizeof(PathJob) );
+   ^
+openje/src/JE/ActionMoveTo.cpp:51:18: style: C-style pointer casting [cstyleCast]
+   PathJob* nj = (PathJob*)operator new( sizeof(PathJob) );
+                 ^
+openje/src/JE/ActionMoveTo.cpp:158:12: style: Variable 'w0' can be declared as reference to const [constVariableReference]
+  Vector3& w0 = wl->items[0];
+           ^
+openje/src/JE/ActionMoveTo.cpp:177:13: style: Variable 'nx' can be declared as reference to const [constVariableReference]
+   Vector3& nx = wl->items[0];
+            ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x10' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x14' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x18' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x1c' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x20' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x4' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0x8' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/AnimationCache.cpp:10:21: warning: Member variable 'AnimationCache::mbr_0xc' is not initialized in the constructor. [uninitMemberVar]
+    AnimationCache::AnimationCache() {
+                    ^
+openje/src/JE/Common/Chunk.cpp:65:22: style: C-style pointer casting [cstyleCast]
+            MS* ms = (MS*)this->mbr_0x18;
+                     ^
+openje/src/JE/Gregorian.hpp:26:3: style: Struct 'Gregorian' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]
+  Gregorian( int y = 1, int mo = 1, int d = 1, int h = 0, int mi = 0, int s = 0 )
+  ^
+openje/src/JE/MemorySystem.cpp:8:24: style: The member function 'JE::MemorySystem::ctor_0x5b31c0' can be static. [functionStatic]
+    void MemorySystem::ctor_0x5b31c0() {
+                       ^
+openje/src/JE/MemorySystem.hpp:17:9: note: The member function 'JE::MemorySystem::ctor_0x5b31c0' can be static.
+   void ctor_0x5b31c0();
+        ^
+openje/src/JE/MemorySystem.cpp:8:24: note: The member function 'JE::MemorySystem::ctor_0x5b31c0' can be static.
+    void MemorySystem::ctor_0x5b31c0() {
+                       ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0x4' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0x8' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0xc' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0x10' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0x14' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0x18' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/ModelCache.cpp:23:14: warning: Member variable 'ModelCache::mbr_0x1c' is not initialized in the constructor. [uninitMemberVar]
+ ModelCache::ModelCache() {
+             ^
+openje/src/JE/Network.cpp:20:19: style: Variable 'g_network_singleton' can be declared as pointer to const [constVariablePointer]
+  static Network* g_network_singleton = NULL;
+                  ^
+openje/src/JE/PathManager.cpp:510:20: style: The member function 'JE::PathManager::RemoveFromOpen' can be static. [functionStatic]
+ void PathManager::RemoveFromOpen( PathJob* job, PathNode* node ) {
+                   ^
+openje/src/JE/PathManager.hpp:161:9: note: The member function 'JE::PathManager::RemoveFromOpen' can be static.
+   void RemoveFromOpen( PathJob* job, PathNode* node );
+        ^
+openje/src/JE/PathManager.cpp:510:20: note: The member function 'JE::PathManager::RemoveFromOpen' can be static.
+ void PathManager::RemoveFromOpen( PathJob* job, PathNode* node ) {
+                   ^
+openje/src/JE/PathManager.cpp:70:17: style: C-style pointer casting [cstyleCast]
+  dword* node = (dword*)operator new(12u);
+                ^
+openje/src/JE/PathManager.cpp:186:22: style: C-style pointer casting [cstyleCast]
+  WaypointList* wl = (WaypointList*)operator new(sizeof(WaypointList));
+                     ^
+openje/src/JE/PathManager.cpp:194:21: style: C-style pointer casting [cstyleCast]
+   Vector3* grown = (Vector3*)realloc(wl->items, sizeof(Vector3) * cap);
+                    ^
+openje/src/JE/PathManager.cpp:210:23: style: C-style pointer casting [cstyleCast]
+  JobListNode* node = (JobListNode*)operator new(sizeof(JobListNode));
+                      ^
+openje/src/JE/PathManager.cpp:213:27: style: C-style pointer casting [cstyleCast]
+  JobListNode* sentinel = (JobListNode*)this->mbr_0x8;
+                          ^
+openje/src/JE/PathManager.cpp:224:27: style: C-style pointer casting [cstyleCast]
+  JobListNode* sentinel = (JobListNode*)this->mbr_0x8;
+                          ^
+openje/src/JE/PathManager.cpp:254:24: style: C-style pointer casting [cstyleCast]
+    PathNode** grown = (PathNode**)realloc(items, sizeof(PathNode*) * cap);
+                       ^
+openje/src/JE/PathManager.cpp:315:18: style: C-style pointer casting [cstyleCast]
+   PathNode* p = (PathNode*)job->pool;
+                 ^
+openje/src/JE/PathManager.cpp:342:27: style: C-style pointer casting [cstyleCast]
+  JobListNode* sentinel = (JobListNode*)mbr_0x8;
+                          ^
+openje/src/JE/PathManager.cpp:355:19: style: C-style pointer casting [cstyleCast]
+    PathNode* p = (PathNode*)job->pool;
+                  ^
+openje/src/JE/PathManager.cpp:362:21: style: C-style pointer casting [cstyleCast]
+   OpenHeap* heap = (OpenHeap*)operator new(sizeof(OpenHeap));
+                    ^
+openje/src/JE/PathManager.cpp:368:20: style: C-style pointer casting [cstyleCast]
+  OpenHeap* heap = (OpenHeap*)job->openHeap;
+                   ^
+openje/src/JE/PathManager.cpp:511:26: style: C-style pointer casting [cstyleCast]
+  OpenHeap* heap = job ? (OpenHeap*)job->openHeap : 0;
+                         ^
+openje/src/JE/PathManager.cpp:539:18: style: C-style pointer casting [cstyleCast]
+   OpenHeap* h = (OpenHeap*)job->openHeap;
+                 ^
+openje/src/JE/PathManager.cpp:394:34: portability: Casting from float * to signed int * is not portable due to different binary data representations on different platforms. [invalidPointerCast]
+                                *reinterpret_cast<int*>(&job->goal[0]),
+                                 ^
+openje/src/JE/PathManager.cpp:596:18: portability: Casting from float * to signed int * is not portable due to different binary data representations on different platforms. [invalidPointerCast]
+   int gxBits = *reinterpret_cast<int*>(&next.x);
+                 ^
+openje/src/JE/PathManager.cpp:594:13: style: Variable 'a' can be declared as reference to const [constVariableReference]
+   Vector3& a = wl->items[keep];
+            ^
+openje/src/JE/PathManager.cpp:222:40: style: Parameter 'job' can be declared as pointer to const [constParameterPointer]
+ void PathManager::DequeueJob(PathJob* job) {
+                                       ^
+openje/src/JE/PathManager.cpp:247:31: style: Parameter 'a' can be declared as pointer to const [constParameterPointer]
+   static bool Less(PathNode* a, PathNode* b) { return a->f < b->f; }
+                              ^
+openje/src/JE/PathManager.cpp:247:44: style: Parameter 'b' can be declared as pointer to const [constParameterPointer]
+   static bool Less(PathNode* a, PathNode* b) { return a->f < b->f; }
+                                           ^
+openje/src/JE/PathManager.cpp:289:26: style: Parameter 'node' can be declared as pointer to const [constParameterPointer]
+   void Remove(PathNode* node) {
+                         ^
+openje/src/JE/PathManager.cpp:299:30: style: Parameter 'n' can be declared as pointer to const [constParameterPointer]
+   void SiftUpNode(PathNode* n) {
+                             ^
+openje/src/JE/PathManager.cpp:444:22: style: Variable 'w' can be declared as pointer to const [constVariablePointer]
+     for ( PathNode* w = cur; w && emitted < 256; w = w->parent ) {
+                     ^
+openje/src/JE/PathManager.cpp:449:13: style: Variable 'xyz' can be declared as const array [constVariable]
+      float xyz[3] = { tmp[k].x, tmp[k].y, tmp[k].z };
+            ^
+openje/src/JE/ResourceSystem.cpp:499:23: style: The member function 'JE::ResourceSystem::Release_0x498eb0' can be static. [functionStatic]
+ void ResourceSystem::Release_0x498eb0( Res* resource ) {
+                      ^
+openje/src/JE/ResourceSystem.hpp:94:9: note: The member function 'JE::ResourceSystem::Release_0x498eb0' can be static.
+   void Release_0x498eb0( Res* resource );
+        ^
+openje/src/JE/ResourceSystem.cpp:499:23: note: The member function 'JE::ResourceSystem::Release_0x498eb0' can be static.
+ void ResourceSystem::Release_0x498eb0( Res* resource ) {
+                      ^
+openje/src/JE/ResourceSystem.cpp:273:23: style: The member function 'JE::ResourceSystem::ResourceExists_0x49abd0' can be static. [functionStatic]
+ char ResourceSystem::ResourceExists_0x49abd0( const char* name ) {
+                      ^
+openje/src/JE/ResourceSystem.hpp:124:9: note: The member function 'JE::ResourceSystem::ResourceExists_0x49abd0' can be static.
+   char ResourceExists_0x49abd0( const char* name );
+        ^
+openje/src/JE/ResourceSystem.cpp:273:23: note: The member function 'JE::ResourceSystem::ResourceExists_0x49abd0' can be static.
+ char ResourceSystem::ResourceExists_0x49abd0( const char* name ) {
+                      ^
+openje/src/JE/ResourceSystem.cpp:97:18: style: C-style pointer casting [cstyleCast]
+  char* buffer = (char*)malloc( (size_t)size );
+                 ^
+openje/src/JE/ResourceSystem.cpp:131:18: style: C-style pointer casting [cstyleCast]
+  g_rhtEntries = (RhtEntry*)malloc( sizeof(RhtEntry) * (size_t)entries );
+                 ^
+openje/src/JE/ResourceSystem.cpp:141:20: style: C-style pointer casting [cstyleCast]
+  g_rhtNameBlock = (char*)malloc( (size_t)nameLen + 1 );
+                   ^
+openje/src/JE/ResourceSystem.cpp:150:20: style: C-style pointer casting [cstyleCast]
+  g_rhtPackBlock = (char*)malloc( (size_t)packLen + 1 );
+                   ^
+openje/src/JE/ResourceSystem.cpp:265:5: style: C-style pointer casting [cstyleCast]
+  ( (char*)buf )[len] = 0;
+    ^
+openje/src/JE/ResourceSystem.cpp:267:10: style: C-style pointer casting [cstyleCast]
+  *out = (char*)buf;
+         ^
+openje/src/JE/ResourceSystem.cpp:294:82: style: C-style pointer casting [cstyleCast]
+   JE::LogDebugString( NULL, "ResourceSystem::Demand - Couldn't open file %s\n", (char*)name );
+                                                                                 ^
+openje/src/JE/ResourceSystem.cpp:330:18: style: C-style pointer casting [cstyleCast]
+  char* buffer = (char*)malloc( (size_t)lump[1] );
+                 ^
+openje/src/JE/ResourceSystem.cpp:334:97: style: C-style pointer casting [cstyleCast]
+   JE::LogDebugString( NULL, "ResourceSystem::Demand - couldn't allocate %d for %s\n", lump[1], (char*)name );
+                                                                                                ^
+openje/src/JE/ResourceSystem.cpp:368:17: style: C-style pointer casting [cstyleCast]
+   char* heap = (char*)malloc( len + 1 );
+                ^
+openje/src/JE/ResourceSystem.cpp:434:38: style: C-style pointer casting [cstyleCast]
+   if ( v->nameCap >= 0x10u ) free( *(void**)v->nameBuf );
+                                     ^
+openje/src/JE/ResourceSystem.cpp:475:14: style: C-style pointer casting [cstyleCast]
+  Res* res = (Res*)malloc( sizeof(Res) );
+             ^
+openje/src/JE/ResourceSystem.cpp:539:19: style: C-style pointer casting [cstyleCast]
+  MemStream* ms = (MemStream*)malloc( sizeof(MemStream) );
+                  ^
+openje/src/JE/ResourceSystem.cpp:546:94: style: C-style pointer casting [cstyleCast]
+   JE::LogDebugString( NULL, "ResourceSystem::MemStreamOpen - Couldn't open memstream %s\n", (char*)name );
+                                                                                             ^
+openje/src/JE/ResourceSystem.cpp:550:16: style: C-style pointer casting [cstyleCast]
+  ms->start  = (char*)res->data;
+               ^
+openje/src/JE/ResourceSystem.cpp:551:16: style: C-style pointer casting [cstyleCast]
+  ms->end    = (char*)res->data + res->size;
+               ^
+openje/src/JE/ResourceSystem.cpp:66:22: style: Variable 'params' can be declared as pointer to const [constVariablePointer]
+  JE::VFX_Parameter* params = static_cast<JE::VFX_Parameter*>( params_ );
+                     ^
+openje/src/JE/ResourceSystem.cpp:224:9: style: Variable 'sep' can be declared as pointer to const [constVariablePointer]
+  char* sep  = sepB > sepF ? sepB : sepF;
+        ^
+openje/src/JE/ResourceSystem.cpp:403:48: style: Parameter 'res' can be declared as pointer to const [constParameterPointer]
+ static void CacheUnlink( ResourceSystem::Res* res ) {
+                                               ^
+openje/src/JE/ResourceSystem.cpp:571:61: style: Parameter 'ms' can be declared as pointer to const [constParameterPointer]
+ int ResourceSystem::MemStreamConsumed_0x4981d0( MemStream* ms ) {
+                                                            ^
+openje/src/JE/ResourceSystem.cpp:616:57: style: Parameter 'ms' can be declared as pointer to const [constParameterPointer]
+ int ResourceSystem::MemStreamSize_0x4989c0( MemStream* ms ) {
+                                                        ^
+openje/src/JE/Resources.cpp:60:18: style: The member function 'JE::Resources::dtor_0x59c0a0' can be static. [functionStatic]
+ void Resources::dtor_0x59c0a0() {
+                 ^
+openje/src/JE/Resources.hpp:12:9: note: The member function 'JE::Resources::dtor_0x59c0a0' can be static.
+   void dtor_0x59c0a0();
+        ^
+openje/src/JE/Resources.cpp:60:18: note: The member function 'JE::Resources::dtor_0x59c0a0' can be static.
+ void Resources::dtor_0x59c0a0() {
+                 ^
+openje/src/JE/Resources.cpp:75:24: style: The member function 'JE::Resources::virt_meth_0x59c0c0' can be static. [functionStatic]
+ undefined4 Resources::virt_meth_0x59c0c0() {
+                       ^
+openje/src/JE/Resources.hpp:13:15: note: The member function 'JE::Resources::virt_meth_0x59c0c0' can be static.
+   undefined4 virt_meth_0x59c0c0();
+              ^
+openje/src/JE/Resources.cpp:75:24: note: The member function 'JE::Resources::virt_meth_0x59c0c0' can be static.
+ undefined4 Resources::virt_meth_0x59c0c0() {
+                       ^
+openje/src/JE/Resources.cpp:69:24: style: The member function 'JE::Resources::virt_meth_0x59c0e0' can be static. [functionStatic]
+ undefined4 Resources::virt_meth_0x59c0e0() {
+                       ^
+openje/src/JE/Resources.hpp:14:15: note: The member function 'JE::Resources::virt_meth_0x59c0e0' can be static.
+   undefined4 virt_meth_0x59c0e0();
+              ^
+openje/src/JE/Resources.cpp:69:24: note: The member function 'JE::Resources::virt_meth_0x59c0e0' can be static.
+ undefined4 Resources::virt_meth_0x59c0e0() {
+                       ^
+openje/src/JE/SS/EngineStringSystem.cpp:22:10: warning: Class 'EngineStringSystem' does not have a copy constructor which is recommended since it has dynamic memory/resource management. [noCopyConstructor]
+   free( m_tokens );
+         ^
+openje/src/JE/SS/EngineStringSystem.cpp:22:10: warning: Class 'EngineStringSystem' does not have a operator= which is recommended since it has dynamic memory/resource management. [noOperatorEq]
+   free( m_tokens );
+         ^
+openje/src/JE/SS/EngineStringSystem.cpp:77:15: warning: If memory allocation fails, then there is a possible null pointer dereference: name [nullPointerOutOfMemory]
+      memcpy( name, cur, nameLen ); name[nameLen] = 0;
+              ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:33: note: Assuming allocation function fails
+      char* name = (char*)malloc( nameLen + 1 );
+                                ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:20: note: Assignment 'name=(char*)malloc(nameLen+1)', assigned value is 0
+      char* name = (char*)malloc( nameLen + 1 );
+                   ^
+openje/src/JE/SS/EngineStringSystem.cpp:77:15: note: Null pointer dereference
+      memcpy( name, cur, nameLen ); name[nameLen] = 0;
+              ^
+openje/src/JE/SS/EngineStringSystem.cpp:77:37: warning: If memory allocation fails, then there is a possible null pointer dereference: name [nullPointerOutOfMemory]
+      memcpy( name, cur, nameLen ); name[nameLen] = 0;
+                                    ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:33: note: Assuming allocation function fails
+      char* name = (char*)malloc( nameLen + 1 );
+                                ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:20: note: Assignment 'name=(char*)malloc(nameLen+1)', assigned value is 0
+      char* name = (char*)malloc( nameLen + 1 );
+                   ^
+openje/src/JE/SS/EngineStringSystem.cpp:77:37: note: Null pointer dereference
+      memcpy( name, cur, nameLen ); name[nameLen] = 0;
+                                    ^
+openje/src/JE/SS/EngineStringSystem.cpp:80:39: warning: If memory allocation fails, then there is a possible null pointer dereference: name [nullPointerOutOfMemory]
+       if ( strcmp( m_tokens[i].name, name ) == 0 ) { idx = i; break; }
+                                      ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:33: note: Assuming allocation function fails
+      char* name = (char*)malloc( nameLen + 1 );
+                                ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:20: note: Assignment 'name=(char*)malloc(nameLen+1)', assigned value is 0
+      char* name = (char*)malloc( nameLen + 1 );
+                   ^
+openje/src/JE/SS/EngineStringSystem.cpp:80:39: note: Null pointer dereference
+       if ( strcmp( m_tokens[i].name, name ) == 0 ) { idx = i; break; }
+                                      ^
+openje/src/JE/SS/EngineStringSystem.cpp:52:17: style: C-style pointer casting [cstyleCast]
+   char* data = (char*)res->data;
+                ^
+openje/src/JE/SS/EngineStringSystem.cpp:57:16: style: C-style pointer casting [cstyleCast]
+    char* nl = (char*)memchr( cur, '\n', (size_t)( end - cur ) );
+               ^
+openje/src/JE/SS/EngineStringSystem.cpp:76:20: style: C-style pointer casting [cstyleCast]
+      char* name = (char*)malloc( nameLen + 1 );
+                   ^
+openje/src/JE/SS/EngineStringSystem.cpp:87:20: style: C-style pointer casting [cstyleCast]
+        m_tokens = (Token*)grown;
+                   ^
+openje/src/JE/SS/EngineStringSystem.cpp:97:29: style: C-style pointer casting [cstyleCast]
+      m_tokens[idx].value = (char*)malloc( (size_t)( lineEnd - val ) + 1 );
+                            ^
+openje/src/JE/SS/EngineStringSystem.cpp:31:9: style: Variable 'tok' can be declared as const array [constVariable]
+   char tok[ 0x20 ] = "tokens.tok";               // 0x56BCD1-0x56BD03 literal
+        ^
+openje/src/JE/SS/EngineStringSystem.cpp:59:11: style: Variable 'lineEnd' can be declared as pointer to const [constVariablePointer]
+    char* lineEnd = nl;
+          ^
+openje/src/JE/SS/EngineStringSystem.cpp:73:13: style: Variable 'val' can be declared as pointer to const [constVariablePointer]
+      char* val = sep + 1;
+            ^
+openje/src/JE/SS/StringSystem.cpp:67:22: style: The member function 'JE::SS::StringSystem::ctor_0x4c5c80' can be static. [functionStatic]
+  void StringSystem::ctor_0x4c5c80() {
+                     ^
+openje/src/JE/SS/StringSystem.hpp:33:10: note: The member function 'JE::SS::StringSystem::ctor_0x4c5c80' can be static.
+    void ctor_0x4c5c80();
+         ^
+openje/src/JE/SS/StringSystem.cpp:67:22: note: The member function 'JE::SS::StringSystem::ctor_0x4c5c80' can be static.
+  void StringSystem::ctor_0x4c5c80() {
+                     ^
+openje/src/JE/SS/StringSystem.cpp:71:22: style: The member function 'JE::SS::StringSystem::dtor_0x4c5b40' can be static. [functionStatic]
+  void StringSystem::dtor_0x4c5b40() {
+                     ^
+openje/src/JE/SS/StringSystem.hpp:34:10: note: The member function 'JE::SS::StringSystem::dtor_0x4c5b40' can be static.
+    void dtor_0x4c5b40();
+         ^
+openje/src/JE/SS/StringSystem.cpp:71:22: note: The member function 'JE::SS::StringSystem::dtor_0x4c5b40' can be static.
+  void StringSystem::dtor_0x4c5b40() {
+                     ^
+openje/src/JE/SS/StringSystem.cpp:132:25: style: C-style pointer casting [cstyleCast]
+   unsigned char* dir = (unsigned char*)m_activeDir;
+                        ^
+openje/src/JE/SS/StringSystem.cpp:147:23: style: C-style pointer casting [cstyleCast]
+    if ( m_maleDir && (void*)m_maleDir != (void*)dir && id < m_maleCount ) {
+                      ^
+openje/src/JE/SS/StringSystem.cpp:147:43: style: C-style pointer casting [cstyleCast]
+    if ( m_maleDir && (void*)m_maleDir != (void*)dir && id < m_maleCount ) {
+                                          ^
+openje/src/JE/SS/StringSystem.cpp:148:26: style: C-style pointer casting [cstyleCast]
+     unsigned char* md = (unsigned char*)m_maleDir;
+                         ^
+openje/src/JE/SS/StringSystem.cpp:161:26: style: C-style pointer casting [cstyleCast]
+   unsigned char* base = (unsigned char*)m_extraBegin;
+                         ^
+openje/src/JE/SS/StringSystem.cpp:162:26: style: C-style pointer casting [cstyleCast]
+   unsigned char* last = (unsigned char*)m_extraEnd;
+                         ^
+openje/src/JE/SS/StringSystem.cpp:171:7: style: C-style pointer casting [cstyleCast]
+    ? (const char*)( rec + 4 + 4 )
+      ^
+openje/src/JE/SS/StringSystem.cpp:172:8: style: C-style pointer casting [cstyleCast]
+    : *(const char**)( rec + 4 + 0 );
+       ^
+openje/src/JE/SS/StringSystem.cpp:78:82: style: Parameter 'params' can be declared as pointer to const [constParameterPointer]
+  void StringSystem::Init_virt_0x4c5e30( char* rootDirectory, JE::VFX_Parameter* params ) {
+                                                                                 ^
+openje/src/JE/SS/StringSystem.cpp:162:19: style: Variable 'last' can be declared as pointer to const [constVariablePointer]
+   unsigned char* last = (unsigned char*)m_extraEnd;
+                  ^
+openje/src/JE/SS/StringSystem.cpp:183:12: style: Variable 'buf[0]' is assigned a value that is never used. [unreadVariable]
+    buf[0] = 0;
+           ^
+openje/src/JE/Scripting.cpp:12:21: style: The member function 'JE::Scripting::ctor_0x59c040' can be static. [functionStatic]
+    void Scripting::ctor_0x59c040() {
+                    ^
+openje/src/JE/Scripting.hpp:42:9: note: The member function 'JE::Scripting::ctor_0x59c040' can be static.
+   void ctor_0x59c040();
+        ^
+openje/src/JE/Scripting.cpp:12:21: note: The member function 'JE::Scripting::ctor_0x59c040' can be static.
+    void Scripting::ctor_0x59c040() {
+                    ^
+openje/src/JE/SpatialGrid.cpp:24:13: style: C-style pointer casting [cstyleCast]
+  m_cells = (Cell*)calloc( cols * rows, sizeof( Cell ) );
+            ^
+openje/src/JE/SpatialGrid.cpp:36:19: style: C-style pointer casting [cstyleCast]
+   void** grown = (void**)realloc( c.items, sizeof( void* ) * cap );
+                  ^
+openje/src/JE/SpatialGrid.cpp:47:51: style: Parameter 'entity' can be declared as pointer to const [constParameterPointer]
+ int SpatialGrid::Remove( int col, int row, void* entity ) {
+                                                  ^
+openje/src/JE/VFX_Parameter.cpp:16:13: style: C-style pointer casting [cstyleCast]
+  char* d = (char*)malloc(n + 1);
+            ^
+openje/src/JE/VFX_Parameter.cpp:64:23: style: C-style pointer casting [cstyleCast]
+   tree->m_sections = (VFX_Parameter::IniSection*)grown;
+                      ^
+openje/src/JE/VFX_Parameter.cpp:90:19: style: C-style pointer casting [cstyleCast]
+   sec->entries = (VFX_Parameter::IniEntry*)grown;
+                  ^
+openje/src/JE/VFX_Parameter.cpp:104:9: style: Variable 'end' can be declared as pointer to const [constVariablePointer]
+  char* end = text + length;
+        ^
+openje/src/JE/World.cpp:62:21: style: Condition 'newState' is always true [knownConditionTrueFalse]
+   m_pauseStampMS = newState ? (int)clock() : 0;   // placeholder until JE::TickMilliseconds
+                    ^
+openje/src/JE/World.cpp:59:17: note: Assuming that condition 'newState==4' is not redundant
+  if ( newState == 4 ) {
+                ^
+openje/src/JE/World.cpp:62:21: note: Condition 'newState' is always true
+   m_pauseStampMS = newState ? (int)clock() : 0;   // placeholder until JE::TickMilliseconds
+                    ^
+openje/src/JE/cls_0x4d8d70.cpp:58:36: style: Parameter 'node' can be declared as pointer to const [constParameterPointer]
+ static const char* NodeKey( byte* node ) {
+                                   ^
+openje/src/JE/cls_0x4d8d70.cpp:62:31: style: Parameter 'node' can be declared as pointer to const [constParameterPointer]
+ static bool NodeIsNil( byte* node ) {
+                              ^
+openje/src/JE/cls_0x4d8d70.cpp:246:9: style: Variable 'header' can be declared as pointer to const [constVariablePointer]
+  byte* header = reinterpret_cast<byte*>( this->mbr_0x4 );
+        ^
+openje/src/JE/cls_0x50db20.cpp:63:9: portability: Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]
+        return (undefined4)this;
+        ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x10' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x14' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x18' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x1c' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x20' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x30' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x34' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x4' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x44' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x48' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x4c' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x50' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x54' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x58' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x5c' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x68' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x6c' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x8' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x8c' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x40a220::mbr_0x90' is not initialized in the constructor. [uninitMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x496bd0::mbr_0x0' is not initialized in the constructor. Maybe it should be initialized directly in the class cls_0x496bd0? [uninitDerivedMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x496bd0::mbr_0x30' is not initialized in the constructor. Maybe it should be initialized directly in the class cls_0x496bd0? [uninitDerivedMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x496bd0::mbr_0x4' is not initialized in the constructor. Maybe it should be initialized directly in the class cls_0x496bd0? [uninitDerivedMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x496bd0::mbr_0x8' is not initialized in the constructor. Maybe it should be initialized directly in the class cls_0x496bd0? [uninitDerivedMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x40a220.hpp:48:4: warning: Member variable 'cls_0x496bd0::mbr_0xc' is not initialized in the constructor. Maybe it should be initialized directly in the class cls_0x496bd0? [uninitDerivedMemberVar]
+   cls_0x40a220() {}
+   ^
+openje/src/JE/cls_0x50db20.cpp:68:30: style: The member function 'JE::cls_0x50db20::meth_0x401940' can be static. [functionStatic]
+    undefined4 cls_0x50db20::meth_0x401940(int param_1, int param_2) {
+                             ^
+openje/src/JE/cls_0x50db20.hpp:130:15: note: The member function 'JE::cls_0x50db20::meth_0x401940' can be static.
+   undefined4 meth_0x401940(int param_1, int param_2);
+              ^
+openje/src/JE/cls_0x50db20.cpp:68:30: note: The member function 'JE::cls_0x50db20::meth_0x401940' can be static.
+    undefined4 cls_0x50db20::meth_0x401940(int param_1, int param_2) {
+                             ^
+openje/src/JE/G3D_Water.hpp:14:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x18' also defined in its parent class 'G3D_BaseAttribute'. [duplInheritedMember]
+   dword mbr_0x18;
+         ^
+openje/src/JE/G3D_BaseAttribute.hpp:12:10: note: Parent variable 'G3D_BaseAttribute::mbr_0x18'
+   dword mbr_0x18;
+         ^
+openje/src/JE/G3D_Water.hpp:14:10: note: Derived variable 'G3D_Water::mbr_0x18'
+   dword mbr_0x18;
+         ^
+openje/src/JE/G3D_Water.hpp:15:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x1c' also defined in its parent class 'G3D_BaseAttribute'. [duplInheritedMember]
+   dword mbr_0x1c;
+         ^
+openje/src/JE/G3D_BaseAttribute.hpp:13:10: note: Parent variable 'G3D_BaseAttribute::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/G3D_Water.hpp:15:10: note: Derived variable 'G3D_Water::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/G3D_Water.hpp:35:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x8' also defined in its parent class 'G3D_BaseAttribute'. [duplInheritedMember]
+   dword mbr_0x8;
+         ^
+openje/src/JE/G3D_BaseAttribute.hpp:14:10: note: Parent variable 'G3D_BaseAttribute::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/G3D_Water.hpp:35:10: note: Derived variable 'G3D_Water::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/G3D_Water.hpp:14:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x18' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x18;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:50:10: note: Parent variable 'cls_0x4d8d70::mbr_0x18'
+   dword mbr_0x18;  // 0x18
+         ^
+openje/src/JE/G3D_Water.hpp:14:10: note: Derived variable 'G3D_Water::mbr_0x18'
+   dword mbr_0x18;
+         ^
+openje/src/JE/G3D_Water.hpp:15:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x1c' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x1c;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:51:10: note: Parent variable 'cls_0x4d8d70::mbr_0x1c'
+   dword mbr_0x1c;  // 0x1c
+         ^
+openje/src/JE/G3D_Water.hpp:15:10: note: Derived variable 'G3D_Water::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/G3D_Water.hpp:16:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x20' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x20;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:52:10: note: Parent variable 'cls_0x4d8d70::mbr_0x20'
+   dword mbr_0x20;  // 0x20
+         ^
+openje/src/JE/G3D_Water.hpp:16:10: note: Derived variable 'G3D_Water::mbr_0x20'
+   dword mbr_0x20;
+         ^
+openje/src/JE/G3D_Water.hpp:17:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x28' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x28;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:54:10: note: Parent variable 'cls_0x4d8d70::mbr_0x28'
+   dword mbr_0x28;  // 0x28
+         ^
+openje/src/JE/G3D_Water.hpp:17:10: note: Derived variable 'G3D_Water::mbr_0x28'
+   dword mbr_0x28;
+         ^
+openje/src/JE/G3D_Water.hpp:18:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x2c' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x2c;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:55:10: note: Parent variable 'cls_0x4d8d70::mbr_0x2c'
+   dword mbr_0x2c;  // 0x2c
+         ^
+openje/src/JE/G3D_Water.hpp:18:10: note: Derived variable 'G3D_Water::mbr_0x2c'
+   dword mbr_0x2c;
+         ^
+openje/src/JE/G3D_Water.hpp:19:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x30' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x30;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:56:10: note: Parent variable 'cls_0x4d8d70::mbr_0x30'
+   dword mbr_0x30;  // 0x30
+         ^
+openje/src/JE/G3D_Water.hpp:19:10: note: Derived variable 'G3D_Water::mbr_0x30'
+   dword mbr_0x30;
+         ^
+openje/src/JE/G3D_Water.hpp:20:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x34' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x34;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:57:10: note: Parent variable 'cls_0x4d8d70::mbr_0x34'
+   dword mbr_0x34;  // 0x34
+         ^
+openje/src/JE/G3D_Water.hpp:20:10: note: Derived variable 'G3D_Water::mbr_0x34'
+   dword mbr_0x34;
+         ^
+openje/src/JE/G3D_Water.hpp:23:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x4' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:45:10: note: Parent variable 'cls_0x4d8d70::mbr_0x4'
+   dword mbr_0x4;   // 0x04 _Myhead header node, also the end sentinel (0x70C66C aliases this)
+         ^
+openje/src/JE/G3D_Water.hpp:23:10: note: Derived variable 'G3D_Water::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/G3D_Water.hpp:35:10: warning: The class 'G3D_Water' defines member variable with name 'mbr_0x8' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:46:10: note: Parent variable 'cls_0x4d8d70::mbr_0x8'
+   dword mbr_0x8;   // 0x08 node count
+         ^
+openje/src/JE/G3D_Water.hpp:35:10: note: Derived variable 'G3D_Water::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x40a220.hpp:18:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x30' also defined in its parent class 'cls_0x496bd0'. [duplInheritedMember]
+   dword mbr_0x30;
+         ^
+openje/src/JE/cls_0x496bd0.hpp:13:10: note: Parent variable 'cls_0x496bd0::mbr_0x30'
+   dword mbr_0x30;
+         ^
+openje/src/JE/cls_0x40a220.hpp:18:10: note: Derived variable 'cls_0x40a220::mbr_0x30'
+   dword mbr_0x30;
+         ^
+openje/src/JE/cls_0x40a220.hpp:20:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x4' also defined in its parent class 'cls_0x496bd0'. [duplInheritedMember]
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x496bd0.hpp:14:10: note: Parent variable 'cls_0x496bd0::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x40a220.hpp:20:10: note: Derived variable 'cls_0x40a220::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x40a220.hpp:31:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x8' also defined in its parent class 'cls_0x496bd0'. [duplInheritedMember]
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x496bd0.hpp:15:10: note: Parent variable 'cls_0x496bd0::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x40a220.hpp:31:10: note: Derived variable 'cls_0x40a220::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x40a220.hpp:13:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x10' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x10;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:48:10: note: Parent variable 'cls_0x4d8d70::mbr_0x10'
+   dword mbr_0x10;  // 0x10
+         ^
+openje/src/JE/cls_0x40a220.hpp:13:10: note: Derived variable 'cls_0x40a220::mbr_0x10'
+   dword mbr_0x10;
+         ^
+openje/src/JE/cls_0x40a220.hpp:14:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x14' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x14;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:49:10: note: Parent variable 'cls_0x4d8d70::mbr_0x14'
+   dword mbr_0x14;  // 0x14
+         ^
+openje/src/JE/cls_0x40a220.hpp:14:10: note: Derived variable 'cls_0x40a220::mbr_0x14'
+   dword mbr_0x14;
+         ^
+openje/src/JE/cls_0x40a220.hpp:15:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x18' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x18;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:50:10: note: Parent variable 'cls_0x4d8d70::mbr_0x18'
+   dword mbr_0x18;  // 0x18
+         ^
+openje/src/JE/cls_0x40a220.hpp:15:10: note: Derived variable 'cls_0x40a220::mbr_0x18'
+   dword mbr_0x18;
+         ^
+openje/src/JE/cls_0x40a220.hpp:16:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x1c' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x1c;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:51:10: note: Parent variable 'cls_0x4d8d70::mbr_0x1c'
+   dword mbr_0x1c;  // 0x1c
+         ^
+openje/src/JE/cls_0x40a220.hpp:16:10: note: Derived variable 'cls_0x40a220::mbr_0x1c'
+   dword mbr_0x1c;
+         ^
+openje/src/JE/cls_0x40a220.hpp:17:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x20' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x20;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:52:10: note: Parent variable 'cls_0x4d8d70::mbr_0x20'
+   dword mbr_0x20;  // 0x20
+         ^
+openje/src/JE/cls_0x40a220.hpp:17:10: note: Derived variable 'cls_0x40a220::mbr_0x20'
+   dword mbr_0x20;
+         ^
+openje/src/JE/cls_0x40a220.hpp:18:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x30' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x30;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:56:10: note: Parent variable 'cls_0x4d8d70::mbr_0x30'
+   dword mbr_0x30;  // 0x30
+         ^
+openje/src/JE/cls_0x40a220.hpp:18:10: note: Derived variable 'cls_0x40a220::mbr_0x30'
+   dword mbr_0x30;
+         ^
+openje/src/JE/cls_0x40a220.hpp:19:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x34' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x34;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:57:10: note: Parent variable 'cls_0x4d8d70::mbr_0x34'
+   dword mbr_0x34;  // 0x34
+         ^
+openje/src/JE/cls_0x40a220.hpp:19:10: note: Derived variable 'cls_0x40a220::mbr_0x34'
+   dword mbr_0x34;
+         ^
+openje/src/JE/cls_0x40a220.hpp:20:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x4' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:45:10: note: Parent variable 'cls_0x4d8d70::mbr_0x4'
+   dword mbr_0x4;   // 0x04 _Myhead header node, also the end sentinel (0x70C66C aliases this)
+         ^
+openje/src/JE/cls_0x40a220.hpp:20:10: note: Derived variable 'cls_0x40a220::mbr_0x4'
+   dword mbr_0x4;
+         ^
+openje/src/JE/cls_0x40a220.hpp:31:10: warning: The class 'cls_0x40a220' defines member variable with name 'mbr_0x8' also defined in its parent class 'cls_0x4d8d70'. [duplInheritedMember]
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x4d8d70.hpp:46:10: note: Parent variable 'cls_0x4d8d70::mbr_0x8'
+   dword mbr_0x8;   // 0x08 node count
+         ^
+openje/src/JE/cls_0x40a220.hpp:31:10: note: Derived variable 'cls_0x40a220::mbr_0x8'
+   dword mbr_0x8;
+         ^
+openje/src/JE/cls_0x50db20.cpp:74:50: style: Parameter 'other' can be declared as pointer to const [constParameterPointer]
+    undefined4 cls_0x50db20::meth_0x401b20(void* other, int pos, int count) {
+                                                 ^
