@@ -51,6 +51,6 @@ row; A keeps editorial merge rights).
 | T-002 | Fix `cppcheck-openje`; add `run-all-tests` script | done | implementer-B |
 | T-003 | GUI RE recon: `.int` load chain field notes (read-only IDA) | done | implementer-B |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |
-| T-005 | GUI: `.int` reader + widget tree with name lookup | in-progress | implementer-B |
+| T-005 | GUI: `.int` reader + widget tree with name lookup | done | implementer-B |
 | T-006 | GUI/SS: `Format_0x56be30` `<tag>` markup + Label text | open | — |
 | T-007 | GUI: skin sub-records (Window+0x90 x9) + texture binding | open | — |

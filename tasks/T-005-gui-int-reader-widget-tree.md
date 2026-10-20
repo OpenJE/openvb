@@ -1,6 +1,6 @@
 # T-005 — GUI: `.int` reader + widget tree with name lookup
 
-status: in-progress
+status: done
 assignee: implementer-B
 
 ## Objective
@@ -42,3 +42,41 @@ Port the interface-file loader that `docs/f3/GUILoadingRecon.md` §2/§3 decoded
 ## Notes
 Order matters: T-006 (string tags) and T-007 (skins) both consume this tree. Depends on nothing in
 A's queue except `ResourceSystem` file streams, which already exist.
+
+
+## Notes (evidence, implementer-B, 2026-10-20)
+
+Implemented in **new files only** — `modules/openje/src/JE/GUI/InterfaceFile.{hpp,cpp}` +
+`modules/openje/tests/je/GUILoading/GUILoading.cpp` (openje `952f961`, parent bumped; nothing of
+A's in-flight files was staged). The GUI class headers already in `src/JE/GUI/*.hpp` are the DB
+generated layout dumps; my loader deliberately does **not** reuse `GUI::Interface`/`GUI::Window`
+those describe (a naming collision on `JE/GUI/Interface.hpp` was caught and reverted before any
+commit — see chat/from-B.md). Class name proposed for review: `JE::GUI::InterfaceFile` (recon G7).
+
+Acceptance, all passing (`wine GUILoading.exe 'C:\f3data'`):
+```
+     Mainmenu: widgets=9 rootChildren=2 links=0
+OK: GUI .int loading tests passed        (exit 0)
+```
+- Mainmenu.INT: a2=4, flag=0, source name, 1 root, type 0 (Window), name `MainmenuWin`,
+  rect `0,0,1024,768`, children > 0, `FindWidget("MainmenuWin") == root`, unknown names miss.
+- Dialog.INT: a2=3, **2 roots**, first `SpeakerWin` rect `152,140,532,260`.
+- PipBoy.INT: root type **2 (Picture)**, `picPipBoy`, rect `0,-1,1024,609`.
+- Loading.INT (V1.1 -> a2=2): parses, and the a2>=3 block is skipped (`sCB8`/`sCF8` unset).
+- All 24 name-referenced shipped files parse to a named root, **and every parse consumed exactly
+  the lump size** — that check is the real proof the record decode is byte-exact (any wrong
+  width or order desyncs the cursor and fails).
+- Alignment cross-check: every non-empty skin `textureName` across the whole Mainmenu tree is a
+  plausible image filename (`.bmp/.tga/.pcx/.dds/.gif/.png`).
+- Missing resource returns 0 without crashing (the original's null-stream path @0x495ba5).
+
+Gate: `run-all-tests` now drives **eight** suites (GUILoading added). Current run: 8 pass incl.
+`app=124`, with `PathManager` needing `src/F3/CombatManager.cpp` (your untracked in-flight file)
+via `OPENVB_TEST_EXTRA_SOURCES` — reported in chat rather than encoded.
+`cppcheck-openje` over my changed files: **clean** (used `static_cast`/`reinterpret_cast`, and
+`FreeTree` is a file-scope helper, so no baseline entries were needed).
+
+Not ported (deliberate, documented in the header): the texture registry global `byte_707CE4`
+(G1 -> T-007), the 3 sub-object vftptr copies at 0x4b2260, the `mbr_0xca8` link-container
+internals, and `Skin::LoadDefault_0x523490`'s key/value semantics (T-007). No `.int` file uses
+types > 4 (unknown ids abort the load, matching the original).
