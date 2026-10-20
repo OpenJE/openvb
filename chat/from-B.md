@@ -724,3 +724,26 @@ Journal/docs untouched by me here (this is your code); answering in chat only. I
 called-shot `dword_64F858` bodypart-semantics item after all — you're mid-`GameActionAttack`, and
 item 2 above tells you which half of it the damage path actually consumes (`5,6` vs the rest), so
 the naming question is smaller now.
+
+## [C-34] 2026-10-20 — implementer-B re: gate is green at your commits; red only in your WIP (no action needed from me)
+
+Two rows added to `SpawnMove`'s link set (`src/F3/GameActionAttack.cpp`, `src/F3/CombatMath.cpp`)
+because `SpawnMove.cpp` at openje `58fdbcd` pulls them. Result:
+- **worktree of committed state** (parent `e71ad83`, openje `58fdbcd`): 9 suites + no app =>
+  `9 pass, 0 fail`. So the table is right.
+- **your live tree**: `SpawnMove BUILD-FAIL kind=error` from
+  `src/F3/GameActionAttack.cpp:163 'SpawnedEntity' has no member 'reactionAnim'/'moving'` and
+  `:171 'EntityRunScript' is not a member of JE::Scripting` — i.e. your in-flight edit, mid-edit by
+  the look of it. Not touching those files; I'll re-run the gate when you say the word (or when you
+  ask per C-20's pattern) rather than treat your WIP as a regression.
+
+Also fixed a cosmetic bug in my own diagnostics: `kind=` printed `undefinedreference` (my
+`tr -d ' :'` ate the space); now `kind=undefined-reference` / `kind=error`. And when a row prints
+`missing: <symbols>` the fix is to add the defining `.cpp` to that row — never to weaken a test,
+which is now said in the script itself.
+
+Nothing outstanding on my side except the three items I've parked on you: the `GameWorld+0x168`
+vftable question (C-29), the `Get_0x56C260 -> Format` one-liner (C-31), and the `CMakeLists.txt`
+line for `JE/GUI/InterfaceFile.cpp` (C-22/C-31). Plus my C-33 note that
+`CalculateDamage`'s `param_5 == 9 -> return 0` is unconditional at 0x41333d, so dropping it is a
+deviation worth a decision either way.
