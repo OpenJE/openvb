@@ -199,3 +199,84 @@ command registry.)
 - msvc-build + msvc-build-tracing: clean; f3-reimpl-run(±trace) runs until timeout without faults
 - cppcheck-openvb/openje: clean for touched files
 - tests: PathManager OK, cls_0x4d8d70 registry OK (all under wine)
+
+---
+## RESTORED SECTION (2026-10-20): findings that silently failed to append earlier
+Process note: several `## Tools:`-anchored appends were no-ops after the anchor drifted; the
+content below was "banked" in commits since but never actually written. Verified-by-code
+counterparts exist; this restores the living-backlog record. (Also: GamePathManager.md append
+used the same failure mode - re-appending its two updates here rather than re-editing.)
+
+### Resource resolution + maps
+- FindRht is NAME+FTYPE aware (ini=800 map=1300 crt=1400 veg=1500 int=1600 8=400 rle=1700
+  itm=1800 dds=200 ...); duplicate basenames across ftypes exist in shipping data
+  ("00_03_Tutorial_Junktown": map 1300 in Maps + blob 1200 in Scripts); last match per key
+  wins (InsertResource_0x50BF30 insert-assign).
+- Octree: Map+0x2C ".8" string (object; buffer alias +0x30), lazy GetOctree_0x56D960;
+  LoadOctreeFromFile_0x5b0ad0 = fourcc stream 8TRE>HEAD{4xu32}>LGTD/LVLD/OSRF/OSUR/OTEP>
+  TREE>NODE>INFO. OCTREE_ 0x100 bytes, primary vft 0x6A86F4, GetBounds_0x5adb10 ->
+  octree+0x6C..0x80 {minXYZ,maxXYZ}. Default_StartMap: HEAD(2,14,2,3), AABB {-1,-1,-1} to
+  {71,1,51}. CellToWorld_0x560710: x lerp col/cols(minX..maxX); z anchored on bounds[5]=maxZ
+  (NOT the local_18[4] IDA alias showed); y=0. WorldToOctreeCell_0x560680 inverse; ProcessJobs
+  seeds cells from world vectors when job->map set.
+- .rle = walkability grid: header {u32 cols,u32 rows} + per-row runs {u32 count,u8 mask};
+  Default_StartMap 144x104/306 runs/1538B exact; masks 0x2F floor / 0x02 blocked;
+  Port: Map::LoadRleGrid (flattened mask array; RB-run-tree original documented).
+
+### EMAP routing correction (superseded the "numeric 97B EMAP" claim)
+- Dispatcher table (vft idx->EA): 15 EMAP 0x56C9D0 | 16 EMEP 0x573B00 | 17 EMTR 0x575050 |
+  18 EMEN 0x573BF0 (obsolete spawner) | 19 EME2 0x573F30 (REAL entity records) | 20 2MWT
+  0x575A40 | 21 ECAM 0x56CCF0 | 22 EMFG 0x56CD70 | 23 EMNO 0x5742B0 | 24 EMNP 0x575180 |
+  25 EPTH 0x576940 | 26 EMSD 0x56C330? NO: 0x576C30 | 27 EMEF 0x578FB0.
+- EMAP v5 = u32 flags + 4 {u16,chars} strings (.8/.rle/_AM.dds/empty) + version-gated byte
+  extras incl. 3 float extras (250.0/500.0/{0,1}.0; ctor defaults 16384/524288/1). EMEP body
+  97B numeric IS entry points {u8 id, 6x{x,y,z} ring, 6 tail}. EME2 record = {u16 entity
+  resource name, pos3, rot3 rad->deg, u8 flag, ONE nested property chunk (EEOV seen)};
+  original instantiates via world-server vb-table (+52 name lookup, +24 create) + pushes map
+  entity RB at map+0x134 (count mbr_0x13c = "Map %s contains %d entities").
+
+### ActionMoveTo (ported, then adopted into game flow)
+- Field map (+0x11 mover, +0x1C job, +0x20 target, +0x24..2C snapshot, +0x33 requested,
+  +0x34 arrive-dist, +0x3A flag, +0x3D lastMs, +0x44 lastReqMs) implemented as named struct.
+- Bugs fixed en route: TraceSegmentClear goal-x FLOAT BIT PATTERN passed as int overflowed
+  distance -> every long segment looked clear (fast path swallowed A*); DistanceDispatch
+  param_3 must be node context (cell +16/+20, grid +80) - NULL deref crash; waypoint pop
+  accounting (advance-to-head before pop).
+- Game layer: F3::SpawnMapEntities (records->SpawnedEntity, 29-bit net ids
+  (x&0x1FFFFFFF, IWorldServer 0x66856C +8 read), GENT stats via ParseGentBlock (shipped
+  templates ver=1; writer emits 3; >=1 gate covers both; cur<=max clamp 0x463910),
+  classIdTag ~ Entity+0x15C, ext resolver 0x46FB20 adopted (player=creature+flag, .pro=8);
+  chunk-signature resolver authoritative (GCRE/GITM[+GIWP|GIAR|GIAM]/GOBJ[+GDOR|GCON]).
+- MapCreate registry (1-based ids into s_loadedMaps[17]); entities carry registry mapId
+  (entity+0x1EC semantics) + push into Map flat list (map+0x134 port). Managed Demand cache
+  (1,000,000B cap, stamp eviction, demandCount bump on hit; linear-table deviation noted).
+
+### Pumps and schedulers
+- JE::World::ServerUpdate_0x545d60: GetPathManager seam -> ProcessJobs (0x545E18) +
+  Host::TickWorldEntities (entity loop 0x545E71). NO static caller exists in original .text
+  (exhaustive disp8/32 vft-call scans); subsystem Ticks all empty stub 0x404B70 except
+  Network::Tick_0x543770 (net server/client vft[6]/[7] + housekeeping). Session pump belongs
+  to the unmapped session layer.
+- Entity action list (kind move/wait), PushActionOntoEntity (0x550720), finished-latch slot
+  drop; F3::GameActionMoveTo::OnServerUpdate_0x4060b0 skeleton (faithful NULL-grid early
+  return at 0x4060D9) + full blocker-response semantics in its header (classTag switch:
+  moving creature -> Wait(1000)+fresh MoveTo via world-server factory vft+20 (2=MoveTo,
+  5=Wait); door -> segment-plane test -> OperateDoor+Wait+MoveTo).
+- Anim-event roadmap (discoveries session 8): QueueAnimEvent ids (1 Idle, 32 Walk, 7 ToCombat,
+  9 ToDefault, 21/22 Equip/Unequip, 29 Limp, 43..52 locking, 53..104 attack/skill);
+  Queue_Idle = (animState x weaponStance) -> clip index; scheduler sub_5505F0 returns
+  duration-ms; queue at Entity+0x1A8, next-link dword_6F3960, GE+0x9C busy-lock.
+
+### Spatial grid thread (IN PROGRESS - this is where work resumes)
+- CreateGrid_0x57a8a0 (map+0x88, 0x18B): per-row 0x14 RB nodes {sentinel,count,x=cols};
+  rows from .rle header; per-cell run nodes from LoadRleGrid_0x57AA00 keyed on mask byte
+  (sub_56E390 insert). Consumers: NodeContext/job+80 grid pointer; Entity+0x16C per-entity
+  occupancy link; QueryEntities_0x405F80(grid, results, cellX, cellY, ...) blocker set.
+- NEXT: decompile QueryEntities_0x405F80 + caller of CreateGrid (confirm map+0x88 == grid);
+  port grid build into LoadRleGrid; entity insert/remove hooks; then OnServerUpdate blocker
+  bodies + real TraceSegmentClear cell-walk (per-cell callback = entity vft+38 per EME2
+  recon notes).
+
+### Coordination (live)
+- implementer-B on tasks/chat board (claims-by-commit; lanes: B=tooling/tests/GUI recon).
+- Discovery agent delivers to discoveries/ (we commit on their behalf); responses file shared.
