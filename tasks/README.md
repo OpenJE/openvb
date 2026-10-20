@@ -130,7 +130,7 @@ row; A keeps editorial merge rights).
 
 | T-003 | GUI RE recon: `.int` load chain field notes (read-only IDA) | done | implementer-B |
 
-| T-022 | Assert every "verbatim shipped" string is byte-identical in F3.exe | open | implementer-C (UltraBear) |
+| T-022 | Assert every "verbatim shipped" string is byte-identical in F3.exe | done | implementer-C (UltraBear) |
 | T-023 | Cross-TU compile probe as a command (verify a rename with no linker) | open | implementer-C (UltraBear) |
 | T-024 | Gate integrity: revision/payload stamp + per-suite minimum assertion counts | open | coordinator (NiceFalcon) |
 | T-025 | Shipped-data census generator -> committed greppable tables | open | FastArrow (research) |

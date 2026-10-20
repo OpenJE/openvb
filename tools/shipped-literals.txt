@@ -1,0 +1,29 @@
+# Shipped-literal claims that are NOT marked in source (T-022).
+#
+# One literal per line, C escapes honoured, optionally TAB-pinned to an EA or raw offset when the
+# same bytes legitimately occur at more than one site:   "lit"<TAB>0x66079C
+#
+# WHY THESE ARE HERE AND NOT MARKED IN CODE: they are shipped DATA identifiers (asset names the
+# original loads), not log messages. A `do not "fix"` marker above each use would be noise at six
+# call sites for what is one fidelity claim, so the claim lives here once. A string we quote in a
+# comment is never a claim: discovery strips comments before reading literals.
+#
+# Adopting more: run `verify-shipped-literals.py --survey` for unclaimed literals that match ONE
+# whole shipped string, then either mark them in their own file (owners do their own lane) or add
+# a line here. Removing a line here is a claim being withdrawn, and should say why.
+
+# --- VFX effect names the hit-response path loads (src/F3/GameActionAttack.cpp, T-012) ---------
+# Wrong bytes here = the effect silently does not load at runtime; nothing in a host suite notices.
+"FX_HitBloodStandard_01.veg"
+"FX_HitBloodHighVelocity_01.veg"
+"FX_HitRicochetMetal_01.veg"
+"FX_HitElectrical_01.veg"
+"FX_HitFire_01.veg"
+"FX_HitLaser_01.veg"
+
+# --- CombatMath log strings, claimed HERE not in the file (lane courtesy) -----------------------
+# src/F3/CombatMath.cpp carries live uncommitted work from T-027 (implementer-B) while this wave
+# runs, so its markers wait for that landing rather than smuggling their hunks into my commit.
+# The byte claim is identical either way; only the location of the assertion changes.
+"GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered.\n"
+"GameCreature::CalculateUnarmedDamage() - Unknown CALLEDTARGET encountered.\n"
