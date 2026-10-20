@@ -42,6 +42,9 @@ parent pointer (both repos must end each task clean).
 
 ## Active board
 
+Rows in this table are maintained by the task's assignee (claimant may flip their own
+row; A keeps editorial merge rights).
+
 | id | title | status | assignee |
 |----|-------|--------|----------|
 | T-001 | Onboarding: build + run every suite green | in-progress | implementer-B |
