@@ -114,6 +114,7 @@ set(F3_SOURCES
 	"src/F3/GameAnimationCache.cpp"
 	"src/F3/GamePathManager.cpp"
 	"src/F3/GameNetwork.cpp"
+	"src/F3/MapEntitySpawn.cpp"
 	"src/F3/GameWorld.cpp"
 	"src/main.cpp"
 )

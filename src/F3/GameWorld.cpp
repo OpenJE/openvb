@@ -3,6 +3,7 @@
 #include "tracing.hpp"
 #include <stdlib.h>
 #include "F3/GameWorld.hpp"
+#include "F3/MapEntitySpawn.hpp"
 #include "JE/Resources.hpp"
 #include "JE/ResourceSystem.hpp"
 #include "JE/VFX_Parameter.hpp"
@@ -64,6 +65,10 @@ namespace F3 {
         // vft[13] 0x545430 JE::World::CreateMapRequestMgr (cls_0x5a42b0, 0x14) -> +0x104.
         // cls_0x5a42b0 is unmodeled (map-load request bookkeeping); store NULL for now.
         m_mapRequestMgr = NULL;
+
+        // Startup map load + entity spawn (shipped flow queues through mapRequestMgr
+        // (cls_0x5a42b0 @world+0x104); we load inline - request manager reconstruction pending).
+        F3::LoadStartupMaps();
 
         // vft[4] GameWorld::InitInterfaces_0x46FB10 -> JE::World::InitInterfaces_0x5460D0
         // (dialogue/console/menu interface table; DEFERRED - interfaces unmodeled)
