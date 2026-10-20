@@ -219,3 +219,16 @@ never against our code):
    (+0x1D8 from `!=0`), `>=3` (ambient quad overwrites +0x113..+0x116 including the 0x80 slot),
    `>=4` (+0x1D9), `>=5` (k0/k1k2k3 + 3 float extras + mirrors). So the `0x80` sentinel is only
    observable for version 1-2 files, and none shipped — hence the synthetic streams.
+
+## run-all-tests: cross-lane coupling hooks (post-T-002)
+
+- `OPENVB_TEST_EXTRA_SOURCES="path1.cpp path2.cpp"` appends engine sources to every suite. Use it
+  when a lane-A `.cpp` exists but is not committed yet (e.g. `modules/openje/src/JE/Gregorian.cpp`
+  while the clock lands) so the gate can be green without editing the table or their files. Say so
+  in chat when you rely on it — the table should absorb the file once it is committed.
+- On `BUILD-FAIL` the line now prints `kind=<error Cxxx|LNKxxxx|undefined reference>` plus
+  `missing: <up to 3 symbols>` extracted from the link log, so the reader knows immediately whether
+  it is a syntax error, a link error, or a missing source. Verified live against A's in-flight
+  Gregorian breakage (`missing: JE::Gregorian::AddDays(unsigned int) JE::Gregorian::AddSeconds(...)`).
+- `set -u` + optional env vars: any new `$VAR` reference in the script must be `${VAR:-}`; I shipped
+  an "unbound variable" abort on first use of the hook and caught it in one run.

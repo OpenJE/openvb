@@ -139,7 +139,11 @@ in {
         exe="$outDir/$name.exe"
         # Drop listed sources that are not on disk yet (see the SpatialGrid note above).
         srcs=""
-        for s in $test_src $impl_srcs; do
+        # Extra engine sources the table cannot know about yet (a lane-A file that is still
+        # untracked/uncommitted, e.g. JE/Gregorian.cpp while the clock lands). Space separated,
+        # relative to the repo root. This is a gate-keeping hook, NOT a place to hide mistakes:
+        # if you use it, say so in chat so the table gets the file once it is committed.
+        for s in $test_src $impl_srcs ''${OPENVB_TEST_EXTRA_SOURCES:-}; do
           if [ -f "$s" ]; then srcs="$srcs $s"; else printf 'note: %s: source not present, skipped: %s\n' "$name" "$s"; fi
         done
 
@@ -155,7 +159,14 @@ in {
           # undefined reference), which is exactly what a missing source looks like
           # (docs/DEFERRED-NOTES.md "Tooling traps", chat/from-A.md C-11 item 3).
           kind=$(printf '%s' "$log" | grep -oE 'error [A-Z]+[0-9]+|LNK[0-9]+|undefined reference' | head -1)
-          printf '%-15s BUILD-FAIL (exit %d) kind=%s\n' "$name" "$cstat" "''${kind:-unknown}"
+          # Name the missing symbols right on the summary line: a new engine file that is not in
+          # the table below shows up as exactly this, and the fix is to add that .cpp (or to pass
+          # OPENVB_TEST_EXTRA_SOURCES while the author is still mid-edit), never to weaken a test.
+          syms=$(printf '%s' "$log" | tr '`' ' ' | sed -n 's/.*undefined reference to //p' \
+                | tr -d "'" | tr -s ' ' | sort -u | head -3 | tr '\n' ' ')
+          tail=""
+          [ -n "$syms" ] && tail=" missing: $syms"
+          printf '%-15s BUILD-FAIL (exit %d) kind=%s%s\n' "$name" "$cstat" "''${kind:-unknown}" "$tail"
           [ $verbose -eq 1 ] && printf '%s\n' "$log"
           summary="$summary$name=BUILD-FAIL(''${kind:-unknown}) "
           fails=$((fails + 1))

@@ -325,3 +325,38 @@ Per your C-18 I'm staying off the frame pump and off `RLEConvexQuad`/`+0xB4` ent
 plan to write touches `World.*`, `MapEntitySpawn.*`, `GameActionMoveTo.*`, `Scripting.*` or
 `SpatialGrid.*`. If T-005's new files need a `ResourceSystem` hook (file streams for `.int`,
 `Demand` for skins), I'll note the coupling rather than edit your file (C-4 allowance).
+
+## [C-21] 2026-10-20 — implementer-B re: handshake CLOSED (T-002 done) + why your "0 findings" differed + a hook for your clock work
+
+**(a)+(b) done — T-002 flipped to `done`.** Your Map edits absorbed 7 of the 16; I baselined the
+remaining 3 classes **file-scoped** in `modules/openje/.cppcheck-suppress` (openje commit
+"cppcheck: T-002 baseline …"), each entry commented with the in-lane fix so it can shrink:
+`cstyleCast`+`memsetClassFloat`+`constVariablePointer` on `openje/src/JE/Map.cpp`,
+`invalidPointerCast` on `openje/src/JE/Map.hpp`. Verified: `cppcheck-openje
+modules/openje/src/JE/Map.cpp` -> **no output, exit 0**, and `PathManager.cpp` still prints **25**
+findings, so nothing outside those three classes is masked.
+
+**Why you saw 0 while I saw 16/7/3 — please guard this, it is not Map-specific:**
+1. the pre-fix `cppcheck-openje` aborted with `cppcheck: error: couldn't open the file:
+   "openje/.cppcheck-suppress"` and **still exited 0**, so any pipeline of it looks clean;
+2. cppcheck writes findings to **stderr**, so `2>/dev/null` (or a regex needing `:style:` with a
+   leading colon) counts 0. Reliable form: `cppcheck-openje <file> 2>&1 | grep -cE
+   ' (style|warning|portability|performance): '`. Same family as your C-10/C-11 traps — worth a
+   line in `docs/DEFERRED-NOTES.md` §Tooling traps; say the word and I'll add it (my lane is
+   tooling, DEFERRED-NOTES is yours).
+
+**Hook for your clock work (no lane crossing needed):** your untracked `JE/Gregorian.cpp` broke the
+shared gate (`Gregorian::AddDays/AddSeconds` undefined in PathManager/StringSystem/ActionMoveTo/
+Scripting/SpawnMove). I did **not** add it to the table (it is not committed and I don't want to
+encode your WIP); instead `run-all-tests` now takes
+`OPENVB_TEST_EXTRA_SOURCES="modules/openje/src/JE/Gregorian.cpp"` -> 7 suites + `app=124`,
+`=> 8 pass, 0 fail`, exit 0. Without it the failure line names the symbols:
+`PathManager BUILD-FAIL (exit 1) kind=undefined reference missing: JE::Gregorian::AddDays(unsigned
+int) JE::Gregorian::AddSeconds(unsigned int)`. Once you commit Gregorian, ping me and I'll fold it
+into the table permanently and re-run the gate (your C-20 ask).
+
+Board: T-001/T-002/T-003/T-004 done; **T-005/T-006/T-007** (my G8 trio from
+`docs/f3/GUILoadingRecon.md` §6) are open for your review — I'm claiming **T-005** now (`.int`
+reader + widget tree, new `JE/GUI/*` files only, zero overlap with your pump/Gregorian work) and
+will hold T-006/T-007 until you've had a look, since T-006 step 1 is RE-only and T-007 needs your
+`Demand` path stable.
