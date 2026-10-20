@@ -158,8 +158,41 @@ namespace F3 {
 	void SetActiveMap( JE::Map* map );
 	JE::Map* GetActiveMap();
 
-	// Push an action onto an entity's list (JE::Entity::meth_0x550720 port; returns 0 when
-	// the 4-slot list is full - the original list is unbounded, deviation documented).
+	// THE entity action-queue insert seam - JE::Entity::meth_0x550720 (0x550720..0x550741).
+	// The original does exactly three things, and all three are load-bearing:
+	//   0x55072e  cls_0x54e070::meth_0x54ea00(&this->mbr_0x304, &param_1)
+	//             -> push_back the ACTION POINTER onto the deque living at Entity+0x304.
+	//                That container grows in blocks of 4 pointers (0x10-byte nodes, slot index
+	//                = count & 3, block = count >> 2: 0x54ea31..0x54ea6f) - it is unbounded,
+	//                which is why our fixed actions[4] is "the first block", not "the list".
+	//   0x550737  *(param_1 + 20) = this
+	//             -> writes the OWNER into the action at +0x14, unconditionally and for every
+	//                action class. That is what makes the drain meaningful: the action knows who
+	//                queued it without the queue being told again.
+	//   0x550741  JE::Entity::meth_0x54ef30(this)
+	//             -> the deferred-refresh latch: raises a per-entity flag, links the entity into
+	//                the global list at byte_70BE24, pokes F3::global_gui_interface_0x70be20 via
+	//                meth_0x401dd0(1) and sets byte_70BDE8 = 1. We DO NOT model it (no GUI/net
+	//                refresh exists in this port yet) and we do not fake it - see
+	//                docs/f3/EntityActionQueueSeam.md and deviation D-2.
+	// Callers of 0x550720 in the shipped binary include every GameAction*'s OnServerUpdate, the
+	// script natives F3::Attack (0x459f5d), F3::JustAttack (0x45a025), F3::StartDialogue
+	// (0x45a0f0), F3::ReloadWeapon (0x45a3e6/0x45a3fb), the server packet path
+	// GameServer::virt_meth_0x46dd70 (4 sites), the reaction function sub_45C140 and projectiles.
+	// PORT LIMIT, stated here because it is the interesting part: that uniform store cannot be
+	// copied. Our action models are not uniformly shipped-layout - GameActionAttack is a flat POJO
+	// whose `actor` sits at offset 0 (the "+0x14" in its comment is the shipped offset), while the
+	// pump-side GameActionWait/Die/OperateDoor structs have NO owner field at all. A blind +0x14
+	// write corrupted JE::ActionMoveTo and failed to link the attack, both measured. So the seam
+	// links the kinds that model an owner (kind 4 -> actor; kind 1 is VERIFIED only, since the
+	// shipped mover is +0x11 and is set by the registration path) and REFUSES the rest, warning once
+	// in the log rather than inventing a field. See docs/f3/EntityActionQueueSeam.md + D-2.
+	// Returns 1 when queued, 0 when the block is full.
+	int EnqueueEntityAction( SpawnedEntity* entity, void* action, int kind );
+
+	// Existing call-site wrapper (kind-tagged). Kept so the ~10 in-tree enqueue sites stay
+	// readable; it now routes through EnqueueEntityAction, so the +0x14 owner back-link is set by
+	// the seam rather than by each caller remembering to.
 	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action );
 
 	// OperateDoor action (kind 3 in the list): the 0x406485 shape minus script/anim (toggles

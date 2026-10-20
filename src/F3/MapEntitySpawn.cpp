@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "F3/MapEntitySpawn.hpp"
+#include "F3/GameActionAttack.hpp"
+#include "JE/ActionMoveTo.hpp"   // kind 1: mover lives at the shipped +0x11, not +0x14
 #include "JE/Map.hpp"
 #include "JE/SpatialGrid.hpp"
 #include "JE/ResourceSystem.hpp"
@@ -206,6 +208,82 @@ namespace F3 {
 		}
 	}
 
+	// The owner back-link. Shipped does this as ONE uniform store - 0x550737 `*(param_1 + 20) =
+	// this` has no type knowledge, because every shipped action class really does carry the field
+	// at +0x14. WE CANNOT COPY THAT STORE: our action structs are only partly shipped-layout, and
+	// a blind dword write at +0x14 landed in the middle of unrelated members (it corrupted
+	// JE::ActionMoveTo and silently failed to set GameActionAttack::actor, which sits at offset 0 -
+	// its "+0x14" comment records the SHIPPED offset, not the port offset). So the seam links the
+	// kinds whose owner field this port actually has, and says plainly which ones it cannot.
+	// Measured offsets were taken from the compiled layout, not from the comments.
+	static void LinkActionOwner( void* action, int kind, SpawnedEntity* entity, int* linked,
+	                             int* refused ) {
+		switch ( kind ) {
+		case 4:   // GameActionAttack - the drain calls Update(ms) with no entity argument, so the
+		          // action can only reach its attacker through this field (103/130/157).
+			static_cast< F3::GameActionAttack* >( action )->actor = entity;
+			if ( linked ) { *linked = 1; }
+			break;
+		case 2:    // F3::GameActionWait (the pump-side model, NOT the DB-layout header struct) is
+		case 5:    // { startMs, durationMs } / { damageType, material, flagsByte0x28 }: there is no
+			if ( refused ) { *refused = 1; }   // owner field to write, and inventing one is a fake
+			break;
+		case 1: {
+			// JE::ActionMoveTo carries its mover at the shipped +0x11 ("*this->gap11"), NOT +0x14,
+			// and the existing registration path already sets `mover`. Overwriting it on the
+			// strength of an offset analogy would be a guess, so the seam only VERIFIES here and
+			// reports a mismatch instead of silently changing behaviour.
+			JE::ActionMoveTo* mv = static_cast< JE::ActionMoveTo* >( action );
+			if ( mv->mover && mv->mover != entity ) {
+				JE::LogDebugString( NULL,
+				    "EnqueueEntityAction: mover != queueing entity (kind 1, unlinked)\r\n" );
+			}
+			if ( refused ) { *refused = 1; }
+			break;
+		}
+		default:
+			// kind 3 (GameActionOperateDoor, MapEntitySpawn.hpp:192) is likewise a flat port-side
+			// pair { door, startMs } with no owner member.
+			if ( refused ) { *refused = 1; }
+			break;
+		}
+	}
+
+	int EnqueueEntityAction( SpawnedEntity* entity, void* action, int kind ) {
+		tracing::instrument( tracing::LOCATION, "kind=%d", kind );
+		if ( !entity || !action ) {
+			return 0;   // the original would fault here; we have no null-order source
+		}
+
+		int linked = 0, refused = 0;
+		const int pushed = PushActionOntoEntity( entity, kind, action );
+		if ( pushed ) {
+			LinkActionOwner( action, kind, entity, &linked, &refused );   // 0x550737, after the push
+		}
+		if ( pushed && refused ) {
+			// Once, not per call: the shipped store is uniform, ours is not, and a reader of the
+			// log must be able to see that SOME kinds were queued without an owner back-link.
+			static bool warned = false;
+			if ( !warned ) {
+				warned = true;
+				JE::LogDebugString( NULL,
+				    "EnqueueEntityAction: kind queued without owner link (no owner field port-side; "
+				    "shipped 0x550737 stores +0x14 uniformly)\r\n" );
+			}
+		}
+		if ( pushed && linked && !refused ) {
+			// 0x550741 JE::Entity::meth_0x54ef30 - the deferred GUI/net refresh latch: raises a
+			// per-entity flag, links the entity into the global list at byte_70BE24, pokes
+			// F3::global_gui_interface_0x70be20 via meth_0x401dd0(1), sets byte_70BDE8. NOT PORTED
+			// and deliberately not stubbed with something that looks like a latch - an absent call
+			// with the EA cited is honest; a flag nobody reads is a false model. Recorded in
+			// docs/f3/EntityActionQueueSeam.md.
+		}
+		return pushed;
+	}
+
+	// The one place a slot is written (owner linking lives in EnqueueEntityAction, which is what
+	// new code should call; these call sites predate the seam and keep their own setup).
 	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action ) {
 		tracing::instrument( tracing::LOCATION, "kind=%d", kind );
 		if ( !e ) {
@@ -222,7 +300,7 @@ namespace F3 {
 				return 1;
 			}
 		}
-		return 0;   // original list is unbounded; 4-slot cap documented
+		return 0;   // our actions[4] is the deque's FIRST BLOCK; the original appends blocks
 	}
 
 	static void TickOneEntity( SpawnedEntity* e, int ms );

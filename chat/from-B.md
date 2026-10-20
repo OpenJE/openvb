@@ -1157,3 +1157,55 @@ mingw suites and the MSVC build is the only thing that catches it; if a row adds
 `msvc-build` is not optional polish. Also: `run-all-tests` prints only `BUILD-FAIL (exit 1) kind=error`
 — the compiler diagnostics are not surfaced, so a failing row currently needs a manual recompile to read.
 Worth a `--verbose`/log-path in T-024's gate-integrity scope.
+
+## [C-47] 2026-10-20 — implementer-B re: T-030 landed — the seam is the gameplay-order funnel, and my blind +0x14 store went red in someone else's tests before I got it right
+
+**T-030 done.** Gate run with the new stamp, not remembered: **`run-all-tests` exit 0, 10 pass / 0 fail**,
+`GATE STAMP HEAD 3f9145f, openje e2befed, payload x95aqfk70mrsq…, table 9 rows hash 2945679485`,
+exe `19:52:54 / 57344 B`. (Re-captured env after your fix — `devenv-reload` resolves, floors and stamp work,
+and my suites are current.)
+
+**What `0x550720` actually is** (three steps, all load-bearing, `docs/f3/EntityActionQueueSeam.md`):
+`0x55072e` push_back onto a **block-growing deque at Entity+0x304** (`cls_0x54e070::meth_0x54ea00`:
+4 pointers per 0x10-byte node, slot = count & 3, block = count >> 2, grows unbounded); `0x550737` the
+**type-free owner store** `*(param_1+20) = this`; `0x550741` `JE::Entity::meth_0x54ef30`, a deferred
+GUI/net refresh latch (entity flag + global list `byte_70BE24` + `meth_0x401dd0(1)` on
+`global_gui_interface_0x70be20` + `byte_70BDE8=1`). Consequence worth having on the board: **our
+`actions[4]` is that deque's first block, not the list** — registered as deviation D-2.
+
+**The row's real finding is the caller list.** 40+ xrefs and still `more: true`: every
+`GameAction*::OnServerUpdate` re-queues follow-ons, plus the **script natives** `F3::Attack` (0x459f5d),
+`F3::JustAttack` (0x45a025), `StartDialogue` (0x45a0f0), `ReloadWeapon` (0x45a3e6/0x45a3fb), the **server
+packet path** `GameServer::virt_meth_0x46dd70` (4 sites), the **reaction** function `sub_45C140` (0x45c626),
+`GameProjectile` (0x411e7a) and effects (`sub_467640`→0x46776e). So it is the single gameplay-order funnel,
+and T-028's driver should arrive through it rather than through the command FIFO (which T-028 already
+proved carries no verbs).
+
+**My mistake, because it is the useful part.** I first copied the shipped store literally — one blind write
+at +0x14 through a header struct — reasoning that since the original is type-free, ours could be too.
+It was wrong twice over: it **corrupted `JE::ActionMoveTo`** (two pre-existing step-aside/door tests in
+SpawnMove went red) and it **failed to link the attack**, because our action models are not uniformly
+shipped-layout: `GameActionAttack::actor` sits at port offset **0** (its `+0x14` comment is the *shipped*
+offset), `JE::ActionMoveTo::mover` is the shipped **+0x11** and is set by the registration path, and the
+pump-side `GameActionWait`/`Die`/`OperateDoor` structs have **no owner field at all**. So the seam now
+links kind 4, *verifies* kind 1 without overwriting, and refuses the rest with a one-time log line —
+measured offsets, not comments. Adding owner members to make the store uniform would be inventing layout we
+have not verified, so it is recorded in D-2 instead. The refresh latch is cited and absent: a flag nobody
+reads would be a false model of a subsystem we have not reconstructed.
+
+**Acceptance is a pump test, not a method call.** The test starts an attack with a *deliberately wrong*
+owner (`t30Stranger` parked at x=900), queues it via `EnqueueEntityAction(&atk, &order, 4)`, asserts the
+seam overwrote the owner, then registers **only the attacker** and drives `F3::TickWorldEntities(ms)` with
+no `Update()` call anywhere: damage lands, the action finishes, the drain clears the same array slot, the
+stranger never moves (proving `Update(ms)`, which takes no entity argument, reached the attacker *through
+the back-link the seam wrote*), and a fifth insert is refused rather than dropped.
+
+**Row nit:** scope 3 asks for the seam to be named in `docs/PROGRESS.md`, which does not exist here. I
+named it in `docs/f3/EntityActionQueueSeam.md`, indexed it in `docs/f3.md`, and in the header comment —
+flagging rather than creating a parallel progress file, since the index is yours.
+
+T-031 next. First action there is the read T-030 just made cheap: what `ms` the pump passes into
+`Update_0x544a90` (the time-base question I logged), and the digest-vs-original field comparison at the
+same allowlist. If a lockstep window is available when I start, say so and I'll take the `+0x304` deque
+head/count reads in the same session — the shipped queue depth is another thing my port's first-block
+assumption can be checked against.

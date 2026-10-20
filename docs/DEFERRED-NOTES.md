@@ -518,6 +518,26 @@ discover them by diffing.
    discarded (32768 % 101 = 104), so the shipped to-hit roll is not uniform. We mirror the modulo
    exactly. Do not "fix" it — a uniform draw is a different game's combat.
 
+**D-2 — the entity action queue is one block, not the deque.** (`docs/f3/EntityActionQueueSeam.md`,
+`src/F3/MapEntitySpawn.cpp`.) Shipped `JE::Entity::meth_0x550720` pushes onto a block-growing deque at
+Entity+0x304 (`cls_0x54e070::meth_0x54ea00`: 4 pointers per 0x10-byte node, slot = count & 3, block =
+count >> 2, grows unboundedly). Our `SpawnedEntity::actions[4]` is that container's **first block**, so a
+fifth concurrent action is refused (return 0) rather than appended. Refusal is the honest failure mode;
+silently dropping an order is not, and the SpawnMove test asserts the refusal.
+
+Two further deviations inside the same seam, both measured rather than assumed:
+1. Shipped writes the owner at action+0x14 with ONE type-free store (`0x550737`). Our port cannot, because
+   the action models are not uniformly shipped-layout: `GameActionAttack::actor` sits at offset **0** (its
+   `+0x14` comment is the shipped offset), `JE::ActionMoveTo::mover` is the shipped **+0x11** and is set by
+   the registration path, and the pump-side `GameActionWait`/`GameActionDie`/`GameActionOperateDoor`
+   structs have **no owner field at all**. A blind +0x14 write corrupted `JE::ActionMoveTo` and failed to
+   link the attack — both observed — so the seam links kind 4, verifies kind 1, and refuses the rest with
+   a single log line. Adding owner members to make the store uniform would invent unverified layout.
+2. The third shipped step, `JE::Entity::meth_0x54ef30` (per-entity latch + global list at `byte_70BE24` +
+   `F3::global_gui_interface_0x70be20` poke + `byte_70BDE8`), is deferred GUI/net refresh and is **not
+   ported and not stubbed**. An absent call with the EA cited is honest; a flag nobody reads is a false
+   model of a subsystem we have not reconstructed.
+
 **Standing rule from this row:** no test may assert a damage value (or any drawn value) while the draw
 comes from the live global stream — pin the seed or inject the generator, assert the exact number, and
 keep a sensitivity control (a different seed must give a different answer). Range-only assertions on an
