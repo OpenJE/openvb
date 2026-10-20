@@ -45,8 +45,10 @@ calls 0x409bb0 — shipped as `return 1;` stub (forward-compat no-op in this bui
 ```
 
 The `max/cur` clamp pair (+0x20/+0x24) is the first *semantic* anchor: current-not-exceeding-max
-scalar (HP/AP-style). NOTE +0x20 is also what vft[0] getter `0x4080c0` returns —
-the "getter" is effectively **get-current-stat**; its callers will name it next session.
+scalar. vft[0] `0x4080c0` returns **+0x20 = MAX** (the wire reads max into +0x20 first, then
+clamps cur@+0x24 down to it — 0x463910). *(initial "get-current-stat" note here was wrong;
+confirmed by the reimpl agent's wire-direction reading — their (statMax, statCur) naming is
+adopted. No in-binary caller of vft[0] found in DB beyond its own slot.)*
 
 ## 2. EFTR block wire format (0x468930)
 

@@ -107,13 +107,44 @@ flag, +0x5C child count (list at +0x18/+0x1C per `sub_55ADC0` inserting into `pa
 - Session 5 §6's doubt about `vft[+40]` returning an int for EFDT is resolved: the call site
   dispatches 0x66856C slot 10 = 0x46fa40 (object factory), not 0x46fe40.
 
-## 7. Queue update
+## 7. GameItem own block = ~26 std::strings (raw ctor log, 0x410180)
+
+All string-header writes in the Item ctor are **[esi+disp] absolute** (Item's own region
+0xA4..0x3B3, NOT Entity-vb-relative — unlike creature's gap1AC strings):
+
+- size/cap(15) pairs found at (size@, cap@): 0xC8/0xCC, 0xE4/0xE8, 0x108/0x10C, 0x124/0x128,
+  0x144/0x148, 0x160/0x164, 0x180/0x184, 0x19C/0x1A0, 0x1BC/0x1C0, 0x1D8/0x1DC, 0x1F8/0x1FC,
+  0x214/0x218, 0x234/0x238, 0x250/0x254, 0x26C/0x270, 0x288/0x28C, 0x2A4/0x2A8, 0x2C0/0x2C4,
+  0x2E0/0x2E4, 0x2FC/0x300, 0x318/0x31C, 0x334/0x338, 0x350/0x354, 0x36C/0x370, 0x38C/0x390,
+  0x3A8/0x3AC → 26 strings (SSO 0x18 each, buf = size−0x10), stride 0x1C/0x20 with occasional
+  extra payload dwords between them.
+- Also: one RbTree sentinel init (0x410205 → stored at the mbr_0x4 dword shown in decompile),
+  `[esi+0xA0]=0` dword, `E+0x15C = 5` class tag (0x4103F3).
+- Interpretation (inferred): item metadata text block — name/description/model/icon/sound
+  paths etc. Weapon/Armor/Ammo run this ctor too, so the block is shared across the item
+  family; their own extras live in 0x3B4.. (weapon: +0x3E0/+0x3E4 string, +0x408 dword; etc.).
+
+## 8. GameEffectDamage ctor 0x45c040 (0xB0 object)
+
+```
+sub_462470(this, type)            ; GameEffect(0x70..0x9B?) base init
+[+0x9C]=0  [+0xA0]=0  [+0xA4]=0
+[+0xA8]=9                          ; effect-type-ish tag: 9 for damage (compare factory typeId=1)
+[+0xAC]=0(byte) [+0xAD]=0(byte)
+vft(Effect-subobject) = 0x66073C   ; GameEffectDamage_GameEffect_Effect_vftable
+```
+Damage payload fields live at +0x9C..+0xAD; the shared base at +0x30=3000/+0x40=100 seen
+earlier belongs to the base Effect(0x70)/GameEffect block. `GameEffect` boundary: new size
+0xB0 = Effect 0x70 + GameEffect 0x2C + damage 0x14 *(inferred split — verify with the
+sub_462470 base-ctor log next session)*.
+
+## 9. Queue update
 
 1. ~~Effect-node dispatch~~ CLOSED (§3–4).
 2. F3-side readers of Entity+0x15C class tag — still open (DB sees none; lean = write-only).
 3. `.por` extension target — still open (BuildingTrigger candidate).
-4. GameItem own-field block full log (0xA4..0x3B3) — next big one for item/stat RE.
-5. JE::World layout (mbr_0x88 counter, the −808/−792 pair, two vbtables at +8/+10) — worth a
-   dedicated session since networking and ids hang off it.
-6. `GameEffectDamage::ctor_0x45c040` + slots 0x45c0XX (damage fields inside the 0xB0 object —
-   the damage formula inputs for GameActionAttack work).
+4. ~~GameItem own-field block~~ CLOSED §7 — remaining: identify string *uses* (which is name,
+   which is model path…) via first-writer analysis in the item-file (ITM resource) reader.
+5. JE::World layout (mbr_0x88 counter, the −808/−792 pair, two vbtables at +8/+10).
+6. sub_462470 base-GameEffect ctor log + GameEffectDamage slot bodies (0x45c0XX, 0x45c6b0) —
+   the actual damage formula inputs.

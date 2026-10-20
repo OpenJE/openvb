@@ -8,7 +8,7 @@ Read-only; no IDB/source edits. Follows [session 1](2025-10-20-entity-class-fami
 
 This session decodes the **GameEntity override table** (the real class interface), names
 several long-standing mystery fields, verifies the GENT **save** format from the writer side,
-finds two new entity-file fourccs (`EME2`, `EENT`), and discovers **`F3::GameInventory`**.
+finds two new entity-file fourccs (`EEN2`, `EENT`), and discovers **`F3::GameInventory`**.
 
 ---
 
@@ -117,7 +117,7 @@ their HP hypothesis is **consistent with all evidence found so far**, but no cod
 
 ## 3. GENT save format — VERIFIED from the writer (vft +0xA0 = 0x463970)
 
-After `Entity::virt_meth_0x54f6a0` (engine EENT/EME2 write), writes:
+After `Entity::virt_meth_0x54f6a0` (engine EEN2/EENT write), writes:
 
 ```
 u32 'GENT' (0x544E4547)      ; local_8 = 1414415687
@@ -137,8 +137,8 @@ template stream (44-byte chunk = 12 header + 32 payload ✓). Loader (`0x463870/
 switch (*(chunk+8)):
  'GENT' 0x544E4547 → 0x466510  (§3/session 3; err "Error reading entity game data from entity file.")
  'EFTR' 0x52544645 → 0x468930  (effect tree; err "Error reading effect tree from entity file.")
- 'EME2' 0x32454D45 → JE::Entity::meth_0x552760   ; engine map-entity-record data
- 'EENT' 0x454E4545 → JE::Entity::meth_0x551cf0   ; err "Error reading entity engine data from entity file."
+ 'EEN2' 0x324E4545 → JE::Entity::meth_0x552760   ; engine entity-name data (843990341)
+ 'EENT' 0x544E4545 → JE::Entity::meth_0x551cf0   ; err "Error reading entity engine data from entity file."
  other             → return 1  (silently ACCEPTED — unknown chunks are skipped, not errors)
 ```
 `GameItem::ReadFromFile_0x411260` (item's own +0xE4 override) adds:
@@ -147,11 +147,11 @@ switch (*(chunk+8)):
  then tail-calls the base dispatcher.
 ```
 **Implications for reimpl**:
-- The EME2 *record* the reimpl already parses (map-side) and the **`EME2` entity-file chunk**
-  (entity-side, JE::Entity::meth_0x552760) are the same fourcc in two streams — the per-entity
-  `.eme`-style chunk carries engine data (pos/rot/etc?) — worth decoding 0x552760 before
-  assuming EME2 file layout equals the map record layout.
-- `EENT` = JE::Entity engine block (ctor/pos/name/flags persistence) — decodable from
+- The **`EEN2`** entity-file chunk is the same fourcc the reimpl saw FIRST in every template
+  stream (`{EEN2, GENT, <markers>}`) — it is JE::Entity's own name/data block
+  (reader `JE::Entity::meth_0x552760`), NOT the map-side `EME2` record (different fourcc,
+  0x32454D45). Decode 0x552760 before assuming anything about EEN2's field layout.
+- `EENT` = second JE::Entity engine block (ctor/pos/name/flags persistence) — decodable from
   0x551cf0 + its writer counterpart region near 0x54f6a0 (called by the GENT writer above).
 - Unknown fourcc = accept(1): tolerant forward-compat, worth replicating.
 
@@ -233,9 +233,9 @@ settle +0xEC vs +0x168 vs +0x1EC vs +0x218 — flagged so the reimpl doesn't tru
 4. **Effect-type enumeration**: vft+20 `ReadFrom` per effect class (via WorldServer vft+40).
    Say the word if you want the full effect catalogue (would unlock EFTR payloads + footstep
    FX templates + `ApplyOnCreateEffects` semantics).
-5. **New chunks EME2/EENT in the entity file**: your map-side EME2 parser ≠ entity-file EME2
-   reader (0x552760). Which stream does your current code consume? (Should be the map; if your
-   spawn path ever opens per-entity files, dispatch on these fourccs and remember
+5. **New chunks EEN2/EENT in the entity file**: your map-side EME2 parser ≠ entity-file
+   EEN2 reader (0x552760). Which stream does your current code consume? (Should be the map; if
+   your spawn path ever opens per-entity/template files, dispatch on these fourccs and remember
    unknown-fourcc = accept.)
 
 ## 10. Evidence index (this session)
@@ -246,7 +246,7 @@ GENT writer 0x463970; CopyFrom 0x468350; LOS 0x4629a0; can-see gate 0x466570; an
 0x463850; activate 0x467640; OnAnimEvent 0x467E90; GetUsableSkills 0x4687e0..0x468859;
 inventory factory 0x4637F0 (`new 0x4C`), inventory field read @0x467c1f
 (`mov esi,[eax+esi+0C8h]`); chunk dispatch 0x468a20 + GameItem 0x411260; Entity-vft dump
-0x666044+0x40..+0x124 raw .rdata; fourcc immediates: 843990341='EME2', 1414415685='EENT',
+0x666044+0x40..+0x124 raw .rdata; fourcc immediates: 843990341='EEN2', 1414415685='EENT',
 1297369415='GITM' @0x41126b/0x468a36/0x5528de/0x5528e6.
 
 ## 11. Suggested next sessions (my queue)

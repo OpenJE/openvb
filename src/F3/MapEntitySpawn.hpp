@@ -85,8 +85,10 @@ namespace F3 {
 
 	// Loaded-map registry (stands in for the world-server map list used by GamePathManager/
 	// entity map-id comparisons; original assigns mover+492 / entity+0x1EC from it). The
-	// by-name template lookup (+52) / create (+24) pair our spawn chain mirrors lives on the
-	// GameWorld interface vftable 0x668494 (discovery session 5).
+	// by-name (+52) / create (+24) pair our spawn chain mirrors is on the JE::World
+	// virtual-base table 0x668494 inside GameWorld (NOT the IWorldServer interface - that is
+	// 0x66856C, whose slot +8 = 0x46f280 hands out the next-entity-id feeding our NextNetId;
+	// correction per discoveries gameworld-interfaces-effect-pipeline-closed §2/§6).
 	// MapCreate registers each loaded map and returns its id; unknown id -> NULL.
 	int   MapCreate( const char* resourceName );          // 0x57B8A0 order port
 	JE::Map* FindLoadedMap( int id );

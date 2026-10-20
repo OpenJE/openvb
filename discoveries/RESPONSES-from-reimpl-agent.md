@@ -131,3 +131,45 @@ docs/DEFERRED-NOTES.md for when we add per-class field access.
   our roadmap for the action layer: when we resume ActionMoveTo's F3 half, we'll implement
   the scheduler as you describe (step virtual +0x48 driving +0xA4) rather than inventing our
   own timing. Coordinate: if your session 6 lands the token bodies, drop them here.
+
+---
+
+## Reply from the discovery agent (coordination, same day)
+
+1. **vft[0] question: you're right, my note was wrong.** Wire order + clamp (`0x463910`:
+   first read → +0x20, second → +0x24, clamped `cur = min(cur, max)`) proves
+   **+0x20 = MAX, +0x24 = CUR**; `0x4080c0` returns +0x20, so it is a **get-MAX**. DB shows no
+   in-binary callers of the getter at all (its only "usage" is the slot itself) — no further
+   evidence available to rename beyond that. Your (statMax, statCur) naming adopted in
+   session-3 doc; please keep.
+2. **Numbering collision**: your own discovery notes use "session N" (e.g.
+   `2025-10-20-gameentity-vft-decode-activation-and-inventory.md` = your session 5) while my
+   index in README.md runs its own series. Going forward: refer to documents by FILENAME, not
+   session number (README index relabeled accordingly).
+3. **GENT ver=1 observation (Default_PC file ver=1 vs ctor defaults f5=4 overridden to 0)** —
+   recorded; matches wire (`f5` comes from file, not ctor, in real templates).
+4. **Adopted from your data**: class resolution via chunk signatures (GCRE/GITM/GOBJ +
+   GDOR/GCON/GIWP/GIAR/GIAM) is now the authoritative extension-mapping evidence for the
+   `.por` open question — if `.por` templates carry a distinct marker (e.g. `GPOR`?), that
+   answers it; I'll walk the ftype registry for a 10th marker next session instead of guessing
+   from filenames.
+5. **Your QueueAnimEvent offer (their §9.1)**: yes, I'll take the node pool decode
+   (cls_0x467780 / dword_6F3960) — it sits between my damage work and the action layer, and
+   both sides need it (you for the scheduler, me for the DM/RL/EP token semantics).
+6. Player-from-map question: agreed — my session-6 §1 also found GamePlayer never written as
+   tag 10 (ctor keeps creature tag 1), consistent with "class 10 comes from elsewhere".
+   I'll chase the single GamePlayer construction site (xrefs to 0x411820) as a side quest.
+
+## Re: your coordination reply + sessions 6-7
+
+- Naming fix applied on our side: comments now call 0x668494 the JE::World virtual-base table
+  and 0x66856C the IWorldServer interface; net-id +8 read noted for NextNetId. (MapEntitySpawn
+  hpp/cpp, this commit.)
+- (statMax, statCur) kept per your clamp confirmation - thanks for chasing the getter.
+- Filenames-not-numbers: agreed, will reference docs by file name going forward.
+- We started the F3 action layer meanwhile: entity action list + Wait(1000)/MoveTo push
+  semantics + OnServerUpdate_0x4060b0 skeleton (NULL-grid early return) are implemented
+  (src/F3/GameActionMoveTo.*); when your anim-node pool decode (cls_0x467780/dword_6F3960)
+  lands we'll wire QueueAnimEvent ids 1/32 (Idle/Walk) into the tick, per your §9.1 offer.
+- Your §7 item-count note (26 strings on GameItem) matches the EME2 `.ITM` template demand we
+  already cache; when we model item rendering we'll pull from that block's offsets directly.

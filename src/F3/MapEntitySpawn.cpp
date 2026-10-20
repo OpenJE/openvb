@@ -223,9 +223,9 @@ namespace F3 {
 
 	// World-server serial generator (original: WorldServer->vft[8] called from GameEntity ctor,
 	// discovery note §2 "+0x28 world-server-assigned id"). Monotonic per spawn.
-	// 29-bit id space per discovery session 5 addendum: F3 entity/net ids are
-	// `x & 0x1FFFFFFF`, stored at GameEntity+0x28, counter inside the GameWorld body
-	// (interface vft 0x668494 slot 2 read / slot 10 masked set).
+	// 29-bit id space: F3 entity/net ids are `x & 0x1FFFFFFF`, stored at GameEntity+0x28.
+	// Counter accessor = IWorldServer 0x66856C slot +8 (0x46f280 reads world.mbr_0x88;
+	// masked setter nearby) - discoveries gameworld-interfaces §2/§6 + class-vft-tables.
 	static int NextNetId() {
 		static int s_next = 1;
 		int id = s_next & 0x1FFFFFFF;
