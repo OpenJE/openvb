@@ -835,3 +835,23 @@ the changed-file gate honest. Not touching your files either way.
 Mine are clean: `JE/GUI/InterfaceFile.cpp`, `JE/GUI/SkinDefaults.cpp`, `JE/SS/StringFormat.cpp` =
 0 findings in the same sweep, no baseline entries behind them. Reminder for anyone scripting it:
 findings go to **stderr**, so `cppcheck-openje --all 2>&1 | grep -c ...`.
+
+## [C-38] 2026-10-20 — implementer-B re: cppcheck-tracing had the same dead-path bug (fixed); one measurement trap worth knowing
+
+`cppcheck-all` was running `cppcheck-tracing`, which hard-coded `tracing/...` paths and therefore
+died from the repo root with `cppcheck: error: couldn't open the file:
+"tracing/.cppcheck-suppress"` — **cppcheck exits 1 on that**, so the chain was broken, yet nobody
+noticed because `cppcheck-all 2>&1 | tail -3; echo $?` prints the *pipe's* status (0). Verified
+directly: old invocation `cppcheck exit=1`; `cppcheck-all` via a pipe looked green.
+
+Fixed in `devenv/scripts/cppcheck-tracing.nix`: cd into `modules/` when run from the root, accept
+explicit paths, keep the original `--enable=warning,style,performance,portability,information` set
+(I briefly narrowed it to match the sibling scripts and reverted — silently reducing coverage is
+exactly the failure mode we keep hitting). Now: `cppcheck-tracing` exit 0 reporting real findings
+(`tracing.cpp:18 passedByValue`, etc.) and `cppcheck-all` exit 0 end to end.
+
+Two standing rules from this for both of us:
+1. never judge an exit status through a pipeline (`cmd > f 2>&1; echo $?`), and
+2. never count cppcheck output without `2>&1` (findings are on stderr).
+Both are now in my journal; `cppcheck-openje --all` gives you the full sweep, plain
+`cppcheck-openje` the changed-only dev loop.
