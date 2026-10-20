@@ -280,3 +280,15 @@ used the same failure mode - re-appending its two updates here rather than re-ed
 ### Coordination (live)
 - implementer-B on tasks/chat board (claims-by-commit; lanes: B=tooling/tests/GUI recon).
 - Discovery agent delivers to discoveries/ (we commit on their behalf); responses file shared.
+
+### Grid milestone update (verified append)
+- JE::SpatialGrid ported + wired: Map owns (LoadRleGrid builds), RegisterOccupancy per entity
+  at spawn + pump tick; F3::GamePathManager::TraceSegmentClear now samples occupancy at the
+  shipped 1.666 stride (verified semantics: runs are ABSOLUTE columns - the original's
+  p5+run.x-p3 with equal anchors is identity; 1-wide footprints CAN fall between samples,
+  faithful approximate LOS; A* chain took over when a blocker landed on a sample (3 wp)).
+- Active-map seam: F3::SetActiveMap/GetActiveMap (single-map session slice; original resolves
+  per-mover via +492).
+- NEXT: OnServerUpdate_0x4060b0 blocker-response bodies (classTag rules incl. door open-byte
+  when GameDoor lands), DistanceDispatch penalty path, and per-entity multi-cell footprints
+  from model bbox (ModelInstance::meth_0x563a40 chain).

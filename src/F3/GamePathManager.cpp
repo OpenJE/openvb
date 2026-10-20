@@ -3,6 +3,9 @@
 #include "tracing.hpp"
 #include <string.h>
 #include "F3/GamePathManager.hpp"
+#include "F3/MapEntitySpawn.hpp"
+#include "JE/SpatialGrid.hpp"
+#include <string.h>
 
 namespace F3 {
 
@@ -73,8 +76,44 @@ namespace F3 {
 		int param_5, float param_6, float param_7) {
 		tracing::instrument( tracing::LOCATION, "" );
 
-		return JE::PathManager::TraceSegmentClear(param_1, param_2, param_3, param_4, param_5,
-			param_6, param_7);
+		// goal-x arrives as the FLOAT BIT PATTERN in an int slot (0x45BCB0 register juggling)
+		float gx;
+		memcpy( &gx, &param_5, 4 );
+
+		const float dx = gx - param_2;
+		const float dz = param_7 - param_4;
+		const int dist = JE::IntSqrt( (int)( dx * dx + dz * dz ) );
+		const float steps = (float)dist * 1.666f;   // 5/3 pace factor
+		if ( steps <= 1.0f ) {
+			return 1;   // 0x45BE0B: trivially clear
+		}
+
+		JE::Map* map = GetActiveMap();
+		if ( !map || !map->Grid() ) {
+			// no grid context => base conservative answer (original: unmapped editor mode)
+			return JE::PathManager::TraceSegmentClear(param_1, param_2, param_3, param_4,
+			                                          param_5, param_6, param_7);
+		}
+
+		// Sample t = 1..steps-1 (ENDPOINTS DELIBERATELY EXCLUDED - the mover's and target's
+		// own cells never block; matches 0x45BC4E..0x45BD60 where occupant rules apply to
+		// intermediate samples). Kind rules from the original (creatures/usable/container
+		// block when net-set membership; closed doors block) currently collapse to
+		// ANY-intermediate-occupant blocks - door state modeling pending (deviation noted).
+		void* hits[8];
+		for ( int t = 1; t < (int)steps; ++t ) {
+			const float f = (float)t / steps;
+			const float px = param_2 + dx * f;
+			const float pz = param_4 + dz * f;
+			float p[3] = { px, 0.0f, pz };
+			int cr[2];
+			JE::WorldToOctreeCell_0x560680( cr, p, map );
+			JE::SpatialGrid::Run run = { cr[0], 1 };   // absolute column run (footprint model)
+			if ( map->Grid()->QueryEntities( &run, 1, cr[0], cr[1], hits, 8 ) > 0 ) {
+				return 0;   // occupant at an intermediate cell
+			}
+		}
+		return 1;
 	} // TraceSegmentClear
 
 	// 0x45ba90 slot [3]: EntityGate (per-mover-type clearance).

@@ -58,6 +58,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/VFX_Parameter.cpp"
 	"modules/openje/src/JE/World.cpp"
 	"modules/openje/src/JE/Map.cpp"
+	"modules/openje/src/JE/SpatialGrid.cpp"
 	"modules/openje/src/JE/SS/StringSystem.cpp"
 	"modules/openje/src/JE/SS/EngineStringSystem.cpp"
 	"modules/openje/src/JE/Subsystem.cpp"

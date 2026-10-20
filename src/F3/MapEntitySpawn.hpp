@@ -17,7 +17,7 @@ namespace F3 {
 	// F3 classes (GameEntity 0x47C / GameCreature 0xBDC / ...); classId records which shipped
 	// class the resource would map to.
 	struct SpawnedEntity : public JE::Mover {
-		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0),
+		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), regCol(-1), regRow(-1),
 		              statMax(1), statCur(0), classIdTag(0),
 		              animState(0), weaponStance(7), unk34(7) {
 		name[0] = 0;
@@ -28,6 +28,8 @@ namespace F3 {
 		int   classId;      // CreateGameEntityByClass_0x46f530 selector (0..10)
 		char  name[0x40];   // resource name from the EME2 record
 		float yawRad;       // rotation.y from the record (pitch) - unused by movement yet
+		int   regCol;         // occupancy-grid registration cell (-1 = unregistered)
+		int   regRow;
 		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);
 		                    // 0 in client/editor contexts per ctor 0x4678B3 evidence
 		// GENT block (discovery session 3 §1): 6 u32 f1..f6 -> GameEntity+0x08..0x1C, then
@@ -98,6 +100,11 @@ namespace F3 {
 	int   MapCreate( const char* resourceName );          // 0x57B8A0 order port
 	JE::Map* FindLoadedMap( int id );
 	int   LoadedMapCount();
+
+	// The map the path/AI layer treats as "active" (original resolves per-mover via
+	// mover+492 -> world registry). Single-map session slice: set at startup.
+	void SetActiveMap( JE::Map* map );
+	JE::Map* GetActiveMap();
 
 	// Push an action onto an entity's list (JE::Entity::meth_0x550720 port; returns 0 when
 	// the 4-slot list is full - the original list is unbounded, deviation documented).

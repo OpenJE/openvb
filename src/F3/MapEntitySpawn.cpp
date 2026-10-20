@@ -6,6 +6,7 @@
 #include <string.h>
 #include "F3/MapEntitySpawn.hpp"
 #include "JE/Map.hpp"
+#include "JE/SpatialGrid.hpp"
 #include "JE/ResourceSystem.hpp"
 #include "JE/PathManager.hpp"
 #include "JE/HostHooks.hpp"
@@ -148,6 +149,32 @@ namespace F3 {
 		return 1;
 	}
 
+	static JE::Map* s_activeMap = NULL;
+	void SetActiveMap( JE::Map* map ) { s_activeMap = map; }
+	JE::Map* GetActiveMap() { return s_activeMap; }
+
+	// (Re)register an entity's occupancy at its current cell (original syncs entity+0x16C
+	// footprint links through JE::Entity position setters; ours refreshes per pump tick).
+	static void RegisterOccupancy( SpawnedEntity* e, JE::Map* map ) {
+		if ( !map || !map->Grid() ) {
+			return;
+		}
+		int cr[2];
+		JE::WorldToOctreeCell_0x560680( cr, e->pos, map );
+		if ( e->regCol == cr[0] && e->regRow == cr[1] ) {
+			return;
+		}
+		if ( e->regCol >= 0 ) {
+			map->Grid()->Remove( e->regCol, e->regRow, e );
+		}
+		if ( map->Grid()->Insert( cr[0], cr[1], e ) ) {
+			e->regCol = cr[0];
+			e->regRow = cr[1];
+		} else {
+			e->regCol = e->regRow = -1;
+		}
+	}
+
 	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action ) {
 		tracing::instrument( tracing::LOCATION, "kind=%d", kind );
 		if ( !e ) {
@@ -174,6 +201,7 @@ namespace F3 {
 			if ( !e ) {
 				continue;
 			}
+			RegisterOccupancy( e, GetActiveMap() );
 			for ( int s = 0; s < 4; ++s ) {
 				SpawnedEntity::ActionEntry& a = e->actions[s];
 				if ( a.kind == 1 ) {
@@ -298,6 +326,8 @@ namespace F3 {
 			if ( map->m_entityCount < 128 ) {
 				map->m_entities[map->m_entityCount++] = e;
 			}
+			RegisterOccupancy( e, map );
+			if ( map == GetActiveMap() ) { /* keep latest active registration fresh */ }
 
 			if ( g_spawnedEntityCount < 128 ) {
 				g_spawnedEntities[g_spawnedEntityCount++] = e;
@@ -350,6 +380,7 @@ namespace F3 {
 			int id = MapCreate( menuMap );
 			JE::Map* m = FindLoadedMap( id );
 			if ( m ) {
+				SetActiveMap( m );
 				SpawnMapEntities( m, menuMap );
 			}
 		}
