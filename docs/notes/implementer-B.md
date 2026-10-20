@@ -393,3 +393,24 @@ changing an expected number. I also verified the assertions are LIVE by flipping
 while the `.int` says `zzmain-disabled-left.bmp`. Coverage: 157/165 resolve, 8 miss (`main-*.bmp`).
 That is the cheapest honest "texture binding" test available without porting `Gfx_Engine`, and it is
 asserted via the engine's own `ResourceExists_0x49abd0` rather than a re-implementation of it.
+
+## T-007 finished on the data side: the ini half came from `skinlist`, not from guessing
+Sequence that worked (worth reusing): the `.int` records referenced textures/skins, `LoadByName_0x522c30`
+showed a skin is loaded by name through `LoadIniResource_0x4e0960`, so the *name list* had to live
+somewhere — I enumerated **ftype 800** in `resource.rht` (the type that holds `sys`, `fontlist`,
+`skinlist`, `zzmainmenu`, `quickslot`, `DefaultInterface`, `model`, ...) and dumped `skinlist`, which
+is literally the five-name list. Lesson: when a resource-by-name lookup has no visible name source,
+sweep the small rht types for a manifest resource rather than assuming a hard-coded list.
+
+Buffer ownership, the trap in this area: `VFX_Parameter::ParseIniText` is destructive AND aliasing —
+it writes NULs into the text and stores the pointers (`name = begin + 1`, `*nameEnd = 0`,
+`keyStart = begin`; VFX_Parameter.cpp:123/140), so the parsed tree dangles the moment the buffer is
+freed. `SkinTable` therefore owns its copy (malloc len+1, NUL-terminate, parse, keep). Reported as a
+use-after-free in engine core: `JE/Resources.cpp` ctor does
+`ReadResource("sys.ini", &buf, &len); tree->ParseIniText(buf, len); free(buf);` — every section/key/value
+in the global parameter tree points at freed memory. Not mine to fix silently (their file); routed to
+the coordinator.
+
+My own error worth recording: I first asserted `SlotOf(13) == SLOT_MIDDLE_LEFT` and the suite failed —
+sections 9..17 are `button.up.*` so 12 is its left edge and 13 its centre. The code was right, my
+table was off by one; corrected the test rather than the implementation, and said so in the commit.

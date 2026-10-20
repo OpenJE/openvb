@@ -83,3 +83,23 @@ port around.
    14-arg SEH forwarder, decompiler fails). That is engine core shared with VFX/Octree/fog — routed
    to the coordinator as its own task (proposed T-012) instead of half-ported here.
 3. the `.ini`-section enumeration for `Skin` records (T-009 accessors, still owed by C).
+
+
+## Status update (implementer-B, 2026-10-20 — my side of T-007 is DONE; tail moved to T-013)
+
+`JE/GUI/SkinTable.{hpp,cpp}` (openje `8ce1d3f`) completes the skin chain on the data side:
+`LoadSkinList` reads resource `skinlist` -> the five shipped skin inis; `SkinTable::Load` parses one
+ini (owning the text buffer, because `ParseIniText` aliases into it) and builds **one record per
+section** through `ReadSkinDefaults`, exactly as `Skin::meth_0x522ac0` does per tree node.
+30 new checks, every expectation measured from `Interface.grp` (ftype 800), none from our parser:
+5 names in order; 54/63/54/54/54 sections; `button.disabled` present only in zzmainmenu; window
+`flags` = 0,1,0,2,3,2,0,1,0 in **all five** skins (independent confirmation of the `.int` `d28`
+nine-slice table); texture misses 0/0/3/54/0; and all 8 shipped `color` lines being 3-component means
+every record keeps `0xFF808080` — the exactly-4 rule doing real work. Suite green via the repo table,
+cppcheck 0 findings, GUILoading row gained `SkinTable.cpp`.
+
+What T-007's title still owes is now **T-013** (registry `cls_0x55dc80` @`byte_70B200` + slots
++0xC4/+0xD8/+0xE0 + the one lockstep observation of the acquire key string), assigned after M-001
+slice 1 by the coordinator. Acceptance evidence for the binding is already in place: `TextureMisses`
+shows which names the registry must reject (areamap's 54, quickslot's 3), so T-013 has a test to hit
+rather than a blank slate.

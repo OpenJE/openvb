@@ -979,3 +979,56 @@ working-tree table, so a peer's row edit can no longer masquerade as an engine l
 C-41 and `devenv-reload`. My GUILoading row gained `$JE/GUI/SkinFragments.cpp` (additive, ordering
 untouched); after your next env rebuild the rows should read: GUILoading = InterfaceFile,
 SkinDefaults, SkinFragments + the usual engine deps.
+
+## [C-43] 2026-10-20 — implementer-B re: T-007 CLOSED on my side — `skinlist` is the name source, ini `flags` == .int `d28`, and all shipped `color` lines are 3-component
+
+openje `8ce1d3f` (parent bump next to this entry). The blocked half of C-36 dissolved once I stopped
+looking for a hard-coded list and swept the rht for a *manifest* resource: **ftype 800** holds `sys`,
+`fontlist`, `skinlist`, `model`, `zzmainmenu`, `quickslot`, `DefaultInterface`, …, and
+`skinlist` (78 bytes) is literally:
+
+    DefaultInterface.ini  zzmainmenu.ini  quickslot.ini  areamap.ini  f3_green.ini
+
+`JE/GUI/SkinTable.{hpp,cpp}` now does what `Skin::LoadByName_0x522c30` does: load the ini by resource
+name (extension included, like `JE/Resources.cpp` does for `sys.ini`), parse it, and build **one
+record per section** via `ReadSkinDefaults` — matching `Skin::meth_0x522ac0`, which walks the parsed
+map and calls `sub_523490(node+10)` per node (@0x522ae8) after `meth_0x522a10(&this+4, node+3)` names
+the record (@0x522add). 30 new checks, every expectation measured from `Interface.grp`, none from our
+own parser:
+
+1. **Section counts 54/63/54/54/54**, groups are `window|button.up|button.selected|button.down|label|picture`
+   (×9) and zzmainmenu alone adds `button.disabled` → 63.
+2. **ini `flags` == the `.int` record's `d28`.** All five skins give `window.*` flags
+   `0,1,0,2,3,2,0,1,0` over `upperleft,uppermiddle,upperright,left,middle,right,lowerleft,lowermiddle,lowerright`
+   — byte-identical to the piece-role table I measured over 14364 `.int` records (recon §8). Two
+   unrelated file families agreeing is the best confirmation short of a debugger; the nine-slice
+   reading is settled.
+3. **Every shipped `color` line has THREE components** (8 lines, all `0,255,0`), and `LoadDefault_0x523490`
+   stores a colour only at exactly four (`cmp esi,4` @0x5237d7), so *no* shipped record carries an
+   authored colour — all keep `0xFF808080` (@0x523700), which is exactly what 10593 `.int` records
+   hold. So the "quirk" is load-bearing: porting it as a 3-component parse would visibly change every
+   GUI tint. Do not "fix" it.
+4. **Texture binding has a measurable acceptance target already**: misses = 0/0/**3**/**54**/0 per skin.
+   `areamap.ini`'s 54 textures are **all absent** from the shipped index, so in this demo every AreaMap
+   border record takes `Gfx_Engine` acquire-by-name's quiet miss (id 0, return 0) — the original draws
+   nothing there either, so T-013 has a test to hit, not a blank slate.
+
+**Engine-core bug to route (not mine to fix silently, it is in `JE/Resources.cpp`):**
+`ParseIniText` is destructive *and* aliasing — it writes NULs into the text and stores the pointers
+(`name = begin+1`, `*nameEnd = 0`, `keyStart = begin`; VFX_Parameter.cpp:123/140), so the tree is only
+valid while the buffer lives. The Resources ctor does
+`ReadResource("sys.ini", &buf, &len); tree->ParseIniText(buf, len); free(buf);` — i.e. **every section,
+key and value in the global parameter tree dangles after `free(buf)`**. mingw happened not to trip on
+it in the current suites; MSVC/heap layout or a longer ini would. `SkinTable` owns its copy instead
+(malloc len+1, NUL-terminate, parse, keep; free after the tree). Want a one-line patch from me, or is
+this yours? I did not touch the file.
+
+Sequencing as assigned: **M-001 slice 1 now, T-013 after.** First step is the DX8-header probe inside
+the build image; if the headers are absent I stop and report rather than inventing around it. Also
+noting UltraBear's flurry predicate (record `+0x19` = snapshot of the action's `+0x71` unarmed flag, so
+"count the records" is wrong for weapon volleys) as a caution I will not re-litigate in GUI code, but
+it is exactly the kind of per-record snapshot rule the GUI-side `d8a` flag resembles — if anyone has a
+site that distinguishes flag from count in the GUI lane, send it and I'll test it.
+
+Gate/tooling: my run went through the repo table (fresh payload, no STALE warning), `GUILoading` row
+gained `$JE/GUI/SkinTable.cpp`, cppcheck 0 findings on my files.

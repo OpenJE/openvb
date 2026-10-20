@@ -277,3 +277,49 @@ G1) still needs one lockstep observation.
 Consequence for the demo: 8 authored fragments reference textures that are not in the shipped
 index, so at runtime they take the documented **miss path** (id 0, return 0) — which is what
 `Skin::LoadDefault`'s clamp-to-0 absorbs. Nothing to invent, and nothing to "fix".
+
+## 9. The skin `.ini` family is shipped, and `skinlist` names it (T-007 closed on my side)
+
+The half that was blocked on "where do the `.ini` names come from" is answered by the data: resource
+`skinlist` (ftype **800**, pack `Interface`, 78 bytes) is a newline-separated list of five skin inis,
+and all five exist as ftype-800 resources read **with** the extension (the same way
+`JE/Resources.cpp` loads `sys.ini`):
+
+```
+DefaultInterface.ini   zzmainmenu.ini   quickslot.ini   areamap.ini   f3_green.ini
+```
+
+Each is plain ini text (`; comments`, `[section]`, `key = value`) whose sections are
+**`<group>.<position>`** — one section per skin record, which is exactly what
+`Skin::meth_0x522ac0` iterates (`cls_0x490450::meth_0x522a10(&this+4, node+3)` for the record name
+@0x522add, `sub_523490(node+10)` = `LoadDefault` on the section @0x522ae8).
+
+| skin | sections | groups (9 sections each) | records naming an absent texture | `color` lines |
+|---|---|---|---|---|
+| DefaultInterface.ini | 54 | window, button.up, button.selected, button.down, label, picture | 0 | none |
+| zzmainmenu.ini | **63** | the six above **plus `button.disabled`** | 0 | 8 x `0,255,0` |
+| quickslot.ini | 54 | as DefaultInterface | 3 (`quickslot-item0.bmp`) | none |
+| areamap.ini | 54 | as DefaultInterface | **54 — every AreaMap texture is missing from the shipped index** | none |
+| f3_green.ini | 54 | as DefaultInterface | 0 | none |
+
+Three things fall out of this, all now asserted in `tests/je/GUILoading`:
+
+1. **`flags` in the ini is the same value as `d28` in the `.int` record.** All five skins give
+   `window.*` flags `0,1,0,2,3,2,0,1,0` over
+   `upperleft,uppermiddle,upperright,left,middle,right,lowerleft,lowermiddle,lowerright` - identical
+   to the piece-role table measured over 14364 `.int` records (sec 8). Two unrelated file families
+   agreeing is the strongest confirmation available without a debugger.
+2. **Every shipped `color` line has THREE components** (8 of them, all `0,255,0`), and
+   `LoadDefault_0x523490` stores a colour only at exactly four (`cmp esi,4` @0x5237d7), so *no*
+   shipped record carries an authored colour — all keep the `0xFF808080` fallback (@0x523700). That
+   is the same value 10593 `.int` records hold, so the quirk is load-bearing, not a curiosity, and
+   it must not be "fixed" into a 3-component parse.
+3. **`areamap.ini` cannot render its border in this demo**: all 54 of its textures are absent from
+   the index, so every record takes `Gfx_Engine`'s acquire-by-name **miss** path (id 0, return 0 —
+   see the G1 correction). Nothing to invent around; the original draws nothing there either.
+
+Remaining for T-007's tail, tracked as **T-013** (assigned after M-001 slice 1): the registry itself,
+`cls_0x55dc80` @`byte_70B200` — node layout (`id = node[3]`, use count `@+44`, list head `mbr_0x28`)
+and slots `+0xE0`(0x5c0940 add), `+0xD8`(0x5c0930), `+0xC4`(0x5c0a90, 14-arg SEH forwarder,
+decompiler fails) — plus one lockstep observation to retire the *inferred* label on the texture key
+form (stem vs `name.tga`).
