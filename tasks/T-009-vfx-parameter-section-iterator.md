@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: implementer-C (UltraBear)
+status: done
+assignee: implementer-C (UltraBear, mesh sess 01a15aff)
 depends: T-008
 unblocks: T-007 (implementer-B's skin registry)
 ---
@@ -38,7 +38,7 @@ new machinery.
 
 - New checks in `modules/openje/tests/je/GUILoading/GUILoading.cpp` (or the ResourceSystem suite,
   whichever already constructs a parsed ini) pass, including the boundary cases above.
-- `run-all-tests` stays at 9 pass / 0 fail; `cppcheck-openje` reports no **new** finding on the
+- all 9 suite rows stay OK with 0 fail (the tally line will read `=> 10 pass, 0 fail` including app-boot); `cppcheck-openje` reports no **new** finding on the
   two files (compare against `docs/notes/cppcheck-openje-sweep-2026-10-20.txt` baseline).
 - `msvc-build` exit 0 — this matters: a mismatched `struct`/`class` keyword in a new forward
   declaration is invisible to mingw and is an `LNK2019` under MSVC 2002.
@@ -52,6 +52,35 @@ new machinery.
 - `van-buren-docs/File-Format-Specifications.md` (ini/skin section layout)
 
 ## Notes (coordinator)
+
+### Evidence (implementer-C, 2026-10-20)
+
+Landed as additive-only: `git -C modules/openje diff --numstat` = `49 0 src/JE/VFX_Parameter.cpp`,
+`17 0 src/JE/VFX_Parameter.hpp`, `77 0 tests/je/GUILoading/GUILoading.cpp` — three files, zero
+deleted lines, so no existing caller or byte of storage changed.
+
+- The four signatures are verbatim from `chat/from-B.md` C-36 (step 2), all `const`, so they call
+  through a `const VFX_Parameter&`; a test pins that directly.
+- Out-of-range / missing / `NULL` section -> `NULL` and `-1`. Implemented via a file-local
+  `FindSectionConst` that reuses the same `_stricmp` section match as `GetStringRaw_0x4df070`, so
+  iteration cannot disagree with by-name lookup. `NULL` names are rejected before `_stricmp`,
+  which dereferences both operands.
+- 26 new checks in GUILoading cover: valid index, `index == count` (both for sections and
+  entries), negative index, unknown section, existing-but-empty section (`0`, not `-1`),
+  `NULL` section name, unparsed tree, case-insensitive `EntryCount`, and pointer-for-pointer
+  agreement with `GetStringRaw_0x4df070`.
+- **Negative control**: `SectionCount() == 99` was temporarily substituted and
+  `run-all-tests --only GUILoading` printed `FAIL: NEGATIVE CONTROL must fail ... 0 pass, 1 fail`,
+  proving the block executes and can fail. Restored before commit.
+- `run-all-tests` (post-change): 9/9 suite rows OK + app-boot 124 => `10 pass, 0 fail`.
+  `run-all-tests --msvc-build` => `msvc-build OK exit 0, error C=0, no LNK` + same => `11 pass, 0 fail`.
+  Proof MSVC really compiled the new code (not a stale obj):
+  `build-msvc/.../JE/VFX_Parameter.cpp.obj` mtime 16:38 vs source 16:37, and it exports
+  `?SectionNameAt@VFX_Parameter@JE@@QBEPBDH@Z`, `?EntryCount@...@QBEHPBD@Z`,
+  `?EntryKeyAt@...@QBEPBDPBDH@Z`, `?EntryValueAt@...@QBEPBDPBDH@Z` (`QBEPBD` = const member
+  returning `const char*`, so the mangling/mixed-struct risk from the T-008 brief did not bite).
+- `cppcheck-openje`: `1 file(s) changed vs HEAD`, findings = exactly the 4 pre-existing lines from
+  the sweep baseline (`cstyleCast` at .cpp:16/64/90, `constVariablePointer` at .cpp:104). Zero new.
 
 - **Additive only.** Do not refactor `GetStringRaw_0x4df070`, do not rename existing members, and
   do not touch `m_sections` layout — B is live in this area for T-007 and a reshape there starts

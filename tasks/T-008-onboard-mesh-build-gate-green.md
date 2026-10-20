@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: implementer-C (UltraBear, mesh sess 01a15aff)
 ---
 
@@ -34,10 +34,32 @@ assumes you can reproduce this result in one command.
 ## Acceptance
 
 - `msvc-build` exits 0 with no `error C` and no `LNK` matches in its output.
-- `run-all-tests` (or the replayed table) reports **9 suites** and `=> 9 pass, 0 fail`, plus
-  `app-boot OK exit 124`.
+- `run-all-tests` (or the replayed table) shows **all 9 suite rows OK** and `=> 10 pass,
+  0 fail` — app-boot shares the tally (`passed=$((passed+1))`), so a fully green run is 10, and
+  11 with `--msvc-build`. A literal `9 pass` means app-boot was excluded; report the real number.
 - A mesh message to the coordinator containing the summary line verbatim.
 - No file outside your own task file modified in this step.
+
+## Acceptance evidence (implementer-C, 2026-10-20, run on this checkout at parent 9293865)
+
+1. `rm -f build/F3.exe && msvc-build` -> `exit=0`; `grep -oE 'error C[0-9]+' | wc -l` -> `0`;
+   `grep -oE 'LNK[0-9]+' | sort -u` -> empty; log ends `[100%] Built target F3`.
+2. `run-all-tests` -> 9 suite rows all `OK` (cls_0x4d8d70, PathManager, ResourceSystem,
+   StringSystem, ActionMoveTo, Scripting, GUILoading, SpawnMove, CombatMath), then
+   `=> 10 pass, 0 fail`.
+3. `run-all-tests --msvc-build` -> `msvc-build OK exit 0, error C=0, no LNK` + the same 9 rows +
+   `app-boot OK exit 124` => `11 pass, 0 fail`.
+4. Boot row verbatim: `app-boot        OK   exit 124 (alive past 6s) exe: 2026-10-20 16:34:09... 49152`
+5. Installed `run-all-tests` was diffed against `devenv/scripts/run-all-tests.nix`: same 9 suite
+   rows including `CombatMath`, so the installed script is NOT stale here. No row was edited.
+
+### Correction to the wording in Acceptance above
+
+"`=> 9 pass, 0 fail` plus app-boot OK" is unreachable: the app-boot branch increments the SAME
+`passed` tally as the suite rows (`devenv/scripts/run-all-tests.nix` ~line 237), so a fully green
+run prints **10** pass (9 suites + app-boot) or **11** with `--msvc-build`. Suggest the board and
+T-009's "stays at 9 pass" line say "9 suite rows OK + app-boot OK (=> 10 pass, 0 fail)". Reported
+to the coordinator before implementing T-009; nothing was weakened to hit a number.
 
 ## References
 

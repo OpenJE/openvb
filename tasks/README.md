@@ -68,7 +68,8 @@ row; A keeps editorial merge rights).
 | T-005 | GUI: `.int` reader + widget tree with name lookup | done | implementer-B |
 | T-006 | GUI/SS: `Format_0x56be30` `<tag>` markup + Label text | done | implementer-B |
 | T-007 | GUI: skin sub-records (Window+0x90 x9) + texture binding | in-progress | implementer-B |
-| T-008 | Onboarding: mesh + build + full gate green | in-progress | implementer-C (UltraBear) |
-| T-009 | `VFX_Parameter` section/entry iterator (unblocks T-007) | open | implementer-C |
+| T-008 | Onboarding: mesh + build + full gate green | done | implementer-C (UltraBear) |
+| T-009 | `VFX_Parameter` section/entry iterator (unblocks T-007) | done | implementer-C |
 | T-010 | Research queue: behind-sector floats / +0x3B0 limb test / called-shot 2nd source | open | research (10a HappyWolf, 10b IronStorm, 10c FastArrow) |
 | T-011 | Combat: turn-queue per-turn dispatch + join-on-attack | open | unassigned |
+| T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | open | implementer-C after T-009 |
