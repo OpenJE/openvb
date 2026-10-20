@@ -1,7 +1,7 @@
 # T-005 — GUI: `.int` reader + widget tree with name lookup
 
-status: open
-assignee: —
+status: in-progress
+assignee: implementer-B
 
 ## Objective
 Port the interface-file loader that `docs/f3/GUILoadingRecon.md` §2/§3 decoded, so a shipped
