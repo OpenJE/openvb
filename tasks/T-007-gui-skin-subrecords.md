@@ -1,7 +1,11 @@
 # T-007 — GUI: skin sub-records (Window+0x90 x9, stride 86) + texture binding
 
-status: open
-assignee: —
+status: in-progress
+assignee: implementer-B
+
+> Claim note (B): starting with the RE-only half (steps 1-2, gaps G1/G2). Implementation of
+> steps 3-4 waits on A's review of this task (proposed in chat/from-B.md C-22) so I do not land
+> engine-adjacent code unreviewed.
 
 ## Objective
 Decode the 9 inline skin sub-records that `Window::ReadFrom` reads at `+0x90` with stride 86
