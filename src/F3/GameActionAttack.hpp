@@ -3,98 +3,73 @@
 #ifndef F3_GAMEACTIONATTACK_HPP_
 #define F3_GAMEACTIONATTACK_HPP_
 
-#include "F3.hpp"
-#include "JE/Action.hpp"
+#include "F3/CombatMath.hpp"
 
 namespace F3 {
-	struct GameActionAttack : public JE::Action {
-		//: Members
-			byte mbr_0x10;
-			dword mbr_0x14;
-			dword mbr_0x18;
-			dword mbr_0x1c;
-			dword mbr_0x20;
-			dword mbr_0x24;
-			dword mbr_0x28;
-			dword mbr_0x2c;
-			dword mbr_0x30;
-			dword mbr_0x34;
-			dword mbr_0x38;
-			dword mbr_0x3c;
-			byte mbr_0x4;
-			dword mbr_0x40;
-			dword mbr_0x44;
-			byte mbr_0x48;
-			dword mbr_0x4c;
-			dword mbr_0x50;
-			dword mbr_0x54;
-			byte mbr_0x58;
-			byte mbr_0x59;
-			byte mbr_0x5a;
-			byte mbr_0x5b;
-			byte mbr_0x5c;
-			byte mbr_0x5d;
-			byte mbr_0x5e;
-			dword mbr_0x60;
-			byte mbr_0x64;
-			byte mbr_0x65;
-			dword mbr_0x68;
-			byte mbr_0x6c;
-			byte mbr_0x6d;
-			byte mbr_0x6e;
-			byte mbr_0x6f;
-			byte mbr_0x70;
-			byte mbr_0x71;
-			byte mbr_0x72;
-			dword mbr_0x73;
-			dword mbr_0x74;
-			dword mbr_0x78;
-			dword mbr_0x7c;
-			dword mbr_0x80;
-			dword mbr_0x84;
-			dword mbr_0x88;
-			dword mbr_0x90;
-			dword mbr_0x94;
-			dword mbr_0x98;
-			dword mbr_0x9c;
-			dword mbr_0xa0;
-			byte mbr_0xa4;
-			byte mbr_0xa5;
-			byte mbr_0xa8;
-			dword mbr_0xac;
-			dword mbr_0xb0;
-			dword mbr_0xb4;
-			dword mbr_0xb8;
-			dword mbr_0xbc;
-			dword mbr_0xc0;
-			dword mbr_0xc4;
-		//: Methods
-			undefined4 meth_0x401100();
-			undefined4 virt_meth_0x4011d0();
-			undefined4 meth_0x4012c0();
-			undefined4 meth_0x4012e0();
-			undefined4 meth_0x401410();
-			undefined4 meth_0x401790();
-			undefined4 meth_0x401890();
-			undefined4 meth_0x401a10();
-			undefined4 virt_meth_0x402080();
-			undefined4 virt_meth_0x4021b0();
-			undefined4 meth_0x402260();
-			undefined4 meth_0x4023c0();
-			undefined4 meth_0x402680();
-			undefined4 meth_0x402e00();
-			undefined4 meth_0x403300();
-			undefined4 meth_0x403320();
-			undefined4 meth_0x403770();
-			void dtor_0x403c70();
-			undefined4 virt_meth_0x403d50();
-			void ctor_0x403e40();
-			undefined4 virt_meth_0x403f80();
-			undefined4 meth_0x403fa0();
-			undefined4 meth_0x404060();
-			undefined4 meth_0x404270();
-			undefined4 virt_meth_0x404320();
-	}; // GameActionAttack
+	struct SpawnedEntity;
+
+	// F3::GameActionAttack - port of GameActionAttack (0xC8-byte action, shipped
+	// OnServerUpdate_0x404320). Field/offset map from discoveries
+	// 2025-10-20-attack-state-machine-damage-formula.md §1; flow §2. Damage/to-hit math
+	// lives in CombatMath (this file's Update is the scheduling state machine only).
+	//
+	// DEVIATIONS (each commented at its site, none affects the shipped-math fidelity):
+	//  - weapon/inventory/ammo registries unported: actor attacks UNARMED; AmmoMods is a
+	//    plain field (default zeros). DeductPrimary/SecondaryAmmo skipped.
+	//  - QueueAnimEvent(7=ToCombat) duration seam (mbr_0x5e first-strike delay) and the
+	//    "DM" anim beat (mbr_0x65 release) are replaced by explicit ms timers on the same
+	//    game clock; fields keep the original semantics (due-times), source differs.
+	//  - auto-move-to-range: original issues a GameActionMoveTo(0x48)+AddAction and
+	//    returns; our FIFO slot model has no mid-attack handback yet, so the actor steps
+	//    toward the target directly at combat.speed (documented, same convergence goal).
+	//  - damage queue drain (finisher meth_0x403770) applies HP directly instead of
+	//    creating+attaching GameEffectDamage objects (effect/updater layer unported).
+	//    HP write follows GameEntity::meth_0x4629C0 semantics: cur in [0..max] at
+	//    +0x24/+0x20 == our statCur/statMax; death -> kStateDying then kStateDead.
+	//  - hit test: d100 roll <= chance (CombatDice(1,100) through the rand seam).
+	struct GameActionAttack {
+	public:
+		// shipped offsets in comments; flat storage here
+		SpawnedEntity*  actor;              // +0x14
+		SpawnedEntity*  target;             // +0x34/+0x38
+		AttackModeRecord mode;              // +0x30 record (MODE row; unarmed default)
+		AmmoMods        ammo;               // weapon+0x3B4.. stand-in (§7 stats block)
+		int             calledShotPart;     // +0x73+3 (9 = unset, shipped default)
+		int           reach;                // +0x72 melee range (-1 = ranged)
+		unsigned      firstStrikeDueMs;     // +0x5e (anim lead)
+		unsigned      nextSubAttackDueMs;   // +0x65 dword (DM-beat release time)
+		bool          subAttackPending;     // +0x60 b2
+		bool          volleyContinuing;     // +0x80 next-attack pending
+		bool          ammoDeducted;         // +0x58 per-volley guard
+		int           seriesRemaining;      // +0x78 series list remainder (count modelled)
+		float         moveSpeed;            // step-toward fallback (deviation above)
+
+		// damage queue (+0xbc): {dmg} per hit; caster/weapon netId keys omitted (single
+		// actor/target pair per action object).
+		static const int kQueueCap = 16;
+		int   queue[kQueueCap];
+		int   queueCount;
+
+		bool  finished;
+
+		GameActionAttack();
+
+		// arm the action (shipped ctor_0x403e40 + meth_0x403fa0(target) equivalents)
+		void Start( SpawnedEntity* who, SpawnedEntity* against, unsigned nowMs,
+		            const AttackModeRecord* m = 0 );
+
+		// OnServerUpdate_0x404320 core; gameMs = world frame ms (same clock as pumps).
+		// Returns 1 when the action is finished (pump drops the slot).
+		int  Update( unsigned gameMs );
+
+		// unarmed attack-mode record twin (damageType 4 = hand-to-hand -> +MELEE_DAMAGE
+		// rolled into max per CalculateUnarmedDamage_0x409f90)
+		static AttackModeRecord MakeUnarmedMode( int dmgMin, int dmgMax, int subAttacks,
+		                                         int toHitBonus );
+
+		// rand seam for deterministic tests (NULL = std rand)
+		static RandFn s_rand;
+	};
 } // namespace F3
 
 #endif // F3_GAMEACTIONATTACK_HPP_

@@ -41,14 +41,15 @@ namespace F3 {
 		int skills[kSkillCount];
 		int special[7];
 		int dt[8];
-		int dtMode56[8];
+		int dtParts56[8];   // second row when CALLED-SHOT PART is 5/6 (per 0x409f90
+	                    // decompile switch; doc §3 "mode" wording was loose)
 		int evasion;
 		float pos[3];
 
 		CombatStats() : evasion(0) {
 			for ( int i = 0; i < kSkillCount; ++i ) { skills[i] = 0; }
 			for ( int i = 0; i < 7; ++i ) { special[i] = 0; }
-			for ( int i = 0; i < 8; ++i ) { dt[i] = 0; dtMode56[i] = 0; }
+			for ( int i = 0; i < 8; ++i ) { dt[i] = 0; dtParts56[i] = 0; }
 			pos[0] = pos[1] = pos[2] = 0.0f;
 		}
 	};

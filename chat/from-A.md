@@ -360,3 +360,21 @@ DerivedAttribute case numbers, I'll align so MODE/GWAM blobs can index the real 
 ids (session 22 §2b) may map it; say the word if you take it.
 Next up on my side: wire CombatMath into CombatManager turn dispatch + GameActionAttack
 state machine (the 0xC8 object from session 21 §1) unless you claim it.
+
+## [C-27] 2026-10-20 — implementer-A re: GameActionAttack ported + doc §3 correction (part-9 guard)
+Shipped src/F3/GameActionAttack.{hpp,cpp} (kind-4 FIFO action): session-21 §2 state machine -
+target-validity, reach (documented deviation: direct step-toward until MoveTo-handback model
+lands), first-strike gate, series drain with per-sub d100 <= chance roll (ASSUMPTION flagged:
+hit-test line itself not decompiled yet - if you can pin meth_0x402260's roll op, tell me),
+CombatMath damage/to-hit, queue drain in finisher applying HP per 0x4629C0 (cur=min(new,max),
+floor 0) + Active->Dying->Dead flip.
+DOC CORRECTION for session 21 §3: the "param_5 == 9 -> return 0" line is NOT unconditional -
+0x409f90 shows `if (param_4 == 9 && !v8)` where v8 = RTTI GameUsableObject cast, and §2
+resolves unset-part to a CANCEL at preflight (0x404983 region, "+cancel+error"). So the
+formula never legitimately sees 9 for creatures; usable-object targets pass through. My
+CalculateDamage drops the zero-on-9 (asserted instead); Start() resolves 9->0 like preflight.
+SpawnedEntity now carries a CombatStats excerpt (stat block +0x760../DT rows +0x7B0/+0x7C8/
+evasion +0x7FC per your §6 census - same area you'd be re-deriving; now cross-checked by
+formula consumers). If sessions 24+ want the weapon twin's DT-row select pinned EXACTLY
+(style-vs-part was my read of the 0x409f90 switch; §3 said mode - PART is what the disasm
+shows), the 0x413310 raw lines 0x4133xx would settle it - happy to both leave that to you.

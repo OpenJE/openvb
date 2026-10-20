@@ -79,22 +79,26 @@ namespace F3 {
 
 	// 0x413310 core (session 21 §3):
 	//   raw = Dice(min + ammoMin, max + ammoMax) + flatBonus        [min<=max clamp]
-	//   dt  = (style 5/6 ? second row : generic row)[damageType]
+	//   dt  = (calledShotPart 5/6 ? second row : generic row)[damageType] - row select by
+	//   PART per the 0x409f90 decompile (doc §3's "mode==5||6" was the loose reading)
 	//   if dt>0 { dt -= pen; floor 0 }
 	//   dmg = raw - dt/2 - Dice(0, dt/2);  return max(dmg, 0)
 	int CalculateDamage( const AttackModeRecord& m, const CombatStats& target,
 	                     const AmmoMods& ammo, int calledShotPart, RandFn rnd ) {
 		tracing::instrument( tracing::LOCATION, "part=%d dt=%d", calledShotPart,
 		                     m.damageType );
-		if ( calledShotPart == 9 ) {
-			return 0;   // "No body part was targeted."
-		}
+		// part 9 guard (session 21 §3) is a game-layer preflight cancel in the original
+		// ("No body part was targeted." + action cancel @0x404983 region), and 0x409f90
+		// skips it for usable-object targets - so the FORMULA does not zero on 9; the
+		// armed action guarantees a concrete part. (Reimpl: GameActionAttack::Start
+		// resolves 9 -> 0.)
 		int lo = m.damageMin + ammo.damageMinBonus;
 		int hi = m.damageMax + ammo.damageMaxBonus;
 		if ( lo > hi ) { hi = lo; }              // shipped "clamp min <= max" direction
 		int raw = CombatDice( lo, hi, rnd ) + m.flatDamageBonus;
 
-		const int* row = ( m.style == 5 || m.style == 6 ) ? target.dtMode56 : target.dt;
+		const int* row = ( calledShotPart == 5 || calledShotPart == 6 )
+		                 ? target.dtParts56 : target.dt;
 		int dt = row[ m.damageType & 7 ];
 		if ( dt > 0 ) {
 			dt -= ammo.dtPenetration;

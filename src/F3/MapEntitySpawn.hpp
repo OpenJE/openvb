@@ -4,6 +4,7 @@
 #define F3_MAPENTITYSPAWN_HPP_
 
 #include "JE/ActionMoveTo.hpp"   // JE::Mover layout excerpt
+#include "F3/CombatMath.hpp"           // CombatStats (creature +0x760.. stat block excerpt)
 
 namespace JE { class Map; class PathManager; class ActionMoveTo; }
 
@@ -67,6 +68,9 @@ namespace F3 {
 		int   entityState;      // Entity+0x1E0 semantics (pump dispatch, session-11 table)
 		unsigned char pumpEnabled;  // Entity+0x3A0 (pump master gate, read at 0x549157 region)
 		unsigned char worldLinked;  // Entity+0x1BC (world-link; gates DEAD-state pumping)
+		CombatStats combat;   // GameCreature stat block excerpt: SPECIAL (+0x760..),
+		                    // skill ranks, dual DT rows (+0x7B0/+0x7C8), evasion (+0x7FC).
+		                    // HP itself stays in statMax/statCur (GENT +0x20/+0x24).
 		int   regCol;         // occupancy-grid registration cell (-1 = unregistered)
 		int   regRow;
 		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);
