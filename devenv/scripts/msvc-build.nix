@@ -100,9 +100,9 @@ in {
         "${msvcImage}" \
         -lc '
           WINEPREFIX=/work/build/wineprefix \
-            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && %CMAKE_EXE_WIN% -S Z:\\work -B Z:\\work\\build-msvc -DCMAKE_BUILD_TYPE=Release -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMKR_SKIP_GENERATION=ON"
+            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat && %CMAKE_EXE_WIN% -S Z:\\work -B Z:\\work\\build-msvc -DCMAKE_BUILD_TYPE=Release -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMKR_SKIP_GENERATION=ON"
           WINEPREFIX=/work/build/wineprefix \
-            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && %CMAKE_EXE_WIN% --build Z:\\work\\build-msvc"
+            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat && %CMAKE_EXE_WIN% --build Z:\\work\\build-msvc"
         '
     '';
   };

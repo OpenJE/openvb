@@ -232,6 +232,12 @@ in
     pkgsCross.mingw32.stdenv.cc
     uv
     iproute2
+    # T-024/M-001: a virtual X server so wine's d3d8/wined3d path can be exercised headlessly
+    # instead of attaching to the developer's real DISPLAY :0. Verified against this flake's own
+    # pinned nixpkgs: pkgs.xorg.xvfb exists (an xorg-server variant) and xvfb-run is TOP-LEVEL,
+    # not under xorg (pkgs."xvfb-run") - the common xorg.xvfbRun spelling does not resolve here.
+    xorg.xvfb
+    "xvfb-run"
   ]) ++ [
     inputs.wrkflw.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wrkflw
     imhex-mcp
