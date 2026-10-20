@@ -21,6 +21,11 @@ let
     fi
 
     export IDADIR="$idadir"
+    # IDA's SWIG modules ($IDADIR/python/lib-dynload/_ida_*.so) link against libida.so,
+    # idapython3.so and libpython from the IDA tree. Without $IDADIR on LD_LIBRARY_PATH
+    # these resolve to a second, conflicting kernel copy and idalib's open_database()
+    # segfaults (crash loop) under ida-pro-mcp's idalib_server.
+    export LD_LIBRARY_PATH="$idadir''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     # Reuse the interactive profile so the accepted license/EULA state is shared.
     export IDAUSR="$HOME/.idapro"
     export TVHEADLESS=1

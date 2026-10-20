@@ -26,10 +26,10 @@ rec {
       owner = "Calcoph";
       repo = "hexpat-lsp";
       rev = "main";
-      hash = "sha256-itrpBruWiTPT5HkQwPG7ma87HcYvSM65JGe8CrDHTi8=";
+      hash = "sha256-zV/mzvD7ZORJgJGdTzbVZSP9LW/iaGiCUhVMYO68cr8=";
     };
 
-    cargoHash = "sha256-77prNRR8j365CGFyApBD/hDe28sor5D0EKQKsg8p6/U=";
+    cargoHash = "sha256-ZqxPIkQCVKYADX/WLlDs0s39YKLL3zKM358j6TSElCY=";
 
     meta = with pkgs.lib; {
       description = "Language server for ImHex Pattern Language";

@@ -37,3 +37,8 @@ opencode.jsonc
 .rework/re.db-wal
 
 van-buren-docs
+
+dependencies
+
+# pi agent state
+.pi/

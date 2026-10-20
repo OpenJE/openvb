@@ -10,6 +10,7 @@
     ./f3-reimpl-run-debug.nix
     ./f3-reimpl-run-trace.nix
     ./f3-reimpl-run.nix
+    ./f3-reimpl-run-data.nix
     ./f3demo-run-debug.nix
     ./f3demo-run.nix
     ./msvc-build.nix
