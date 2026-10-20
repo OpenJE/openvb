@@ -87,6 +87,13 @@ namespace F3 {
 	SpawnedEntity* g_spawnedEntities[128] = { 0 };
 	int            g_spawnedEntityCount = 0;
 
+	// World-server serial generator (original: WorldServer->vft[8] called from GameEntity ctor,
+	// discovery note §2 "+0x28 world-server-assigned id"). Monotonic per spawn.
+	static int NextNetId() {
+		static int s_next = 1;
+		return s_next++;
+	}
+
 	// Records -> entities. Each: operator new(SpawnedEntity) + pos/rot/mapId/name from the
 	// record (0x551880-equivalent init + SetPosition_0x54A8A0 + SetRotation_0x549FE0). The
 	// entity's map id mirrors the loaded map (original: template/creation via world-server
@@ -123,6 +130,7 @@ namespace F3 {
 			// map identity: EME2 records live in one map; the pipeline compares mapId between
 			// mover and target (entity+0x1EC). One map loaded per session slice -> id = 1.
 			e->mapId = 1;
+			e->netId = NextNetId();
 
 			if ( g_spawnedEntityCount < 128 ) {
 				g_spawnedEntities[g_spawnedEntityCount++] = e;

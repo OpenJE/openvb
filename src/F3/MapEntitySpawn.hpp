@@ -17,10 +17,12 @@ namespace F3 {
 	// F3 classes (GameEntity 0x47C / GameCreature 0xBDC / ...); classId records which shipped
 	// class the resource would map to.
 	struct SpawnedEntity : public JE::Mover {
-		SpawnedEntity() : classId(0), yawRad(0.0f) { name[0] = 0; }
+		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0) { name[0] = 0; }
 		int   classId;      // CreateGameEntityByClass_0x46f530 selector (0..10)
 		char  name[0x40];   // resource name from the EME2 record
 		float yawRad;       // rotation.y from the record (pitch) - unused by movement yet
+		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);
+		                    // 0 in client/editor contexts per ctor 0x4678B3 evidence
 	};
 
 	enum {
