@@ -66,20 +66,24 @@ callers, and it is a *read* of `ESS+0x16C`, not of the command table.
   `[vft+0x6C]` on the primary table is meaningless. Two consequences: (a) the callee belongs to
   whatever class sits at that adjusted offset (a script/variable sub-object of the game world —
   **A owns this**), and (b) `sub_5A9F80` @0x56c02b validates its result.
-- **P1 mechanism RESOLVED, semantics still open (facts for implementer-A).** From
-  `JE::World::ctor_0x548a80`: `mbr_0x8 = &unk_691A94` (vbtable) and the vb sub-object vft is
-  written with `*(&mbr_0x8 + *(mbr_0x8+4)) = &World::'vftable'` @0x548ad2, plus the back-pointer
-  fixup `*(&mbr_0x4 + *(mbr_0x8+4)) = *(mbr_0x8+4) - 352` @0x548ae6. Reading the vbtable at
-  **0x691A94** gives `[-4, 352, ...]`, i.e. `*(obj+8) + 4 == 352` → the sub-object Format reaches
-  is at **obj + 8 + 352 = obj + 0x168**, matching `lea ecx,[edx+ecx+8]` @0x56c017 exactly.
-  Candidate tables in the `GameWorld` region: `0x66856C` has slot0 = **0x436240** (the same
-  function you flagged in chat/from-A.md C-23) and `+0x6C` = **0x545430**, `+0x74` =
-  **0x5455A0**. But 0x545430 decompiles to `operator new(0x14)` + `cls_0x5a42b0::ctor_0x5a42b0`
-  (the map-load REQUEST record from `LoadStartupMap` notes) and 0x5455A0 is
-  `ChangeState(3)` — neither is a variable getter, so **the table installed at obj+0x168 by
-  `F3::GameWorld`'s ctor is not 0x66856C** (or these are thunks). Q for A: which vftable does
-  GameWorld install at +0x168, and what is its slot +0x6C? Same adjustment appears in the
-  `YearsPassed` native @0x5c4a66-0x5c4a7b (slot +116 there), so one answer settles both.
+- **P1 RESOLVED — `<gv_NAME>` is an ini variable read.** The chain: `F3::GameWorld::ctor_0x470340`
+  installs `GameWorld_IWorldServer_vftable_66856C` at **GameWorld+0x168** (@0x470388, matching the
+  `obj + 8 + 352` adjustment Format uses), and that table's `+0x6C` is
+  `cls_0x5a42b0::Get_mbr_0x0` @**0x545430** (`sub_49C000(0x14)` + `ctor_0x5a42b0`) — i.e. GameWorld
+  leaves that interface slot to its base, which hands back the 0x14-byte map-request/holder object.
+  The value work happens in the helper the slot result is fed to, **`sub_5A9F80`**: it defaults the
+  section literal to `"Globals"` when empty (@0x5a9fc5), searches the `VFX_Parameter` tree held at
+  `object+28` (`JE::VFX_Parameter::meth_0x4339b0` @0x5a9fd5, key compare `sub_433930` @0x5a9fee),
+  resolves through `sub_4DF070(node+10, …)` @0x5aa01e and copies the found string out
+  (@0x5aa037) returning 1, else 0 → the caller logs `"Couldn't find variable %s"` and emits
+  `<Bad Token>`. **So `<gv_X>` is a `[Globals] X=` ini variable on the same parameter tree the app
+  already parses** (`F3::g_vfxParameterTree` via `Host::GetParameterTree`) — and it explains why the
+  `.int` fragments reference `.ini` files.
+  One residual ambiguity (documented, not guessed): whether the payload is the KEY inside section
+  "Globals" or the SECTION name — the `__userpurge`/`ecx`-return arg order at 0x5a9fd5 vs 0x5aa01e
+  does not settle it. `StringFormat.cpp` implements key-in-`Globals` (how every other shipped
+  `[Globals]` variable is read, cf. the ResourceSystem suite's `"[Globals] Greeting == 0"`) and
+  needs one lockstep run to confirm.
   Value splice itself is now understood: `cls_0x50db20::meth_0x4256e0(out, &value, 0, -1)`
   @0x56c0cc is `_String_base::append(str, pos, n)` (confirmed by its body at 0x4256e0: memcpy to
   `this[size]`, clamp n, `_Xran/_Xlen` checks), and the bad-token path uses the (ptr,len) append

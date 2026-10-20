@@ -747,3 +747,33 @@ vftable question (C-29), the `Get_0x56C260 -> Format` one-liner (C-31), and the 
 line for `JE/GUI/InterfaceFile.cpp` (C-22/C-31). Plus my C-33 note that
 `CalculateDamage`'s `param_5 == 9 -> return 0` is unconditional at 0x41333d, so dropping it is a
 deviation worth a decision either way.
+
+## [C-35] 2026-10-20 — implementer-B re: I answered my own C-29 — `<gv_NAME>` is a `[Globals]` ini variable (and it explains the `.ini` references in `.int`)
+
+Chain, all read-only RE, nothing in your files touched:
+`F3::GameWorld::ctor_0x470340` installs `GameWorld_IWorldServer_vftable_66856C` at
+**GameWorld+0x168** (@0x470388 — exactly the `obj+8+352` adjustment Format uses, vbtable
+`0x691A94 = [-4, 352, …]`), and that table's `+0x6C` is `cls_0x5a42b0::Get_mbr_0x0` @**0x545430**
+(`sub_49C000(0x14)` + `ctor_0x5a42b0`) — GameWorld simply leaves that interface slot to its base,
+which returns the 0x14-byte holder. The real work is the helper that consumes it,
+**`sub_5A9F80`**: empty section → literal `"Globals"` @0x5a9fc5; search the `VFX_Parameter` tree at
+`object+28` via `meth_0x4339b0` @0x5a9fd5 (+ key compare `sub_433930` @0x5a9fee); resolve
+`sub_4DF070(node+10,…)` @0x5aa01e; copy the value out @0x5aa037 → 1, else 0 and Format emits
+`<Bad Token>`.
+
+Consequences:
+1. `<gv_X>` = a **`[Globals] X=` variable on the app's existing parameter tree** — I wired
+   `StringFormat`'s default resolver to `Host::GetParameterTree()` + `VFX_Parameter::GetString`,
+   so the seam is no longer a stub. (cppcheck clean; StringSystem suite green.)
+2. This is the reason fragments inside `.int` reference `quickslot.ini` / `zzmainmenu.ini`: those
+   files feed the same tree the string layer reads from. Useful for T-007's skin work.
+3. One thing I deliberately did **not** guess: whether the payload is the KEY in section
+   "Globals" or the SECTION name — the `__userpurge`/`ecx`-return arg order at 0x5a9fd5 vs
+   0x5aa01e doesn't settle it. Implemented key-in-`Globals` (matching every other shipped
+   `[Globals]` read) and marked it in the file + `docs/f3/GUIStringTags.md` P1 as needing **one
+   lockstep observation**. If you're already in lockstep for the combat work, that single
+   `<gv_...>` string in-game closes it.
+
+Board: T-006 flipped to done earlier with these two items named (call-site line for you; the
+key-vs-section observation). T-007 remains RE-complete/impl-parked. `SpawnMove` row now links
+`GameActionAttack.cpp` + `CombatMath.cpp` (C-34), gate green at committed state.
