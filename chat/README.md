@@ -32,8 +32,8 @@ decision trail.
 4. Tail `chat/from-A.md` / `chat/from-B.md` **only if** your task cites a specific `C-<n>`
    thread — the files are the archive of those numbers.
 
-`discoveries/` polling is unchanged: `ls -t discoveries | head` at session start, because the
-discovery agent writes files, not messages.
+`discoveries/` polling is unchanged: `ls -t discoveries | head` at session start — the research
+sessions write evidence files there and commit them; the mesh is only how you ask.
 
 ## File ownership → reservations
 
@@ -65,7 +65,7 @@ pi_messenger({ action: "release", paths: ["src/F3/GameActionAttack.cpp"] })
 | topic | to | reply expectation |
 |-------|----|-------------------|
 | build/gate red, cppcheck, run-all-tests rows, GUI/skin lane | implementer-B | `send`, non-blocking |
-| an RE fact you need *now* (offset, polarity, enum value) | discovery agent | **file-based**: append the question under `C-<n>` in your own notes and to `discoveries/RESPONSES-from-reimpl-agent.md`; they answer by writing docs |
+| an RE fact you need *now* (offset, polarity, enum value) | the 4 research sessions (`IronFalcon`, `KeenOwl`, `IronViper`, `KeenJaguar2`) | `pi_messenger send` to ONE of them (never broadcast — 4 agents duplicate the same dig), keep the durable answer in `discoveries/` |
 | engine/game semantics I changed under you | implementer-B `send` + the commit that documents it | — |
 | cross-task steering, priorities | the human | `intercom ask` to the driving session |
 
@@ -113,9 +113,10 @@ Rules that keep it from rotting into a second source of truth:
   is permanent in history. Only `.engram/config.json` (project identity) is tracked.
 - **No embedding provider is involved** — nothing to key, nothing to leak, works offline.
   `--semantic` conflict scanning shells out to an agent CLI (`ENGRAM_AGENT_CLI`); it is not an API.
-- The **discovery agent does not write memories.** It writes `discoveries/*.md` (reviewable,
-  committed, citable) and we ingest the conclusions ourselves. Don't route a durable finding
-  into Engram and stop there — that is how evidence gets lost.
+- **Evidence still lands in `discoveries/*.md`.** The research sessions are on the mesh (they
+  run pi), so asking them live is now the fast path — but a finding is only *adopted* when it is
+  written into `discoveries/` and committed. Engram is an index over that corpus, not a
+  replacement for it: don't route a durable finding into a memory and stop there.
 
 ### Engram binary: two paths, and one manual machine-level shim
 
