@@ -403,6 +403,11 @@ namespace F3 {
 			e->pos[2] = r.pos[2];
 			e->yaw   = r.rotDeg[0];
 			e->yawRad = 0.0f;
+			// EME2 u8 flag -> Create(..., flag!=0, 1) + Entity+0x3A0 pump byte
+			// (discovery session 21 §spawn-handler + session 22 §1 closed C-12 question).
+			// Shipped crt values: record[0] (Default_PC) flag=1 -> pumps; all others 0 ->
+			// pump-disabled offline (network-owned entities). Matches T-004 assertions.
+			e->pumpEnabled = ( r.flag != 0 ) ? 1 : 0;
 			// Ground-truth class from the template's chunk signature (demand the resource).
 			e->classId = ClassIdForResourceName( r.name );   // default (extension heuristic)
 			// Template demand goes through the managed cache (original: Demand(managed=1)

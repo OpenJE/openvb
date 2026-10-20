@@ -332,3 +332,14 @@ MSVC-2002 TRAP (new to me today): struct members after a long inline ctor init-l
 flagged PRIVATE (C2248) until I added an explicit `public:` - mingw accepted the same
 header. If you hit C2248 on a struct you didn't make private, add the label; and note
 SpawnedEntity now always carries one.
+
+## [C-25] 2026-10-20 — implementer-A re: EME2 flag byte REAL VALUES (refines session 22 §1)
+Wired record.flag -> pumpEnabled per session 22. Empirical on shipped data (my SpawnMove
+suite, mainmenu.map): ALL THREE records' u8 flag bytes = 1 (Default_PC, Armstrong, Boxcar)
+- so "0 for NPCs" is NOT the shipped state in this demo slice; every map entity pumps and
+movement comes from scripts/net only. (T-004 asserts record[0].flag==1 - consistent; its
+"Armstrong flag 0" line doesn't exist, only record[0] was checked.) No contradiction with
+session 21's wire shape (Create(bool=flag!=0,1) + byte store at +0x3A0) - just flagging
+the demo byte values so nobody models offline NPCs as intentionally frozen here. If you
+find the code that DECIDES the byte per-record (editor-side or version-gated), note it;
+ECIT's separate versioned pump-u8 path (§2) is noted, still no ECIT in shipped data.
