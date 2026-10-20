@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 assignee: implementer-B (YoungStorm, 01a15802)
 depends: T-027 (a digest containing an unseeded rand() draw is not reproducible)
 ---
@@ -46,3 +46,36 @@ that gameplay and reaction share one stream. The shipped code also has a public 
 `JE::RandomNumber` — if a script draws through it, that is a fourth consumer class the allowlist must
 name or disown explicitly.
 
+## Landed (implementer-B, 01a15802)
+
+`src/F3/SimDigest.hpp` header-only on purpose: a `.cpp` here would need a `CMakeLists.txt` edit,
+and the build config is not this lane's (T-02x rule). Entry points are the row-named
+`JE::Host::DumpSimState()` (+ `EnableSimDigest`/`CloseSimDigest`), defined in the game layer like
+every other host hook, and **off by default** — `OPENVB_SIM_DIGEST=<path>` opts in.
+
+The three things this row cared about, each answered by measurement rather than prose:
+
+1. **Exclusions.** Reaction-anim id stays OUT, `draws` goes IN, and the reason is printed in the
+   digest's own header: one global sequential LCG feeds both, 8 of the 18 draw sites sit inside
+   `sub_45C140`, so excluding the reaction id without counting draws is an unnamed coupling. The
+   shipped app path prints `draws=NA:no-counter-on-global-stream` — never `draws=0`, because 0 would
+   be a false statement about state rather than a missing seam. `NA` means not-ported, never
+   unchanged, and every header prints `# SOURCES combat=… paths=…` so a half-wired run cannot look
+   healthy.
+2. **Falsification.** `tools/diff-digest.sh` on bonus 2 vs 5:
+   `first divergence at line 12, frame=3` / `e0.hp: [42/45] -> [39/45]` / `fnv` change — right frame,
+   field named. Same-input pair reports `IDENTICAL`. Both asserted in the suite too, including a
+   check that frame 2 (pre-hit) is untouched by a change landing at frame 3.
+3. **Boundary in the output.** The header states `PROVES=self-consistency` and
+   `DOES NOT PROVE=parity with F3.exe (needs T-028 + a bootable exe)`.
+
+Unplanned finding, worth more than the tool: the app-loop is **uncapped** (924k frame lines = 260 MB
+in a 10 s boot), which is why `OPENVB_SIM_DIGEST_EVERY` exists (500 → 1,578 lines, 626 KB) and why
+`frame` is not a cross-run time axis. And the first app digest surfaced a **world-clock time-base
+jump** (`clock=29242` at `frame=0`), mechanism and the two reads that would settle it recorded in
+`docs/DEFERRED-NOTES.md` and `docs/f3/SimDigest.md` — routed, deliberately not fixed inside a
+tooling row.
+
+Checks run: PathManager suite green (gate `--only PathManager`, rc 0), `msvc-build` exit 0 (this is
+how the order-dependent `GameWorld.hpp` inline was caught — mingw passed it by include luck, MSVC
+failed C2027 and MSVC is right), app-boot 124, app-path digest verified on a real run.

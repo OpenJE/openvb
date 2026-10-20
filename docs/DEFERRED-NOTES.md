@@ -451,6 +451,23 @@ Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachmen
 the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's
 `socketIdx = id+1` bridge was retracted.
 
+## Candidate defect (ours, surfaced by the T-026 digest — routed, not fixed)
+
+**World clock starts ~8 hours old.** `JE::World::Update_0x544a90(ms)` (
+`modules/openje/src/JE/World.cpp:119`) computes `delta = ms - mbr_0x48`; `mbr_0x48` initialises to
+**0** while `ms` is `Host::TickMilliseconds()` = `timeGetTime()` = **machine uptime**. The first pump
+therefore folds the whole uptime into the accumulator and the step-6 clock carry
+(`World.cpp:99-106`) adds it as world seconds in a single frame — observed as
+`frame=0 tickMs=29242857 clock=29242` in an app digest run. Later frames only add deltas, so the
+value sticks and the sim runs on an 8-hour-old clock.
+
+NOT fixed here because it is a parity question, not a tooling change, and because the mirror rule
+forbids silently improving the original: the shipped code may seed `+0x48` with the first observed
+tick, or its `ms` source may be a per-session timer instead of uptime. What settles it: (a) the
+world object's ctor at the `+0x48` offset, or (b) one lockstep read of `+0x48` around the first
+`Update` call. Until then every digest comparison carries this as a shared constant.
+See `docs/f3/SimDigest.md`.
+
 ## Port deviations (deliberate, registered — T-027)
 
 The mirror rule says do not silently improve the original. These are the places where the reimpl is

@@ -23,6 +23,8 @@
 #include "F3/MapEntitySpawn.hpp"
 #include "JE/ModelCache.hpp"
 #include "F3/GameNetwork.hpp"
+#include "F3/SimDigest.hpp"   // T-026 per-frame digest (header-only: no build-config change)
+#include <stdlib.h>              // getenv for OPENVB_SIM_DIGEST
 #include "JE/HostHooks.hpp"
 #include "JE/SS/EngineStringSystem.hpp"
 #include "JE/VFX_Parameter.hpp"
@@ -387,6 +389,11 @@ namespace F3 {
 	int Main() {
 		tracing::instrument( tracing::LOCATION, "" );
 		F3::Startup();
+
+		// T-026: opt-in digest (default off - the app must not create files nobody asked for).
+		if ( const char* digestPath = getenv( "OPENVB_SIM_DIGEST" ) ) {
+			if ( digestPath[0] ) { JE::Host::EnableSimDigest( digestPath ); }
+		}
 		F3::RegisterCommand("quit", reinterpret_cast<void (__stdcall *)()>(F3::Quit));
 		while ( ProcessMessagesAndUpdateTime() ) {
 			F3::GameStateLoop();
@@ -520,6 +527,11 @@ namespace F3 {
 		for ( int i = 0; i < 8; ++i ) {
 			g_subsystemSlots[i].object->Tick();   // vft[3], 0x5ACDEA: call *[eax+0Ch]
 		}
+
+		// T-026 digest, OUTSIDE the faithful 8-slot walk: the table at 0x6FF6C8..0x6FF70C is a
+		// byte-accurate mirror and must not gain a 9th entry. No-op unless the env var opened a
+		// file, so shipped behaviour is unchanged.
+		JE::Host::DumpSimState();
 	} // GameStateLoop
 
 	// Original walk (0x5ACDA0): esi = 0x6FF70C; do { ecx = [-8] (obj); call [obj_vft + 8] (vft[2])
@@ -529,6 +541,8 @@ namespace F3 {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::LogDebugString( NULL, "Shutdown()\r\n" );
+
+		JE::Host::CloseSimDigest();   // T-026: flush the digest before tearing the world down
 
 		for ( int i = 7; i >= 0; --i ) {
 			JE::Subsystem* object = g_subsystemSlots[i].object;
@@ -780,6 +794,60 @@ namespace JE {
 		JE::PathManager* GetPathJobQueue() {
 			F3::GameWorld* w = F3::GetWorldServerInstance();
 			return w ? w->m_pathManager : NULL;
+		}
+
+		// ---- T-026: per-frame simulation digest -----------------------------------
+		// The app path is deliberately thin and OFF by default: nothing is opened, and therefore
+		// nothing is written, unless OPENVB_SIM_DIGEST names a file. A game loop that silently
+		// creates files is a fidelity change of exactly the kind the deferred-notes rule forbids.
+		// `clock` and `tickMs` come from the same sources the sim already consumes
+		// (GameWorld::ClockSeconds, Host::TickMilliseconds); draws are reported NA here because the
+		// shipped-path generator has no counter - the headless harness injects one via T-027's seam.
+		static FILE* g_simDigest = NULL;
+		static unsigned g_simDigestFrame = 0;
+		// Sampling interval in FRAMES. Not decoration: the game loop is uncapped, so an app run
+		// produced 924k frame lines (260 MB) in a 10 s boot. A comparison run that needs every
+		// frame must say so explicitly via OPENVB_SIM_DIGEST_EVERY=1.
+		static unsigned g_simDigestEvery = 1;
+
+		int EnableSimDigest( const char* path ) {
+			if ( g_simDigest || !path || !*path ) { return g_simDigest ? 1 : 0; }
+			const char* every = getenv( "OPENVB_SIM_DIGEST_EVERY" );
+			if ( every && *every ) {
+				int n = atoi( every );
+				g_simDigestEvery = ( n > 0 ) ? (unsigned)n : 1u;
+			}
+			g_simDigest = fopen( path, "w" );
+			if ( !g_simDigest ) {
+				JE::LogDebugString( NULL, "Host::EnableSimDigest() - cannot open digest file.\r\n" );
+				return 0;
+			}
+			g_simDigestFrame = 0;
+			F3::GameWorld* w = F3::GetWorldServerInstance();
+			F3::Sim::Sources src;
+			src.combat = w ? w->GetCombat() : NULL;
+			src.paths  = w ? w->GetPathManager() : NULL;
+			F3::Sim::WriteHeader( g_simDigest, src );
+			return 1;
+		}
+
+		void DumpSimState() {
+			if ( !g_simDigest ) { return; }
+			if ( ( g_simDigestFrame % g_simDigestEvery ) != 0u ) { ++g_simDigestFrame; return; }
+			F3::GameWorld* w = F3::GetWorldServerInstance();
+			F3::Sim::Sources src;
+			src.combat = w ? w->GetCombat() : NULL;
+			src.paths  = w ? w->GetPathManager() : NULL;
+			F3::Sim::WriteFrame( g_simDigest, src, g_simDigestFrame++,
+			                     (unsigned)JE::Host::TickMilliseconds(),
+			                     w ? w->ClockSeconds() : 0u, 0, NULL );
+		}
+
+		void CloseSimDigest() {
+			if ( g_simDigest ) {
+				fprintf( g_simDigest, "# END frames=%u every=%u\n", g_simDigestFrame, g_simDigestEvery );
+				fclose( g_simDigest ); g_simDigest = NULL;
+			}
 		}
 	} // namespace Host
 } // namespace JE

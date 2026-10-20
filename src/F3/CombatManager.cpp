@@ -2,6 +2,7 @@
 
 #include "tracing.hpp"
 #include <stdlib.h>
+#include <string.h>   // TurnOrderSignature: memcpy/strlen
 #include "F3/CombatManager.hpp"
 #include "F3/MapEntitySpawn.hpp"
 
@@ -103,4 +104,26 @@ namespace F3 {
 		iter_ = head_;
 		maintaining_ = false;
 	}
+
+	// Traverses the circular turn list exactly the way Tick does (start at head_, follow next
+	// until back to head_), so the signature reports the order the pump will actually act in, not
+	// an insertion order the pump never sees. Empty list -> empty string and 0 written.
+	int CombatManager::TurnOrderSignature( char* buf, int cap ) const {
+		if ( !buf || cap <= 0 ) { return 0; }
+		buf[0] = 0;
+		if ( !head_ ) { return 0; }
+		int written = 0, used = 0;
+		Node* cur = head_;
+		do {
+			const char* name = ( cur->entity && cur->entity->name[0] ) ? cur->entity->name : "-";
+			if ( used > 0 && used < cap - 1 ) { buf[used++] = ','; buf[used] = 0; }
+			int len = (int)strlen( name );
+			if ( used + len > cap - 1 ) { len = cap - 1 - used; }
+			if ( len > 0 ) { memcpy( buf + used, name, (size_t)len ); used += len; buf[used] = 0; }
+			++written;
+			cur = cur->next;
+		} while ( cur && cur != head_ );
+		return written;
+	}
+
 } // namespace F3

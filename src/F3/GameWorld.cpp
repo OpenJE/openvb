@@ -105,4 +105,10 @@ namespace F3 {
         // [World] Year / Month calendar wiring: deferred with GameTime.
         return 0;
     } // Initialize
+
+	// GameWorld.hpp declares this inline-free on purpose (see the note there).
+	unsigned GameWorld::ClockSeconds() const {
+		return m_clock ? (unsigned)m_clock->TotalSeconds() : 0u;
+	}
+
 } // namespace F3

@@ -1113,3 +1113,47 @@ pinned damage number (`== 4`), 100-run stability, and the sensitivity control (s
 exact-value assert cannot pass on a formula that ignores the draw. CombatMath green, `msvc-build` exit 0,
 app-boot 124, `cppcheck-openje` rc 0 with zero CombatMath findings, `grep -rn "rand()" src/F3` leaves
 only the two comments explaining what it replaced.
+
+## [C-46] 2026-10-20 — implementer-B re: T-026 landed, and the digest found a time-base bug on its first run
+
+**T-026 done** (`src/F3/SimDigest.hpp` header-only — a `.cpp` would need `CMakeLists.txt`, which is not
+this lane's), entry points `JE::Host::{EnableSimDigest,DumpSimState,CloseSimDigest}` defined in `src/F3.cpp`
+like every other host hook, **off unless `OPENVB_SIM_DIGEST=<path>` names a file**. Comparator
+`tools/diff-digest.sh` (exit 0 identical / 1 diverged / 2 usage).
+
+Three things I want read out of the file rather than out of my prose:
+
+1. **Exclusion decision made in the output.** Reaction-anim id stays OUT, `draws` goes IN, and line 1 says
+   why: one global sequential LCG feeds both, 8 of 18 draw sites live in `sub_45C140`, so excluding the
+   reaction id while not counting draws is an *unnamed coupling*. The app path prints
+   `draws=NA:no-counter-on-global-stream` and never `draws=0` — 0 is a false statement about state, not a
+   missing seam. Every header also prints `# SOURCES combat=… paths=…`, because a half-wired digest must
+   not look healthy.
+2. **Falsification shown, not claimed.** Bonus 2 vs 5 → `first divergence at line 12, frame=3` with
+   `e0.hp: [42/45] -> [39/45]` and the fnv change; same-input pair → `IDENTICAL`; and the suite asserts
+   frame 2 is untouched by a change that lands at frame 3, so the tool cannot pass by diffing everything.
+3. **Boundary in the output**: `PROVES=self-consistency`, `DOES NOT PROVE=parity with F3.exe (needs T-028
+   + a bootable exe)`.
+
+**The tool paid for itself immediately.** The app's loop is **uncapped**: a 10 s boot wrote 923,975 frame
+lines (260 MB) — hence `OPENVB_SIM_DIGEST_EVERY` (500 → 1,578 lines / 626 KB), and the consequence for
+whoever writes the T-028 driver is that **`frame` is not a cross-run time axis**; `tickMs`/`clock` are, and
+a frame-synchronous comparison has to pin `EVERY=1` and bound the run length.
+
+**Candidate defect (ours, routed, deliberately NOT fixed inside a tooling row):** the first app digest
+printed `frame=0 tickMs=29242857 clock=29242` — the world clock is already ~8 hours old at frame 0.
+Mechanism in our own code: `World::Update_0x544a90` does `delta = ms - mbr_0x48`
+(`modules/openje/src/JE/World.cpp:119`) and `mbr_0x48` initialises to **0** while `ms` is
+`Host::TickMilliseconds()` = `timeGetTime()` = machine uptime, so the first pump folds all of the uptime
+into the accumulator and step-6 adds it as world seconds in one frame (`World.cpp:99-106`); it then sticks.
+Two reads settle whether shipped does the same: the world object ctor at `+0x48`, or one lockstep read of
+`+0x48` around the first `Update`. Logged in `docs/DEFERRED-NOTES.md` + `docs/f3/SimDigest.md`. It is a
+shared constant for every comparison until then, not a bug in the comparison.
+
+**One process note worth generalising:** my first `GameWorld.hpp` accessor was inline and mingw accepted
+it while **MSVC failed C2027** (`JE::Gregorian` is only forward-declared in `World.hpp`) — each mingw test
+TU happened to include `Gregorian.hpp` first. So an include-order-dependent header is invisible to the
+mingw suites and the MSVC build is the only thing that catches it; if a row adds a header accessor,
+`msvc-build` is not optional polish. Also: `run-all-tests` prints only `BUILD-FAIL (exit 1) kind=error`
+— the compiler diagnostics are not surfaced, so a failing row currently needs a manual recompile to read.
+Worth a `--verbose`/log-path in T-024's gate-integrity scope.

@@ -38,6 +38,18 @@ namespace F3 {
 			// (world+0xF0 per original 0x545E18 evidence).
 			virtual JE::PathManager* GetPathManager() { return m_pathManager; }
 
+			// T-026 digest seam: the turn queue needs to be READ by the digest in queue order.
+			// Accessor rather than public member, so nothing outside the game layer can reorder it.
+			CombatManager* GetCombat() const { return m_combat; }
+
+			// T-026 digest: the same value GameWorld::Tick feeds to CombatManager::Tick, i.e. the
+			// world clock in whole seconds, so a divergence can be attributed to sim time rather
+			// than to frame counting. Declared here and DEFINED in GameWorld.cpp: World.hpp only
+			// forward-declares JE::Gregorian, and an inline body here compiled under mingw purely
+			// because each test TU happens to include Gregorian.hpp first - MSVC saw through that
+			// and failed with C2027, which is the correct verdict for an order-dependent header.
+			unsigned ClockSeconds() const;
+
 			// vft[12] 0x46F980 CreateGameWorldMap (JE::WorldMap 0x80 + vft -> GameWorldMap
 			// 0x668480) is NOT part of the Initialize cascade; caller/location to be found.
 		//: Methods

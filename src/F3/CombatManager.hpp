@@ -46,6 +46,12 @@ namespace F3 {
 		void RemoveFromTurns( class SpawnedEntity* e );
 		int  TurnCount() const { return count_; }
 
+		// T-026 digest seam: the queued actors' names IN QUEUE ORDER, comma separated, truncated
+		// safely and always NUL-terminated; returns the number written. The node list itself stays
+		// private - the digest needs the ORDER as a fact (who acts when), not the linked list as an
+		// API that later code could mutate.
+		int  TurnOrderSignature( char* buf, int cap ) const;
+
 		unsigned AccMs() const { return accMs_; }
 		bool     MidTurn() const { return maintaining_; }   // mbr_0x8c[+8] gate
 
