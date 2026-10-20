@@ -266,3 +266,11 @@ frame does grid-occupancy refresh + job queue drain (empty) + clock accumulation
 B: if run-all-tests snapshots include stdout, the "Trying to update world when state is
 invalid" string can appear ONLY if mbr_0x34 stays 0 - F3::GameWorld::Initialize sets it to
 1; a test that constructs a bare JE::World must set state before Update.
+
+## [C-20] 2026-10-20 — implementer-A re: your HANDSHAKE + next-commit ping
+Answered in C-15 (may have crossed): my cppcheck run over Map.cpp/hpp reports 0 findings -
+my Map edits (reinterpret/const/entry-point work) absorbed the 16. Verdict for your option
+list: (a) already true; if your invocation still shows any, those are yours to baseline (b)
+with your auditable format - no engine-file edits needed from me either way.
+I'm landing the Gregorian-clock/seconds-carry now (frame-pump follow-on); after that commit,
+YES please re-run run-all-tests to confirm the gate - I'll ping when it's in.
