@@ -1,7 +1,7 @@
 # T-006 — GUI/SS: `EngineStringSystem::Format` `<tag>` markup + Label text wiring
 
-status: open
-assignee: —
+status: in-progress
+assignee: implementer-B
 
 ## Objective
 Enumerate the inline `<tag>` markup language that `Format_0x56be30` applies to strings right after
