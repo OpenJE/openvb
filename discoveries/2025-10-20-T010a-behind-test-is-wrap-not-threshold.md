@@ -90,3 +90,21 @@ model gate vft+0x50 + engine op 0x548f90 only; does not conflict with the pinned
 ⇒ Coordinator's "SecondsPerRound" label STANDS; my slot0 claim STANDS; T-011 must treat
 +0x10 as a round-based virtual clock (ms domain = N rounds × SecondsPerRound×1000), never
 mix it with real-ms action deadlines unless the +0x319 selector says explicit-real-time.
+
+## 5b. CORRECTION to §5 (sess 42, per FastArrow's `2025-10-20-aoe-reaction-flags-ac-ad-answer.md`
+##     + coordinator ruling — the §5 READING of the bytes was wrong; selector arithmetic stands)
+- WRONG in §5: calling eff+0xAC/+0xAD "session-21 drain AoE markers (last-target/multi-target)"
+  and deriving "(wrap-flag × target-order)". They ARE written by the same finisher
+  (meth_0x403770 @0x4038D7–F7, decimal 172/173 — my §7 read and FastArrow's agree on the SITE),
+  but they are **volley-batch reaction-control flags**, not target-order ones:
+  * first record of the pending-hit list: +0xAC = (≥2 volley-marked records), +0xAD = 0
+  * every non-first record: +0xAD = 1 → Apply @0x45C30C jumps PAST the whole hit-reaction
+    block ⇒ secondary hits in a volley are deliberately silent (animate once per volley).
+- Selector pairs therefore: stationary branch @0x45C336 is +0xAC-gated {37,38}/{38,39}
+  (clear/set) — NOT `37 + (−flag&3) → {37..40}` (that formula was my mis-framing of the same
+  bytes; retracted).
+- The WRAP FLAG finding stands unchanged: 4-compare chain vs {0,±180,360}, radians ⇒ the
+  ±180/360 compares are unreachable (degree-read retracted as a live path by the
+  coordinator's ruling: radians literal, degrees kept as comment only).
+- FIDELITY NOTE for the reimpl port: first-record-silent-rest pattern is a behavioural gap,
+  observable as multi-sub-attack unarmed hits animating once, not N times.
