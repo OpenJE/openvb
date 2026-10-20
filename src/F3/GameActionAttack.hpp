@@ -128,7 +128,8 @@ namespace F3 {
 		// its element layout is deliberately unpinned (FastArrow, T-010c follow-up).
 		// Elements are per-sub-attack RECORDS, and the selector writes the computed hit
 		// location into record+0x20 (@0x404989) - that is where an uncalled-shot attack gets
-		// its body part, feeding CalculateDamage's param_5.
+		// its target id (CalculateDamage's param_5). NB 10c: the ids are EQUIP-SLOT coverage,
+		// not anatomy - {5,6} are the head-family pair, which-of-the-two still inferred.
 		// DEVIATION: modelled as a plain countdown. It is a stand-in for the vector's
 		// remaining count and has NO shipped offset - the earlier "+0x78" label here was
 		// IDA display skew (its raw form is a vector cursor, not `mov [esi+0x78]`), and

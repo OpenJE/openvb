@@ -34,15 +34,25 @@ namespace F3 {
 
 	// Minimal creature stat block: SPECIAL {STR,PER,END,CHA,INT,AGI,LCK} (shipped
 	// GameCreature +0x760..+0x778 per session 23 §6), evasion storage (+0x7FC, STORED
-	// value - not computed), two 8-dword DT rows (+0x7B0 generic, +0x7C8 used for attack
-	// modes 5/6), and skill rank points.
+	// value - not computed), two 8-dword DT rows (+0x7B0 generic row A, +0x7C8 the second
+	// row the target ids {5,6} select), and skill rank points.
 	struct CombatStats {
 	public:
 		int skills[kSkillCount];
 		int special[7];
 		int dt[8];
-		int dtParts56[8];   // second row when the CALLED-SHOT PART is 5/6 (raw 0x413413/
-	                    // 0x40a06b switch on the PART; doc §3's "mode" wording was loose)
+		int dtRowB[8];      // the second DT row, selected by target ids {5,6} (raw switch on
+	                    // param_5 at 0x413413 / 0x40a06b). NAMED BY WHAT IT IS: the shipped
+	                    // model is TWO rows, not six per-part rows (docs/DEFERRED-NOTES.md
+	                    // ledger entry 2, harmless-by-data). Formerly dtParts56 - the old name
+	                    // asserted anatomy, which 10c disproved: {5,6} are EQUIP-SLOT coverage
+	                    // (head-family), not body parts. Which of 5/6 is HEAD and which is EYES
+	                    // remains INFERRED (penalty 120 at index 6 favours EYES); ids 0-4 and
+	                    // 7-8 stay numeric and the code indexes numerically.
+	                    // Evidence, cited by filename per harness item 15:
+	                    //   discoveries/2025-10-20-session35-helmet-slot-data-closes-10c.md
+	                    //   discoveries/2025-10-20-t010c-conflict-resolved-equip-slot-model.md
+	                    //   (pair table: discoveries/2025-10-20-t010c-equip-slot-array-naming.md)
 		int dtUsable[8];    // GameUsableObject DT array at +0xA4, indexed by damage type -
 	                    // read instead of the creature rows when the target is a usable
 	                    // object (0x409f90 @0x40a052: v8[4*param_1[4] + 164])
@@ -52,14 +62,15 @@ namespace F3 {
 		CombatStats() : evasion(0) {
 			for ( int i = 0; i < kSkillCount; ++i ) { skills[i] = 0; }
 			for ( int i = 0; i < 7; ++i ) { special[i] = 0; }
-			for ( int i = 0; i < 8; ++i ) { dt[i] = 0; dtParts56[i] = 0; dtUsable[i] = 0; }
+			for ( int i = 0; i < 8; ++i ) { dt[i] = 0; dtRowB[i] = 0; dtUsable[i] = 0; }
 			pos[0] = pos[1] = pos[2] = 0.0f;
 		}
 	};
 
 	// Attack-mode record (MODE/GWAM record; byte offsets verified session 23 §5).
-	// NOTE: `style` does NOT pick the DT row - the called-shot BODY PART does (raw switch on
-	// param_5 at 0x413413 / 0x40a06b; chat C-33 + session 29). Kept here because style==2
+	// NOTE: `style` does NOT pick the DT row - the called-shot TARGET ID does (raw switch on
+	// param_5 at 0x413413 / 0x40a06b; chat C-33 + session 29; the ids are equip-slot
+	// coverage per 10c, NOT anatomy). Kept here because style==2
 	// (throwing) still selects the MELEE skill + 3*STR range in the to-hit twins.
 	//
 	// FIELD ORDER IS LOAD-BEARING: this is a C++98 aggregate and the suites brace-initialize it

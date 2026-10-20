@@ -6,6 +6,10 @@
 #include "F3/CombatMath.hpp"
 
 namespace F3 {
+	// Per-target-id armour penalty (dword_64F858). THE INDICES ARE TARGET IDS, not body parts:
+	// {5,6} are the head-family equip-slot pair, and which of the two is HEAD versus EYES is still
+	// INFERRED (120 at index 6 favours an EYES reading). Names are deliberately withheld here, for
+	// the same reason the DT row is called dtRowB - 10c settled the GROUP, not the per-id anatomy.
 	const int kCalledShotMods[8] = { 10, 40, 40, 40, 40, 60, 120, 60 };  // dword_64F858
 
 	// 0x48CD00: v3=min, v2=max; equal -> param_1; return min + rand % (max-min+1).
@@ -81,12 +85,16 @@ namespace F3 {
 
 	// 0x413310 core, ported against a fresh raw re-read (chat C-33 Â§3 + session 29 Â§3 corrected
 	// my earlier reading):
-	//   if (part == 9) -> LogDebugString("...No body part was targeted.") + return 0   UNCONDITIONAL
+	//   if (part == 9) -> LogDebugString(<the shipped text kept verbatim below>) + return 0,
+	//     UNCONDITIONAL. NB: the phrase "body part" inside that literal is the ORIGINAL'S OWN
+	//     wording, not our claim about what the ids mean - 10c found equip-slot coverage. The
+	//     literal is quoted rather than paraphrased so nobody "tidies" it into agreement.
 	//   ammo block runs ONLY when mode+0x1C (primaryAmmoCost) != 0; max takes the ammo max bonus
 	//     and min takes its bonus only while it stays BELOW that bonused max (0x4133eb) - the min
 	//     is NOT clamped upward when the bonus would overshoot.
 	//   raw  = Dice(min, max) + flatBonus(mode+0x24)
-	//   row  = part switch (0,1,2,3,4,7 -> +0x7B0 | 5,6 -> +0x7C8 | default -> log + +0x7B0 and
+	//   row  = TARGET-ID switch (0,1,2,3,4,7 -> row A +0x7B0 | 5,6 -> row B +0x7C8 | default ->
+	//          log + row A and
 	//          STILL computes, it does not return 0), indexed by mode+0x10 (damage type) INSIDE it
 	//   if (dt > 0) { dt -= ammoPenetration; floor 0 }   (penetration is 0 without an ammo block)
 	//   dmg  = raw - dt/2 - Dice(0, dt/2); return max(dmg, 0)
@@ -99,6 +107,7 @@ namespace F3 {
 		// rejection is UNCONDITIONAL in this twin; the conditional form (`part == 9 && !usable`)
 		// belongs to the unarmed twin @0x409f90 - the two sites genuinely differ.
 		if ( calledShotPart == 9 ) {
+			// shipped string verbatim, do not "fix" - the original really does say "body part"
 			JE::LogDebugString( NULL, "GameWeapon::CalculateDamage - No body part was targeted.\n" );
 			return 0;
 		}
@@ -118,8 +127,8 @@ namespace F3 {
 		switch ( calledShotPart ) {
 		case 0: case 1: case 2: case 3: case 4: case 7:
 			row = target.dt; break;
-		case 5: case 6:
-			row = target.dtParts56; break;
+		case 5: case 6:               // head-family equip-slot pair -> row B, not "parts"
+			row = target.dtRowB; break;
 		default:
 			JE::LogDebugString( NULL,
 			    "GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered.\n" );
@@ -175,8 +184,8 @@ namespace F3 {
 			switch ( calledShotPart ) {
 			case 0: case 1: case 2: case 3: case 4: case 7:
 				row = target.dt; break;
-			case 5: case 6:
-				row = target.dtParts56; break;
+			case 5: case 6:           // head-family equip-slot pair -> row B, not "parts"
+				row = target.dtRowB; break;
 			default:
 				JE::LogDebugString( NULL,
 				    "GameCreature::CalculateUnarmedDamage() - Unknown CALLEDTARGET encountered.\n" );
