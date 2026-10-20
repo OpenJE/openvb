@@ -58,6 +58,21 @@ than invented. This task closes that, plus the join path, using only raw-verifie
    decompiler artifact and C-23 is closed: `World+0x70` is a double `worldSimSeconds`, and the
    pump's seconds-carry is the authoritative advance in the reimpl. If the *original's* cadence
    value still matters, that is a research question (T-010), not a license to invent.
+
+   **LIVE DISAGREEMENT (read before you arm anything; do not resolve it in code).** The two
+   research readings agree on the arithmetic and disagree on what GW+0x40 IS:
+   - NiceWolf (canonical §13): a round-based virtual clock — `1000*GW+0x40` added once per
+     dispatched queue event ⇒ N items = N × SecondsPerRound × 1000 ms.
+   - IronStorm/HappyWolf sweep: **zero** in-exe writers of `[GW+0x40]`; the non-combat tick branch
+     never touches it; the IWorldServer setters write other slots (iface[+0x70] = GW+0x74 double
+     family). ⇒ +0x40 is immutable **config** (seconds-per-round), and "slot0 = seconds" is
+     explicitly marked pending by its own author.
+   - Safe convergence: arming is meaningful either way, because the ×6000-per-frame hazard only
+     materialises if pass-2 runs ungated, and the gate exists (`!entity+484 || entity+788` +
+     deadline @+0x29C). So: treat +0x40 as **seconds-per-round config**, never as wall-clock ms,
+     and never as a continuously advancing accumulator.
+   - Decider = T-010d (does the GW+0x3C clock object's `vft+88` write back to GW+0x40?). If yes,
+     the config reading dies; if no, §13's phrasing must be corrected. Re-check this row after.
 5. Interaction with the FIFO: a combatant in state 5 must not be double-ticked (generic pump +
    turn dispatch). The existing `CombatMidTurn()` gate is the seam — extend it, don't bypass it.
 6. Tests: extend the PathManager suite (it already covers grid+A\*+waypoint+clock+combat protocol)

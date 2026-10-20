@@ -65,3 +65,37 @@ length and order, the hurt-message ids from session 22 §2b, or one debugger dum
 against a known called-shot UI selection. If a mapping exists, list all eight with the evidence
 for each. If it does not, say so explicitly: both implementation lanes will then keep indexing
 the table numerically and never name parts, which is the standing policy in §12.
+
+> **Amendment to 10c (coordinator) — the corpus now contains two incompatible factual claims and
+> must not be read as settled.** FastArrow's checkpointed verdict says no part-name table exists
+> in the exe. A later report from the IronStorm lane states a **static part-name pointer array at
+> 0x6FF650** = ["", Head, Chest, UpperArms, Hands, Legs, Feet, Waist, ForeArms, Shins], built at a
+> single site 0x564a50 ← 0x565676 inside a combat-UI init routine. Both can be true only if the
+> array is a *different index space* (model attachment / UI labels), which is exactly what
+> FastArrow asserted. Required to close it, in priority order:
+> 1. Verify 0x6FF650's contents and that one build site (cheap, decisive on existence).
+> 2. Decide whether that vector **is** the called-shot picker's label list — i.e. the routine
+>    owning 0x5652xx and whether the picker indexes it with the same 0..7/9 value.
+> 3. Only then: alignment. 10 names vs 8 penalties vs 9=unset leaves two candidate mappings; the
+>    preferred one (0=HEAD…8=SHINS, 9=UNSET) rests on sentinel consistency, and the honest status
+>    is "needs exactly one runtime observation" (break 0x402393, read the penalty index while a
+>    labelled part is shown). No further static work is justified.
+> Both lanes' surviving fact: {5,6} are lower-body neighbours under **either** alignment, so the
+> DT-row grouping stands regardless. Until 2–3 land, the reimpl keeps indexing numerically.
+
+## 10d — Close the GW+0x40 writeback channel (owner: HappyWolf; gates T-011's clock model)
+
+A global-window scan found no in-exe writer of `[GameWorld+0x40]`, but the clock object stored at
+`GW+0x3C` has a `vft+88` (AddSeconds-shaped) handler whose vtable is not statically bound yet.
+Needed: who stores `GW+0x3C`, and whether that handler ever writes back to `GW+0x40`. A writeback
+⇒ +0x40 is a running seconds accumulator (canonical §13 stands); none ⇒ it is immutable config and
+§13's "slot0 = seconds" phrasing must be corrected. Both outcomes are deliverables.
+
+## 10e — Per-turn mode flags on the combat manager (owner: NiceWolf; last unknown in T-011)
+
+`cls_0x5a9330` carries `+0x4` (per-turn mode) and `+0x14` (recursion condition at 0x5a9575). Both
+research lanes flagged these as the residual open item and neither has a producer. Needed: who
+writes `+0x4`/`+0x14`, and whether `+0x14` means "another event is queued" or "this entity owns
+multiple queue entries". T-011's dispatch loop is otherwise fully specified, so this is the last
+gate on it. Low-value tail segments from the Apply dig are explicitly NOT wanted — if a dig stops
+gating a lane, stop it and say so.
