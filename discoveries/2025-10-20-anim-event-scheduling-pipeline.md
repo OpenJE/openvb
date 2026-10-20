@@ -110,8 +110,13 @@ each frame: vft+0x48 step walks dword_6F3960 queue, gate=cls_0_467780::meth per 
   1. Clip-index meanings (which named clip is 26? per-model table in the .ANIM resource or
      GameAnimationCache — next place to look: `JE::Gfx_AnimationObject::GetDuration` owner
      class at pool+12).
-  2. Where GE+0x9C lock is *cleared* (search byte stores to GE+0x9C — only ctor+queue
-     writers seen so far; probably an OnAnimEvent completion path).
+  2. ~~Where GE+0x9C lock is cleared~~ **RESOLVED by full-.text scan**: the byte at GE+0x9C has
+     exactly one reader (`mov al,[ecx+9Ch]` guard @0x4673d0), one setter family (cases 43..52
+     @0x4674c9), one clear (ctor @0x4679cc). All other +0x9C byte accesses in the binary are
+     std::string SSO internals in unrelated classes (verified: 0x4cbd50/0x4e63be/0x4cc139 are
+     string frees, not GameEntity). ⇒ **the anim queue lock is STICKY per entity**: once a
+     43..52-class event is queued, no further anim events can ever be queued for that entity
+     (until dtor/replace). Strong smell: 43..52 = death/terminal states. *(inferred)*
   3. `sub_54EB40` push semantics (Entity+0x1A8 queue — per-entity pending-anim list;
      contrast vs global dword_6F3960 next-table: one is per-entity records, other global
      scheduler links).

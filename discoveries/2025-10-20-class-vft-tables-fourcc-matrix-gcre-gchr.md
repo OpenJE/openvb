@@ -95,7 +95,9 @@ if v >= 3:   sub_409700(creature, res)
              sum != 100 → "SANITY ERROR: Entity %d's baseUncalledChances don't add up to exactly 100\n"
 if v >= 4:   sub_40B9E0(res)
 if v >= 5:   read u32 → Entity+0x30 (DynamicObject field, engine)
-then: loop *(GameCreature+0x708) times:   ; count set by sub_409700 path
+then: loop *(GameCreature+0x6EC) times:   ; count read @0x40e44b (corrected: earlier draft of
+             ; this doc said +0x708 — actual slot is gap47C[624] = +0x6EC; see
+             ; 2025-10-20-gcre-versions-gwam-queueanimevent-table.md §2.1)
              Common::Chunk::Read; fourcc must be 'GWAM'
              GameWeapon::ReadAttackModeData_0x40dba0(creature, chunk, res)
              Chunk::SkipToEnd

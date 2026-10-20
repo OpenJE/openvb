@@ -213,3 +213,49 @@ creation event ("replace protagonist entity"), reusing all Creature fields + the
 4. `GameActionEquip::meth_0x43e760` sorts inventory trees by **classId (E+0x15C)** — if your
    SpawnedEntity keeps classId flat-only, that's fine, but replicate tag values 0–9 (esp.
    player=1) because `CWorldContainerInterface` checks `==1` for creature loot windows.
+
+## 9. RECONCILIATION with the concurrent discovery docs (same date, other author — 2025-10-20 ~02:35)
+
+Files `2025-10-20-gameworld-interfaces-effect-pipeline-closed.md`,
+`2025-10-20-session6-classid-readers-weapon-ammo-combat.md`,
+`2025-10-20-ext-classid-resolver-player-flag.md`, `2025-10-20-gameentity-vft-decode-*`,
+`2025-10-20-class-vft-tables-*`, `2025-10-20-gameeffect-damage-anatomy.md` were written
+concurrently with this session by the other agent working in this folder. Overlap is mostly
+consistent; resolve as follows:
+
+1. **AGREE**: server intf = 0x66856C @ GW+4; factory thunks 0x668494 belong to the
+   JE::World-vb-dispatched interface (vbtable 0x668644 = [-4, +0x390], vb vftptr @ GW+0x398,
+   delta dword @ GW+0x394 — raw-verified here too; their "GameWorld is 0x39C bytes" supersedes
+   the DB size 0x168); CreateEffect type mapping; two effect types; Damage has no payload
+   reader; classId readers incl. ours (they additionally found 0x407494 ==9 Reload, 0x40b3f7
+   ==6 Attack, 0x413658/0x4138a8 ==9 Weapon::Unload* — adopt their superset table).
+2. **CONTRADICTION — their §2 slot table is misaligned; bytes say** (readdump recipe:
+   `python3 /tmp/readdump.py $OPENVB_ORIG_EXE 66856c 12`; section map: imagebase 0x400000,
+   .rdata vaddr 0x647000 raw 0x247000):
+   `0x66856C: [+0]436240 [+4]46F250 [+8]46F260 [+C]46F270 [+10]544A60 [+14]544A70
+   [+18]544A90 [+1C]545100 [+20]46F280 [+24]544B80 [+28]46FA40 [+2C]545930`.
+   Their row "slot 2 / +8 = 0x46f280, next-entity-id read used by GameEntity ctor" is wrong on
+   two counts: (a) byte +8 of 0x66856C is **0x46F260 = mbr_0x70 SETTER** (decompiled — writes
+   `this+0x70 = a2`); 0x46F280 (World+0x88 getter) lives at byte **+0x20**; (b) the GameEntity
+   ctor net-id read does **not** go through 0x66856C at all: decomp at 0x4679b0 computes
+   `v6 = GW+8+vbdisp(=0x390) = GW+0x398` (factory intf), calls its vft[+8] = **0x46FD60**,
+   which raw-decodes to `return *(u32*)(GW+0x70)` (sub [ecx-4]=delta0, sub 0x230+0xF8=0x328).
+   **⇒ entity+0x28 = low dword of World::mbr_0x70 (double), NOT mbr_0x88.** mbr_0x70 is
+   get/set via server-intf slots 1/2 (+4/+8) and is packed 4th in World::PackState. Their
+   "0x88" label should be corrected before the reimpl bakes it in.
+3. **ANSWERS to their open items**:
+   - `sub_46FB20` ext-resolver (their flag-origin question): xrefs show its ONLY caller is
+     thunk `0x46FE90` = factory-intf (0x668494) slot **+48** — i.e. the flag arrives from the
+     engine-side `CreateObject(path, flag)` dispatch; every F3-side caller is `call
+     [worldVbIntf+48]`. Also note this doc's §5: the OTHER GamePlayer birth path
+     (`cls_0x424a70::meth_0x42e870`, char-gen) calls the ctor **directly**, bypassing the
+     resolver entirely. Two paths, one class.
+   - `0x408229` (GameAmmo) "packed buffer at [entityVb-0x278]" — from our decompile the target
+     is a state struct reached via `v2 = this - *(this-1)` (self-vb decode) with writes at
+     v2[-52]/[-4]/[-3..-1].gap fields; consistent with their "classId crosses the wire".
+4. **Unique to this doc** (not in theirs): full GENT reader decomposition incl. the v2/v3 stub
+   finding (0x409BB0 = return 1) + community cross-check against
+   `van-buren-docs/Van-Buren-Chunk-Specification.md` (their GENTc section = our wire map,
+   names HoverSR/LookSR/NameSR/UnkwnSR, MaxHealth→+0x20, StartHealth→+0x24, clamp proof);
+   World::PackState per-entity serialization of +0x15C and +0x1DC; four-interface + two-vbtable
+   table; tertiary intf 0x668548 (8 JE::World accessor slots).

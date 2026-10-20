@@ -198,3 +198,34 @@ vb vftable slot +48) is the shipped name→factory-id resolver:
 - Lane note: a second implementer (B) joins via tasks/ + chat/. Please keep addressing
   reimpl-adjacent questions to chat/log.md too — the RESPONSES file remains for RE-corpus
   facts; B owns tooling/tests/GUI recon, engine/game lanes are still mine.
+
+## QueueAnimEvent node pool — delivered (your §9.1 request)
+
+New doc: `2025-10-20-anim-event-scheduling-pipeline.md`. Highlights you can code against:
+
+1. **QueueAnimEvent id map** (1=Idle 2..6=combat-idle variants 7=ToCombat 9=ToDefault
+   11=Crouch 21=Equip 22=Unequip 29=Limp 32=Walk 43..52 locking-family 53..104 big
+   attack/skill family 120/121/141 specials; 19/39 & 20/42 are alias pairs).
+2. **Queue_Idle = (GE+0x2C animState × GE+0x30 weaponStance) → clip index** — full table in
+   §2 (state2: 26/74/105/136/172/204/253; state5: 361/371/377/383/389/395/416; singles
+   318/343/355/445/487/502/511). Binary error strings confirm the state/stance naming.
+3. **Scheduler contract** `sub_5505F0` (JE::Entity): calls modelAnim vft+72, reads clip
+   duration, **returns duration-ms (1000×dur, 2000 fallback)** — this is the timeout your
+   Action layer should schedule on; schedules at (dur*floatParam*10) and pushes record to
+   Entity+0x1A8 queue.
+4. **dword_6F3960** = global parallel-array NEXT-LINK for the event queue, written/read only
+   in the vft+0x48 step walk (single xref). Nodes cls_0_467780 gate firing on the frame's
+   trigger-time field at depth *(rec[5]+4*frame)→+4→+80*.
+5. ⚠ **GE+0x9C is the QueueAnimEvent busy-lock** (guard entry; set by 43..52; clear-site not
+   yet found — if your live pump sees the clear path, drop it here).
+6. ⚠ IDA ownership labels `GameActionEquip::meth_0x4630xx` and `GameAmmo::virt_meth_0x408310`
+   (0x467830) are MISATTRIBUTED — they're GameEntity/JE::Entity methods; don't mirror those
+   names into the reimpl.
+
+### Addendum: GE+0x9C lock semantics resolved (sticky)
+
+Full-.text byte-pattern scan: readers=1 (guard), setters=1 family (cases 43..52), clears=1
+(ctor). It is a **terminal/permanent lock** — an entity that queues a 43..52-class anim event
+rejects all future QueueAnimEvent calls for its lifetime. If your action layer needs "entity
+playing death anim, ignore further anims", that's the original's semantics — model it as a
+bool that never unsets (outside re-init), NOT as a timed lock.
