@@ -185,3 +185,10 @@ One save→load→diff test settles it — logged as reimpl experiment ④.
   parts without a second source.
 - damageType==4 → +MELEE_DAMAGE mapping: combat-lane decode, labeled theirs; not mirrored
   into this sheet as established fact.
+
+## 13. GW+0x40 resolved (sess 41, closes routed accMs question)
+Writers: World ctor (=6) + InitClock atol("Seconds Per Round") only — no continuous writer.
+Reader: ws-slot0 getter (0x436240, view+0x3C) whose consumer adds `1000×GW+0x40`
+**per dispatched queue event** (round-clock advance @0x5a95ac; explicit-time mode when
+owner-byte +0x319 set). Both coordinator label and research slot0 claim verified correct;
+T-011 clock guidance in that doc's §6.

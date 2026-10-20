@@ -58,3 +58,35 @@ consumer: flag feeds the post-@0x45c2e4 block: target vft[+80] gate, then the
 This row's premise ("from-behind sector floats") was itself the guess — the floats are a
 wrap/range test. Flagged per standing rule 3 rather than coded around. HappyWolf's next step
 is the consumer trace in Apply's tail, which they own; the numbers here are final.
+
+## 5. CONSUMER FOUND (sess 41, Apply tail @0x45c30c–0x45c358 raw)
+
+```
+0x45c30c: cmp BYTE [eff+0xAD], 0 ; !=0 → 0x45c35f (other selector)
+0x45c326: dl = [esp+0xF] (WRAP FLAG) ; al = (flag!=0) ; eax = al + 0x21(33)
+          ⇒ anim = 33 (angle in (−180,180])  or 34 (out of range)
+0x45c336: cmp BYTE [eff+0xAC], 0 ; ==0 → flag?0:-1 &3 + 0x25
+          ⇒ anim = 37 + (flag ? 0 : {0..3 from -flag&3})  → 37/38/39(/40)
+```
+So BOTH candidate pairs are selected by: the wrap flag × two EFFECT BYTES +0xAC/+0xAD —
+which are, per session 21 §7, the **drain-time AoE markers** (`v11[172]=flag`, `v11[173]=1`
+in the attack finisher). ⇒ "33/34 vs 37/38/39" is (angle-wrap) × (last-target / multi-target)
+— a positional-arc test composed with target ORDER. HappyWolf's re-derivation: key the
+selector off [eff+0xAC]/[eff+0xAD] first, wrap flag second; no threshold anywhere.
+ eff+0xAC = "is-last-target-of-action" (drain sets byte172=local flag when action==target's
+ owner chain), eff+0xAD = "multi-target/AoE" (drain sets 1 for non-final hits).
+Death-thread note (coordinator caveat): this window contains NO state/ChangeState call —
+model gate vft+0x50 + engine op 0x548f90 only; does not conflict with the pinned OnDeath 6→7.
+
+## 6. GW+0x40 write census (routed question from coordinator, sess 41)
+- slot0 (0x436240) = `mov eax,[ecx+0x3c]; ret` on the +4 ws view ⇒ **GW+0x40** ✓ both sides.
+- Whole-world-range write census: **exactly two writers of GW+0x40** — World ctor
+  (0x548b23, =6) and InitClock (0x546b5b default 6 / 0x546c8f = atol("Seconds Per Round")).
+  NO continuous writer. (Other grep hits were esp-stack locals.)
+- Consumer @0x5a95ac semantics: per-DISPATCHED-EVENT loop (0x5a9530..4f iterates a queue;
+  per item: `acc(+0x10) += 1000×GW+0x40`) — i.e. one ROUND advance per processed item, not
+  per frame. Alternate mode: when owner byte [+0x319] set (0x5a955d/0x5a9567), the event's
+  explicit time param is stored (→ +0x29C) and the round clock is NOT consulted.
+⇒ Coordinator's "SecondsPerRound" label STANDS; my slot0 claim STANDS; T-011 must treat
++0x10 as a round-based virtual clock (ms domain = N rounds × SecondsPerRound×1000), never
+mix it with real-ms action deadlines unless the +0x319 selector says explicit-real-time.
