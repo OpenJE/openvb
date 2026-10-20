@@ -1,5 +1,10 @@
 # 2025-10-20 — Effect-node wrapper semantics + world-server template interface located (session 5)
 
+> **Corrected by [session 6](2025-10-20-gameworld-interfaces-effect-pipeline-closed.md)**: the
+> table at 0x668494 is the **JE::World virtual-base** table inside GameWorld, not the
+> IWorldServer interface (that is **0x66856C**, installed at GameWorld+4). Slot attributions
+> in §3/§6 below were reassigned accordingly — kept as-is for the audit trail.
+
 Target: ORIGINAL_REFERENCE. Read-only. Follows session 3 §4 (`EFDT/EFCD → cls_0x55a280`) and
 session 4 §3 (`Entity+0x15C` tag readers still unknown).
 

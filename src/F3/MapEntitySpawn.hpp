@@ -18,7 +18,8 @@ namespace F3 {
 	// class the resource would map to.
 	struct SpawnedEntity : public JE::Mover {
 		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), moveAction(0),
-		              statMax(1), statCur(0), classIdTag(0) {
+		              statMax(1), statCur(0), classIdTag(0),
+		              animState(0), weaponStance(7), unk34(7) {
 		name[0] = 0;
 		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
 		gentF[4]=4;   // GameEntity mbr_0x18 ctor default (discovery session 1 §2)
@@ -31,6 +32,11 @@ namespace F3 {
 		// GENT block (discovery session 3 §1): 6 u32 f1..f6 -> GameEntity+0x08..0x1C, then
 		// (version>=1) max/cur -> +0x20/+0x24 with cur>max clamped to max. Flat storage:
 		int   gentF[6];       // GameEntity+0x08..+0x1C (ctor defaults 0,0,0,0,4,0)
+		// Session 5 §2.1: GameEntity+0x2C = AnimationState (ctor 0; activate sets 5),
+		// +0x30 = WeaponStance (ctor 7, valid 1..7), +0x34 unnamed (ctor 7). Flat fields:
+		int   animState;      // GE+0x2C
+		int   weaponStance;   // GE+0x30
+		int   unk34;          // GE+0x34
 		int   statMax;        // +0x20 (vft[0] getter 0x4080c0 returns this slot)
 		int   statCur;        // +0x24, clamped <= statMax
 		int   classIdTag;     // Entity+0x15C runtime tag (== factory case for 1..9; player

@@ -109,3 +109,25 @@ docs/DEFERRED-NOTES.md for when we add per-class field access.
   spawn path deliberately does not touch EFTR (server-gated per session 3).
 - We will not chase Entity+0x15C readers in parallel; that's your queue item 2. Our
   classIdTag stores the factory-case value directly, no dependency on readers.
+
+## Re: session 5 (GameEntity Entity-vft decode) — adopted + notes
+
+- mapId/pos validation appreciated - it independently confirms our Mover excerpt for the
+  movement pipeline (LineOfSight +0x90 semantics match our cross-map guard + TraceSegmentClear
+  target model; when we wire real entity LOS through the seam we'll implement it as your table
+  describes, including the 2 = blocked-by-occupant return code — our NodeContext grid=NULL
+  early-exit is the placeholder until then).
+- Adopted naming now: SpawnedEntity carries flat animState (GE+0x2C, ctor 0, activate→5),
+  weaponStance (GE+0x30, ctor 7), unk34 (GE+0x34 ctor 7) per §2.1. HP pair stays provisional
+  per §2.3.
+- GENT version note from OUR data: shipped templates carry GENT ver=1 (raw walk of
+  Default_PC/Armstrong/Boxcar; 44-byte chunks = 12 header + 32 payload), your §3 writer emits
+  ver=3 - our ParseGentBlock gates max/cur on ver>=1 so both round-trip. Flagging in case your
+  save-writer tests use versioned samples: on-disk = 1.
+- Unknown-chunk acceptance (+EENT/EME2-in-file) matches our lenient skips; agreed that
+  JE::Entity::meth_0x552760 (file-side EME2) must be decoded before equating it to the map
+  record - that's yours, we won't touch.
+- The QueueAnimEvent -> OnAnimEvent(DM/RL/EP/UP/PU/FR/FL) pipeline you reconstructed is now
+  our roadmap for the action layer: when we resume ActionMoveTo's F3 half, we'll implement
+  the scheduler as you describe (step virtual +0x48 driving +0xA4) rather than inventing our
+  own timing. Coordinate: if your session 6 lands the token bodies, drop them here.
