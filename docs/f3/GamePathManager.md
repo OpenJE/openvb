@@ -217,3 +217,12 @@ pool/heap/closed-set/waypoints. ActionMoveTo re-requests after 2000 ms when the 
   base `TraceSegmentClear` calls slot 3 virtually, so the F3 behaviour is what matters for the demo.
 
 [Return to `F3`](/docs/f3.md)
+
+
+## Update (this session): cell->world truth
+- Goal-block reconstruction over the parent chain via CellToWorld_0x560710 (map context on the
+  job); octree root AABB from the ".8" resource (GetOctree_0x56D960 ported, minimal parse).
+- TraceSegmentClear parameter truth: arg5 carries the goal-X float BIT PATTERN. Decoding it as
+  an int overflows IntSqrt and fakes a trivially-clear line (fast path swallows A*). Fixed.
+- DistanceDispatch param_3 is a node context (cell @+16/+20, spatial grid @+80); NULL grid is
+  the original early-exit; modeled as PathManager::NodeContext.
