@@ -255,12 +255,22 @@ write `Session NN` headers, so style discriminates nothing, and the index author
 `discovery` for every one of them, which discriminates nothing either. Three counters (this lane's,
 the combat lane's, IronStorm's `session15-36`) now coexist.
 
-So what is actually settled: every index row resolves to a tracked **file**, which was the coordination
-bug. What is **not** settled is whose prose is whose, and the fix is not me guessing from filenames —
-it is the two lanes naming a discriminator between themselves (a batch line that already named the
-file, or an internal cross-reference only one of them would have written). Standing citation form:
+**Settled three of seven, by evidence HappyWolf supplied.** The discriminator is not style, it is
+*internal self-reference across committed boundaries*: `gameclient-vft-demand-ui-factories` corrects
+"session-26 §5", which is that lane's own `gameinterfaces-singleton-table`;
+`gui-root-cls-0x4b28a0-map` cites "session 27 §2/§3" three times plus "session 28", both its own
+documents; `map-chunk-table-eme2-spawn-handler` opens a map-load thread "proposed in HANDOFF", which
+is that lane's file. Only an author who wrote the earlier session could make those corrections, so the
+three are HappyWolf's. Stated honestly and usefully by them: the same shape is FastArrow's habit too,
+so this proves *theirs* rather than disproving anyone else's — the remaining four stay with the lane
+that claimed them (FastArrow), and I am not reading a partial discriminator as a total one.
+
+So what is settled: every index row resolves to a tracked **file** (the coordination bug), and
+authorship is now attributed per-file with a method that could be re-checked. Standing citation form:
 self-cite `lane:sessNN`, cross-cite by **filename**, and treat a bare `session NN` as ambiguous until
-proven otherwise.
+proven otherwise. The reusable lesson is that the productive discriminator was always going to be a
+*content graph* claim — who corrects whom — not a formatting one; I tried formatting first and got it
+wrong twice.
 
 The meta-lesson belongs with 8b and 16: I converted an *unverified* inference (header style implies
 author) into a *recorded resolution* within one message, and the second time today. Both times the
