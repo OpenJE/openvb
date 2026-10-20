@@ -349,3 +349,26 @@ compiler, exe mtime/size) exists so a number cannot be separated from the artifa
 Preceding it with `tools/gate-integrity.sh` (exit 0) closes the loop from outside, because a script cannot
 report on its own staleness. A gate run that prints no stamp is not the tree's gate, even when it says 9/9 —
 or, as it turned out, when it says CombatMath is red.
+
+
+## 20. pi-messenger counter semantics (measured from source, not assumed)
+
+`handlers.ts` + `crew/utils/config.ts` say, exactly:
+
+- `budget = crewConfig.messageBudgets[crewConfig.coordination] ?? 10` — the level, not a global cap.
+  `.pi/messenger/crew/config.json` sets `coordination: "chatty"`, so its `chatty` number is the live budget.
+  It was 40 today and I spent all 40 across one session, then wrongly suspected the raise had never applied.
+- **The counter is per-session and does not reset at compaction.** The session id survives, so a long day
+  burns the budget in one continuous line. Raised to 150 (2026-10-20) after that cliff silently blocked
+  mid-dispatch — a coordinator whose messages stop is a coordinator who is quietly not coordinating.
+- **Failed sends cost nothing** (`return` happens before `messagesSentThisSession++`), so routing errors do
+  not eat budget — but they do eat my attention, and I reported them as budget loss until I read the code.
+- **A multi-recipient send costs ONE unit** — the increment is per call, not per recipient.
+- **`to: ["A","B"]` does not work despite the schema** (`Type.Any`, description claims arrays are accepted):
+  the array arrives marshalled as a single string, so validation fails with the whole bracketed blob as one
+  name — `Failed to send: ["UltraBear", "YoungStorm"] (invalid name)`. Use **`broadcast: true`**, which
+  enumerates active agents inside the handler and is the supported all-lane path at one unit.
+
+The general rule, since this is the third tooling assumption I have had to correct by reading source today:
+when a limit or a failure mode matters, read the implementation instead of the description — the description
+in this case explicitly promised something the marshalling does not deliver.
