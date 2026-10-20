@@ -136,3 +136,51 @@ degrades to a `note:` line + a classified `BUILD-FAIL`, exit 1.
 
 Standard gate from now on (replaces hand-written loops):
 `run-all-tests --msvc-build` -> `msvc=OK` + 6 `OK:` + `app=124`, exit 0.
+
+## T-004 prep — EMAP ground truth from the shipped maps (read-only, no test edits yet)
+
+Walker: `/tmp/B-emapwalk.py` (RHT ftype 1300 -> `<pack>.grp` lump -> chunk walk
+`{tag,version,size}`, size includes the 12-byte header -> EMAP body decode in
+`Map::ReadEMAP`/0x56C9D0 field order). Values below are from the **files**.
+
+| map (grp/lump) | EMAP ver/size | fog(v>=1) | +0x1D8 | ambient(v>=3) | +0x1D9 | k0 | extras (f32) | FINAL +0x113..116 |
+|---|---|---|---|---|---|---|---|---|
+| Default_StartMap (Engine/17) | 5 / 110 | `00 ff 80` | 0 | `00 00 00 64` | 1 | 0 | 250, 500, 1.0 | `00,00,00,64` |
+| Mainmenu (Maps/152) | 5 / 86 | `73 6f 62` | 0 | `29 24 1f 60` | 0 | 0 | 0, 0, 1.0 | `29,24,1f,60` |
+| 00_03_Tutorial_Junktown (Maps/339) | 5 / 122 | `53 58 6c` | 0 | `00 00 00 60` | 1 | 0 | 250, 500, 0.0 | `00,00,00,60` |
+
+Consequences for T-004 (and for the Map.cpp comments):
+1. **T-004 item 1 is confirmed for Mainmenu: `29,24,1f,60`** — and the alternative `...,80` is
+   **unreachable from any shipped map**: all three v5 files carry the v>=3 ambient quad, which
+   overwrites the v1 fog store including the `+0x116 = 0x80` sentinel (Map.cpp 0x56cac7 path). So
+   the `0x80` state must be produced by a **synthetic v1/v2 stream**, not by a real file. Do not
+   write `check(fog==29&&..==80 || ...)` as an OR-of-two-realities; write the real one for the
+   file and the `0x80` one for the fake stream.
+2. `Mainmenu`'s extras are `0.0, 0.0, 1.0`, not `250/500/x`. The existing
+   `ResourceSystem.cpp` assert (`mbr_0x1B8==250.0f && 1BC==500.0f && 1C0==1.0f`) is on
+   **Default_StartMap** and stays correct; the Map.cpp comment "shipped files carry 250.0/500.0/
+   {0,1}.0 (probe on 4 real maps)" is over-broad — Mainmenu is a counterexample. Worth a comment
+   fix in A's lane (I am not editing Map.cpp).
+3. `+0x28` = 0 in all three; the 4th EMAP string is empty in all three; strings are
+   `<map>.8` / `<map>.rle` / `<map>_AM.dds` (so the ambient-texture name is the `_AM.dds`, whose
+   trailing `64`/`60` byte in the ambient quad is presumably a strength/alpha — semantics unknown).
+4. `k1k2k3` = `ff 00 00` in all three -> `mbr_0x1B4 = 0xFF000000`; combined with the
+   `+0x1C8/+0x1CC/+0x1D0/+0x1D4` mirror copies that means the v5 tail is a duplicated
+   (flags, x, y, z) block, which matches the "3 float extras" assert already in the suite.
+5. Chunk chains observed: Default_StartMap `EMAP+EMEP+ECAM+EMNP`; Mainmenu
+   `EMAP+3xEME2+ECAM+EMNP+EMEF`; Junktown `EMAP+EME2...`. Only Default_StartMap still routes EMEP
+   (the non-routed 0x573B00 reader) — consistent with Map.hpp's note that EMEP is not dispatched
+   by the shipping router.
+
+Blocked before editing: T-004 touches `modules/openje/tests/je/ResourceSystem/ResourceSystem.cpp`,
+which is on implementer-A's C-5 intent list (they also own `Map.cpp`). Ownership asked in
+`chat/from-B.md` C-14; submodule currently clean at `b437a1a`, so a claim+edit is safe the moment
+they confirm.
+
+## Infra note (2026-10-20 ~03:30)
+`ida_original_f3` / `ida_reimplementation_openvb` MCP **tools disappeared from the pi harness
+registry** ("Tool ... not found", then `mcp_tools_search` returns other servers), while
+`devenv list_processes` shows both `ida-*-headless` as `ready` and `ss` shows 8745/8746 LISTEN
+(pids 12324/12326). So the servers are healthy; the harness's client connection dropped — needs a
+`/mcp` reconnect from the operator, not a restart (a restart would cut A off mid-analysis).
+`ida-orig-gdb` shows `exited` (A's stale Oct-19 stub; harmless).
