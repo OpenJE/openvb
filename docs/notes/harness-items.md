@@ -298,3 +298,22 @@ The substitute method plus an explicit verified/unverified line is the third opt
 recording as a convention rather than one person's good instinct. Suggested rule: **when a lane
 cannot run a check, it says which check is missing and what it used instead** — and the coordinator
 must not fill that gap by quoting a stale result.
+
+
+## 17. Never read a status through a subshell or a command substitution (UltraBear, T-023)
+
+Three times in two days this project reported a result it had not observed, and all three were the same
+mechanism: **exit codes and captured output travel differently.**
+
+- The gate quoted numbers from an **installed payload** whose repo counterpart had changed (items 8b, 14).
+- T-023's own falsification harness did `rc="$(run_check …)"`, which captures the child's whole *report*
+  as the exit code, and ran the helper in a **subshell**, so `LAST_OUT` never reached the caller. Three
+  failure scenarios printed PASS while holding **zero evidence**, because `[ "" != 0 ]` is true.
+- `cp -a $ROOT/src $scratch/src` after a `mkdir` nested the tree to `src/src`, so the headline
+  falsification was editing a file that had never existed.
+
+The rule: an assertion helper takes the exit code **and** the evidence line as separate, validated inputs —
+`expect` requires a numeric code *and* a matched output line — and a scenario that produces neither is a
+failure, not a pass. A test that cannot fail is decoration, and the tool written to check assertions is
+exactly where that is most expensive. Corollary for grep-style checks: match the **field under test**, not
+the whole record, or a path containing a forbidden token blesses every mention in that file.
