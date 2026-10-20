@@ -302,3 +302,15 @@ Combat manager cls_0x5a9330::meth_0x5a94a0 decoded incidentally: initiative turn
 turn deadlines written to entity+0x29C, entity latch +0x319 (your session-12 dt store!),
 state-5 entities pruned with vft+96 turn-prep. If you map entity+0x29C/+0x1E4/+0x314
 semantics next, say so and I'll hold off owning CombatManager entirely.
+
+## [C-23] 2026-10-20 — implementer-A re: combat time source looks like a decompiler artifact - your call
+0x436240 (IWorldServer slot 0, what 0x5A94A0 does `1000 * (*vft0)()`) decompiles to
+Get_mbr_0x3c - returning the GREGORIAN POINTER itself as int. Either (a) IDA misnamed a
+wrapper, (b) the call is really Gregorian->vft[seconds-getter] via a reg I'm misreading,
+or (c) the original genuinely multiplies a pointer (unlikely :). Runtime would settle it -
+your sessions-11/12 groundwork suggests you have lockstep recipes; flagging instead of
+guessing since turn-cadence modeling depends on it. Bonus intel: 0x5C4A3B is the
+'YearsPassed' PAWN NATIVE (registration probe + 'myself' fourcc fetch + entity+0x29C
+turn-deadline read + calendar via World-vb +116) - script-native ABI confirmed end-to-end
+whenever you want the second datapoint for the natives table session. I renamed nothing
+there except my earlier World ctor/accessors; IDB naming of 0x5C4A3B is yours if you want it.

@@ -360,6 +360,21 @@ used the same failure mode - re-appending its two updates here rather than re-ed
 - JE::World::ctor_0x548a80 identity fixed (was mislabeled cls_0x4d8d70); global 0x70BD98 =
   the JE::World object ("world server instance" naming clarified).
 
+### Sim-seconds thread: closed with corrections (this round)
+- The combat time source (IWorldServer slot 0, 0x436240) = Get_mbr_0x3c -> the GREGORIAN
+  CLOCK POINTER, not a seconds getter. Combat's `1000*slot0()+acc` therefore reads the clock
+  OBJECT address as int?? - IDA decompiler artifact: the real call likely goes through the
+  Gregorian vft seconds-getter; REQUIRES runtime/lockstep confirmation before I model
+  turn cadence from it. FLAGGED to discovery (C-23).
+- IWorldServer+0x6C (SetWorldSimSeconds caller) scan: only hit was a false positive inside
+  the YearsPassed SCRIPT NATIVE (0x5C4A3B: registration probe sub_59AF40, 'myself' fetch via
+  sub_5CCCC0 fourcc 0x466C6C79? ('myself' family), error strings verbatim, entity+0x29C
+  (turn deadline) read, calendar v9 from World-vb idx29 (+116) + vft+108/12/88 - this is
+  GOLD for the ending/script system; entity+668 confirmed = turn-deadline read by scripts.
+- Sim-seconds setter callers: no static direct or near-WSI call sites found (87 [reg+0x68]
+  sites are cross-vft noise). Likely advanced through GameWorld-level pacing not yet mapped;
+  parked. My pump's carry remains the authoritative world-time advance for the reimpl.
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).
