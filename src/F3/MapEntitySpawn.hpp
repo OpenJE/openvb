@@ -17,12 +17,25 @@ namespace F3 {
 	// F3 classes (GameEntity 0x47C / GameCreature 0xBDC / ...); classId records which shipped
 	// class the resource would map to.
 	struct SpawnedEntity : public JE::Mover {
-		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), moveAction(0) { name[0] = 0; }
+		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), moveAction(0),
+		              statMax(1), statCur(0), classIdTag(0) {
+		name[0] = 0;
+		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
+		gentF[4]=4;   // GameEntity mbr_0x18 ctor default (discovery session 1 §2)
+	}
 		int   classId;      // CreateGameEntityByClass_0x46f530 selector (0..10)
 		char  name[0x40];   // resource name from the EME2 record
 		float yawRad;       // rotation.y from the record (pitch) - unused by movement yet
 		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);
 		                    // 0 in client/editor contexts per ctor 0x4678B3 evidence
+		// GENT block (discovery session 3 §1): 6 u32 f1..f6 -> GameEntity+0x08..0x1C, then
+		// (version>=1) max/cur -> +0x20/+0x24 with cur>max clamped to max. Flat storage:
+		int   gentF[6];       // GameEntity+0x08..+0x1C (ctor defaults 0,0,0,0,4,0)
+		int   statMax;        // +0x20 (vft[0] getter 0x4080c0 returns this slot)
+		int   statCur;        // +0x24, clamped <= statMax
+		int   classIdTag;     // Entity+0x15C runtime tag (== factory case for 1..9; player
+		                      // keeps 1 - discovery full-geometry §3/§5). Door/Container are
+		                      // UsableObject SIBLINGS, not a chain.
 		class JE::ActionMoveTo* moveAction;   // per-entity action slot driven by the server
 		                    // pump (original: entity action queue iterated in ServerUpdate's
 		                    // per-entity loop, vft+96 sync + ServerUpdate calls)
@@ -64,6 +77,11 @@ namespace F3 {
 	// Game-side per-entity server tick driven by JE::World::ServerUpdate_0x545d60 (host seam):
 	// updates every spawned entity that has a moveAction attached.
 	void TickWorldEntities( int ms );
+
+	// GENT chunk payload parse (0x466510 semantics): fills f[8] = {f1..f6, max, cur} with the
+	// cur<=max clamp; version from the chunk header gates the max/cur pair. Returns 1 when a
+	// GENT chunk is present.
+	int ParseGentBlock( const unsigned char* data, unsigned len, int f[8] );
 
 	// Find a spawned entity by name prefix ("Default_PC") - test/game accessor.
 	SpawnedEntity* FindSpawnedEntity( const char* prefix );

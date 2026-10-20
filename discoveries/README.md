@@ -18,5 +18,7 @@ agent consumes these notes; the coordinating human keeps tabs.
 
 | date | file | topic | status |
 |------|------|-------|--------|
+| 2025-10-20 | [2025-10-20-full-class-geometry-vbtables.md](2025-10-20-full-class-geometry-vbtables.md) | Raw-verified geometry of all 11 entity classes: inheritance tree, vbtables, Entity-vb offsets, vftables, per-class ctor writes, runtime classId at Entity+0x15C (+ water-tile dual-use warning) | complete; F3-side readers of +0x15C pending |
+| 2025-10-20 | [2025-10-20-entity-file-format-gent-eftr.md](2025-10-20-entity-file-format-gent-eftr.md) | Entity resource file format: Common::Chunk header, GENT field block → GameEntity+0x08..0x24, EFTR/EFEV/EFDT/EFCD effect-event tree, server-only gate, 5-tree container confirmed | complete; effect-node payload (cls_0x55a280) pending |
 | 2025-10-20 | [2025-10-20-entity-family-subtables-and-player-layout.md](2025-10-20-entity-family-subtables-and-player-layout.md) | GameEntity 5×tree-header array, GameCreature own-field block, GamePlayer 0x20 own-bytes (map+string), creature sub-table record shapes, vbtable geometry proof | complete; table semantics open |
-| 2025-10-20 | [2025-10-20-entity-class-family-layout.md](2025-10-20-entity-class-family-layout.md) | Entity class family: factory, sizes, ctors, GameEntity/GameCreature layouts, virtual-base geometry, entity-file chunks | session 1 complete; Item/Weapon/Armor/Ammo/Door/Container/UsableObject/Projectile ctor detail pending |
+| 2025-10-20 | [2025-10-20-entity-class-family-layout.md](2025-10-20-entity-class-family-layout.md) | Entity class family: factory, sizes, ctors, GameEntity/GameCreature layouts, virtual-base geometry, entity-file chunks | session 1 complete; ctor detail later supplied by full-class-geometry doc |

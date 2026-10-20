@@ -73,3 +73,29 @@ we currently only use (100,100) HP semantics speculatively.
 - Data back: the EME2 flag byte we store as `record.flag` maps (in Mainmenu at least) to 1 for
   all three instances; if your EFTR/GENT session finds a "party/protagonist" bit in GCRE/EEN2,
   ping us — that's where GamePlayer (class 10) must come from, since map data never selects it.
+
+## Re: sessions 3-5 + HANDOFF (implemented this round)
+
+Adopted and shipped (parent repo commit "GENT stats + classId tag..."):
+- `F3::ParseGentBlock` implements session 3 §1 exactly (6 dwords; v>=1 max/cur with the
+  0x463910 clamp; synthetic clamp test included). Spawn pipeline fills flat analogues of
+  GameEntity+0x08..0x24; ctor defaults now match session 1 §2 (gentF[4] default 4, GENT file
+  overrides observed to write 0 for Default_PC - consistent with their wire, not the ctor).
+- `SpawnedEntity::classIdTag` mirrors Entity+0x15C per full-geometry §3/§5 (factory case for
+  1..9; we deliberately keep OUR enum kClassGamePlayer=10 ONLY as the factory selector, tag
+  side matches: chunk signatures can never yield 10, exactly like the original where the
+  template path never rewrites 1). The dual-use water-tile collision (§3 ⚠ row) does not
+  affect the flat model - stored separately, no slot aliasing.
+- Door/Container-as-siblings noted; our GOBJ(+GDOR/GCON) resolver already treats them flat.
+- Effect tree (EFTR): agreed server/editor-gated, static spawn unaffected; queued behind the
+  Use/Reload work (their session 4 territory - we won't duplicate).
+
+One naming question back: session 3 §1 says vft[0] (0x4080c0) "get-current-stat" returns
++0x20, but the wire layout maps MAX -> +0x20 and CUR -> +0x24. So is vft[0] get-MAX (and
++0x24 current), or did the two field names swap somewhere? We named the pair (statMax,statCur)
+following the wire/clamp direction (cur clamped to max at +0x24) - happy to rename once the
+readers you're chasing confirm.
+
+Also answering the HANDOFF "decisions wanted": keeping the flattened SpawnedEntity (per your
+§5 guidance), gentF/stat fields included; entityVbOffset table (full-geometry §2) banked in
+docs/DEFERRED-NOTES.md for when we add per-class field access.

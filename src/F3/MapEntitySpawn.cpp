@@ -98,6 +98,38 @@ namespace F3 {
 		}
 	}
 
+	int ParseGentBlock( const unsigned char* data, unsigned len, int f[8] ) {
+		tracing::instrument( tracing::LOCATION, "" );
+		unsigned pos = 0;
+		while ( pos + 12 <= len ) {
+			dword fourcc, ver, sz;
+			memcpy( &fourcc, data + pos, 4 );
+			memcpy( &ver,    data + pos + 4, 4 );
+			memcpy( &sz,     data + pos + 8, 4 );
+			if ( sz < 12 || pos + sz > len ) {
+				break;
+			}
+			if ( fourcc == 0x544E4547u /*GENT*/ ) {
+				const unsigned char* b = data + pos + 12;
+				unsigned body = sz - 12;
+				for ( int i = 0; i < 6 && (unsigned)(i + 1) * 4 <= body; ++i ) {
+					memcpy( &f[i], b + 4 * i, 4 );
+				}
+				f[6] = 1;   /* max */ f[7] = 0;   /* cur  */
+				if ( ver >= 1 && body >= 32 ) {
+					memcpy( &f[6], b + 24, 4 );
+					memcpy( &f[7], b + 28, 4 );
+					if ( f[7] > f[6] ) {
+						f[7] = f[6];   // clamp per 0x463910
+					}
+				}
+				return 1;
+			}
+			pos += sz;
+		}
+		return 0;
+	}
+
 	// World-server serial generator (original: WorldServer->vft[8] called from GameEntity ctor,
 	// discovery note §2 "+0x28 world-server-assigned id"). Monotonic per spawn.
 	static int NextNetId() {
@@ -120,7 +152,8 @@ namespace F3 {
 			const JE::Map::EntityRecord& r = map->m_records[i];
 			// Must run the constructor (not bare operator new): SpawnedEntity is polymorphic
 			// (JE::Mover vft) and the movement pipeline calls its virtuals.
-			SpawnedEntity* e = new SpawnedEntity();
+			SpawnedEntity* e = new SpawnedEntity();   // ctor defaults: gentF {0,0,0,0,0,0},
+		                                                 // statMax/statCur 0/0 (GENT overwrites)
 			e->pos[0] = r.pos[0];
 			e->pos[1] = r.pos[1];
 			e->pos[2] = r.pos[2];
@@ -133,9 +166,17 @@ namespace F3 {
 				int tl = 0;
 				if ( JE::g_resource_system->ReadResource( r.name, &tb, &tl ) ) {
 					e->classId = ClassIdFromTemplateChunks( (const unsigned char*)tb, (unsigned)tl );
+					int gf[8];
+					if ( ParseGentBlock( (const unsigned char*)tb, (unsigned)tl, gf ) ) {
+						e->gentF[0] = gf[0]; e->gentF[1] = gf[1]; e->gentF[2] = gf[2];
+						e->gentF[3] = gf[3]; e->gentF[4] = gf[4]; e->gentF[5] = gf[5];
+						e->statMax = gf[6];
+						e->statCur = gf[7];
+					}
 					free( tb );
 				}
 			}
+			e->classIdTag = e->classId;   // Entity+0x15C runtime tag mirrors the factory case
 			strncpy( e->name, r.name ? r.name : "", sizeof(e->name) - 1 );
 			e->name[sizeof(e->name) - 1] = 0;
 			// map identity: EME2 records live in one map; the pipeline compares mapId between
