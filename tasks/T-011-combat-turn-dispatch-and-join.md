@@ -67,20 +67,19 @@ than invented. This task closes that, plus the join path, using only raw-verifie
    pump's seconds-carry is the authoritative advance in the reimpl. If the *original's* cadence
    value still matters, that is a research question (T-010), not a license to invent.
 
-   **LIVE DISAGREEMENT (read before you arm anything; do not resolve it in code).** The two
-   research readings agree on the arithmetic and disagree on what GW+0x40 IS:
-   - NiceWolf (canonical §13): a round-based virtual clock — `1000*GW+0x40` added once per
-     dispatched queue event ⇒ N items = N × SecondsPerRound × 1000 ms.
-   - IronStorm/HappyWolf sweep: **zero** in-exe writers of `[GW+0x40]`; the non-combat tick branch
-     never touches it; the IWorldServer setters write other slots (iface[+0x70] = GW+0x74 double
-     family). ⇒ +0x40 is immutable **config** (seconds-per-round), and "slot0 = seconds" is
-     explicitly marked pending by its own author.
-   - Safe convergence: arming is meaningful either way, because the ×6000-per-frame hazard only
-     materialises if pass-2 runs ungated, and the gate exists (`!entity+484 || entity+788` +
-     deadline @+0x29C). So: treat +0x40 as **seconds-per-round config**, never as wall-clock ms,
-     and never as a continuously advancing accumulator.
-   - Decider = T-010d (does the GW+0x3C clock object's `vft+88` write back to GW+0x40?). If yes,
-     the config reading dies; if no, §13's phrasing must be corrected. Re-check this row after.
+   **TIME BASE: SETTLED (T-010d closed by HappyWolf - no re-verify caveat remains).** `GW+0x40` is
+   **immutable config**, and the key name proves my label: `JE::World::virt_meth_0x546b50` (world
+   config load) defaults it to 6 @0x546b5b, selects INI section **"World"**, reads the key
+   **"Seconds Per Round"** @0x546c35 and `atol`s it into `GW+0x40` @0x546c8f - the same pass that
+   loads the Year/Month/Day/Hour/Minute/Second block at `GW+0x14..0x28`. Writer census is closed:
+   **{that config init, net world-unpack @0x547e9e} only**, and the one suspected write-back channel
+   (the `GW+0x3C` clock object's `vft+88` AddSeconds) is **dead** - no path to +0x40 exists.
+   So arm deadlines as a **per-round quantum** (`1000 × SecondsPerRound` added to the manager's
+   `+0x10` once per dispatched queue event), never as wall-clock ms and never as a continuously
+   advancing accumulator.
+   - Separate domain, still yours to honour: when the owner byte `+0x319` is set the event carries an
+     explicit time stored at `+0x29C` and the round quantum is not consulted at all.
+   - **Never** mix `+0x10` (round-clock ms) with real-ms action deadlines unless `+0x319 == 0`.
 5. Interaction with the FIFO: a combatant in state 5 must not be double-ticked (generic pump +
    turn dispatch). The existing `CombatMidTurn()` gate is the seam — extend it, don't bypass it.
 6. Tests: extend the PathManager suite (it already covers grid+A\*+waypoint+clock+combat protocol)

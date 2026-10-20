@@ -77,7 +77,11 @@ namespace F3 {
 		unsigned      firstStrikeDueMs;     // +0x5e (anim lead)
 		unsigned      nextSubAttackDueMs;   // +0x65 dword (DM-beat release time)
 		bool          subAttackPending;     // +0x60 b2
-		bool          volleyContinuing;     // +0x80 next-attack pending
+		// +0x80 is NOT a pending flag - it is the series vector's `finish` pointer (see the
+		// +0x7C/+0x80/+0x84 triplet above). FastArrow's region map (called-shot answer §5)
+		// shows the layout doc's "+0x80 next-attack pending flag" row was the same IDA display
+		// artifact as "+0x78 series" and "+0x73+3". Modelled stand-in, no shipped offset.
+		bool          volleyContinuing;
 		bool          ammoDeducted;         // +0x58 per-volley guard
 		// Shipped sub-attack series is NOT a scalar: it is an STL vector triplet at
 		// +0x7C begin / +0x80 finish / +0x84 storage-end, remaining = (finish-begin)/elem,

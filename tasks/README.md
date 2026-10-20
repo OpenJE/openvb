@@ -73,3 +73,4 @@ row; A keeps editorial merge rights).
 | T-010 | Research queue: behind-sector floats / +0x3B0 limb test / called-shot 2nd source | open | research (10a HappyWolf, 10b IronStorm, 10c FastArrow) |
 | T-011 | Combat: turn-queue per-turn dispatch + join-on-attack | open | unassigned |
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | in-progress | implementer-C (UltraBear) |
+| M-001 | **D3D8 slice 1: one visible frame** (device+clear+present; renderer explicitly deferred) | open | unclaimed — B has first claim of need |

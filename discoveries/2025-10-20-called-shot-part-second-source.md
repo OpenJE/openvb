@@ -101,3 +101,29 @@ selection, log [esi+0x78].
 | >9| falls back row A + "Unknown CALLEDTARGET" log | A | — |
 
 (weapon table 0x64F858 == unarmed 0x64D4C0 dwords; keep ONE table per session-17 §6.)
+
+## 5. CORRECTION to `attack-state-machine-damage-formula.md` §1 offsets table (accepted by
+coordinator 1ac0390; appended here as the canonical citation set — that doc gets only a pointer)
+
+Four rows of that table were IDA *display arithmetic* artifacts (`*(&mbr_int_0xNN + k)` ≠
+byte offset NN+4k was never true for these — raw bytes below). GameActionAttack (0xC8),
+verified region map:
+
+| raw offset | truth | raw evidence |
+|---|---|---|
+| +0x74 | ctor-zeroed dword (unnamed) | `89 5E 74` @0x403EDC |
+| **+0x78** | **calledShotPart** (dword, 9 = unset) — the table's "+0x73+3" AND "+0x78 = series list" rows were BOTH this field / a phantom | ctor `c7 46 78 09 00 00 00` @0x403EDF; guard `83 7E 78 09` @0x4025DB (its `jne` @0x4025DF — the doc's cited site); readers @0x402B8D/0x402CE0/0x402D83; continuation copy `mov eax,[edi+0x78]`/`mov [esi+0x78],eax` @0x404010/0x404013 |
+| **+0x7C / +0x80 / +0x84** | **series vector<int-record> triplet {begin, finish, end-of-storage}** — replaces table rows "+0x78 series" and "+0x80 next-attack pending flag" | ctor: `lea edi,[esi+0x7c]` @0x403E9D + `call 0x401690` (vector init) + zero +0x84 @0x403EEE; cursors `lea edi,[esi+0x7c]` @0x4048A8; walkers 0x4018E0/0x401900/0x401240; end-compare `cmp [esi+0x84],edi` @0x404A62/0x404AA6 |
+| **+0x88 / +0x8C / +0x90** | **second parallel vector triplet** — role: per-sub-attack timing *(UNVERIFIED layout; feeds the hitDelay/gap65 machinery, T-011 to confirm)* | `lea ebp,[esi+0x88]` @0x4048B1/0x404931 (joint walk with +0x7C cursor into meth_0x402E00 @0x40493A); readers `mov r,[x+0x8c]` @0x4020A2/0x4021D1/0x402297/0x4023FB/0x4026B9 (Cancel/Finish/hit-test/Prepare family) |
+| +0x90..+0xA0 | ctor-zero scalars (unnamed) | @0x403EF1–0x403F09 |
+| +0xA8 | byte + RbTree-style init @0x56E0B0 (0x403F16/0x403F1C — via `lea ecx,[esi+0xAC]`? exact span TBD) | ctor raw |
+| +0xB8..+0xC4 | byte @0xB8 region + `call 0x57C2E0` subobject store + tail | @0x403F2B–0x403F5D |
+
+Per-volley body-part semantics the table's "current sub-attack record" row missed: the record
+lives in the +0x7C vector; `sub_401280(elemPtr?, targetCreature)` @**0x404989** (doc cited
+0x404983 — also display skew) writes the UNCALLED selector hit into `*(elem+0x20)`;
+called shots keep the player choice at `this+0x78`. One scalar part per action
+mis-models volleys (coordinator's T-011 note #1).
+
+Pointer appended to the layout doc itself; that doc's rows are superseded by this table, not
+edited (per lane rule).

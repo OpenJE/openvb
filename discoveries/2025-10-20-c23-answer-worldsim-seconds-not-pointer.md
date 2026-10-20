@@ -21,15 +21,32 @@ the slot returns a PLAIN SECONDS COUNTER; `1000 * (*vft0)()` is real, not a poin
   deadline (Entity+0x29C = the turn deadline field, per A's C-24 + scripting doc). The ×1000
   and ÷1000 are one coherent unit conversion ⇒ **slot 0 returns seconds** (or sub-ms — see §2).
 
-## 2.1 UPDATE (same-day, coordinator cross-check): slot-0 field = SECONDS-PER-ROUND CONFIG, not a running clock
+## 2.1 UPDATE (same-day, coordinator cross-check): slot-0 field = SECONDS-PER-ROUND CONFIG — **PROVEN via INI key, T-010d CLOSED**
+Follow-up hunt (T-010d, requested by NiceFalcon) found the initializer:
+`JE::World::virt_meth_0x546b50` (world config-load, called at world init):
+```
+this->mbr_0x40 = 6                                  ; @0x546b5b — the census default ✓
+params = sub_56AF40(); sec = params->find("World")  ; INI/params section "World"
+val  = section->find("Seconds Per Round")           ; @0x546c35 literal key
+if (found) this->mbr_0x40 = atol(val)               ; @0x546c8f
+… then Year/Month/Day/Hour/Minute/Second → mbr_0x14..0x28 ; (the roster's epoch block ✓)
+```
+⇒ GW+0x40 is **INI `[World] Seconds Per Round`, default 6, parsed once**; writers census =
+{this init, net world-unpack 0x547e9e} only; **no clock-object writeback channel exists**
+(the object's vft+88 has no path to +0x40 — usage-list-proven). The config reading is
+FINAL; T-011 arms per-round quantum ×1000 with confidence. Side observation (flagged, not
+resolved, outside T-010d scope): net-unpack @0x547e93 also writes a stream u32 into the
+**pointer slot GW+0x3C** (clock object) — restore protocol or shipped quirk; if the client
+ever net-rebinds the clock object, verify before trusting snapshots.
 JoinCombat caller-set (3 attack-action xrefs @0x401229/0x4033d4/0x40359b, NiceFalcon) proved
 join-on-attack — my "not evidenced" line withdrawn. Deeper tick pass (`JE::World::virt_meth_0x545d60`,
 0x545ee0..0x545fbc): NON-combat branch advances ms via the **clock object @GW+0x3C** (vft+88
 AddSeconds, ms-carry `%1000` on [GW+0x44]) and NEVER writes GW+0x40; the combat branch READS
 `1000*[GW+0x40]` only. Writer census: no in-exe writer for GW+0x40 (2 scan hits were false
 positives: 0x5a2996 = fresh-object store; 0x46af-region = stack). ⇒ GW+0x40 reads as CONFIG
-(default 6 = seconds/round — A's "SecondsPerRound" label stands pending one channel: the clock
-object's vft+88 possibly writing back via owner ptr — UNRESOLVED, marked; T-011: arm deadlines
+(default 6 = seconds/round — A's "SecondsPerRound" label stands; the pending channel named
+there was CLOSED above by the INI-key proof — census re-run via the typed usage list showed
+only {config-init, net-unpack} as writers). T-011: arm deadlines
 as per-round quantum ×1000ms, re-verify if the +0x3C object's AddSeconds is found to sync
 +0x40). §2's earlier "seconds accumulator" lean and §2's "mbr_0x70 sibling" phrasing are
 SUPERSEDED by this row (siblings are iface-view +0x70 = separate double get/set pair).
