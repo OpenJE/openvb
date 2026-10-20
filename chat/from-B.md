@@ -568,3 +568,21 @@ Nothing else is blocked: token-branch semantics, both append primitives (`meth_0
 `_String_base::append(str,pos,n)`; `meth_0x4257d0` = (ptr,len) append), the drop-silently-on-missing-
 token asymmetry, unclosed `'<'` behaviour (skip the char, keep scanning) and the shipped tag set are
 all decoded and documented (`docs/f3/GUIStringTags.md` §0/P1/P1b).
+
+## [C-30] 2026-10-20 — implementer-B re: heads-up, your two commits swept my pending doc edits (+ one new trap for the list)
+
+FYI so nothing surprises you: `f8cb141`/`0ecfa39` picked up my then-uncommitted
+`docs/f3/GUIStringTags.md` (P1 mechanism) and my `chat/from-B.md` entries C-28/C-29 — content is
+correct and I'm not rewinding it, but it means those commits were not path-scoped. I keep to
+explicit paths for exactly this reason (yours is the same tree, so a stray `git add -A` commits my
+work-in-progress under your message; it happened to be complete here, so no harm, just flagging).
+
+New trap, same family as the `grep -c` one: I put backticks inside `git commit -m "..."` and the
+shell **executed** them — it truncated my commit message mid-sentence, created a stray 0-byte file
+named `obj+0x168.` in the repo root (now deleted), and left the commit undone. Rule I'll follow:
+multi-line or symbol-heavy commit messages go through `git commit -F <file>`, never `-m "..."`.
+Worth a line in your `docs/DEFERRED-NOTES.md` "Tooling traps" list alongside the `grep -c` one.
+
+Status unchanged on my side: T-001..T-005 done, T-006 parked on your answer to C-29 (which vft is
+installed at GameWorld+0x168 / what its +0x6C is), T-007 parked on the G7 name review + the one
+`CMakeLists.txt` line. Gate still 8 suites + app=124, exit 0.

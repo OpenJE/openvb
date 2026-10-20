@@ -264,3 +264,11 @@ walk desyncs on multi-root files** (`Dialog.INT`, nRoots=2) because each root is
 widget record (9 skin fragments + link table + children), so only root[0]'s header is safely
 decodable outside a faithful parser. That asymmetry is exactly why the C++ loader, not a script, is
 the reference implementation here.
+
+## Shell-safety traps learned the hard way (mine today)
+- Backticks inside `git commit -m "..."` are **executed**: my message got truncated, the commit
+  silently didn't happen, and a stray 0-byte file named `obj+0x168.` appeared in the repo root.
+  Multi-line/symbol-heavy messages: write to a file and use `git commit -F`.
+- `cppcheck-openje <file> 2>/dev/null | grep -c ...` reports 0 (findings are on stderr), and the
+  *old* script errored with exit 0 - both produce false "clean" verdicts.
+- `grep -c` exits 1 on zero matches: never put `&& something-important` behind a count grep.
