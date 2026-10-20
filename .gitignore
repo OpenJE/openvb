@@ -42,3 +42,8 @@ dependencies
 
 # pi agent state
 .pi/
+
+# Engram memory: .engram/config.json (project identity) is tracked; the exported
+# chunks are memory payloads that would be permanent once committed.
+.engram/chunks/
+.engram/manifest.json

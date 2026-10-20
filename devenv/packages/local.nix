@@ -18,6 +18,10 @@ rec {
 
   f3demo = pkgs.callPackage ./f3demo.nix { };
 
+  # Engram memory server/binary. Pinned release asset; see devenv/packages/engram.nix
+  # for the verified version + sha256 and the gentle-engram extension pairing.
+  engram = pkgs.callPackage ./engram.nix { };
+
   hexpat-language-server = pkgs.rustPlatform.buildRustPackage {
     pname = "hexpat-language-server";
     version = "unstable-2025-04-16";

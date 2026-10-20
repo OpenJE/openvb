@@ -239,5 +239,6 @@ in
     localPackages.f3demo
     localPackages.hexpat-language-server
     localPackages.math-mcp
+    localPackages.engram
   ];
 }

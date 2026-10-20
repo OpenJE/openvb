@@ -79,6 +79,41 @@ you are about to write — reserve it instead.
 Cite addresses/offsets/discovery filenames, not vibes. One writer per file never applied to
 the mesh: `send` is append-only by nature, so no one edits anyone else's message.
 
+## Engram memory (the recall layer)
+
+Engram is the third channel: **mesh = live coordination, `discoveries/` = committed evidence,
+Engram = recall**. Both agents share one store, so a finding saved by A is searchable by B
+without a message and without waiting for a commit. The binary + data dir come from devenv
+(`devenv/packages/engram.nix`, `ENGRAM_DATA_DIR` in `devenv/environment/openvb.nix`), so nothing
+is installed by hand and no session has to remember a port.
+
+Use `mem_save` for exactly the things that are expensive to re-derive and not yet file material:
+
+| save | type | example |
+|------|------|---------|
+| a verified RE conclusion | `decision` | "DT-row selector in 0x413310 is body PART, not style" |
+| an offset/layout census | `decision` | "base-skill array is GameCreature+0xE0 int[13]" |
+| a reproducible gotcha | `task` | "MSVC C2248 needs explicit public: after long inline init-lists" |
+| a rejected hypothesis | `decision` | "EME2 flag 0 does NOT freeze NPCs in the demo slice" |
+
+Rules that keep it from rotting into a second source of truth:
+
+- **Evidence stays in `discoveries/`.** A memory cites a discovery filename + address; it never
+  replaces the doc. If a memory and a committed doc disagree, the doc is wrong or the memory is
+  stale — resolve it by reading the decompile, then update both.
+- **Retrieval is BM25 over SQLite FTS, and default `match_mode:"all"` is AND.** Stop-words kill
+  queries: `"which DT row does called shot part select"` returns nothing, `"DT row"` and
+  `CALLEDTARGET` hit. Query with keywords, or pass `match_mode: "any"` for broad recall, then
+  narrow by `type`/`project`. (Verified against core 3.5.1.)
+- **Titles carry the recall.** Short, specific, keyword-dense title; body holds the citation.
+- `.engram/chunks/` is gitignored: `engram sync` output is memory payload, and committed payload
+  is permanent in history. Only `.engram/config.json` (project identity) is tracked.
+- **No embedding provider is involved** — nothing to key, nothing to leak, works offline.
+  `--semantic` conflict scanning shells out to an agent CLI (`ENGRAM_AGENT_CLI`); it is not an API.
+- The **discovery agent does not write memories.** It writes `discoveries/*.md` (reviewable,
+  committed, citable) and we ingest the conclusions ourselves. Don't route a durable finding
+  into Engram and stop there — that is how evidence gets lost.
+
 ## Bootstrap — one-time, per agent (already done in this repo by implementer-A)
 
 Packages are project-local and `.pi/` is gitignored, so **a fresh worktree has no mesh**:

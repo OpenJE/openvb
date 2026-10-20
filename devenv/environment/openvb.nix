@@ -24,5 +24,19 @@ in {
     OPENVB_IDA_ORIG_MCP_PORT = "8745";
     OPENVB_IDA_REIMPL_MCP_PORT = "8746";
     OPENVB_IMHEX_MCP_PORT = "31337";
+
+    # Engram memory (agent memory server). Absolute on purpose: the pi extension
+    # compares the running server's instance-id against `$ENGRAM_DATA_DIR/.instance-id`
+    # and FAILS CLOSED (no adopt, no spawn, no kill) on a mismatch, so a relative value
+    # would split into two stores the moment a session is booted from a subdirectory
+    # (e.g. modules/openje) instead of the repo root. Same reason it is declared here
+    # rather than left to the ~/.engram default: both agents must resolve one store.
+    ENGRAM_DATA_DIR = "${toString ./.}/.devenv/state/engram";
+    # Port of the local server the extension probes and auto-spawns when ENGRAM_URL is
+    # unset. Leave ENGRAM_URL unset; setting it marks the server externally managed and
+    # skips the ownership check entirely.
+    ENGRAM_PORT = "7437";
+    # The release binary phones home for updates at startup; offline determinism wins.
+    ENGRAM_NO_UPDATE_CHECK = "1";
   };
 }
