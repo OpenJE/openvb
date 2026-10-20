@@ -232,3 +232,25 @@ never against our code):
   Gregorian breakage (`missing: JE::Gregorian::AddDays(unsigned int) JE::Gregorian::AddSeconds(...)`).
 - `set -u` + optional env vars: any new `$VAR` reference in the script must be `${VAR:-}`; I shipped
   an "unbound variable" abort on first use of the hook and caught it in one run.
+
+## T-007 RE checkpoint (read-only; implementation still awaiting A's review)
+
+- **G2 solved as a side effect of T-005:** the 9 inline records at `Window+0x90` are
+  `GUI::Fragment` (`Window::ctor_0x4b0810` @0x4b08c2 vector-ctor with obj_size 0x158, count 9,
+  `Fragment::ctor_0x4b24a0`). My earlier "stride 86 bytes" note here was wrong — the read loop
+  `add edi, 56h` / `p += 86` is in **DWORDs** = 344 = 0x158 ✓ matches the vector ctor size.
+- **G1 (partially):** `byte_707CE4` is a texture-manager singleton pointer. Observed slot roles:
+  `+0xC4`(196) name->index (negative = absent; `Skin::LoadDefault` clamps it to 0 at 0x5236c5 and
+  the Fragment reader stores it at `*(this+74)+304`), `+0xDC`(220) "is it registered" probe
+  (nonzero -> skip the Demand: 0x523641 / 0x4b21c1), `+0xE0`(224) add/lock by name (0x505c3f),
+  `+0xD8`(216) release/forget by name (0x5236e7, right after `Release_0x498eb0`).
+  Consumers span GUI Picture/Label, AreaMap icons, cursor manager, container item icons,
+  VFX sprite/model/trail, Octree2Gfx and Gfx_HeightFog — i.e. one global texture registry shared by
+  GUI and 3D, which is why the class name matters: candidate `JE::Gfx_Texture_Manager`
+  (`LoadTextureFromFile_521b10` / `LoadTextureFromBuffer_521ca0` live in that already-named class),
+  **not yet confirmed** by finding the writer of 0x707CE4 (the xref list is long and every hit I
+  sampled was a consumer). Left as an open item rather than guessed.
+- Consumer shapes worth remembering for the port: `GUI::Picture::dtor_0x4aaaa0` @0x4aaae6 releases
+  by name, and `Picture::meth_0x4aaf10` @0x4ab0bc (plus `virt_meth_0x4ab1f0` @0x4ab35f/3a4/3de)
+  are where a Picture resolves/re-resolves its texture — that is the code path T-007 step 3/4
+  must reproduce, and it is why the skin record keeps the NAME, not the handle.

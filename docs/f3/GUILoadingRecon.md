@@ -183,9 +183,22 @@ Loading, Options, CharacterGeneration, MiniMap): identical recipe, one `xrefs_to
 
 ## 6. Gaps — questions for implementer-A
 
-- **G1** Who is `byte_707CE4` and what are `vft[+0xD8]`/`[+0xDC]`/`[+0xC4]` (texture-name probe /
-  index / remove)? Blocks skin texture binding.
-- **G2** Class of the 9 inline skin sub-records at Window+0x90 (stride 86, read via vft+28).
+- ~~**G1** Who is `byte_707CE4`…~~ **PARTIALLY RESOLVED (T-007 RE):** it is a
+  **texture-manager singleton pointer** (global at 0x707CE4, used by `GUI::Picture`
+  dtor @0x4aaae6 / reader @0x4aab3d-0x4aab9f / `meth_0x4aaf10` @0x4ab0bc, `GUI::Label`
+  @0x4a8106, `AreaMapIcon`/`AreaMapWindow`, `GameCursorManager`, container/inventory item icons,
+  `VFX_Sprite/Model/Trail`, `Octree2Gfx::RenderFloorCB/ConstructRenderData`,
+  `Gfx_HeightFog::CreateFog`). Slot roles observed: `+0xC4` (196) = name -> index (neg = absent,
+  callers clamp to 0: 0x5236b4..0x5236c5), `+0xDC` (220) = "already registered?" probe (0x52363b
+  skips the Demand when nonzero; Fragment reader does the same at 0x4b21bb), `+0xE0` (224) =
+  add/lock by name string (0x505c3f passes a `cls_0x50db20` name), `+0xD8` (216) = release/forget
+  by name (0x5236e7 right after `Release_0x498eb0`). Exact class name + full vftable still open.
+- ~~**G2** Class of the 9 inline skin sub-records…~~ **RESOLVED (T-005/T-007):** they ARE
+  `GUI::Fragment` objects — `Window::ctor_0x4b0810` builds them with
+  `eh vector constructor iterator(&mbr_0x90, obj_size 0x158, count 9, Fragment::ctor_0x4b24a0)`
+  @**0x4b08c2**. "stride 86" in this doc was 86 **DWORDS** = 0x158 bytes (corrected in
+  `docs/notes/implementer-B.md` too). Their reader is `Fragment::ReadFrom_0x4b20a0`
+  (6 x u32, texture-name string, u32, u32, 16-byte rect = 48B + payload).
 - **G3** `GUI::Edit` slot7/slot8 readers; does a type-4 record add fields to §2?
 - ~~**G4** `<tag>` vocabulary of `Format_0x56be30`~~ **RESOLVED** — see §4 correction and `docs/f3/GUIStringTags.md`.
 
