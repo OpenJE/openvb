@@ -323,3 +323,16 @@ Remaining for T-007's tail, tracked as **T-013** (assigned after M-001 slice 1):
 and slots `+0xE0`(0x5c0940 add), `+0xD8`(0x5c0930), `+0xC4`(0x5c0a90, 14-arg SEH forwarder,
 decompiler fails) — plus one lockstep observation to retire the *inferred* label on the texture key
 form (stem vs `name.tga`).
+
+### 9a. DON'T-TOUCH: the exactly-4-component colour rule is load-bearing
+
+All eight shipped `color` lines (zzmainmenu `button.up.*`) have **three** components (`0,255,0`), and
+`Skin::LoadDefault_0x523490` stores a colour only when the tokenizer found **exactly four**
+(`cmp esi,4` @0x5237d7 / 0x5237fc), otherwise the record keeps `0xFF808080` (@0x523700). Consequence:
+**no shipped record carries an authored colour** — every one holds the fallback, which is also why
+10593 of the 14364 `.int` records hold `0xFF808080`.
+
+So "accept 3 components too" is not a robustness fix: it silently retints the entire UI from the
+first skin that parses. Same for the unmasked component 0 (@0x523806..0x523832) — reproduced as a
+quirk, with an assertion, on purpose. Any lane touching `JE/GUI/SkinDefaults` should keep both rules
+and keep the tests that pin them.

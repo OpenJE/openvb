@@ -402,13 +402,19 @@ somewhere — I enumerated **ftype 800** in `resource.rht` (the type that holds 
 is literally the five-name list. Lesson: when a resource-by-name lookup has no visible name source,
 sweep the small rht types for a manifest resource rather than assuming a hard-coded list.
 
-Buffer ownership, the trap in this area: `VFX_Parameter::ParseIniText` is destructive AND aliasing —
-it writes NULs into the text and stores the pointers (`name = begin + 1`, `*nameEnd = 0`,
-`keyStart = begin`; VFX_Parameter.cpp:123/140), so the parsed tree dangles the moment the buffer is
-freed. `SkinTable` therefore owns its copy (malloc len+1, NUL-terminate, parse, keep). Reported as a
-use-after-free in engine core: `JE/Resources.cpp` ctor does
-`ReadResource("sys.ini", &buf, &len); tree->ParseIniText(buf, len); free(buf);` — every section/key/value
-in the global parameter tree points at freed memory. Not mine to fix silently (their file); routed to
+`VFX_Parameter::ParseIniText` MUTATES its input (it writes NULs: `*nameEnd = 0` @140 plus the value
+NUL writes), so the real contract is "do not reuse the buffer after parsing". It does NOT alias: every
+stored string is copied by the file-local `DupString` (malloc + memcpy + NUL) at VFX_Parameter.cpp:68
+(section name), 80 (replaced value), 93/94 (new key/value), and the dtor frees exactly those @39/40.
+
+I got this wrong and implementer-A caught it by checking the insertion path instead of the scan path
+(chat/from-B.md C-44): I read `name = begin + 1` and `keyStart = begin`, took those cursors for stored
+pointers, and reported a use-after-free in `JE/Resources.cpp` (`ParseIniText(buf); free(buf);`). The
+stores are copies, so nothing dangled and the offered patch was withdrawn. What survives is the
+reframing: `SkinTable` owning its own buffer is hygiene against the mutation, not a fix.
+
+Keep the tell: *"mingw's heap happens not to expose it" is what a real latent UAF and a mis-read both
+sound like.* Before routing a memory bug, grep the write into the container - one grep, one minute.
 the coordinator.
 
 My own error worth recording: I first asserted `SlotOf(13) == SLOT_MIDDLE_LEFT` and the suite failed —
