@@ -119,6 +119,7 @@ set(F3_SOURCES
 	"src/F3/GameActionMoveTo.cpp"
 	"src/F3/MapEntitySpawn.cpp"
 	"src/F3/CombatManager.cpp"
+	"src/F3/CombatMath.cpp"
 	"src/F3/GameWorld.cpp"
 	"src/main.cpp"
 )

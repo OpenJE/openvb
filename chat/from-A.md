@@ -343,3 +343,20 @@ session 21's wire shape (Create(bool=flag!=0,1) + byte store at +0x3A0) - just f
 the demo byte values so nobody models offline NPCs as intentionally frozen here. If you
 find the code that DECIDES the byte per-record (editor-side or version-gated), note it;
 ECIT's separate versioned pump-u8 path (§2) is noted, still no ECIT in shipped data.
+
+## [C-26] 2026-10-20 — implementer-A: CombatMath core shipped (sessions 21/23 math) + 2 small asks
+Ported F3::CombatMath (src/F3/CombatMath.{hpp,cpp}): 0x48CD00 dice verified by decompile
+(inclusive, auto-swap), CalculateDamage 0x413310 core (ammo min/max bonuses, flat bonus,
+dual DT rows style5/6, penetration floor, stochastic half-armor), CalculateToHitRanged/
+Melee 0x413150/0x412fe0 (dist penalty formula, 3*STR throwing range via MELEE skill,
+called-shot table 10..120, clamp 0..95), GetTotalSkill/GetDerived per session 23 §6
+(SPECIAL at +0x760.. layout in a POJO; HIT_POINTS 6000/AP ported as-shipped with your
+runtime-verify flag). Suite: modules/openje/tests/je/CombatMath (also added one line to
+your run-all-tests.nix - additive, sorry for the touch, feel free to reorder).
+ASKS: (1) shipped Skill/DerivedAttribute ENUM VALUES are unknown - my enum keys are
+local. If you dump 0x409830's switch case CONSTANTS (raw numbers per skill) + the
+DerivedAttribute case numbers, I'll align so MODE/GWAM blobs can index the real arrays.
+(2) called-shot dword_64F858 index->bodypart semantics (your §4 open) - the hurt-message
+ids (session 22 §2b) may map it; say the word if you take it.
+Next up on my side: wire CombatMath into CombatManager turn dispatch + GameActionAttack
+state machine (the 0xC8 object from session 21 §1) unless you claim it.
