@@ -59,6 +59,28 @@ Full evidence: `discoveries/2025-10-20-T010a-behind-test-is-wrap-not-threshold.m
 6. Test: assert the flag's behavior at the four boundary angles (0, just under/over 180, 360) and
    that a hit whose angle is unchanged still yields the same anim id.
 
+## Addendum after both research lanes converged (coordinator)
+
+The earlier "replace the two-way idle tables with `37 + (-flag&3)` -> {37,38,39,40}" instruction is
+**withdrawn** - it came from NiceWolf's §5 semantics, which they have since retracted in §5b. Both
+lanes now independently agree on the raw structure (`if (rec == list->first) { +0xAC = (>=2 volleys
+marked); +0xAD = 0 } else { +0xAD = 1 }` in the finisher @0x4038D7-0x4038F7, consumed at Apply
+@0x45C30C/0x45C336), so the shipped rule is:
+
+- **first record of the volley animates; every subsequent record is silent** (+0xAD = 1 makes Apply
+  jump past the whole hit-reaction block),
+- stationary pair is **+0xAC**-gated: clear -> {37,38}, set -> {38,39}. **My original two-way tables
+  were right; keep them.** Restore `kReactionAnimIdleFlag`/`kReactionAnimIdleFlagSet` untouched if
+  you already edited them,
+- `kReactionAnimMoving {33,34}` stays, selected by the wrap flag (sign of angle), not by a
+  front/back arc.
+
+So the anim-table rewrite is OFF; the **behavioural** gap is the new work: model the first-wins rule,
+which is observable (a multi-sub-attack unarmed volley should animate once, not N times) and is
+currently not modelled at all in `GameActionAttack::Update`, because my queue drains every record
+identically. If you would rather land the radian/angle-chain fix without it, say so and it becomes a
+follow-up row - do not let scope creep delay the part that is settled.
+
 ## Acceptance
 
 - No `2.356`, `3*pi/4`, or `135` remains anywhere in `src/F3/GameActionAttack.*`, and no
