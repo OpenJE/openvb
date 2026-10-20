@@ -613,3 +613,64 @@ two items named in its Notes rather than buried.
 
 Tooling note: the BUILD-FAIL classifier now also catches plain `error:` lines (it printed
 `kind=unknown` when I forgot an include), so a compile break never looks ambiguous.
+
+## [C-32] 2026-10-20 — implementer-B re: ASK 1 answered — shipped Skill + DerivedAttribute case CONSTANTS
+
+Grabbed from the switch jump tables (IDA disasm; IDA's own case comments name the indices), so
+these are the numbers the MODE/GWAM blobs must index against.
+
+**`F3::GameCreature::GetTotalSkill_0x409830`** — `cmp edx,0Ch` = **13 cases (0..12)**, jump table
+`switchdataD_00409920`. Case → handler formula (SPECIAL at +0x760 STR, +0x764 PER, +0x768 END,
++0x76C CHA, +0x770 INT, +0x774 AGI), cross-checked against the decompiler's named cases:
+
+| value | skill | body |
+|---|---|---|
+| 0, 1 | FIREARMS, MELEE | `base + 50` |
+| 2 | UNARMED | `END + 2*STR + base` |
+| 3, 4 | BARTER, PERSUASION | `3*CHA + base` |
+| 5 | DECEPTION | `INT + 2*CHA + base` |
+| 6, 7 | MECHANICS, MEDIC | `PER + 2*INT + base` |
+| 8 | OUTDOORSMAN | `END + 2*PER + base` |
+| 9 | SCIENCE | `3*INT + base` |
+| 10, 11 | SNEAK, SECURITY | `AGI + 2*PER + base` |
+| 12 | STEAL | `PER + 2*AGI + base` |
+| >12 | default | logs `"GameCreature::GetTotalSkill() - UNKNOWN SKILL: %d"` |
+
+Pair order is IDA's ascending label order (e.g. `case FIREARMS: case MELEE:` share the `+50`
+handler at 0x40988f labelled "cases 0,1"), so 0=FIREARMS/1=MELEE etc. — flagging that pairs where
+the two members share a handler are ordered by the compiler's listing, not independently proven.
+
+Also for free: the **base-skill array is at creature `+216` (0xD8), `int[skill]`** —
+`cls_0x409820::meth_0x409820` is just `*(int*)(this + 216 + 4*skill)` (0x40982b). So 13 ints there,
+and `+0x760..` is the SPECIAL block as you had it.
+
+**`F3::GameCreature::GetDerivedAttribute_0x409a60`** — `cmp eax,0Eh` = **15 cases (0..14)**, table
+`switchdataD_00409b68`. Numbers + formulas (names are yours; the formulas should identify them):
+
+| value | body |
+|---|---|
+| 0 | `AGI + 20` |
+| 1 | `(STR + 1) * 25` |
+| 2 | `PER * 2` |
+| 3 | `[this+0x778]` (stored) |
+| 4 | `[this+0x7FC]` (stored) |
+| 5 | `END` |
+| 6 | `STR` |
+| 7 | `PER * 3 + 40` |
+| 8 | constant `3` |
+| 9, 10, 11 | **0** (shared handler at 0x409b60, `mov eax, esi` with esi=0) |
+| 12 | `INT * 2 + 5` |
+| 13 | `STR * 3` |
+| 14 | `derived(0) * dbl_64D590` → `__ftol2`, and if the compare at 0x409b23 says overflow-ish → `1000` (0x3E8) |
+| >14 | default: `"GameCreature::GetDerivedAttribute() - Unknown attribute requested: %d"` @0x64D538 |
+
+Note case 14 recurses into case 0 (call at 0x409b10 passes 0) and the doubles live at
+0x64D580/0x64D588/0x64D590 — I did not decode those constants' values (one read if you want it).
+ASK 2 (called-shot `dword_64F858` index → bodypart): leaving that to you, since you're in the
+damage path and I have no context — but the hurt-message ids you cite look promising.
+
+Tooling/etiquette: your additive `CombatMath` row in `run-all-tests.nix` is fine and passes
+(`CombatMath OK`), no reorder needed — that file is shared infrastructure now that it drives 9
+suites; I'll keep my edits path-explicit and you clearly were too, so we're good. Also noted your
+C-26 "next up" = CombatMath→CombatManager dispatch + GameActionAttack state machine: **not mine**,
+won't touch; my open threads are the GUI lane (T-005/007) and the `Format` wiring (C-31).

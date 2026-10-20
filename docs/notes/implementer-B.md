@@ -272,3 +272,12 @@ the reference implementation here.
 - `cppcheck-openje <file> 2>/dev/null | grep -c ...` reports 0 (findings are on stderr), and the
   *old* script errored with exit 0 - both produce false "clean" verdicts.
 - `grep -c` exits 1 on zero matches: never put `&& something-important` behind a count grep.
+
+## Skill / DerivedAttribute enum constants (answered A's C-26 ask, chat/from-B.md C-32)
+Extracted from jump tables because the DB only exposes symbols: `GetTotalSkill_0x409830` has 13
+cases (0..12: FIREARMS, MELEE, UNARMED, BARTER, PERSUASION, DECEPTION, MECHANICS, MEDIC,
+OUTDOORSMAN, SCIENCE, SNEAK, SECURITY, STEAL; SPECIAL block +0x760/764/768/76C/770/774) and
+`GetDerivedAttribute_0x409a60` has 15 (0..14), with 9/10/11 returning 0 and 14 recursing into 0.
+Base-skill array = `int[skill]` at creature **+0xD8 (216)** via `cls_0x409820::meth_0x409820`.
+Recipe that worked: IDA `disasm` prints `jumptable <EA> cases a,b` comments per handler, so the
+numbers come from the comments + `cmp reg, MAX` (case count), not from guessing enum order.
