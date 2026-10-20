@@ -169,9 +169,14 @@ namespace F3 {
 
 	// World-server serial generator (original: WorldServer->vft[8] called from GameEntity ctor,
 	// discovery note §2 "+0x28 world-server-assigned id"). Monotonic per spawn.
+	// 29-bit id space per discovery session 5 addendum: F3 entity/net ids are
+	// `x & 0x1FFFFFFF`, stored at GameEntity+0x28, counter inside the GameWorld body
+	// (interface vft 0x668494 slot 2 read / slot 10 masked set).
 	static int NextNetId() {
 		static int s_next = 1;
-		return s_next++;
+		int id = s_next & 0x1FFFFFFF;
+		s_next = ( s_next + 1 ) & 0x1FFFFFFF;
+		return id;
 	}
 
 	// Records -> entities. Each: operator new(SpawnedEntity) + pos/rot/mapId/name from the

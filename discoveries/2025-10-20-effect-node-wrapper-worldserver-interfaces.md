@@ -69,3 +69,28 @@ Immediately after the 0x6685a4 table ends, a static `char[8]×9` array (no point
 2. F3-side readers of Entity+0x15C (class tag) — DB shows none; possibly write-only for
    debug/tooling. Check network-serialize paths for byte-level access.
 3. What `.por` maps to (nearest candidate: `BuildingTrigger` ctor 0x5b1c30).
+
+## 6. Addendum — slot 2 / slot 10 bodies, and a correction to session 3 §4
+
+Raw decompiles of two 0x668494 slots:
+
+```
+slot 2 (0x46fd60):  return *(GameWorldbase − 808)          ; read id counter
+slot 10(0x46fe40):  *(GameWorldbase − 792) = arg & 0x1FFFFFFF
+                    return arg & 0x1FFFFFFF                 ; set id counter, MASKED
+```
+
+- 0x668494 is installed by `GameWorld::ctor_0x470340` at `[vb-displaced this + 8]` (raw
+  0x470396: `mov [ecx+esi+8], 0x668494`) and referenced by `GameWorld::dtor_0x46f190` — it is
+  genuinely a GameWorld interface vftable.
+- **Correction**: with these bodies, slot 10 is an **entity-id counter setter** (29-bit id
+  mask!), not the "template lookup by id" I inferred in session 3 §4. Likewise EFCD's
+  `vft[+40](0)` = "reset counter to 0", EFDT's `vft[+40](eventId)` = "set counter to
+  eventId". The subsequent `cls_0x55a280::meth(idValue, …)` shape then makes sense only if
+  the wrapper stores the **reserved id** (not an object pointer) and its `mbr_0x0+20` call is
+  a *different* dispatch than the decompiler's typing suggests — i.e. effect nodes carry a
+  numeric id and the vft[+20] call target must be re-derived from the object that
+  `sub_468310`/`sub_55ADC0` actually receive. **Open item, next session.**
+- Durable facts regardless of interpretation: (a) F3 entity/net ids are `x & 0x1FFFFFFF`
+  (29-bit), stored at GameEntity+0x28; (b) the counter lives inside the GameWorld body
+  (base−792/−808); (c) GameEntity ctor's vft[+8] = *read* of that counter region.

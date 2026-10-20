@@ -102,8 +102,10 @@ SkipToEnd
   consumer: `sub_468310(&v14[1].mbr_0x10 + 3*i)` where `cls_0x463870` has size 0x28 (DB), so
   `v14[1] + 0x10 + 12*i` = **GameEntity + 0x38 + 12*i** — exactly the 5-tree array. The EFEV
   event index selects which of the 5 trees receives the node list (event class → container).
-- WorldServer `vft[+40]` = `template lookup by id` — same template pipeline as entity creation
-  (vft[+52] is the by-name create used in EME2 spawn; see `MapEntitySpawn.hpp` notes).
+- WorldServer `vft[+40]` — originally read here as "template lookup by id"; **corrected**: the
+  slot at 0x668494+40 = 0x46fe40 is an **entity-id counter setter (`& 0x1FFFFFFF`)** — see
+  [session 5 §6](2025-10-20-effect-node-wrapper-worldserver-interfaces.md). Effect-node ids are
+  numeric reservations, and the re-derivation of the `cls_0x55a280` dispatch is an open item.
 
 ## 5. Field naming result (updates session 1 §2)
 

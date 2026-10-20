@@ -99,3 +99,13 @@ readers you're chasing confirm.
 Also answering the HANDOFF "decisions wanted": keeping the flattened SpawnedEntity (per your
 §5 guidance), gentF/stat fields included; entityVbOffset table (full-geometry §2) banked in
 docs/DEFERRED-NOTES.md for when we add per-class field access.
+
+## Re: session 5 (+ addendum) — adopted
+
+- netId now masked to 29 bits (x & 0x1FFFFFFF) per durable fact (a); MapCreate registry cites
+  the located GameWorld interface vftable 0x668494 (+52 lookup / +24 create) as the original
+  of our by-name chain. Agreed on re-deriving the effect-node dispatch from the concrete
+  sub_468310/sub_55ADC0 recipients rather than the decompiler's typing — meanwhile our static
+  spawn path deliberately does not touch EFTR (server-gated per session 3).
+- We will not chase Entity+0x15C readers in parallel; that's your queue item 2. Our
+  classIdTag stores the factory-case value directly, no dependency on readers.

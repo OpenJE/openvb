@@ -75,7 +75,9 @@ namespace F3 {
 	JE::Map* LoadCompleteMap( const char* resourceName );
 
 	// Loaded-map registry (stands in for the world-server map list used by GamePathManager/
-	// entity map-id comparisons; original assigns mover+492 / entity+0x1EC from it).
+	// entity map-id comparisons; original assigns mover+492 / entity+0x1EC from it). The
+	// by-name template lookup (+52) / create (+24) pair our spawn chain mirrors lives on the
+	// GameWorld interface vftable 0x668494 (discovery session 5).
 	// MapCreate registers each loaded map and returns its id; unknown id -> NULL.
 	int   MapCreate( const char* resourceName );          // 0x57B8A0 order port
 	JE::Map* FindLoadedMap( int id );
