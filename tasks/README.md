@@ -1,9 +1,18 @@
 # tasks/ — shared task board (parallel implementers)
 
-Two implementers work this repo in parallel. This board is the source of truth for **who is
-doing what**; the **pi-messenger mesh** is the conversation (protocol v3, `chat/README.md`) —
-`chat/from-{A,B}.md` are the frozen `C-<n>` archive. The discovery agent is separate
-(read-only RE, writes `discoveries/` files, not mesh messages).
+Two implementers plus a growing research side work this repo in parallel. This board is the
+source of truth for **who is doing what**; the **pi-messenger mesh** is the conversation
+(protocol v3, `chat/README.md`) — `chat/from-{A,B}.md` are the frozen `C-<n>` archive.
+
+**`NiceFalcon` (implementer-A) is now the coordinator, not an implementer.** It does not own
+features; it hands out rows, reviews and commits research checkpoints, owns the gate
+(`run-all-tests` + `msvc-build` + app boot), arbitrates lane collisions, and routes uncertain
+facts to research instead of letting them be guessed in code. Route anything blocked, contested,
+or half-decided to it. Research agents write `discoveries/` files and never commit them; the
+coordinator checkpoints on their "[DISCOVERY-BATCH-N ready]" line.
+
+Mesh **names are re-randomized on every reload/restart** — identity is the `sessionId` in
+`~/.pi/agent/messenger/registry/<name>.json`, not the name you see today.
 
 ## How to take a task
 
@@ -35,7 +44,8 @@ doing what**; the **pi-messenger mesh** is the conversation (protocol v3, `chat/
 
 | lane | owner | areas |
 |------|-------|-------|
-| Engine core | implementer-A (senior) | `modules/openje/src/JE/*` except GUI, pathfinding, Map/resource/world/entity-spawn, pumps |
+| Engine core | implementer-C (junior, coordinator reviews) | `modules/openje/src/JE/*` additive accessors and small ports; anything structural needs coordinator sign-off first |
+| Coordination / gate / review | coordinator (`NiceFalcon`, formerly implementer-A) | board, reservations arbitration, `run-all-tests` table, `msvc-build`, app boot, `discoveries/` checkpoints |
 | Game layer | implementer-A | `src/F3/*` (world, entities, actions, spawn) |
 | Tooling & tests | implementer-B (new) | `.devenv/scripts`, `devenv/scripts`, `run-all-tests`, test harness glue, `modules/openje/tests/**` (existing suites), cppcheck/lint scripts, `docs/notes/implementer-B.md` |
 | GUI/skin lane | implementer-B → A review | RE + `JE::GUI`/`F3` interface loading (`.int`, skins, fonts) — new files only until handshake |
@@ -58,3 +68,7 @@ row; A keeps editorial merge rights).
 | T-005 | GUI: `.int` reader + widget tree with name lookup | done | implementer-B |
 | T-006 | GUI/SS: `Format_0x56be30` `<tag>` markup + Label text | done | implementer-B |
 | T-007 | GUI: skin sub-records (Window+0x90 x9) + texture binding | in-progress | implementer-B |
+| T-008 | Onboarding: mesh + build + full gate green | in-progress | implementer-C (UltraBear) |
+| T-009 | `VFX_Parameter` section/entry iterator (unblocks T-007) | open | implementer-C |
+| T-010 | Research queue: behind-sector floats / +0x3B0 limb test / called-shot 2nd source | open | research (10a HappyWolf, 10b IronStorm, 10c FastArrow) |
+| T-011 | Combat: turn-queue per-turn dispatch + join-on-attack | open | unassigned |
