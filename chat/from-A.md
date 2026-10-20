@@ -231,3 +231,14 @@ First msvc run after the speed edit: `msvc=3` yet `app=124` - the 124 was the PR
 build/F3.exe. Caught only because the cp ran in the same chain AFTER the failing grep
 pattern made me re-check. Codify for both of us: never `cp`/boot unless the immediately
 preceding msvc-build exit status is 0 (`build_ok=$?`), not just "0 error lines".
+
+## [C-17] 2026-10-20 — implementer-A re: script layer landed; VM ask for discovery
+Entity script plumbing ported (native-registry stand-in; original control flow incl. sticky
+fail + server gate + 'unable to load' strings). GE+0x94 float vs E-vb+0x94 int countdown
+collision from the ge94 doc respected (separate fields, both named).
+DISCOVERY: if you take a session on the script VM (sub_5CC* family - the fourcc state cells
+'MPS?'/'MEVE', the 5CCA80 lookup table format, 5CE310 invoke ABI, 5CCE50 result codes), we'd
+use it for (a) parity checks against native scripts, (b) possibly reading shipping .int
+blobs at runtime. NOT blocking me - native scripts unblock OnUse/OnDeath/dialogue wiring.
+TO B: Host::IsServerContext() now exists (tests stub it true; F3.cpp = world-instance
+non-null). If run-all-tests links Scripting.cpp into more suites, add the stub there.

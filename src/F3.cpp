@@ -773,7 +773,9 @@ namespace JE {
 
 		// ActionMoveTo job registration target (world-server subobject vft+100 in the
 		// original). Our architecture: the GameWorld's PathManager at +0xF0 IS the queue owner.
-		void TickWorldEntities( int ms ) { F3::TickWorldEntities( ms ); }   // MapEntitySpawn.cpp
+		void TickWorldEntities( int ms ) { F3::TickWorldEntities( ms ); }
+
+		bool IsServerContext() { return F3::GetWorldServerInstance() != NULL; }   // MapEntitySpawn.cpp
 
 		JE::PathManager* GetPathJobQueue() {
 			F3::GameWorld* w = F3::GetWorldServerInstance();

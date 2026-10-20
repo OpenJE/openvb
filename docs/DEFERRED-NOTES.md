@@ -318,6 +318,17 @@ used the same failure mode - re-appending its two updates here rather than re-ed
   when the countdown reaches 0 (GE-side completion). Test pumps door + mover independently.
 - Countdown guard (animCountdown94==0) prevents double-issue while animating.
 
+### Script layer plumbing (this round)
+- Entity script region mapped (0x54AEF0/0x54AFE0): name SSO @E+0x2A4 area, cache +
+  sticky-fail latch; loader = IWorldServer vft+36 -> JE::World::0x544b80 -> Script_Small
+  (0xE0, vft 0x6A539C). Runner 0x5A5A90 exposes the compiled-VM API behind mbr_0x26:
+  sub_5CCCC0/5CCD00 ('MPS?' fourcc state), 5CCA80 (fn lookup), 5CE310 (invoke),
+  5CCE50 (interrupt; 0/12 = success codes), 'OnUpdate'->'MEVE' special case + 580770.
+- Ported as name-keyed NATIVE registry (VM deliberately unported; behaviors get native
+  re-impl): RegisterNativeScript/LoadScriptByName/EntityGetScript/EntityRunScript with
+  original flow (server gate logs vs throws - deviation; sticky fail latch; unknown => 0).
+  Host::IsServerContext() added. New Scripting test suite green (suite total now 7 dirs).
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).
