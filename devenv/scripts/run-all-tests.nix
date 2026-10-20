@@ -25,6 +25,11 @@ in {
       #
       # usage: run-all-tests [--only Suite[,Suite]] [--no-app] [--msvc-build] [--keep]
       #                      [--timeout N] [-v]
+      # Environment: OPENVB_TEST_FLOOR=Suite=N[,Suite=N] raises an assertion floor for ONE run.
+      #   That is this gate's own falsification switch (rule 2): a floor that cannot be made to fail
+      #   is decoration. Rows now carry a 4th field, name|test_src|impl_srcs|min_checks, and the
+      #   floor counts assertions in SOURCE - it catches assertions being removed or a suite going
+      #   vacuous, and prints that boundary itself (rule 3). It is NOT a runtime execution count.
 
       root="$PWD"
       if [ ! -d "modules/openje/tests/je" ]; then
@@ -88,7 +93,7 @@ in {
       JE="modules/openje/src/JE"
       SRC="modules/openje/src/JE.cpp"
 
-      # name | test source | impl sources (space separated)
+      # name | test source | impl sources (space separated) | min_checks (T-024 assertion floor)
       # Sources the test headers do NOT mention are needed transitively (docs/notes/implementer-B.md):
       # JE/Action.cpp (JE::Action base vft + dtor), JE/SpatialGrid.cpp (JE/Map.cpp references it),
       # src/F3/MapEntitySpawn.cpp (F3::GetActiveMap, used by GamePathManager). Listed sources that
@@ -96,15 +101,15 @@ in {
       # If a suite suddenly BUILD-FAILs with kind=LNK after an engine commit, that is a NEW
       # cross-module reference: add the defining .cpp here rather than weakening the test.
       suites=(
-        "cls_0x4d8d70|modules/openje/tests/je/cls_0x4d8d70/cls_0x4d8d70.cpp|$JE/cls_0x4d8d70.cpp"
-        "PathManager|modules/openje/tests/je/PathManager/PathManager.cpp|$JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/Resources.cpp $JE/VFX_Parameter.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp $JE/Action.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp src/F3/CombatManager.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp"
-        "ResourceSystem|modules/openje/tests/je/ResourceSystem/ResourceSystem.cpp|$JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $SRC"
-        "StringSystem|modules/openje/tests/je/StringSystem/StringSystem.cpp|$JE/SS/StringSystem.cpp $JE/SS/EngineStringSystem.cpp $JE/SS/StringFormat.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Strings.cpp $JE/VFX_Parameter.cpp $JE/World.cpp $JE/Gregorian.cpp $JE/Subsystem.cpp $SRC $JE/Common/Chunk.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/Action.cpp"
-        "ActionMoveTo|modules/openje/tests/je/ActionMoveTo/ActionMoveTo.cpp|$JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp"
-        "Scripting|modules/openje/tests/je/Scripting/Scripting.cpp|$JE/Scripting.cpp $JE/ActionMoveTo.cpp $JE/Action.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/Gregorian.cpp $SRC"
-        "GUILoading|modules/openje/tests/je/GUILoading/GUILoading.cpp|$JE/GUI/InterfaceFile.cpp $JE/GUI/SkinDefaults.cpp $JE/GUI/SkinFragments.cpp $JE/GUI/SkinTable.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/PathManager.cpp $JE/Gregorian.cpp $JE/Action.cpp $SRC"
-        "SpawnMove|modules/openje/tests/je/ActionMoveTo/SpawnMove.cpp|src/F3/MapEntitySpawn.cpp src/F3/GameActionMoveTo.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp $JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp"
-        "CombatMath|modules/openje/tests/je/CombatMath/CombatMath.cpp|src/F3/CombatMath.cpp $SRC"
+        "cls_0x4d8d70|modules/openje/tests/je/cls_0x4d8d70/cls_0x4d8d70.cpp|$JE/cls_0x4d8d70.cpp|11"
+        "PathManager|modules/openje/tests/je/PathManager/PathManager.cpp|$JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/Resources.cpp $JE/VFX_Parameter.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp $JE/Action.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp src/F3/CombatManager.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp|74"
+        "ResourceSystem|modules/openje/tests/je/ResourceSystem/ResourceSystem.cpp|$JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $SRC|111"
+        "StringSystem|modules/openje/tests/je/StringSystem/StringSystem.cpp|$JE/SS/StringSystem.cpp $JE/SS/EngineStringSystem.cpp $JE/SS/StringFormat.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Strings.cpp $JE/VFX_Parameter.cpp $JE/World.cpp $JE/Gregorian.cpp $JE/Subsystem.cpp $SRC $JE/Common/Chunk.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/Action.cpp|20"
+        "ActionMoveTo|modules/openje/tests/je/ActionMoveTo/ActionMoveTo.cpp|$JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp src/F3/MapEntitySpawn.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp|13"
+        "Scripting|modules/openje/tests/je/Scripting/Scripting.cpp|$JE/Scripting.cpp $JE/ActionMoveTo.cpp $JE/Action.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/Gregorian.cpp $SRC|6"
+        "GUILoading|modules/openje/tests/je/GUILoading/GUILoading.cpp|$JE/GUI/InterfaceFile.cpp $JE/GUI/SkinDefaults.cpp $JE/GUI/SkinFragments.cpp $JE/GUI/SkinTable.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/PathManager.cpp $JE/Gregorian.cpp $JE/Action.cpp $SRC|116"
+        "SpawnMove|modules/openje/tests/je/ActionMoveTo/SpawnMove.cpp|src/F3/MapEntitySpawn.cpp src/F3/GameActionMoveTo.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp $JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp|80"
+        "CombatMath|modules/openje/tests/je/CombatMath/CombatMath.cpp|src/F3/CombatMath.cpp $SRC|43"
       )
 
       # ---- stale-table guard ---------------------------------------------------------------
@@ -135,6 +140,29 @@ in {
       fi
 
       mkdir -p "$outDir"
+
+      # ---- T-024 integrity stamp -----------------------------------------------------------
+      # Everything printed below measures THIS payload against THIS tree at THIS instant. A result
+      # quoted without this block is not evidence: on 2026-10-20 alone, a stale installed payload
+      # and a status read through a subshell each looked exactly like a green (harness items
+      # 8b, 14, 17).
+      gitq() { (cd "$root" && git "$@" 2>/dev/null) || printf 'unknown'; }
+      stamp_rev=$(gitq rev-parse --short HEAD)
+      stamp_sub=$( (cd "$root/modules/openje" && git rev-parse --short HEAD 2>/dev/null) || printf 'unknown')
+      [ -n "$stamp_sub" ] || stamp_sub=unknown
+      stamp_dirty=$(gitq status --porcelain | grep -c . || true)
+      stamp_build_dirty=$(gitq status --porcelain -- cmake.toml CMakeLists.txt src devenv modules | grep -c . || true)
+      stamp_hash=$(grep -oE '"[A-Za-z0-9_]+\|[^"]*\.cpp[^"]*"' "$0" | cksum | cut -d' ' -f1)
+      printf 'GATE STAMP\n'
+      printf '  time     : %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+      printf '  HEAD     : %s   openje: %s\n' "$stamp_rev" "$stamp_sub"
+      printf '  dirty    : %s files total, %s build-affecting (cmake/src/devenv/modules)\n' \
+        "''${stamp_dirty:-0}" "''${stamp_build_dirty:-0}"
+      printf '  payload  : %s\n  table    : %s rows, hash %s\n' \
+        "$0" "''${#suites[@]}" "$stamp_hash"
+      printf '  compiler : %s\n' "$(${mingxCxx} --version 2>/dev/null | head -1)"
+      printf '  exe      : %s\n\n' "$(${statBin} -c '%y %s' "''${OPENVB_TEST_EXE:-$root/build/F3.exe}" 2>/dev/null || printf absent)"
+
       fails=0
       passed=0
       summary=""
@@ -164,7 +192,14 @@ in {
         name="''${entry%%|*}"
         rest="''${entry#*|}"
         test_src="''${rest%%|*}"
-        impl_srcs="''${rest#*|}"
+        rest="''${rest#*|}"
+        impl_srcs="''${rest%|*}"
+        min_checks="''${rest##*|}"
+        for pair in $(printf '%s' "''${OPENVB_TEST_FLOOR:-}" | tr ',' ' '); do
+          case "$pair" in "$name="*) min_checks="''${pair#*=}" ;; esac
+        done
+        got_checks=$(grep -cE '^[[:space:]]*(if[^(]*\)?[[:space:]]*)?(check|CHECK|expect|assert)\(' "$test_src" 2>/dev/null || true)
+        [ -n "$got_checks" ] || got_checks=0
 
         if [ -n "$only" ] && ! printf '%s' ",$only," | grep -qi ",$name,"; then
           continue
@@ -201,6 +236,11 @@ in {
           tail=""
           [ -n "$syms" ] && tail=" missing: $syms"
           printf '%-15s BUILD-FAIL (exit %d) kind=%s%s\n' "$name" "$cstat" "''${kind:-unknown}" "$tail"
+          # Diagnostics surface on their own (implementer-B's T-024 scope ask): a red row that
+          # printed only kind=error forced a manual re-run of that row's g++ line to read anything.
+          printf '%s\n' "$log" > "$outDir/$name.build.log"
+          printf '  diagnostics (full: %s/%s.build.log):\n' "$outDir" "$name"
+          printf '%s\n' "$log" | grep -E 'error|undefined reference|LNK' | head -6 | sed 's/^/    /'
           [ $verbose -eq 1 ] && printf '%s\n' "$log"
           summary="$summary$name=BUILD-FAIL(''${kind:-unknown}) "
           fails=$((fails + 1))
@@ -211,11 +251,24 @@ in {
         rstat=$?
         line="$(printf '%s' "$runlog" | grep -E '^(OK|FAIL|[0-9]+ failures)' | head -3 | tr '\n' ' ')"
         if [ $rstat -eq 0 ] && printf '%s' "$line" | grep -q '^OK'; then
-          printf '%-15s OK   %s\n' "$name" "$line"
-          summary="$summary$name=OK "
-          passed=$((passed + 1))
+          if [ "$got_checks" -lt "$min_checks" ]; then
+            # A green run that lost its assertions is not a green run. Stated boundary: this
+            # counts check() calls in the SOURCE, so it catches removal and vacuity, not a runtime
+            # path that silently skipped them - that needs the suite itself to report a count.
+            printf '%-15s ASSERT-FAIL (%s checks in %s, floor %s)\n' "$name" "$got_checks" "$test_src" "$min_checks"
+            printf '  floor enforced by source count; prove it bites with OPENVB_TEST_FLOOR=%s=99999\n' "$name"
+            summary="$summary$name=ASSERT-FAIL "
+            fails=$((fails + 1))
+          else
+            printf '%-15s OK   %s [%s asserts >= %s]\n' "$name" "$line" "$got_checks" "$min_checks"
+            summary="$summary$name=OK "
+            passed=$((passed + 1))
+          fi
         else
           printf '%-15s FAIL (exit %d) %s\n' "$name" "$rstat" "''${line:-<no OK/FAIL line>}"
+          printf '%s\n' "$runlog" > "$outDir/$name.run.log"
+          printf '  run output (full: %s/%s.run.log):\n' "$outDir" "$name"
+          printf '%s\n' "$runlog" | grep -E '^FAIL|failures|error' | head -6 | sed 's/^/    /'
           [ $verbose -eq 1 ] && printf '%s\n' "$runlog"
           summary="$summary$name=FAIL "
           fails=$((fails + 1))

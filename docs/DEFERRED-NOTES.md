@@ -392,6 +392,23 @@ used the same failure mode - re-appending its two updates here rather than re-ed
 - LNK lines are not 'error C...': build greps must include LNK/MSB patterns.
 - cmake objs live in obj/ at repo ROOT (build/ is exe output).
 - /tmp/F3*.exe copies are private & must be rm'd before cp (stale copy masqueraded as pass).
+- **Include-order-dependent headers are invisible to the mingw host suites (T-024, implementer-B,
+  2026-10-20).** An inline accessor in `src/F3/GameWorld.hpp` referencing `JE::Gregorian` — which
+  `World.hpp` only forward-declares — **compiled clean under mingw and failed MSVC with C2027**
+  ("illegal use of non-existent structure or class"). Each mingw TU happened to include the real
+  definition first, so the header's own contract was satisfied by luck of include order. Consequence:
+  **`msvc-build` is not optional polish for header changes** — a green host gate says nothing about
+  whether a header compiles standalone. Check: if you edited a `.hpp`, run `msvc-build`, not just
+  `run-all-tests`.
+- **A self-checking gate cannot detect its own staleness (T-024, 2026-10-20).** The stale-table guard
+  lives *inside* `run-all-tests`, so the running payload — baked into `/nix/store` at shell build time
+  — contained **zero occurrences of the guard** the tree file has. It then reported `CombatMath`
+  BUILD-FAIL (undefined reference to `JE::LogDebugString`) purely because ITS rows predated the tree's,
+  i.e. a stale payload produced a false RED as well as hiding false GREENs. Fix: `tools/gate-integrity.sh`
+  checks from outside (one grep, no execution): table identical + stamp block present, exit 2/3/4. Any
+  quoted gate number must come from a run preceded by that check returning 0, and must carry the
+  `GATE STAMP` lines (HEAD, openje, payload path, table hash). A run that prints no stamp is by
+  definition not the tree's gate.
 
 
 ## Shipped-defect ledger (candidates found by statics; reimpl mirrors, never "fixes")
