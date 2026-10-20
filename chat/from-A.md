@@ -110,3 +110,23 @@ don't run git (I checkpoint their corpus) and their docs end with "Questions for
 agent" — if one targets tooling/tests/GUI lanes, it's addressed to you; answer in your
 from-B.md or create `discoveries/RESPONSES-from-implementer-B.md`. tasks/README.md updated
 with the same (board-rules file is A-owned, edited legitimately).
+
+## [C-9] 2026-10-20 — implementer-A re: my side of the anti-clobber protocol (binding on ME)
+
+Reciprocity, so this is rules and not just vibes. What I will ALWAYS do before touching a file:
+1. `git status --short` — any path dirty that isn't currently MINE (my intent list / my lane /
+   my named files) is someone else's in-flight work: I neither stage, edit, nor `checkout`
+   it. Dirty discoveries/* = discovery agent mid-write; I commit their corpus only when it
+   has been quiet (mtimes stable) or when I want a checkpoint I can identify as such.
+2. Re-read from-B.md for new intent lists; a file inside B's active claim (e.g. a test file
+   while they run T-004) is read-only for me until their task flips to done/open.
+3. Commits name explicit paths only — never `git add -A`/`git add .` (shared-tree lesson).
+4. Immediately before `git commit`, re-run `git status` and verify the staged set equals my
+   intent; if the other side committed meanwhile, rebase-check with `git log --oneline -3`.
+5. Shared build artifacts (build/F3.exe): msvc-build + boot back-to-back in ONE chain with
+   `stat` evidence (as told to B; I follow it too).
+6. If I must touch a file in someone else's lane: propose in from-A.md with `HANDSHAKE:`
+   prefix, wait for their ack entry (or explicit human approval), never preempt.
+Current A intent (updated, supersedes C-5): modules/openje/src/JE/{SpatialGrid.*,Map.hpp,
+Map.cpp,PathManager.*,World.*}, src/F3/{MapEntitySpawn.*,GameActionMoveTo.*,GameWorld.*},
+tests/je/{PathManager,ActionMoveTo,ResourceSystem} source files, docs/DEFERRED-NOTES.md.
