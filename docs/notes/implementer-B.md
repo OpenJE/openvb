@@ -164,7 +164,12 @@ Consequences for T-004 (and for the Map.cpp comments):
 3. `+0x28` = 0 in all three; the 4th EMAP string is empty in all three; strings are
    `<map>.8` / `<map>.rle` / `<map>_AM.dds` (so the ambient-texture name is the `_AM.dds`, whose
    trailing `64`/`60` byte in the ambient quad is presumably a strength/alpha — semantics unknown).
-4. `k1k2k3` = `ff 00 00` in all three -> `mbr_0x1B4 = 0xFF000000`; combined with the
+4. `k0..k3` are **all zero** in the shipped maps, and `mbr_0x1B4 = 0xFF000000` there — the `ff`
+   comes from the expression's own `0xFFFFFF00` sentinel, not from data
+   (`t1=((k1|0xFFFFFF00)<<8)&m = 0xFFFF0000; t2=((k2|t1)<<8)&m = 0xFF000000; r = k3|t2`).
+   Careful with this one: every shift must be masked to 32 bits, and unmasked python bignums give
+   a *different* answer, so mirror it in C or mask each step. A synthetic `k1=0xff` body gives
+   `0xFFFF0000` (that is what the new test asserts). Combined with the
    `+0x1C8/+0x1CC/+0x1D0/+0x1D4` mirror copies that means the v5 tail is a duplicated
    (flags, x, y, z) block, which matches the "3 float extras" assert already in the suite.
 5. Chunk chains observed: Default_StartMap `EMAP+EMEP+ECAM+EMNP`; Mainmenu
@@ -184,3 +189,33 @@ registry** ("Tool ... not found", then `mcp_tools_search` returns other servers)
 (pids 12324/12326). So the servers are healthy; the harness's client connection dropped — needs a
 `/mcp` reconnect from the operator, not a restart (a restart would cut A off mid-analysis).
 `ida-orig-gdb` shows `exited` (A's stale Oct-19 stub; harmless).
+
+## T-004 delivered — what the byte-store tests found
+
+Tests added to `modules/openje/tests/je/ResourceSystem/ResourceSystem.cpp` (T-004): real-file
+Mainmenu/Default_StartMap byte asserts + synthetic v0/v2/v3/v5 `ReadEMAP` bodies through a
+hand-built `MemStream` (only `{start,end,cursor}` are touched, so no `Res` is needed).
+
+Findings, all verified against the ORIGINAL (objdump on `$OPENVB_ORIG_EXE` + IDA `decompile`,
+never against our code):
+
+1. **`Map::ReadEMAP` mirror block converts instead of copying.** Original is three plain 4-byte
+   moves (`mov [esi+0x1cc],eax` @0x56CCD4, `[esi+0x1d0],ecx` @0x56CCDA, `[esi+0x1d4],edx`
+   @0x56CCE0) = raw float bit patterns. Our port assigns `dword = float` (Map.cpp 0x56CCD4
+   comment block), producing 250/500/1 instead of 0x437A0000/0x43FA0000/0x3F800000. Pinned as a
+   KNOWN-ISSUE check so the fix fails-then-passes visibly.
+2. **`Map::Map()` ctor defaults diverge from `ctor_0x57b330`** (size 0x54b, verified as
+   `JE::Map::ctor_0x57b330` by `lookup_funcs`): original writes 0xC0 to +0x110..+0x115
+   (`mov al,0xc0` @0x57B4CE, stores @0x57B4DD..0x57B4FB), 0x80 to +0x116 (@0x57B501), 250 to
+   +0x11C (@0x57B50E), 0xFF808080 to +0x1B4 (@0x57B5F0), **250.0f/500.0f** to +0x1B8/+0x1BC
+   (@0x57B5FA/0x57B604 = 0x437A0000/0x43FA0000), and 1/1 to +0x1D8/+0x1D9 (@0x57B618/0x57B61F).
+   We zero them and use 16384.0f/524288.0f — and `Map.hpp`'s member comments attribute those
+   wrong numbers to this very ctor, so the comment is not just stale, it is mis-sourced.
+3. **The v1 fog branch's temp read leaves the raw fog bytes at +0x110..+0x112 in the original**
+   (reads at 0x56CA4F..0x56CA9D target `&mbr_0x110+0/1/2`, then shifts up to +0x113..+0x115).
+   Our port reads into locals, so those three bytes stay at default. Pinned (KNOWN-ISSUE).
+   Harmless today (nothing reads +0x110..+0x112) but it is an observable state difference.
+4. Version gating re-confirmed from the decompile: `if (v3)` = version>=1 (fog), `>=2`
+   (+0x1D8 from `!=0`), `>=3` (ambient quad overwrites +0x113..+0x116 including the 0x80 slot),
+   `>=4` (+0x1D9), `>=5` (k0/k1k2k3 + 3 float extras + mirrors). So the `0x80` sentinel is only
+   observable for version 1-2 files, and none shipped — hence the synthetic streams.

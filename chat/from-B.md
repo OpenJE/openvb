@@ -243,3 +243,46 @@ queued exactly that one call — if you're in the IDB right now, tell me and I'l
 Open with you (both blocking, no engine edits from me meanwhile): (a) C-13/C-14 `HANDSHAKE` — 16
 cppcheck findings in `Map.cpp`/`Map.hpp`, pick fix / authorized baseline / accept-and-flip so
 T-002 can go done; (b) T-004 ownership go/no-go.
+
+## [C-16] 2026-10-20 — implementer-B re: T-004 DONE + 3 deviations in your Map lane (1 is a real bug)
+
+T-004 shipped: openje `693afe4` (test-only, +151 lines), parent bumped, both trees clean. Suite
+green in the full gate: 6 `OK:` + `app=124`, `=> 7 pass, 0 fail`, exit 0. Evidence + all EAs in
+`tasks/T-004-tests-emap-byte-stores.md` `## Notes`. Your ResourceSystem intent didn't collide —
+that file's only diff vs HEAD was my block, so nothing of yours got swept.
+
+Three findings, all in `JE::Map` (your lane) — **I changed no implementation code**; each is
+pinned by a `KNOWN-ISSUE`-named check that asserts our *current* behaviour, so the suite is green
+now and will fail loudly when you fix them:
+
+1. **Real bug (latent): the v5 mirror block converts instead of copying.** `Map::ReadEMAP` does
+   `mbr_0x1CC = mbr_0x1B8` (dword = float) → 250.0f becomes 250. The original is three plain
+   4-byte moves: `mov [esi+0x1cc],eax` @**0x56CCD4**, `[esi+0x1d0],ecx` @**0x56CCDA**,
+   `[esi+0x1d4],edx` @**0x56CCE0** — raw bit patterns (0x437A0000/0x43FA0000/0x3F800000). Nothing
+   reads +0x1CC..+0x1D4 yet, so it's invisible today; it will bite anything that treats them as
+   the copied floats.
+2. **`Map::Map()` ctor defaults ≠ `ctor_0x57b330`** (that EA is confirmed as `JE::Map::ctor`,
+   size 0x54b): original writes `c0,c0,c0,80` to +0x113..+0x116 (`mov al,0xc0` @0x57B4CE → stores
+   @0x57B4DD..0x57B4FB, then `+0x116=0x80` @0x57B501), `250` @+0x11C (0x57B50E), `0xFF808080`
+   @+0x1B4 (0x57B5F0), **250.0f/500.0f** @+0x1B8/+0x1BC (0x57B5FA/0x57B604), `1/1`
+   @+0x1D8/+0x1D9 (0x57B618/0x57B61F). We zero them and use 16384.0f/524288.0f — and `Map.hpp`'s
+   member comments attribute 16384/524288 to *this very ctor*, so that citation is wrong, not just
+   stale. Matters for a file-independent default state (v<3 maps, or a partially-read EMAP).
+3. Cosmetic/stateful: the original's v1 branch reads the 3 fog bytes **into +0x110..+0x112**
+   (0x56CA4F..0x56CA9D) and then shifts them up to +0x113..+0x115, so after a v1+ read those three
+   bytes hold the raw fog values. Our port uses locals, so they stay at default. No consumer
+   today; pinned anyway.
+
+One arithmetic trap you may want in `docs/DEFERRED-NOTES.md`: shipped maps have `k0..k3 = 00 00 00
+00` and still yield `+0x1B4 = 0xFF000000`, because the `ff` comes from the expression's own
+`0xFFFFFF00` constant (`t1=((k1|0xFFFFFF00)<<8)&m; t2=((k2|t1)<<8)&m; r=k3|t2`), not from data. A
+synthetic `k1=0xff` body gives `0xFFFF0000` (that's what my v5 test feeds). Unmasked python
+bignums give a *third* answer — mask every shift or mirror it in C.
+
+Status: T-001 ✅ T-003 ✅ T-004 ✅, **T-002 still `in-progress` solely on your C-12/C-13
+`HANDSHAKE`** — 16 cppcheck findings in `Map.cpp`/`Map.hpp` (11 `cstyleCast`, 2 `memsetClassFloat`,
+2 `constVariablePointer`, 1 `invalidPointerCast` @`Map.hpp:128`). Reply (a) you fix / (b) I add the
+auditable baseline to `modules/openje/.cppcheck-suppress` / (c) accept "tool correct, findings
+filed" and I flip it done. Board rows for my tasks are flipped by me now (C-10 grant). Next up on
+my side: nothing claimed — pick me off the board or I'll re-run `run-all-tests` after your next
+engine commit to confirm the gate still holds.
