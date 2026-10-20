@@ -233,11 +233,17 @@ in
     uv
     iproute2
     # T-024/M-001: a virtual X server so wine's d3d8/wined3d path can be exercised headlessly
-    # instead of attaching to the developer's real DISPLAY :0. Verified against this flake's own
-    # pinned nixpkgs: pkgs.xorg.xvfb exists (an xorg-server variant) and xvfb-run is TOP-LEVEL,
-    # not under xorg (pkgs."xvfb-run") - the common xorg.xvfbRun spelling does not resolve here.
-    xorg.xvfb
-    "xvfb-run"
+    # instead of attaching to the developer's real DISPLAY :0.
+    #
+    # BROKE THE WHOLE ENV FOR ~20 MINUTES (2026-10-20, caught by implementer-B): I first wrote the
+    # bare string "xvfb-run" here. Inside a `with pkgs; [ ... ]` list a quoted string is a STRING, not
+    # an attribute lookup, and devenv's `packages` option requires a package - so `devenv
+    # print-dev-env` failed outright ("definition ... is not of type `package'") and NO lane could
+    # reload, including the tool that exists to detect that staleness. Correct form is the quoted
+    # attribute path: pkgs."xvfb-run". Lesson recorded as harness item 18: verify the TYPE of a
+    # changefile edit by evaluating what consumes it, never just that an attribute name exists.
+    xvfb   # top-level: devenv warns that xorg.xvfb is deprecated/renamed
+    pkgs."xvfb-run"
   ]) ++ [
     inputs.wrkflw.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wrkflw
     imhex-mcp

@@ -317,3 +317,35 @@ The rule: an assertion helper takes the exit code **and** the evidence line as s
 failure, not a pass. A test that cannot fail is decoration, and the tool written to check assertions is
 exactly where that is most expensive. Corollary for grep-style checks: match the **field under test**, not
 the whole record, or a path containing a forbidden token blesses every mention in that file.
+
+
+## 18. A changefile edit is verified by evaluating what CONSUMES it, not by checking a name exists
+
+I broke `devenv print-dev-env` for every lane for about twenty minutes. The edit was one line in
+`devenv/packages/openvb.nix`: a bare string `"xvfb-run"` inside `packages = (with pkgs; [ ... ])`. Inside
+that list a quoted string is a **string**, not an attribute lookup, and devenv's `packages` option is
+typed `package` — so the whole environment failed to evaluate ("definition ... is not of type `package`").
+Implementer-B found it and named the cruel part: **the tool I shipped to detect stale payloads depends on
+the very reload my edit had made impossible.** `devenv-reload` could not run, so `run-all-tests` stayed
+stale, and the false-red guard I had just written was unreachable.
+
+What I had "verified" beforehand was `builtins.hasAttr "xvfb-run" pkgs` → true. That is a fact about the
+attribute set, not about my edit. The check that would have caught it costs ~10 seconds:
+
+    devenv print-dev-env > /tmp/env.sh 2>/tmp/env.err; echo $?   # never 2>&1
+
+Rules that follow:
+- **Evaluate the consumer.** For a package list, the consumer is the shell evaluation, not a name lookup.
+  Type errors in a changefile are global, immediate, and silent to a name-existence check.
+- **Land the integrity check before the change it guards**, or a broken changefile hides behind the reload
+  it prevents (B's phrasing, added to item 14's spirit).
+- One fix per commit, and quote the gate **after** the fix: the run below is the first green of the day that
+  carries a stamp, a verified-current table, and per-suite assertion floors.
+
+## 19. Quote a gate with its stamp or not at all
+
+The stamp block (`GATE STAMP` = UTC time, HEAD, openje SHA, dirty totals, payload path, table rows + hash,
+compiler, exe mtime/size) exists so a number cannot be separated from the artifact that produced it.
+Preceding it with `tools/gate-integrity.sh` (exit 0) closes the loop from outside, because a script cannot
+report on its own staleness. A gate run that prints no stamp is not the tree's gate, even when it says 9/9 —
+or, as it turned out, when it says CombatMath is red.
