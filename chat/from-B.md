@@ -930,3 +930,52 @@ it goes in my GUI-lane reasoning too (no defensive null check where the original
 Now working: the other half of T-007 that does NOT need the iterator — surfacing the 9 inline
 `GUI::Fragment` sub-records (Window+0x90, stride 0x158) that my reader already consumes but discards.
 Reserving `modules/openje/src/JE/GUI/` + `modules/openje/tests/je/GUILoading/` before I write.
+
+## [C-42] 2026-10-20 — implementer-B re: T-007 sub-records are DONE and they turned out to be a nine-slice; textures ship as STEM names (ftype 200)
+
+Landed (openje `SkinFragments.{hpp,cpp}` + 20 new `GUILoading` checks; rows updated, suite green,
+cppcheck 0 findings on my files). Not from reading my own parser — by counting disagreements across
+all 25 shipped files (1596 widgets, 14364 records):
+
+- **The 9 inline records are a 3x3 nine-slice border set**, slot order UL, UM, UR, ML, **C**, MR,
+  LL, LM, LR, and the authored name suffixes match that order in every named record.
+- **`d28` = piece role, deterministic by slot** except the centre: corners 0 (6384/6384), horizontal
+  edges 1 (3192/3192), vertical edges 2 (3192/3192), centre 0=as-is (642) or 3=fill (954).
+- **`d2C`/`d30` = source piece size**, and the rect obeys three rules with **zero violations in
+  14364 records**: corner rect == piece exactly; horizontal-edge rect height == piece height (width
+  stretches); vertical-edge rect width == piece width. `d34`/`d38` are zero everywhere (no meaning
+  claimed, audited anyway). `d154` is colour-like: 10593 records hold **`0xFF808080`**, which is
+  exactly the `Skin::LoadDefault_0x523490` "not four components" fallback I ported in `SkinDefaults`
+  — the two ports confirm each other. `d8a` is a flag (277 exceptions, all Actionbar
+  `picWeapon02CalledShot_*`); `d8b` uninterpreted (varies per widget).
+- **Textures DO ship, under stem keys**: `resource.rht` ftype **200**, 1653 entries (422 pack
+  `Interface`), name = filename minus extension (`zzmain-upperleft.tga` ↔ `zzmain-upperleft`).
+  `DeriveTextureKey` + the engine's own `ResourceSystem::ResourceExists_0x49abd0` resolve
+  **157 of the 165** distinct fragment names; the 8 misses are one superseded family,
+  `main-{left,upperleft,uppermiddle,upperright,right,lowerleft,lowermiddle,lowerright}.bmp`,
+  asserted as a table so drift is loud. Every shipped name has exactly one `.`, so the last-dot rule
+  is *not* observable here — key form is marked **(inferred)**, pending one observation.
+- **I was wrong about `Gfx_Engine +0xDC` and corrected §7 G1**: 0x5c0970 → `cls_0x55dc80::meth_0x51f570`
+  on `byte_70B200` is **acquire-by-name, not get-or-insert** — walks the list comparing names,
+  outputs `node[3]` as the id, `++(node+44)` use count, returns 1; empty list or miss writes **id 0**
+  and returns 0 (0x51f643/0x51f64d). So unregistered names fail *quietly*, which is why those 8
+  missing `main-*.bmp` fragments need no porting-around, and matches `LoadDefault`'s clamp-to-0.
+
+Two routed questions (rule 3, not coded as guesses):
+1. **One lockstep observation** settles the last binding unknown: log `param_2` (the name string) at
+   `0x51f570` when a Picture loads — stem or `name.tga`? My seam says stem, marked inferred.
+2. **Propose T-012: port the texture registry `cls_0x55dc80` (`byte_70B200`)** — node layout
+   (`id = node[3]`, `useCount @ +44`, list head `mbr_0x28`), plus `+0xE0`(0x5c0940 add),
+   `+0xD8`(0x5c0930), and `+0xC4`(0x5c0a90, a 14-arg SEH forwarder whose decompiler fails). This is
+   engine core shared by GUI/VFX/Octree/fog, so I am not half-porting it inside a GUI file; your call
+   who takes it. T-007's remaining scope is exactly this + the observation above.
+
+Sequencing answer stands from C-41: **T-007 first** — and note the nine-slice half is now in, so what
+is left is the registry, i.e. whoever does T-012. If C lands the `VFX_Parameter` section iterator
+(T-009) I can still finish the `.ini`-driven skin table independently of the registry.
+
+Gate/tooling note for you as authority: `run-all-tests` now prints a STALE warning against the
+working-tree table, so a peer's row edit can no longer masquerade as an engine link failure — see
+C-41 and `devenv-reload`. My GUILoading row gained `$JE/GUI/SkinFragments.cpp` (additive, ordering
+untouched); after your next env rebuild the rows should read: GUILoading = InterfaceFile,
+SkinDefaults, SkinFragments + the usual engine deps.

@@ -376,3 +376,20 @@ PATH = 4 BUILD-FAIL, same commit, same machine, minutes apart.
 only, never a failure - the gate still measures what it holds, and a mid-edit table edit is legal.
 Verified both directions: silent when rows match (9/9), fires and names the row when one row gains
 a source.
+
+## T-007 sub-records: how the nine-slice reading was obtained (and why it is not self-referential)
+The dump tool is the suite's own loader, but the RULES came from counting disagreements: parse all
+25 files, print every record, then let python compute violation counts per hypothesis (corner rect vs
+piece size, edge extent, `d28` vs slot, zero-only fields, colour value histogram). A hypothesis with
+0 violations over 14364 records is a statement about the shipped data; a hypothesis with 277
+violations (`d8a == 1`) is a flag with authored exceptions, and I recorded which family those are.
+Nothing in the suite asserts what my parser prefers; the assertions are the violation counters
+themselves plus corpus totals, so a field-width regression changes a counter instead of quietly
+changing an expected number. I also verified the assertions are LIVE by flipping one expected value
+(157 -> 156) and watching the suite fail, then restoring it.
+
+## Textures ship under stem names, extension stripped (ftype 200)
+`resource.rht` ftype 200 = images, 1653 entries (422 pack `Interface`), name field `zzmain-disabled-left`
+while the `.int` says `zzmain-disabled-left.bmp`. Coverage: 157/165 resolve, 8 miss (`main-*.bmp`).
+That is the cheapest honest "texture binding" test available without porting `Gfx_Engine`, and it is
+asserted via the engine's own `ResourceExists_0x49abd0` rather than a re-implementation of it.

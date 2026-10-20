@@ -203,8 +203,12 @@ Full chain: `Window::virt_meth_0x4b06c0` -> registry -> `Skin::vft[+8]` -> `meth
   list the MCP returns (that list is truncated at ~100 entries). Slot identities:
   `+0xC4`(196)=`0x5c0a90` (decompiler fails; callers treat the result as a texture index and clamp
   negatives to 0 — 0x5236ba..0x5236c5), `+0xD8`(216)=`0x5c0930`, `+0xDC`(220)=`0x5c0970`
-  (a get-or-insert into `cls_0x55dc80::meth_0x51f570` on global `byte_70B200`, @0x5c09a3 — this is
-  the "skip the Demand when nonzero" probe at 0x523641 / 0x4b21c1), `+0xE0`(224)=`0x5c0940`
+  (**ACQUIRE-by-name, NOT get-or-insert — corrected 2026-10-20**: it forwards to
+  `cls_0x55dc80::meth_0x51f570` on global `byte_70B200` @0x5c09a3, which walks the registry list and
+  compares the requested name against each node's string (`sub_4AB1C0` + `meth_0x41e4b0`); on a hit
+  it outputs `node[3]` as the id, calls `meth_0x51f160` and **`++(node+44)`** (a use count) and
+  returns 1, while an empty list or a miss writes **id 0** and returns 0 (0x51f643/0x51f64d; the
+  walk wraps back at `this->mbr_0x28` @0x51f63d)), `+0xE0`(224)=`0x5c0940`
   (add/lock by name string, 0x505c3f). Consumers span GUI Picture/Label, AreaMap icons, cursor
   manager, container item icons, VFX sprite/model/trail, Octree2Gfx and Gfx_HeightFog — one shared
   texture registry for GUI **and** 3D. New sub-gap: what `byte_70B200`/`cls_0x55dc80` is (**G9**).
@@ -227,3 +231,49 @@ Full chain: `Window::virt_meth_0x4b06c0` -> registry -> `Skin::vft[+8]` -> `meth
   record reader producing a widget tree with name lookup (test: Mainmenu → `MainmenuWin` +
   child count), (b) `EngineStringSystem::Format` tag decode + `Get` wiring into Label text,
   (c) skin sub-record decode + `Demand` binding so pictures resolve to real textures.
+
+## 8. What the 9 skin records MEAN (measured from the 25 shipped `.int` files, T-007)
+
+The reader contract is `Fragment::ReadFrom_0x4b20a0`; what the *data* says is a **3x3 nine-slice
+border set**, always in this slot order (`JE::GUI::SLOT_*` in `JE/GUI/SkinFragments.hpp`):
+
+| slot | position | name suffix seen | role dword `d28` | geometry rule that holds |
+|---|---|---|---|---|
+| 0 | upper-left | `-upperleft` | 0 always | rect == piece (d2C x d30) |
+| 1 | top edge | `-uppermiddle` | 1 always | rect height == d30, width stretches |
+| 2 | upper-right | `-upperright` | 0 always | rect == piece |
+| 3 | left edge | `-left` | 2 always | rect width == d2C, height stretches |
+| 4 | centre | `-middle` or a whole graphic | 0 (as-is) or 3 (fill) | unconstrained |
+| 5 | right edge | `-right` | 2 always | rect width == d2C |
+| 6 | lower-left | `-lowerleft` | 0 always | rect == piece |
+| 7 | bottom edge | `-lowermiddle` | 1 always | rect height == d30 |
+| 8 | lower-right | `-lowerright` | 0 always | rect == piece |
+
+Counts over the whole shipped corpus (1596 widgets, **14364 records**, 13932 named / 432 unused):
+- `d2C`/`d30` are the **source piece dimensions**: Mainmenu window border 32x32 corners with 8x2
+  top/bottom and 2x8 left/right; PipBoy `quickslot-*` 2x2 corners with 8x2 / 2x8 edges; the centre
+  carries the real graphic size (e.g. `f3_pipboy.tga` 2x474, Mainmenu's centre piece stretched to
+  1024x768 from a 32x32 margin record).
+- `d34` and `d38` are **zero in every one of the 14364 records** (no meaning claimed; audited so a
+  future parse drift cannot pass silently).
+- `d154` behaves like a packed colour: 10593 records hold `0xFF808080` — exactly
+  `Skin::LoadDefault_0x523490`'s "not four components" fallback ported in `JE/GUI/SkinDefaults` —
+  2592 hold `0x00808080`, the rest are authored values.
+- `d8a` is 1 in 14087 records; the 277 exceptions are all one authored family (Actionbar
+  `picWeapon02CalledShot_*` overlays), so it is a flag rather than a constant.
+- `d8b` varies per widget (Mainmenu root `0x3DE30AD4`, `winMinute1` `0x3B940A0A`): small
+  float-like values, meaning **not** claimed.
+
+**Textures do ship, keyed without their extension.** `resource.rht` holds 1653 ftype-**200**
+resources (422 in pack `Interface`) and the name field is the texture file's stem — fragment
+`"zzmain-upperleft.tga"` vs resource `zzmain-upperleft`. Taking the stem and asking
+`ResourceSystem::ResourceExists_0x49abd0` resolves **157 of the 165** distinct fragment names; the 8
+misses are one superseded family (`main-{left,upperleft,uppermiddle,upperright,right,lowerleft,
+lowermiddle,lowerright}.bmp`, replaced in shipped data by the `zzmain-*` set). Every shipped name
+has exactly one `.`, so "strip after the last dot" is not observable in this data set. That key form
+is *(inferred from the shipped index)* — the string actually handed to the acquire slot (+0xDC, see
+G1) still needs one lockstep observation.
+
+Consequence for the demo: 8 authored fragments reference textures that are not in the shipped
+index, so at runtime they take the documented **miss path** (id 0, return 0) — which is what
+`Skin::LoadDefault`'s clamp-to-0 absorbs. Nothing to invent, and nothing to "fix".

@@ -47,3 +47,39 @@ actually resolve a picture. Resolves recon gaps **G1** and **G2**.
 ## Notes
 Needs T-005 (tree to attach skins to) and a working `Demand` path. Do the step 1–2 RE first: if it
 contradicts recon §1, update the recon doc before writing code.
+
+## Notes (implementer-B, 2026-10-20 — sub-records DONE, binding tail split into two facts)
+
+**Landed** (`JE/GUI/SkinFragments.{hpp,cpp}` + 20 checks in `tests/je/GUILoading`): the 9 inline
+records are a **3x3 nine-slice border set** and every rule is measured over all 25 shipped files
+(1596 widgets / 14364 records / 13932 named, 432 unused):
+slot order UL,UM,UR,ML,C,MR,LL,LM,LR (name suffixes agree in every named record); `d28` is the piece
+role and is a deterministic function of the slot except the centre (0 as-is or 3 fill) — corners
+6384/6384 are 0, edges 3192/3192 are 1 (horizontal) and 2 (vertical); `d2C`/`d30` are the SOURCE
+piece size and the rect obeys: corners rect==piece, horizontal edges height==piece height, vertical
+edges width==piece width (0 violations in 14364); `d34`/`d38` zero everywhere; `d154` is colour-like
+and 10593 records hold `0xFF808080`, which independently confirms the `SkinDefaults` fallback;
+`d8a` is a flag (277 exceptions, all Actionbar `picWeapon02CalledShot_*`); `d8b` uninterpreted.
+
+**Texture binding: the shipped data answers most of it.** `resource.rht` carries 1653 ftype-**200**
+resources (422 in pack `Interface`) whose NAME FIELD IS THE STEM — fragment
+`zzmain-upperleft.tga` ↔ resource `zzmain-upperleft`. `DeriveTextureKey` + the engine's own
+`ResourceExists_0x49abd0` resolve **157 of 165** distinct fragment names; the 8 misses are exactly
+the superseded `main-*.bmp` family (asserted as a table, so drift is loud). All shipped names have
+one dot, so the last-dot rule is not observable in this corpus.
+
+**Correction to my own earlier note** (was §7 G1 here): `Gfx_Engine +0xDC` (0x5c0970 →
+`cls_0x55dc80::meth_0x51f570` on `byte_70B200`) is **acquire-by-name**, not get-or-insert: it walks
+the list comparing names, outputs `node[3]` as the id, bumps `node+44` (use count) and returns 1; an
+empty list or a miss writes **id 0** and returns 0 (0x51f643/0x51f64d). So a name that is not
+registered fails quietly — which is why the 8 missing `main-*.bmp` fragments are not an error to
+port around.
+
+**Still open, deliberately not guessed:**
+1. the exact string passed to +0xDC at runtime (stem vs `name.tga`) — one lockstep observation of
+   `meth_0x51f570`'s `param_2` on a Picture load settles it; my key derivation is marked inferred.
+2. the registry itself (`cls_0x55dc80` @`byte_70B200`: node layout `name@+0x10?`, `id=node[3]`,
+   `useCount@+44`, list head `mbr_0x28`) and `+0xE0`(0x5c0940)/`+0xD8`(0x5c0930)/`+0xC4`(0x5c0a90,
+   14-arg SEH forwarder, decompiler fails). That is engine core shared with VFX/Octree/fog — routed
+   to the coordinator as its own task (proposed T-012) instead of half-ported here.
+3. the `.ini`-section enumeration for `Skin` records (T-009 accessors, still owed by C).
