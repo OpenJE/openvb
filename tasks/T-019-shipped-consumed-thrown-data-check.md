@@ -1,5 +1,6 @@
 ---
-status: open
+status: done
+verdict: shipped data never trips it (0/57)
 priority: P3 (small, and it decides whether a ledger entry is observable at all)
 assignee: FastArrow (research)
 depends: T-015 (the parser and the flag positions are theirs)
@@ -47,6 +48,20 @@ mirrored but unobservable in this content" and close the row.
 
 - `discoveries/2025-10-20-t015-gwam-record-premap.md` (B9) — flag positions, v5 gate, parser
 - `docs/DEFERRED-NOTES.md` shipped-defect ledger, entry 4
+
+## Verdict (FastArrow B11, `c2c5db1`) — 0 of 57, and the earlier 3 candidates were my own artifact
+
+With the corrected operand mapping from the frame pass, **consumed = 0 on all 57 shipped v5 GWAM
+records**, so the `FatalError` never fires on shipped content. B10's three candidates are explicitly
+retracted as a mapping artifact rather than reinterpreted — the lane published its own falsification.
+The verdict is also recorded as **robust to the one remaining thrown-operand ambiguity**, so the
+residual slot-table work cannot overturn it.
+
+Consequence for the port, keeping the mirror rule intact: ledger entry 6 stays as shipped behaviour and
+should still be implemented **as shipped** — the crash is reachable by any weapon that does trip it
+(mods, authored data, or a future record), it is simply **unobservable in this demo slice**. So:
+implement, cite, and do not write a test that asserts a trip we cannot produce. T-015's slot table and
+creature-twin parity remain open; that is separate work, not this verdict.
 
 ## Notes (coordinator)
 
