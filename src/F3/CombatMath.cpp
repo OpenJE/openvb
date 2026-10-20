@@ -139,9 +139,20 @@ namespace F3 {
 	// differences from the weapon twin: no ammo block at all, MELEE_DAMAGE rides on damageMax
 	// when the mode's damage type is 4 (hand-to-hand), part 9 zeros only for NON-usable targets,
 	// and a GameUsableObject target contributes its own +0xA4 DT array instead of the creature
-	// rows. DEVIATION: the 0x40a024-0x40a045 extra-object bonus branch is not modeled - its
-	// addend decompiles as `MEMORY[0x24]` (base register lost) and it is provably inert when the
-	// extra object is absent, which is the unarmed case. Routed to discovery as C-40.
+	// rows.
+	//
+	// NOT MODELED, PERMANENTLY (C-40 CLOSED by
+	// discoveries/2025-10-20-canonical-fact-sheet.md section 11 - joint ruling of two agents):
+	// the 0x40a024-0x40a045 bonus branch is a SHIPPED DEFECT, not a porting gap. Its raw bytes
+	// at 0x40a045 are `03 35 24 00 00 00` = `add esi, ds:0x24`. The decompiler's MEMORY[0x24] is
+	// LITERAL - there is NO hidden base register to recover - and VA 0x24 sits in the null page
+	// (imagebase 0x400000, nothing mapped low), so the instruction FAULTS ON EXECUTION whenever
+	// the guard holds (param_5 != null AND mode+0x18 in {1,3} AND weapon+0x3B0 in {9,10}). Shipped
+	// data never satisfies it, so it is unreachable-by-data upstream.
+	// IF YOU ARE HERE TO "FIX" THIS BY GUESSING A REGISTER: don't. Porting the add ports a crash.
+	// param_5 is also now identified: action+0x2C, the resolved equipped GameWeapon* (written
+	// @0x40446b) - and it CAN be non-null while attacking unarmed (punching while carrying a
+	// gun), so what protects the demo is the +0x3B0 comparison, NOT an absent pointer.
 	int CalculateUnarmedDamage( const AttackModeRecord& m, const CombatStats& attacker,
 	                            const CombatStats& target, int calledShotPart,
 	                            bool targetIsUsableObject, RandFn rnd ) {

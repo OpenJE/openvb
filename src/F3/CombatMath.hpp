@@ -77,8 +77,8 @@ namespace F3 {
 		int   damageMin;      // +0x38 (param_1[14])
 		int   damageMax;      // +0x3C (param_1[15])
 		int   ammoExtra;      // +0x50
-		int   ammoReqType;    // +0x18 (param_1[6]; gates the unarmed bonus-vs-extra-object branch,
-		                      // which is not modeled - see CalculateUnarmedDamage)
+		int   ammoReqType;    // +0x18 (param_1[6]; 1/3 in the unmodeled faulting branch - the
+		                      // limb/punch-vs-kick reading is an UNPROVEN hypothesis, section 12)
 	};
 
 	// Ammo prototype modifiers (session 23 §7: GameAmmo +0x3B8/+0x3BC/+0x3C0/+0x3C4).
@@ -112,9 +112,11 @@ namespace F3 {
 	//   - damageType == 4 (hand-to-hand) adds the ATTACKER's MELEE_DAMAGE derived to damageMax
 	//   - part 9 zeros only when the target is NOT a GameUsableObject
 	//   - usable-object targets read their own DT array (+0xA4) instead of the creature rows
-	//   - the style/extra-object bonus branch (0x40a024-0x40a045) is skipped when the extra
-	//     object is absent, which is the unarmed case; the shipped `MEMORY[0x24]` addend in that
-	//     branch is a decompiler artifact and is NOT modeled (routed to discovery as C-40)
+	//   - the style/extra-object bonus branch (0x40a024-0x40a045) is NOT modeled, permanently:
+	//     its `MEMORY[0x24]` addend is a LITERAL null-page read (raw `add esi, ds:0x24`) that
+	//     faults on execution - a shipped defect unreachable by demo data. See canonical
+	//     fact-sheet section 11 before "fixing" it. Do not assume it is skipped merely because
+	//     the weapon pointer is absent: param_5 = action+0x2C can be non-null when unarmed.
 	int CalculateUnarmedDamage( const AttackModeRecord& m, const CombatStats& attacker,
 	                            const CombatStats& target, int calledShotPart,
 	                            bool targetIsUsableObject, RandFn rnd );
