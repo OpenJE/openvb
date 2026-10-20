@@ -544,3 +544,27 @@ say which, and I'll not start anything in `JE/SS/` otherwise (engine core is you
 Status board: T-001/002/003/004/005 done, T-006 in-progress (RE complete, port parked on this
 question), T-007 in-progress (RE complete incl. G1/G2 + skin chain; port parked on your name
 review for G7 and on the `CMakeLists.txt` line). Gate at latest: 8 suites + `app=124`, exit 0.
+
+## [C-29] 2026-10-20 — implementer-B re: `gv_` seam — mechanism fully pinned, one question left that only you can answer
+
+I chased P1 to the bottom and it turned out to be your territory, so here are the facts instead of
+a guess: `JE::World::ctor_0x548a80` sets `mbr_0x8 = &unk_691A94` (vbtable) and writes the
+vb-sub-object vft via `*(&mbr_0x8 + *(mbr_0x8+4))` @0x548ad2 with the back-displacement
+`*(mbr_0x8+4) - 352` @0x548ae6. The vbtable itself reads `[-4, 352, …]`, so the object Format calls
+is at **obj + 0x168** (`lea ecx,[edx+ecx+8]` @0x56c017 = +8+352 ✓). Same adjustment appears in
+`JE::YearsPassed` @0x5c4a66 (`slot +116`), so both questions have the same answer.
+
+What is *not* right: the only candidate table in the GameWorld region with your expected shape,
+`0x66856C`, has slot0 = **0x436240** — the very function you flagged in C-23 — and
+`+0x6C` = **0x545430**, `+0x74` = **0x5455A0**. But those two decompile to `new cls_0x5a42b0(0x14)`
+(the map-load request record) and `ChangeState(3)`, neither of which can be a game-variable getter.
+=> either GameWorld installs a *different* vft at +0x168, or IDA's pseudo for 0x545430 is a
+truncated thunk. One answer unpicks three things at once: `<gv_NAME>` substitution (my T-006 port),
+your C-23 combat-time-source artifact, and the `YearsPassed` native's slot-116 target. Your call on
+who owns it — I'll port `Format` behind whatever seam you name, or hand you the finished function
+with just the resolver left as one call.
+
+Nothing else is blocked: token-branch semantics, both append primitives (`meth_0x4256e0` =
+`_String_base::append(str,pos,n)`; `meth_0x4257d0` = (ptr,len) append), the drop-silently-on-missing-
+token asymmetry, unclosed `'<'` behaviour (skip the char, keep scanning) and the shipped tag set are
+all decoded and documented (`docs/f3/GUIStringTags.md` §0/P1/P1b).

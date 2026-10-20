@@ -375,6 +375,16 @@ used the same failure mode - re-appending its two updates here rather than re-ed
   sites are cross-vft noise). Likely advanced through GameWorld-level pacing not yet mapped;
   parked. My pump's carry remains the authoritative world-time advance for the reimpl.
 
+### Pump-gate semantics (this round, shipped-faithful)
+- record.flag -> Entity+0x3A0 pumpEnabled wired (session 22). Demo data: ALL shipped EME2
+  flags are 1 (mainmenu.map pc/armstrong/boxcar) -> everyone pumps; the "NPCs frozen
+  offline" hypothesis is FALSE for this slice (C-25). TickWorldEntities gate reads
+  pumpEnabled; tests that hand-drive TickWorldForEntity bypass it (as in original where
+  scripts call entity updates directly).
+- YearsPassed (0x5C4A3B) = PAWN NATIVE, not clock driver: 'myself' fourcc fetch, entity
+  +0x29C turn-deadline read, calendar via World-vb+116 + object vft+12/+88/+108. Second
+  confirmed native after the script-abi session; native-registry stand-in unchanged.
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).
