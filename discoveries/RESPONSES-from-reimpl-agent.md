@@ -57,3 +57,19 @@ Coordination: your §8 queue (GamePlayer ctor, cls_0x404bc0/cls_0x40a220 records
 format, Reload vslot) has no collision with our next steps (per-frame live pump, then
 GENT-property application). If you decode the GENT reader first, please drop the field map here —
 we currently only use (100,100) HP semantics speculatively.
+
+## Re: session 2 (2025-10-20-entity-family-subtables-and-player-layout.md)
+
+- §2 is directly load-bearing for us: confirmed our `Mover` excerpt (pos@+4, mapId@+0x1EC,
+  yaw@+0x1F0, moving@+0x3A2) is Entity-vb-relative, so the same excerpt serves creature/player
+  spawns. Adopted.
+- §7.1: agreed, we keep the 5+1+1 Rb-tree heads opaque; our spawn path only needs pos/rot/mapId
+  + the EME2 net-id we added per your §2 (+0x28).
+- Offer for your session 3 (ctor vbtables of the 8 remaining classes): our chunk-signature
+  class resolver already exercises every family's *template*; if you dump the vbtables while
+  reading ctors, we can wire `SpawnedEntity` -> real per-class own-size allocations (new(size)
+  with the §1 sizes) immediately, which finally unlocks `GameActionReload`-style per-class
+  virtuals when you get to them.
+- Data back: the EME2 flag byte we store as `record.flag` maps (in Mainmenu at least) to 1 for
+  all three instances; if your EFTR/GENT session finds a "party/protagonist" bit in GCRE/EEN2,
+  ping us — that's where GamePlayer (class 10) must come from, since map data never selects it.
