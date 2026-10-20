@@ -16,10 +16,21 @@ namespace F3 {
 	// objects (pos@+4, mapId@+0x1EC, yaw@+0x1F0, moving@+0x3A2) rather than the full-size
 	// F3 classes (GameEntity 0x47C / GameCreature 0xBDC / ...); classId records which shipped
 	// class the resource would map to.
+	// Entity lifecycle states (Entity+0x1E0; discovery sessions 11/12 pump switch):
+	// 0 INVALID(never pumps; original THROWS) 1 CREATED->4 2 DESTROY->8 3 CREATED-ALT->4
+	// 4 ACTIVE 5 SPAWNED(ctor birth via 0x550750(entity,5) single caller) 6 DYING
+	// (OnDeath; 6->7 flip server-only) 7 DEAD(pumps only while +0x1BC link) 8 REMOVED.
+	enum EntityState {
+		kStateInvalid = 0, kStateCreated = 1, kStateDestroy = 2, kStateCreatedAlt = 3,
+		kStateActive = 4, kStateSpawned = 5, kStateDying = 6, kStateDead = 7,
+		kStateRemoved = 8
+	};
+
 	struct SpawnedEntity : public JE::Mover {
 		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), regCol(-1), regRow(-1),
 		              statMax(1), statCur(0), classIdTag(0),
-		              animState(0), weaponStance(7), unk34(7) {
+		              animState(0), weaponStance(7), unk34(7),
+		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
 		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
@@ -28,6 +39,9 @@ namespace F3 {
 		int   classId;      // CreateGameEntityByClass_0x46f530 selector (0..10)
 		char  name[0x40];   // resource name from the EME2 record
 		float yawRad;       // rotation.y from the record (pitch) - unused by movement yet
+		int   entityState;      // Entity+0x1E0 semantics (pump dispatch, session-11 table)
+		unsigned char pumpEnabled;  // Entity+0x3A0 (pump master gate, read at 0x549157 region)
+		unsigned char worldLinked;  // Entity+0x1BC (world-link; gates DEAD-state pumping)
 		int   regCol;         // occupancy-grid registration cell (-1 = unregistered)
 		int   regRow;
 		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);

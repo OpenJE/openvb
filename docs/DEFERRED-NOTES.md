@@ -304,6 +304,14 @@ used the same failure mode - re-appending its two updates here rather than re-ed
 - Step-aside verified: mover cell shared with MOVING creature -> Wait(1000)+fresh MoveTo
   (job handover, speed copied), mover still reaches goal (test: 119.5,300 vs goal 120,300).
 
+### Entity lifecycle state machine adopted (sessions 11/12)
+- SpawnedEntity: entityState (Entity+0x1E0 semantics; birth=5 via the single-caller
+  0x550750(entity,5) ctor idiom), pumpEnabled (+0x3A0 gate), worldLinked (+0x1BC DEAD gate).
+- TickWorldEntities now runs the session-11 pump switch: INVALID logs+skips (original throws -
+  deviation), CREATED/CREATED-ALT advance to ACTIVE without also pumping, DYING/REMOVED are
+  no-ops pending OnDeath (server-only 6->7 flip, session 12 §2) and the 0x550ad0 tail, DEAD
+  pumps only while linked. Birth state 5 pumps normally => all suites unchanged + green.
+
 ### Tooling traps hit (document so nobody re-hits)
 - MSVC 2002 decorates struct vs class (U/V) in names: forward decls MUST match keyword
   (class PathJob; vs struct PathJob => LNK2019 with only-truncated names in console).

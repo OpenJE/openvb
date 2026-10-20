@@ -203,6 +203,39 @@ namespace F3 {
 			}
 			RegisterOccupancy( e, GetActiveMap() );
 			int acted = 0;
+			// Lifecycle gate (session 11/12 pump switch on Entity+0x1E0):
+			//  - byte +0x3A0 off => never pump (0x549157 pre-switch check)
+			//  - state 0 INVALID => original THROWS; we log+skip (deviation)
+			//  - 1/3 => CREATED/CREATED-ALT handler advances to ACTIVE(4) (script RunScript
+			//    elided - no script system yet)
+			//  - 4/5 => normal update;  6 DYING => OnDeath (6->7 flip is SERVER-ONLY and
+			//    unmodeled: script hook + netId dereg, session 12 §2)
+			//  - 7 DEAD => pumps only while worldLinked (+0x1BC) per the switch
+			//  - 8 REMOVED => deep cleanup tail (0x550ad0); actions not pumped here yet
+			if ( !e->pumpEnabled ) {
+				continue;
+			}
+			switch ( e->entityState ) {
+				case kStateInvalid:
+					JE::LogDebugString( NULL,
+					    "Trying to update entity when its state is invalid\n" );
+					continue;
+				case kStateCreated:
+				case kStateCreatedAlt:
+					e->entityState = kStateActive;   // handlers end in ChangeState(4)
+					continue;                        // do not also pump this frame (fidelity)
+				case kStateDying:
+					continue;   // OnDeath_0x5509b0: script + server-only dereg TODO
+				case kStateDead:
+					if ( !e->worldLinked ) {
+						continue;
+					}
+					break;      // DEAD still pumps normal update while linked
+				case kStateRemoved:
+					continue;   // 0x550ad0 deep tail unmodeled
+				default:
+					break;      // ACTIVE/SPAWNED
+			}
 			// FIFO: the original runs ONE active action per entity (head of its action
 			// queue; the step-aside Wait must gate the MoveTo behind it). Process the
 			// first non-empty slot only.

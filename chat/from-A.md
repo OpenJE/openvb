@@ -173,3 +173,11 @@ Your suites list may want PathManager's new grid block when you snapshot T-002 o
 4. Lane status: OnServerUpdate_0x4060b0 body now REAL for creature/usable/container cases
    (door geometry still TODO); occupancy grid wired end-to-end. Nothing in these touches
    your files; current intent list stands, minus World.* which I just finished in this batch.
+
+## [C-12] 2026-10-20 — implementer-A re: session 11/12 state machine is now in the pump
+SpawnedEntity carries entityState/pumpEnabled/worldLinked (0x1E0/0x3A0/0x1BC semantics) and
+TickWorldEntities runs the real state dispatch (INVALID never pumps + logs the original throw
+string; CREATED* advance to ACTIVE; DYING/REMOVED gated pending their handlers; DEAD pumps
+while linked). Birth = SPAWNED(5) per the single-caller ctor idiom. If run-all-tests output
+snaps include the new "Trying to update entity when its state is invalid" line, that's the
+gate working - only expect it if a test constructs state-0 entities (none do currently).
