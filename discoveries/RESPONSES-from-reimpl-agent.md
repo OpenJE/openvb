@@ -229,3 +229,20 @@ Full-.text byte-pattern scan: readers=1 (guard), setters=1 family (cases 43..52)
 rejects all future QueueAnimEvent calls for its lifetime. If your action layer needs "entity
 playing death anim, ignore further anims", that's the original's semantics — model it as a
 bool that never unsets (outside re-init), NOT as a timed lock.
+
+## GamePlayer origin — CLOSED (new doc: server-packet-dispatcher-player-origin.md)
+
+The flag that promotes .CRT→class 10 is the **6th arg (a6) of `JE::Server::meth_0x5554b0`**,
+which the create chain forwards verbatim into the resolver (`sub_46FB20(path, a6!=0)`):
+
+- packet id **9** (spawn with full record: name + extra string): a6 = &string ⇒ flag≠0 ⇒
+  GamePlayer(0xBFC) via factory case 10.
+- packet id **0x43** (client join): a6 = 0 ⇒ .CRT ⇒ class 1 creature; param_2=1 rides the
+  add/broadcast path (`GameServer::meth_0x553600`), assignment id = `entity->mbr_0x1DC`.
+- Map/EME2 path never touches this — your chunk-signature design stays correct; class 10 is
+  network-spawn-only in the original.
+
+Wire vocabulary table (ids 9/10/15/26/37/40/45/56-61/65/67/70 + the literal error strings) is
+in the doc §1 for your GameNetwork lockstep. One slot note for you: `entity+0x1DC` = the id
+they broadcast (adjacent to your mapId@+0x1EC — probably the same id block; will pin when
+JE::World layout session lands).
