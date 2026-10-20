@@ -79,12 +79,19 @@ namespace F3 {
 		bool          subAttackPending;     // +0x60 b2
 		bool          volleyContinuing;     // +0x80 next-attack pending
 		bool          ammoDeducted;         // +0x58 per-volley guard
-		int           seriesRemaining;      // +0x78 per session-21's layout - COLLIDES with
-		                              // calledShotPart above, which the raw bytes at 0x4025db
-		                              // now prove owns +0x78. One of the two is mislabeled;
-		                              // routed for confirmation, do not trust either offset
-		                              // as load-bearing (flat storage, so no compile error
-		                              // will ever reveal this).
+		// Shipped sub-attack series is NOT a scalar: it is an STL vector triplet at
+		// +0x7C begin / +0x80 finish / +0x84 storage-end, remaining = (finish-begin)/elem,
+		// ctor-initialised by sub_401690(ecx = &this+0x7C). A SECOND parallel vector at
+		// +0x88/+0x8C/+0x90 carries per-sub-attack timing (hitDelay / the gap-0x65 machinery);
+		// its element layout is deliberately unpinned (FastArrow, T-010c follow-up).
+		// Elements are per-sub-attack RECORDS, and the selector writes the computed hit
+		// location into record+0x20 (@0x404989) - that is where an uncalled-shot attack gets
+		// its body part, feeding CalculateDamage's param_5.
+		// DEVIATION: modelled as a plain countdown. It is a stand-in for the vector's
+		// remaining count and has NO shipped offset - the earlier "+0x78" label here was
+		// IDA display skew (its raw form is a vector cursor, not `mov [esi+0x78]`), and
+		// +0x78 belongs solely to calledShotPart above.
+		int           seriesRemaining;
 		float         moveSpeed;            // step-toward fallback (deviation above)
 		bool          unarmed0x71;          // +0x71 unarmed/weapon fork (see header notes)
 

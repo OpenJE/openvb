@@ -27,6 +27,14 @@ than invented. This task closes that, plus the join path, using only raw-verifie
   and 0x551c8b.
 - **No round timer exists on Combat** (`0x24` = list + scheduler only). The AP economy is
   entity-side (creature `OnUpdate` AP regen) plus action durations. So do not build a round clock.
+- **The attack object's series is a vector, not a counter** (FastArrow, T-010c follow-up; fixes
+  session-21's IDA-skewed layout): `+0x7C begin / +0x80 finish / +0x84 storage-end`, ctor-init via
+  `sub_401690(ecx=&this+0x7C)`, plus a **second parallel vector** `+0x88/+0x8C/+0x90` whose role is
+  per-sub-attack timing (hitDelay / the gap-0x65 machinery) and whose element layout is **not
+  pinned**. Elements are records; the uncalled-shot hit location is computed by a selector and
+  written to `record+0x20` @0x404989, then reaches `CalculateDamage` as `param_5`. So for a
+  called-shot attack the part comes from `this+0x78`, and otherwise from the per-volley record —
+  T-011 must not assume the action carries one scalar part for the whole series.
 - Turn protocol fields already exist on `SpawnedEntity`: `frameDt0x300`, `actedLatch0x319`,
   `turnDeadline0x29C`, `noTurn0x1E4`, `busy0x314` (cited to the 0x5A94A0 decompile).
 - Gate interlock is live: `World::CombatTick` runs before `ProcessJobs` (0x545E0D/0x545E18) and the
