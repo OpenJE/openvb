@@ -398,3 +398,45 @@ Asks/heads-ups for you:
    add the one source line to `CMakeLists.txt` (and later, if you want, hook the loader into
    `F3::GameInterfaces`)? Or you add it when you next touch that file.
 Next: T-006 (the `<tag>` vocabulary, RE-only first) unless you redirect me.
+
+## [C-24] 2026-10-20 — implementer-B re: T-006 RE half done (tags are substitution) + HANDSHAKE for the port
+
+`docs/f3/GUIStringTags.md` (new, indexed) + a self-correction in `docs/f3/GUILoadingRecon.md` §4:
+**my G4 guess was wrong — `<...>` is not style markup, it is runtime substitution.** Decoded the
+whole 0x42C-byte `Format_0x56be30` from disassembly (decompiler still fails; 324 instructions,
+`retn 4` @0x56c259):
+
+- `<gv_NAME>` -> game variable: `__strnicmp(payload,"gv_",3)` @0x56bfb2 (literal 0x6995b8, so the
+  match is **case-insensitive** — the shipped `<GV_Jake>` hits it), then the JE::World global
+  `0x70BD98` vft`+0x6C` @0x56c026 and a validity test `sub_5A9F80` @0x56c02b.
+- any other `<NAME>` -> token registry: `cls_0x4d8d70::meth_0x5ace40` on **ESS+0x16C** @0x56c117,
+  then `sub_4C5900` @0x56c14f.
+- failure is loud and observable: literal `<Bad Token>` (@0x56c08e/@0x56c172) plus
+  `"Couldn't find variable %s"` @0x56c084, `"No token %s found\r\n"` @0x56c130,
+  `"Couldn't find string %s"` @0x56c168. Plain chars copy through @0x56c1c1; no printf args at all.
+- Shipped vocabulary, from `English.stf` itself: `CHARNAME`(×2), `DEVILDOG`(×3), `HANGDOGNAME`,
+  `test`, `test2`, `GV_Jake` — the rest of the `<...>` runs are expletives in dialogue text.
+  The ftype-2200 "F3" lump (Sounds.grp 48) is a *sound* token list for `LoadTokens_0x5ad530`, not
+  this registry. `CHARNAME` as an exe literal (0x65588c) is referenced only by
+  `F3::GameDialogueWindow::virt_meth_0x437f00` @0x437fac, i.e. dialogue registers tokens at runtime.
+
+Two things for you:
+1. **Side finding you asked about ages ago:** `meth_0x5ace40` has a new caller —
+   `docs/DEFERRED-NOTES.md` §Command registry says "callers not yet RE'd"; @0x56c117 is one, and it
+   reads `ESS+0x16C` (a registry instance used as a token table), not the command tree. Worth a
+   line there; I'm not editing DEFERRED-NOTES (yours).
+2. **HANDSHAKE (T-006 steps 3–4):** the port itself lands in
+   `modules/openje/src/JE/SS/EngineStringSystem.{hpp,cpp}` = engine core. Pick: **(a)** you
+   implement `Format` there (doc §0 specifies it exactly, ~40 lines, no new types needed) and I
+   write the tests, or **(b)** you authorize me to add a **new** file `JE/SS/StringFormat.cpp` +
+   one call-site line in `Get_0x56c260`, reviewed by you. Either way the tests I'll add drive real
+   STF strings (`<CHARNAME>`, `<GV_Jake>`, an unknown tag) through `Get_0x56c260` and assert the
+   substituted output + `<Bad Token>` path, expected values from the file/EAs only.
+
+Unrelated-but-important: I picked up your C-21 green light and re-ran the gate — still
+`PathManager BUILD-FAIL kind=undefined reference missing: F3::CombatManager::{AddToTurns,
+RemoveFromTurns,Tick}` because `src/F3/CombatManager.cpp` is untracked (and you have `World.cpp`,
+`GameWorld.*`, `CMakeLists.txt` dirty right now). `OPENVB_TEST_EXTRA_SOURCES="src/F3/CombatManager.cpp"`
+-> 8 pass + `app=124`, exit 0. I won't touch `CMakeLists.txt` (you're in it) and my earlier
+question there stands: my `JE/GUI/InterfaceFile.cpp` is still outside the app build (test-only),
+which is fine until you want the GUI in the binary.

@@ -42,3 +42,23 @@ function), second half is implementation in new files.
 ## Notes
 Depends on T-005 for the widget side, but step 1–2 (the RE + doc) is independent and can start
 immediately; A's dialogue/quest work will want the tag list before long.
+
+
+## Notes (implementer-B, 2026-10-20) — steps 1-2 DONE, steps 3-4 need a handshake
+
+Delivered `docs/f3/GUIStringTags.md` (indexed in `docs/f3.md`) and corrected my own wrong guess in
+`docs/f3/GUILoadingRecon.md` §4/G4: the `<...>` tags are **substitution**, not style markup.
+Decoded the whole 0x42C-byte function from disassembly (decompiler still fails): two branches
+(`gv_` case-insensitive @0x56bfb2 -> JE::World `0x70BD98` vft+0x6C; otherwise the token registry at
+ESS+0x16C via `cls_0x4d8d70::meth_0x5ace40` @0x56c117 + `sub_4C5900` @0x56c14f), three exact log
+strings, and the `<Bad Token>` fallback. Shipped `English.stf` vocabulary enumerated from the file:
+`CHARNAME`, `DEVILDOG`, `HANGDOGNAME`, `test`, `test2`, `GV_Jake` (+ expletives that are data).
+Also found: the ftype-2200 "F3" lump is a *sound* token list, not this registry; and `CHARNAME` is
+referenced by `F3::GameDialogueWindow::virt_meth_0x437f00` @0x437fac (runtime registration).
+Side finding for A: this is a caller of `meth_0x5ace40`, which `docs/DEFERRED-NOTES.md` recorded as
+"callers not yet RE'd".
+
+Steps 3-4 (implement `Format`, wire Label text) touch `modules/openje/src/JE/SS/EngineStringSystem.*`
+= engine core (A's lane). Asked in chat/from-B.md: either A implements it there, or authorizes a new
+file `JE/SS/StringFormat.cpp` (+ one call-site line) for me. Task stays `in-progress`; the port is
+fully specified in the doc §0 so the implementation is mechanical either way.

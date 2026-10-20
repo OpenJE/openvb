@@ -148,8 +148,8 @@ slot7/8 unresolved → **G3**.
 @0x56c276. `Format` decompile fails (confirmed; SEH prologue 0x56be30, 0x118-byte frame). From
 disassembly: `String::CopyAssign_0x401b20` snapshot @0x56be89, then a scan for `'<'`(0x3C)
 @0x56befd to the matching `'>'`(0x3E) @0x56bf1c, payload extracted via `meth_0x458ef0` @0x56bf40,
-loop bound `jbe` @0x56bee8 — i.e. **inline `<tag>` markup processing on the string**, not printf;
-no argument substitution inside Format. Tag vocabulary unresolved → **G4**.
+loop bound `jbe` @0x56bee8 — i.e. inline `<tag>` processing on the string, not printf.
+**CORRECTION (T-006, same day):** the tags are *substitution* hooks, not style markup — `<gv_NAME>` resolves a game variable through the JE::World global `0x70BD98` (vft+0x6C @0x56c026) and any other `<NAME>` resolves through the token registry at ESS+0x16C (`cls_0x4d8d70::meth_0x5ace40` @0x56c117, then `sub_4C5900` @0x56c14f); a miss appends the literal `<Bad Token>` and logs (0x56c084 / 0x56c130 / 0x56c168). Shipped `English.stf` uses only `<CHARNAME>`, `<DEVILDOG>`, `<HANGDOGNAME>`, `<test>`, `<test2>`, `<GV_Jake>` (the `gv_` test is a case-insensitive `strnicmp` @0x56bfb2). Full evidence: `docs/f3/GUIStringTags.md`; **G4 resolved**, my original inference was wrong.
 Consumers of `Get_0x56c260`: `sub_40EC90` (0x40ee34,0x40efa7),
 `JE::CLoadMapInterface::meth_0x4580c0` (0x4581e2 — the 0x64a-byte F3 text setter),
 `sub_56C280` (0x56c290 wrapper), `JE::Client::meth_0x58aad0` (0x58ab1d),
@@ -187,8 +187,8 @@ Loading, Options, CharacterGeneration, MiniMap): identical recipe, one `xrefs_to
   index / remove)? Blocks skin texture binding.
 - **G2** Class of the 9 inline skin sub-records at Window+0x90 (stride 86, read via vft+28).
 - **G3** `GUI::Edit` slot7/slot8 readers; does a type-4 record add fields to §2?
-- **G4** Full `<tag>` vocabulary of `Format_0x56be30` (chain after 0x56bf40) — decides what our
-  string layer must support before any text renders.
+- ~~**G4** `<tag>` vocabulary of `Format_0x56be30`~~ **RESOLVED** — see §4 correction and `docs/f3/GUIStringTags.md`.
+
 - **G5** Content of the Manager+0x70 literal at 0x64D7D8.
 - **G6** `sub_50B7F0` vs `sub_50B880`: confirm both are u32-len+bytes, and why one variant reads
   through libc `fread` (editor/plain-file path?) — affects which stream API we implement first.
