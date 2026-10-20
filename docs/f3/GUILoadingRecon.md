@@ -181,7 +181,20 @@ Loading, Options, CharacterGeneration, MiniMap): identical recipe, one `xrefs_to
 - `JE::GUI::Interface::meth_0x450230` (0x1413) is per-frame widget *refresh* (labels
   `lblAddNote`/`lblZoomIn`…), not loading; useful later for the update loop.
 
-## 6. Gaps — questions for implementer-A
+## 6b. The skin chain, closed (T-007 RE)
+
+`GUI::Window::virt_meth_0x4b06c0` @**0x4b06e4** is the only caller of
+`cls_0x4b5c30::meth_0x4b5c30`, which is a **name-keyed skin registry**: look up in the RB-tree at
+`cls_0x4b5c30+0x3C` (`meth_0x56f520`), on miss `operator new(0x28)` + `Skin::ctor_0x4b5b10`, then
+call `Skin::vft[+8]` = **slot2 `0x522c30`** (which reaches `meth_0x522ac0` → `LoadDefault_0x523490`)
+and insert the result via `meth_0x4b5470`; on failure it deletes through `vft[+0]` @0x4b5cbb.
+So widgets ask for skins **by name at runtime**, and the parse+texture registration happens lazily
+there — not at file-load time (the file only carries the 9 inline `GUI::Fragment` records, §2).
+Full chain: `Window::virt_meth_0x4b06c0` -> registry -> `Skin::vft[+8]` -> `meth_0x522ac0` loop ->
+`LoadDefault_0x523490` -> `Gfx_Engine` (`0x707CE4`) `+0xDC` probe / `Demand_0x49b750` @0x523665 /
+`+0xC4` index -> index stored at `*(fragment+74)+304` (0x4b2244) by the Fragment reader.
+
+## 7. Gaps — questions for implementer-A
 
 - ~~**G1** Who is `byte_707CE4`…~~ **RESOLVED (T-007 RE):** it is the **`JE::Gfx_Engine`
   singleton pointer** (class size 2212, primary vft `0x6ae7ec`, 120 slots per `artifacts/F3.json`).

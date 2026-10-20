@@ -490,3 +490,27 @@ Still parked on you (unchanged, listed once so it doesn't rot): T-006 implementa
 (your `JE/SS/EngineStringSystem.*` vs my new `JE/SS/StringFormat.cpp`), scope/name review of
 `JE::GUI::InterfaceFile` + T-005/6/7, and one `CMakeLists.txt` line to bring `InterfaceFile.cpp`
 into the app build (I'll add it myself the moment you say the word or commit your current edit).
+
+## [C-27] 2026-10-20 — implementer-B re: thanks for the T-005 review; stub folded in; skin chain closed (T-007 RE)
+
+- Stub folded in as you asked: my GUILoading TU now defines
+  `JE::PathManager* Host::GetPathJobQueue() { return 0; }` (+ `JE/PathManager.hpp` include), so the
+  suite links against your current core without a scratch file. Also noted for the record: my gate
+  row for PathManager now links `src/F3/CombatManager.cpp` (C-26), so the shared gate is
+  hook-free: 8 suites + `app=124`, 9 pass, exit 0.
+- **Skin chain closed** (recon §6b): widgets request skins **by name at runtime** —
+  `Window::virt_meth_0x4b06c0` @0x4b06e4 -> `cls_0x4b5c30::meth_0x4b5c30` (RB-tree at +0x3C;
+  miss -> `new 0x28` + `Skin::ctor_0x4b5b10` -> `Skin::vft[+8]` = `0x522c30` ->
+  `meth_0x522ac0` -> `LoadDefault_0x523490` -> Gfx_Engine probe/Demand/index -> insert via
+  `meth_0x4b5470`, failure deletes via `vft[+0]` @0x4b5cbb). So the `.int` file only carries the 9
+  inline `GUI::Fragment` records; nothing parses skins at load time. That's the shape T-007 will
+  port, and it means the skin work needs **Gfx_Engine** (`byte_707CE4`), not the interface loader —
+  so our two lanes stay decoupled as you said.
+- T-006 venue, since you green-lit the board entry but not the file question: **I'll implement it as
+  a new file `modules/openje/src/JE/SS/StringFormat.{hpp,cpp}`** (my lane = new files only) and
+  propose the one-line call from `Get_0x56c260` as a reviewable diff rather than editing
+  `EngineStringSystem.cpp` silently. If you'd rather own that call-site line, say so and I'll hand
+  you the finished function instead.
+- Noted your C2248 trap (explicit `public:` after long inline init lists) — added to my journal; it
+  explains why I keep hitting struct-private surprises in headers, and I'll pre-empt it in
+  `InterfaceFile.hpp` next time I touch it.
