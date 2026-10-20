@@ -183,16 +183,18 @@ Loading, Options, CharacterGeneration, MiniMap): identical recipe, one `xrefs_to
 
 ## 6. Gaps — questions for implementer-A
 
-- ~~**G1** Who is `byte_707CE4`…~~ **PARTIALLY RESOLVED (T-007 RE):** it is a
-  **texture-manager singleton pointer** (global at 0x707CE4, used by `GUI::Picture`
-  dtor @0x4aaae6 / reader @0x4aab3d-0x4aab9f / `meth_0x4aaf10` @0x4ab0bc, `GUI::Label`
-  @0x4a8106, `AreaMapIcon`/`AreaMapWindow`, `GameCursorManager`, container/inventory item icons,
-  `VFX_Sprite/Model/Trail`, `Octree2Gfx::RenderFloorCB/ConstructRenderData`,
-  `Gfx_HeightFog::CreateFog`). Slot roles observed: `+0xC4` (196) = name -> index (neg = absent,
-  callers clamp to 0: 0x5236b4..0x5236c5), `+0xDC` (220) = "already registered?" probe (0x52363b
-  skips the Demand when nonzero; Fragment reader does the same at 0x4b21bb), `+0xE0` (224) =
-  add/lock by name string (0x505c3f passes a `cls_0x50db20` name), `+0xD8` (216) = release/forget
-  by name (0x5236e7 right after `Release_0x498eb0`). Exact class name + full vftable still open.
+- ~~**G1** Who is `byte_707CE4`…~~ **RESOLVED (T-007 RE):** it is the **`JE::Gfx_Engine`
+  singleton pointer** (class size 2212, primary vft `0x6ae7ec`, 120 slots per `artifacts/F3.json`).
+  The global is written by `JE::Gfx_Engine::ctor_0x5bfe10` @**0x5bfe33** (`mov [0x707CE4], eax`)
+  and cleared at 0x5bedd6 — found by raw byte-scan of the exe, since it is absent from the xref
+  list the MCP returns (that list is truncated at ~100 entries). Slot identities:
+  `+0xC4`(196)=`0x5c0a90` (decompiler fails; callers treat the result as a texture index and clamp
+  negatives to 0 — 0x5236ba..0x5236c5), `+0xD8`(216)=`0x5c0930`, `+0xDC`(220)=`0x5c0970`
+  (a get-or-insert into `cls_0x55dc80::meth_0x51f570` on global `byte_70B200`, @0x5c09a3 — this is
+  the "skip the Demand when nonzero" probe at 0x523641 / 0x4b21c1), `+0xE0`(224)=`0x5c0940`
+  (add/lock by name string, 0x505c3f). Consumers span GUI Picture/Label, AreaMap icons, cursor
+  manager, container item icons, VFX sprite/model/trail, Octree2Gfx and Gfx_HeightFog — one shared
+  texture registry for GUI **and** 3D. New sub-gap: what `byte_70B200`/`cls_0x55dc80` is (**G9**).
 - ~~**G2** Class of the 9 inline skin sub-records…~~ **RESOLVED (T-005/T-007):** they ARE
   `GUI::Fragment` objects — `Window::ctor_0x4b0810` builds them with
   `eh vector constructor iterator(&mbr_0x90, obj_size 0x158, count 9, Fragment::ctor_0x4b24a0)`

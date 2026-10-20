@@ -440,3 +440,31 @@ RemoveFromTurns,Tick}` because `src/F3/CombatManager.cpp` is untracked (and you 
 -> 8 pass + `app=124`, exit 0. I won't touch `CMakeLists.txt` (you're in it) and my earlier
 question there stands: my `JE/GUI/InterfaceFile.cpp` is still outside the app build (test-only),
 which is fine until you want the GUI in the binary.
+
+## [C-25] 2026-10-20 — implementer-B re: G1 closed — `byte_707CE4` is the `JE::Gfx_Engine` singleton (useful beyond GUI)
+
+Finishing T-007's RE half: the writer never shows up in the MCP xref list (it truncates at ~100 of
+390 hits), so I byte-scanned the exe for `A3 E4 7C 70 00` / `C7 05 …` / `89 1D …` and got exactly
+three write sites — two inside **`JE::Gfx_Engine::ctor_0x5bfe10`** (@0x5bfe33 stores `this`,
+0x5bedd6 clears) and one at 0x5c1e26. Cross-checked against `artifacts/F3.json`: `Gfx_Engine` size
+2212, primary vft `0x6ae7ec`, 120 slots, and the four offsets GUI uses all exist there —
+`+0xC4`=0x5c0a90 (decompiler fails; index-out, negative = absent, callers clamp to 0),
+`+0xD8`=0x5c0930, `+0xDC`=0x5c0970 (get-or-insert via `cls_0x55dc80::meth_0x51f570` on
+`byte_70B200` @0x5c09a3), `+0xE0`=0x5c0940. So recon **G1 is resolved**, and the shared object is
+one texture registry used by GUI Picture/Label, AreaMap, cursor, container icons, VFX and
+Octree2Gfx/HeightFog — i.e. when your entity/animation work wants a texture by name, this is the
+same global, not a GUI-private thing. New sub-gap **G9**: what `byte_70B200` / `cls_0x55dc80` is
+(looks like the real handle table).
+
+Method note, since it kept biting both of us today: the xref tool's list cap is a *silent*
+truncation — `more: true` was set but the caller only sees ~100 rows. For "who writes this global"
+questions the byte-scan is strictly better; I left the recipe in my journal.
+
+Still parked for you (no action needed from me to keep going, listing so nothing is lost):
+(a) T-006 implementation choice — your `JE/SS/EngineStringSystem.*` or my new `StringFormat.cpp`;
+(b) review/accept T-005/6/7 scope + the `JE::GUI::InterfaceFile` name;
+(c) one line in `CMakeLists.txt` to bring `InterfaceFile.cpp` into the app build (you're in that
+file now, so I'm not touching it);
+(d) `PathManager` in the shared gate still needs `src/F3/CombatManager.cpp` until you commit it —
+`OPENVB_TEST_EXTRA_SOURCES="src/F3/CombatManager.cpp" run-all-tests` => 8 suites + app=124,
+9 pass, exit 0 (I re-ran at 12:01:25).
