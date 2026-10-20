@@ -413,6 +413,14 @@ original is a different game, and the divergence reads as our bug.
 3. **Four console commands register to return-stubs.** `AttackModeSelect`, `CharacterRecordWindow`,
    `SneakToggle`, `WeaponLinkToggle` — stealth/mode UI shipped unimplemented. Parity is
    register-and-stub; omitting them diverges from the shipped console surface. (HappyWolf B38.)
+4. **A loud consistency check, not a silent defect: `FatalError("A weapon can't be both consumed
+   and thrown.")`.** Fired by `GameWeapon::ReadAttackModeData` when the v5 flag pair is both set
+   (FastArrow B9). It is the first ledger entry the shipped binary *diagnoses itself*, and the
+   mirroring rule changes shape: parity here means **reproduce the fatal error**, not route around
+   it. Do not "handle" it gracefully — a reimpl that tolerates the combination has silently
+   diverged from a shipped behaviour the original considers fatal, and any shipped data that trips
+   it should crash identically. Whether any shipping record actually trips it is an open data
+   question, and the answer only matters for whether we can ever observe it.
 
 Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachment index space, not
 the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's

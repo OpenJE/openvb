@@ -154,7 +154,7 @@ row; A keeps editorial merge rights).
 
 | T-014 | Who sets the sub-attack record's +0x19 "marked" byte (volley-batch loose end) | done | FastArrow (research) |
 
-| T-015 | GWAM record-header map (needs a disasm pass; `sub_4148A0`) | in-progress | FastArrow (research) |
+| T-015 | GWAM record map — **pre-map DELIVERED** (B9); remainder = frame reconstitution for the full slot table | in-progress | FastArrow (research) |
 | T-016 | One debug session, three pinned runtime reads (naming / World+0x160 vft / Map Name fallback) | open | unclaimed — Read 1 optional now |
 | T-017 | F3 UI surface: Command* -> GameInterfaces slot / root-Open mapping | in-progress | HappyWolf (research) |
 | T-018 | Data read: shipped helmet record's `GameItem+0xA8` required-slot vector | in-progress | IronStorm (research) |
