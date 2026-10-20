@@ -8,6 +8,7 @@
 #include "JE/Map.hpp"
 #include "JE/PathManager.hpp"
 #include "JE/HostHooks.hpp"
+#include "JE/ActionMoveTo.hpp"
 #include "JE/Resources.hpp"
 #include "JE/VFX_Parameter.hpp"
 #include "JE.hpp"
@@ -87,6 +88,16 @@ namespace F3 {
 	SpawnedEntity* g_spawnedEntities[128] = { 0 };
 	int            g_spawnedEntityCount = 0;
 
+	void TickWorldEntities( int ms ) {
+		tracing::instrument( tracing::LOCATION, "ms=%d", ms );
+		for ( int i = 0; i < g_spawnedEntityCount; ++i ) {
+			SpawnedEntity* e = g_spawnedEntities[i];
+			if ( e && e->moveAction ) {
+				e->moveAction->Update_0x55b600( (unsigned)ms, 0 );
+			}
+		}
+	}
+
 	// World-server serial generator (original: WorldServer->vft[8] called from GameEntity ctor,
 	// discovery note §2 "+0x28 world-server-assigned id"). Monotonic per spawn.
 	static int NextNetId() {
@@ -131,6 +142,7 @@ namespace F3 {
 			// mover and target (entity+0x1EC). One map loaded per session slice -> id = 1.
 			e->mapId = 1;
 			e->netId = NextNetId();
+			e->moveAction = 0;
 
 			if ( g_spawnedEntityCount < 128 ) {
 				g_spawnedEntities[g_spawnedEntityCount++] = e;

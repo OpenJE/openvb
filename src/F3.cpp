@@ -20,6 +20,7 @@
 #include "JE/Network.hpp"
 #include "F3/GameAnimationCache.hpp"
 #include "F3/GameWorld.hpp"
+#include "F3/MapEntitySpawn.hpp"
 #include "JE/ModelCache.hpp"
 #include "F3/GameNetwork.hpp"
 #include "JE/HostHooks.hpp"
@@ -772,6 +773,8 @@ namespace JE {
 
 		// ActionMoveTo job registration target (world-server subobject vft+100 in the
 		// original). Our architecture: the GameWorld's PathManager at +0xF0 IS the queue owner.
+		void TickWorldEntities( int ms ) { F3::TickWorldEntities( ms ); }   // MapEntitySpawn.cpp
+
 		JE::PathManager* GetPathJobQueue() {
 			F3::GameWorld* w = F3::GetWorldServerInstance();
 			return w ? w->m_pathManager : NULL;

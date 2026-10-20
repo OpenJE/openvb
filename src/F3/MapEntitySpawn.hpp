@@ -5,7 +5,7 @@
 
 #include "JE/ActionMoveTo.hpp"   // JE::Mover layout excerpt
 
-namespace JE { class Map; class PathManager; }
+namespace JE { class Map; class PathManager; class ActionMoveTo; }
 
 namespace F3 {
 	// Map entity spawning from JE::Map EME2 records (the original chain: world-server vft+52
@@ -17,12 +17,15 @@ namespace F3 {
 	// F3 classes (GameEntity 0x47C / GameCreature 0xBDC / ...); classId records which shipped
 	// class the resource would map to.
 	struct SpawnedEntity : public JE::Mover {
-		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0) { name[0] = 0; }
+		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), moveAction(0) { name[0] = 0; }
 		int   classId;      // CreateGameEntityByClass_0x46f530 selector (0..10)
 		char  name[0x40];   // resource name from the EME2 record
 		float yawRad;       // rotation.y from the record (pitch) - unused by movement yet
 		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);
 		                    // 0 in client/editor contexts per ctor 0x4678B3 evidence
+		class JE::ActionMoveTo* moveAction;   // per-entity action slot driven by the server
+		                    // pump (original: entity action queue iterated in ServerUpdate's
+		                    // per-entity loop, vft+96 sync + ServerUpdate calls)
 	};
 
 	enum {
@@ -57,6 +60,10 @@ namespace F3 {
 	// Full usable map load: LoadFromFile + RLE collision grid (from the EMAP ".rle" name) +
 	// octree prefetch so CellToWorld/ProcessJobs work on the returned map.
 	JE::Map* LoadCompleteMap( const char* resourceName );
+
+	// Game-side per-entity server tick driven by JE::World::ServerUpdate_0x545d60 (host seam):
+	// updates every spawned entity that has a moveAction attached.
+	void TickWorldEntities( int ms );
 
 	// Find a spawned entity by name prefix ("Default_PC") - test/game accessor.
 	SpawnedEntity* FindSpawnedEntity( const char* prefix );

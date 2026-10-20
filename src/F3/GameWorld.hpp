@@ -26,6 +26,10 @@ namespace F3 {
 			JE::StoreManager*     m_storeManager;   // +0x100 vft[11] CreateGameStoreManager  (vft -> GameStoreManager 0x668448)
 			void*                 m_mapRequestMgr;  // +0x104 vft[13] JE::World::CreateMapRequestMgr_0x545430
 			                                        //        (cls_0x5a42b0, 0x14; unmodeled - stored NULL)
+			// JE::World seam: vft[16] ServerUpdate pumps this manager's job queue
+			// (world+0xF0 per original 0x545E18 evidence).
+			virtual JE::PathManager* GetPathManager() { return m_pathManager; }
+
 			// vft[12] 0x46F980 CreateGameWorldMap (JE::WorldMap 0x80 + vft -> GameWorldMap
 			// 0x668480) is NOT part of the Initialize cascade; caller/location to be found.
 		//: Methods
