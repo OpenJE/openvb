@@ -74,6 +74,13 @@ namespace F3 {
 	// octree prefetch so CellToWorld/ProcessJobs work on the returned map.
 	JE::Map* LoadCompleteMap( const char* resourceName );
 
+	// Loaded-map registry (stands in for the world-server map list used by GamePathManager/
+	// entity map-id comparisons; original assigns mover+492 / entity+0x1EC from it).
+	// MapCreate registers each loaded map and returns its id; unknown id -> NULL.
+	int   MapCreate( const char* resourceName );          // 0x57B8A0 order port
+	JE::Map* FindLoadedMap( int id );
+	int   LoadedMapCount();
+
 	// Game-side per-entity server tick driven by JE::World::ServerUpdate_0x545d60 (host seam):
 	// updates every spawned entity that has a moveAction attached.
 	void TickWorldEntities( int ms );

@@ -88,6 +88,43 @@ namespace F3 {
 	SpawnedEntity* g_spawnedEntities[128] = { 0 };
 	int            g_spawnedEntityCount = 0;
 
+	// Registry: loaded maps with stable ids starting at 1 (GetMapById equivalent).
+	static JE::Map* s_loadedMaps[17] = { 0 };   /* 1-based ids: slot 0 unused */
+	static int      s_loadedMapCount = 0;
+
+	int MapCreate( const char* resourceName ) {
+		tracing::instrument( tracing::LOCATION, "resource=%s", resourceName );
+		// 0x57B8A0 order: LoadFromFile_0x574f60 -> name assignment -> CreateGridDims
+		// (rle dims) -> GetOctree prefetch -> (entity instantiation happens in the chunk
+		// readers themselves; ours spawn from records separately). Throw strings from the
+		// original are logged (FatalError-on-read-failure deferred):
+		//   "Error reading map from Map::Create() method." (0x57B95E)
+		JE::Map* map = LoadCompleteMap( resourceName );
+		if ( !map || !map->mbr_0x2C ) {
+			if ( map ) {
+				JE::LogDebugString( NULL, "Error reading map from Map::Create() method.\n" );
+			}
+			return 0;
+		}
+		if ( s_loadedMapCount >= 16 ) {   // ids 1..16 into [17]
+			return 0;
+		}
+		s_loadedMaps[s_loadedMapCount + 1] = map;
+		++s_loadedMapCount;
+		return s_loadedMapCount;   // id = 1-based
+	}
+
+	JE::Map* FindLoadedMap( int id ) {
+		if ( id < 1 || id > s_loadedMapCount ) {
+			return 0;
+		}
+		return s_loadedMaps[id];
+	}
+
+	int LoadedMapCount() {
+		return s_loadedMapCount;
+	}
+
 	void TickWorldEntities( int ms ) {
 		tracing::instrument( tracing::LOCATION, "ms=%d", ms );
 		for ( int i = 0; i < g_spawnedEntityCount; ++i ) {
@@ -147,6 +184,15 @@ namespace F3 {
 		if ( !map ) {
 			return 0;
 		}
+		// original: entity pushed into the map Rb container (map+0x134); our flat list.
+		// mapId assigned from the registry id of this map when registered via MapCreate.
+		int assignedMapId = 1;
+		for ( int q = 1; q <= s_loadedMapCount; ++q ) {
+			if ( s_loadedMaps[q] == map ) {
+				assignedMapId = q;
+				break;
+			}
+		}
 		int spawned = 0;
 		for ( unsigned i = 0; i < map->m_recordCount; ++i ) {
 			const JE::Map::EntityRecord& r = map->m_records[i];
@@ -181,8 +227,11 @@ namespace F3 {
 			e->name[sizeof(e->name) - 1] = 0;
 			// map identity: EME2 records live in one map; the pipeline compares mapId between
 			// mover and target (entity+0x1EC). One map loaded per session slice -> id = 1.
-			e->mapId = 1;
+			e->mapId = (unsigned)assignedMapId;
 			e->netId = NextNetId();
+			if ( map->m_entityCount < 128 ) {
+				map->m_entities[map->m_entityCount++] = e;
+			}
 			e->moveAction = 0;
 
 			if ( g_spawnedEntityCount < 128 ) {
@@ -233,7 +282,8 @@ namespace F3 {
 
 		const char* menuMap = sys ? sys->GetStringRaw_0x4df070( "Mainmenu", "map name" ) : NULL;
 		if ( menuMap && *menuMap ) {
-			JE::Map* m = LoadCompleteMap( menuMap );
+			int id = MapCreate( menuMap );
+			JE::Map* m = FindLoadedMap( id );
 			if ( m ) {
 				SpawnMapEntities( m, menuMap );
 			}
