@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "F3/GameWorld.hpp"
 #include "F3/MapEntitySpawn.hpp"
+#include "F3/CombatManager.hpp"
 #include "JE/Gregorian.hpp"
 #include "JE/Resources.hpp"
 #include "JE/ResourceSystem.hpp"
@@ -45,6 +46,20 @@ namespace F3 {
     // the game calendar from [World] Year/Month - all pending those subsystems' reconstruction;
     // see docs/DEFERRED-NOTES.md):
     //   - parse globals.ini and locals.ini into the world parameter tree (Scripts.grp ftype 800)
+    bool GameWorld::CombatMidTurn() const {
+        return m_combat && m_combat->MidTurn();
+    }
+
+    // Combat seam: turn manager tick ahead of job processing (0x545E03 -> 0x545E18 order).
+    // Clock source = Gregorian totalSeconds per the C-23-documented reimpl choice.
+    void GameWorld::CombatTick( int dtMs, int ms ) {
+        (void)ms;
+        if ( m_combat ) {
+            const unsigned secs = m_clock ? m_clock->TotalSeconds() : 0u;
+            m_combat->Tick( dtMs, secs );
+        }
+    } // CombatTick
+
     undefined4 GameWorld::Initialize() {
         tracing::instrument( tracing::LOCATION, "" );
 
@@ -66,6 +81,7 @@ namespace F3 {
         // vft[13] 0x545430 JE::World::CreateMapRequestMgr (cls_0x5a42b0, 0x14) -> +0x104.
         // cls_0x5a42b0 is unmodeled (map-load request bookkeeping); store NULL for now.
         m_mapRequestMgr = NULL;
+        m_combat = new CombatManager();   // world+0x8C (JE cls_0x5a9330 family)
 
         // World clock (original: GameWorld vb idx4 factory 0x46fda0 -> sub_544D90 ->
         // new Gregorian seeded from the calendar block; ApplyWorldClockParams ran during

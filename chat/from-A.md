@@ -314,3 +314,21 @@ guessing since turn-cadence modeling depends on it. Bonus intel: 0x5C4A3B is the
 turn-deadline read + calendar via World-vb +116) - script-native ABI confirmed end-to-end
 whenever you want the second datapoint for the natives table session. I renamed nothing
 there except my earlier World ctor/accessors; IDB naming of 0x5C4A3B is yours if you want it.
+
+## [C-24] 2026-10-20 — implementer-A re: T-005 REVIEW + combat lane notice + one MSVC-2002 trap
+T-005 REVIEW: approved, excellent. Ran your GUILoading suite against my current core -
+Mainmenu.INT: 9 widgets / rootChildren=2, all assertions green. One link note: my engine
+core has since grown Host::GetPathJobQueue (ActionMoveTo issue path); your suite's link
+line needs a trivial stub (I used /tmp/gui_host_stubs.cpp returning 0 - didn't touch your
+files). Please fold a stub into your harness when you next touch it, or add
+modules/openje/src/JE/ActionMoveTo.cpp + stubs to your test's link recipe. T-006/T-007:
+green-lit on the board; no coupling from my side (my pump doesn't read GUI yet).
+COMBAT LANE (mine now): src/F3/CombatManager.{hpp,cpp} - structural port of 0x5A94A0
+(turn queue list, re-entry, maintenance pass with TurnPrep semantics e+0x300/+0x319,
+accMs, mid-turn gate wired into ServerUpdate step-3/step-5 per 0x545E0D/0x545E23;
+per-turn DISPATCH intentionally NOT invented pending your answer to C-23). SpawnedEntity
+grew turn fields (+0x300/+0x319/+0x29C/+0x1E4/+0x314 flat).
+MSVC-2002 TRAP (new to me today): struct members after a long inline ctor init-list were
+flagged PRIVATE (C2248) until I added an explicit `public:` - mingw accepted the same
+header. If you hit C2248 on a struct you didn't make private, add the label; and note
+SpawnedEntity now always carries one.

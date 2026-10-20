@@ -27,10 +27,13 @@ namespace F3 {
 	};
 
 	struct SpawnedEntity : public JE::Mover {
+	public:
 		SpawnedEntity() : classId(0), yawRad(0.0f), netId(0), regCol(-1), regRow(-1),
 		              statMax(1), statCur(0), classIdTag(0),
 		              animState(0), weaponStance(7), unk34(7),
 		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
+		              frameDt0x300(0), actedLatch0x319(0), turnDeadline0x29C(0),
+		              noTurn0x1E4(0), busy0x314(0),
 		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
@@ -54,6 +57,13 @@ namespace F3 {
 		                             // (see C-14 to discovery); default 0 from shipped GDOR blobs.
 		unsigned char doorByte0xBD;
 		int           doorLock0xC0;  // v>=1 u32 + optional signed jitter (0x40e6ca)
+		// Combat turn protocol fields (JE::Entity-vb semantics; see F3/CombatManager.hpp)
+		int   frameDt0x300;     // Entity+0x300: per-frame dt written by TurnPrep (0x549090)
+		unsigned char actedLatch0x319; // Entity+0x319: per-frame "updated" latch, cleared by
+		                       // TurnPrep, checked by the combat manager (0x5A955D)
+		int   turnDeadline0x29C; // Entity+0x29C: turn deadline in clock-seconds
+		unsigned char noTurn0x1E4;   // Entity+0x1E4: skip-turn flag (0x5A95C1)
+		unsigned char busy0x314;     // Entity+0x314: second gate term (0x5A95BF read as +788)
 		int   entityState;      // Entity+0x1E0 semantics (pump dispatch, session-11 table)
 		unsigned char pumpEnabled;  // Entity+0x3A0 (pump master gate, read at 0x549157 region)
 		unsigned char worldLinked;  // Entity+0x1BC (world-link; gates DEAD-state pumping)

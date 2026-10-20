@@ -10,6 +10,8 @@ namespace JE { class Encyclopedia; class StoreManager; class PathManager; class 
 namespace F3 { struct GameParty; struct GameJournal; }
 
 namespace F3 {
+	class CombatManager;
+
 	struct GameWorld : public JE::World {
 		//: Members
 			dword mbr_0x10;
@@ -24,8 +26,14 @@ namespace F3 {
 			F3::GameJournal*      m_journal;        // +0xF8  vft[9] CreateJournal_0x46f880
 			JE::Encyclopedia*     m_encyclopedia;   // +0xFC  vft[10] CreateGameEncyclopedia (vft -> GameEncyclopedia 0x668430)
 			JE::StoreManager*     m_storeManager;   // +0x100 vft[11] CreateGameStoreManager  (vft -> GameStoreManager 0x668448)
+			CombatManager*        m_combat;         // +0x8C  cls_0x5a9330 initiative manager
 			void*                 m_mapRequestMgr;  // +0x104 vft[13] JE::World::CreateMapRequestMgr_0x545430
 			                                        //        (cls_0x5a42b0, 0x14; unmodeled - stored NULL)
+			// Combat seams (JE::World): tick the turn manager before job processing and
+			// expose its mid-turn flag to gate the entity loop (0x545E0D/0x545E23).
+			virtual void CombatTick( int dtMs, int ms );
+			virtual bool CombatMidTurn() const;   // impl in GameWorld.cpp (needs the full type)
+
 			// JE::World seam: vft[16] ServerUpdate pumps this manager's job queue
 			// (world+0xF0 per original 0x545E18 evidence).
 			virtual JE::PathManager* GetPathManager() { return m_pathManager; }
