@@ -245,6 +245,14 @@ distinct documents, and any cross-lane citation by bare "session 21" is ambiguou
 (`IS:sess35` / `HW:sess-31`). Same root cause as the batch-tag clash and the mesh-name churn: an
 identifier that is only unique inside one writer's head is not an identifier.
 
+**Resolved by ownership rather than by renaming (2026-10-20).** The seven files turned out to belong
+to `lane:discovery`, whose counter predates the `session15-36` lane's, and `discoveries/README.md`
+already carries an author column that distinguishes them. So the mapping exists in the index and in
+filename prefixes, and every index row now resolves to a tracked file. Standing citation form for all
+lanes: self-cite `lane:sessNN`, cross-cite by **filename**, and treat a bare `session NN` as ambiguous
+until proven otherwise — which is also why untracked-but-indexed files are a coordination bug and not
+a cosmetic one: they hide exactly this.
+
 ## 16. When the link step is unavailable, say what you *did* prove — and there is a usable substitute
 
 `msvc-build` was red on a missing import lib, so a lane could not get the one cross-TU proof a link
