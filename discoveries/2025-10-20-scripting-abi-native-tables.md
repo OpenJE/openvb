@@ -21,12 +21,12 @@ AMX core struct `+0x26..+0xBD` (0x98B); blob ptr `+0xD0`; map head `+0xD8`+count
 4. native registrations (`sub_5CCDE0` = **amx_Register**, `{table,-1}`):
    `0x7004C0` (float lib) → `0x6FFAF8` `small_script_functions` (engine core) →
    `0x6F3750` (F3 game lib). fail ⇒ "Unable to locate a matching function for a Native in: %s".
-5. global registrations (`sub_5CCD00` = **amx_AllowGlob/DefineGlob**):
-   tag `0x464C534D` "myself" ← `mbr_0x4` (owner entity id — ctor arg),
-   tag `0x54415453` ← `dword_70C724 = (mbr_0x24!=0)` (debug flag),
-   tag `0x45555146` ← `&mbr_0xC0` (script **function-queue** handle — backs
+5. global registrations (`sub_5CCD00` = **amx_DefineGlob**): tags are 4-char packs (LE):
+   `0x464C534D` "MSLF" = **myself** ← `mbr_0x4` (owner entity netId — ctor arg),
+   `0x54415453` "STAT" ← `dword_70C724 = (mbr_0x24!=0)` (debug state),
+   `0x45555146` "FQUE" ← `&mbr_0xC0` (script **function-queue** handle — backs
    QueueFunction/ClearFunctionQueue natives),
-   (logger mode only) tag `0x4C425446` ← `&mbr_0xD4`.
+   (logger mode only) `0x4C425446` "FTBL" ← `&mbr_0xD4`.
 Condition::RunScript's "myself" fetch = `sub_5CCCC0` (**amx_GetGlObal**) with tag "myself".
 
 `Script_Small` vft 0x6A539C raw: [0]0x5A78E0 [1]0x5A8880 Load [2]0x5A72F0 (used via
@@ -112,8 +112,11 @@ space-tag test: ids NOT in a registered space → return `calendar->vft[+20]` (w
 Year). Else `entity = 0x54BE10(myself)`; `t = *(entity + 0x29C)`; builds a SECOND calendar via
 `factory + 0x10` (0x46FDA0→0x544D90 alloc?), `cal2.vft[0](cal2, base)`,
 `cal2.vft[+88](cal2, t)` (set time), `return cal2.vft[+20]()` (GetYear), free(cal2).
-⇒ **per-entity birth/time value at Entity+0x29C** — same family as gameworld §12d
-entity+0x28 = world-clock sample (two recorded times: GE+0x28 coarse, Entity+0x29C precise?)
+⇒ **per-entity value at Entity+0x29C** — ⚠ CORRECTED later same day (see
+`cutscene-controller-world-subsystem-roster.md` §7): +0x29C is the entity's **update-budget
+credit (seconds)** maintained by the World+0x8C scheduler; the time natives consume the same
+field, so it doubles as "entity-local elapsed time", NOT a stored birth timestamp.
+GE+0x28 remains the world-clock sample at ctor
 *(inferred link)*. Calendar objects = the JE::Gregorian class (their session-12 doc): World
 accessors +116 (0x100 field) = world calendar ptr; +0x3C (0x470070) = evaluate clock also
 calendar — consistent dual use.

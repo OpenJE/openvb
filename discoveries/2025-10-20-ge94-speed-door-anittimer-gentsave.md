@@ -104,12 +104,16 @@ model+12). Behavior (0x548D80..0x548EDB):
 
 1. `DynamicObject vft[+18](clipIdx,&a2,&a1)` — engine clip remap (in/out); if remapped,
    oneShot forced 0.
-2. Stores the active-anim record at DynamicObject `+0x288..`: byte present-flag (+0x288),
-   `{curClipId @+0x294, reqClipId @+0x29C, oneShot @+0x2A4}` (decompiler `gap289[3/7/11]`).
+2. Stores the active-anim record (raw-corrected 2025-10-20, was misindexed via `gap289[]`):
+   byte present-flag **@E+0x288**, u32 **@E+0x28C** (param_2 in/out — resolved clip), u32
+   **@E+0x290** (original clipIdx), byte oneShot **@E+0x294**.
+   ⚠ `E+0x29C` is NOT part of this record — it is the scheduler update-budget credit
+   (cutscene-controller doc §7; stores at 0x5A9567/0x5A95CE are the only writers there,
+   besides PlayAnim NOT touching it).
 3. **Clock base = `World+0x48`** via factory-intf slot 0 (0x46FD20) on the singleton —
-   `nowMs = get48()`; `startTime = nowMs - startOffsetMs` stored at DynamicObject
-   `gap179[7]` (~+0x17C); **end-deadline** = `startTime + (i64)(GetDuration(clip)*1000) *
-   max(loopCount,1)` stored `gap179[11]` (~+0x180); `+0x188` byte = `loopCount==0`
+   `nowMs = get48()`; `startTime = nowMs - startOffsetMs` stored at **E+0x180**;
+   **end-deadline** = `startTime + (i64)(GetDuration(clip)*1000) *
+   max(loopCount,1)` stored **E+0x184**; `E+0x188` byte = `loopCount==0`
    (infinite-loop flag).
 4. Actual play: `cls_0x4a5be0::meth_0x4a5640(cur, req, 0, speed0=0x3DCCCCCD(0.1f?tag), 1,
    loopCount)` then `meth_0x548d10(speed=1.0f)`; pool `mbr_0x90 = oneShot`.
@@ -144,8 +148,8 @@ the loads `[ecx-d]` therefore address GameWorld `0x168−d`). Corrected targets:
 | 200 | 0x46FFF0→0x470000 | `[ecx-0x78]` | World+0xF0 | map#2 tail pad |
 | 208 | 0x470010 | `[ecx-0x74]` | World+0xF4 | ditto |
 | 240 | 0x470080 | `[ecx-0x12c]` | World+0x3C | session12 "evaluate clock" ✓ |
-| 248–264 | 0x470090/B0/D0 | `[ecx-0x70/-0x6c/-0x68]` | World+0xF8/FC/0x100 | zeros-to-0x104 block |
-| 288+ | 0x470160/180/190/1C0 | `[ecx-0x14]` + derefs | World+0x154 ptr → {+0,+4} | container cursor chain |
+| 248–264 | 0x470090/B0/D0 | `[ecx-0x70/-0x6c/-0x68]` | World+0xF8/FC/0x100 | ⚠ later corrected: these are the **subsystem pointers** {Journal, Encyclopedia, StoreManager} — see cutscene-controller roster doc §3 |
+| 288+ | 0x470160/180/190/1C0 | `[ecx-0x14]` + derefs | World+0x154 ptr → state/id of **cutscene controller cls_0x5a4340** (NOT an STL cursor — see cutscene-controller doc §1–2) |
 
 ⇒ **F3::GameWorld own storage = +0x164..+0x393 = the 140-dword ammo/prototype registry ONLY**
 (their session9/10; single access point in the whole GameWorld TU: `lea edi,[ebx+0x164]`
@@ -197,3 +201,13 @@ their session12); **entity+0x28 = birth-timestamp sample at ctor, not a unique i
 - reimpl action: rename `SpawnedEntity.netId`-ish semantics → `birthTime`; real unique ids =
   4 tagged allocators (gameworld doc §10.1) + engine netId @Entity+0x1DC (their session8 —
   now fully consistent).
+- ⚠ VIEW-ARITHMETIC AUDIT (per view-arithmetic-correction.md rule, same day): the
+  `0x46FD60` chain is unambiguous — it self-rebases (`sub ecx,[ecx-4]` delta=0, then
+  `sub ecx,0x230`) from the FACTORY view at GW+0x398 to GW+0x168, reading `[-0xF8]` ⇒
+  **byte GW+0x70 exactly**. Under their PackState view-shift (this=view+4), PackState's
+  "read +0x6C" = same base+0x70 ⇒ their correction does NOT invalidate this finding — the
+  two readings are the SAME field seen through the two views. Caveat kept: "double" typing
+  of the clock and the 0x70/0x74 pairing still *(inferred)*; counter labels in
+  gameworld-interfaces §10.1 should be re-tabulated base-relative per their §2
+  (id-base base+0x80, counter base+0x8C) — the tag values (0x20/0x40/0x60, 29-bit) are
+  view-independent and stand.
