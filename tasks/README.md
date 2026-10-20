@@ -130,6 +130,14 @@ row; A keeps editorial merge rights).
 
 | T-003 | GUI RE recon: `.int` load chain field notes (read-only IDA) | done | implementer-B |
 
+| T-022 | Assert every "verbatim shipped" string is byte-identical in F3.exe | open | implementer-C (UltraBear) |
+| T-023 | Cross-TU compile probe as a command (verify a rename with no linker) | open | implementer-C (UltraBear) |
+| T-024 | Gate integrity: revision/payload stamp + per-suite minimum assertion counts | open | coordinator (NiceFalcon) |
+| T-025 | Shipped-data census generator -> committed greppable tables | open | FastArrow (research) |
+| T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open | implementer-B (YoungStorm) |
+| T-027 | Deterministic RNG seam for damage draws (documented deviation) | open | implementer-B (YoungStorm) |
+| T-028 | Scripted input driver + how input really enters the client | open | HappyWolf (research) |
+| T-029 | IDA function census: the missing coverage denominator | open | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |
 
 | T-005 | GUI: `.int` reader + widget tree with name lookup | done | implementer-B |

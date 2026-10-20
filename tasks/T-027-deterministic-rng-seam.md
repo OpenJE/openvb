@@ -1,0 +1,30 @@
+---
+status: open
+assignee: implementer-B (YoungStorm, 01a15802)
+depends: nothing
+---
+
+# T-027 — Make damage draws reproducible without faking the formula
+
+## Why
+B's own correction: `CalculateDamage` calls `rand()`, so **any test asserting its value asserts a coin
+flip** — which invalidated a test C and I had both signed off on. The fix cannot be "compute the
+average", and it cannot be quietly swapping the generator, which is a fidelity change.
+
+## Scope
+1. Route every gameplay draw through one function (e.g. `CombatMath::RollDraw()`), defaulting to the
+   shipped behaviour.
+2. Add a **test-only** seed/inject path, documented as a deliberate deviation in
+   `docs/DEFERRED-NOTES.md` — visible in the tree, not smuggled in a comment.
+3. Grep for other unseeded draws in the sim (to-hit roll, reaction chance, voice chance, crit chance,
+   scatter) and list them; do not convert them all in this row, but enumerate the surface.
+4. No test may assert a damage value while drawing from the live generator — say so in the notes file.
+
+## Acceptance
+- A damage case asserts a real number and passes deterministically across 100 runs.
+- The deviation is registered in `docs/DEFERRED-NOTES.md` and cppcheck reports no new findings.
+- `grep -rn "rand()" src/F3` leaves only the seam, or the remainder is explained.
+
+## Refs
+- `tasks/T-012-...` (both C and I treated an expected damage value as valid; it asserted nothing)
+- `discoveries/2025-10-20-attack-state-machine-damage-formula.md` (all the roll sites)
