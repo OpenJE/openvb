@@ -156,3 +156,31 @@ filenames.
 The coordinator is now a role with different needs (high send budget, no feature ownership, sole
 committer of research output, gate authority), yet every session is configured identically. Most of
 items 2–6 are that mismatch showing up as tool friction.
+
+## 12. No check that `tasks/` files and the board table agree — **caused real drift today**
+
+`T-016` was written, committed, and referenced in two messages, yet had **no row** in the
+`tasks/README.md` table: a lane reading only the board would conclude the runtime batch does not
+exist. `T-010`'s row also still advertised sub-items as open that were answered, reassigned, and
+partly resolved-as-defect. Both were found by accident, while inserting unrelated rows — not by any
+check.
+
+Cheap, deterministic, and worth a script more than a rule:
+
+```bash
+# every task file must have exactly one table row, and every row must name an existing file
+for f in tasks/T-*.md tasks/M-*.md; do
+  n=$(basename "$f" | sed -E 's/^([TM]-[0-9]+)-.*/\1/')
+  grep -q "^| $n |" tasks/README.md || echo "MISSING ROW: $n ($f)"
+done
+awk -F'|' '/^\| [TM]-[0-9]+ /{gsub(/ /,"",$2); print $2}' tasks/README.md | while read -r id; do
+  ls tasks/"$id"-*.md >/dev/null 2>&1 || echo "ORPHAN ROW: $id"
+done
+```
+
+Two related conventions that would prevent the softer half of this:
+- **a broadcast is not an assignment.** Assign by row (file, committed); use the mesh to *point at*
+  the row. Two lanes were working on chat-authority alone today until rows were added.
+- **status strings age silently.** `open | research (10a X, 10b Y, 10c Z)` was wrong within one
+  turn. Prefer one row per sub-item if sub-items are going to be claimed and closed independently —
+  which is exactly how 10a–10e drifted.
