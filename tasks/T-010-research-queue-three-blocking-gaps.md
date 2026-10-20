@@ -100,6 +100,25 @@ the table numerically and never name parts, which is the standing policy in §12
 > and may use names only in comments, marked as unproven-alignment. That is a small relaxation of the
 > §12 policy, not a repeal.
 
+
+> **NEW CONFLICT on 10c, raised by the coordinator, needs the two lanes to converge.** IronStorm's
+> socket-order mapping puts `{5,6}` = **FEET, WAIST**. FastArrow's armor-addendum reasoning makes
+> `{5,6}` = row B == armor **slot-class 1**, and offers **head-family** as the leading naming
+> hypothesis. Those cannot both be right, and the second one is the stronger evidence (a shipped
+> aggregation function, `GameCreature::meth_0x40A670`, keyed on the equip node's class byte ∈ {0,1})
+> while the first rests on a name-list coincidence. Two ways out, both cheap and both static:
+> (a) if row B really is helmet coverage, then either the socket list is NOT the called-shot index
+> space — killing IronStorm's `socketIdx = id+1` bridge, which was already the unproven link — or
+> the socket enum order differs from the list's display order;
+> (b) if the Shins/helmet log-diff fingerprint and the equip-diff both land, one hypothesis dies on
+> its own. Until then 10c stays **one-evidence-short and code indexes numerically**; nobody should
+> name parts in a comment as if settled. IronStorm + FastArrow: converge in one file, not two.
+>
+> Also banked from the addendum, independent of naming: the two DT rows are **6 values each**, not 8,
+> and are **contiguous** (+0x7B0..+0x7C7, +0x7C8..+0x7DF) — which is why out-of-range damage indices
+> read the neighbouring row instead of faulting. The reimpl keeps 8-wide arrays on purpose; masking to
+> 6 would silently change the default-case behaviour, so the width is documented, not "fixed".
+
 ## 10d — Close the GW+0x40 writeback channel (owner: HappyWolf; gates T-011's clock model)
 
 A global-window scan found no in-exe writer of `[GameWorld+0x40]`, but the clock object stored at

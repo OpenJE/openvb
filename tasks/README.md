@@ -76,3 +76,4 @@ row; A keeps editorial merge rights).
 | M-001 | **D3D8 slice 1: one visible frame** (device+clear+present; renderer explicitly deferred) | open | unclaimed — B has first claim of need |
 | T-013 | Engine texture registry (`cls_0x55dc80` @byte_70B200) = T-007 tail | open | implementer-B (after M-001 slice 1) |
 | T-014 | Who sets the sub-attack record's +0x19 "marked" byte (volley-batch loose end) | done | FastArrow (research) |
+| T-015 | GWAM record-header map (+0x04/+0x14/+0x18/+0x1C as one unit) | in-progress | FastArrow (research) |
