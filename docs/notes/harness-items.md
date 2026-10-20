@@ -380,3 +380,34 @@ here rather than filed as a task, because the fix belongs upstream.
 The general rule, since this is the third tooling assumption I have had to correct by reading source today:
 when a limit or a failure mode matters, read the implementation instead of the description — the description
 in this case explicitly promised something the marshalling does not deliver.
+
+
+## 21. The pi-messenger send cap is removed (and how to re-remove it)
+
+Decision 2026-10-20: **the per-session send budget is effectively unlimited.** It was throttling *routing*,
+not content — the cliff appeared mid-dispatch and left lanes unassigned while I sat silent, which is worse for the
+project than any message spam.
+
+Verified, not assumed: after the change, a send rendered `999957 messages remaining`, and the effective value was
+computed by replicating `loadCrewConfig`'s merge (`defaults <- user <- project`) rather than by reading one file
+and hoping.
+
+Two layers, and **both are outside git**, so a fresh machine or a reinstated `.pi/` silently restores the cap of 10:
+
+- project layer (wins): `.pi/messenger/crew/config.json` — `.pi/` is gitignored
+- machine layer: `~/.pi/agent/pi-messenger.json`, under a `"crew"` key
+
+Reapply by putting this in either file (JSON has no `Infinity`, so use a sentinel):
+
+```json
+{ "coordination": "chatty",
+  "messageBudgets": { "none": 0, "minimal": 2, "moderate": 5, "chatty": 1000000 } }
+```
+
+`handleSend` calls `loadCrewConfig` on **every** send, so edits apply immediately — no restart, unlike a `devenv`
+script payload (item 18). Keep `none/minimal/moderate` as they are: those are deliberate terseness levels for crew
+workers, and removing the cap for the coordinator shouldn't turn a minimal worker chatty.
+
+What the cap *was* protecting is context, not attention — my dispatch messages are long. That is managed by
+`/compact` and by the standing rule that lane messages carry payload, not narration. If messages start costing
+context again, the answer is shorter messages, and this file is the place to re-tighten it deliberately.
