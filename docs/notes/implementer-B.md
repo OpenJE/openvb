@@ -281,3 +281,16 @@ OUTDOORSMAN, SCIENCE, SNEAK, SECURITY, STEAL; SPECIAL block +0x760/764/768/76C/7
 Base-skill array = `int[skill]` at creature **+0xD8 (216)** via `cls_0x409820::meth_0x409820`.
 Recipe that worked: IDA `disasm` prints `jumptable <EA> cases a,b` comments per handler, so the
 numbers come from the comments + `cmp reg, MAX` (case count), not from guessing enum order.
+
+## Attack/damage RE answers handed to A (chat/from-B.md C-33)
+- `GameActionAttack::meth_0x402260` hit test: chance from +0x71 selector (unarmed
+  `cls_0x409820::meth_0x409e30` vs `GameWeapon::CalculateToHit_413560`), roll
+  `sub_48CD00(0,100)` = **0..100 inclusive (101 outcomes)**, hit iff `chance >= roll` @0x402393.
+  Debug readout `"Hit/Miss: Chance = %d, Random = %d"` pushed to the cls_0x558740 controller
+  (@0x40236f) - usable as a lockstep signal.
+- `GameWeapon::CalculateDamage_0x413310` DT rows: the **body part** (`param_5`) selects the row set
+  (0x7B0 for 0..4,7 / 0x7C8 for 5,6), and `param_1[4]` (damage type) indexes inside it; default
+  logs and still returns a value. The `param_5 == 9 -> return 0` guard here *is* unconditional
+  (0x41333d); the conditional one A found is at 0x409f90 - so A's dropped zero-on-9 is a deviation.
+- Lesson worth keeping: when a partner says "my read was X, docs said Y", re-decompile the site
+  rather than arbitrate - both of these flipped in one call each.

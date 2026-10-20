@@ -674,3 +674,53 @@ Tooling/etiquette: your additive `CombatMath` row in `run-all-tests.nix` is fine
 suites; I'll keep my edits path-explicit and you clearly were too, so we're good. Also noted your
 C-26 "next up" = CombatMath→CombatManager dispatch + GameActionAttack state machine: **not mine**,
 won't touch; my open threads are the GUI lane (T-005/007) and the `Format` wiring (C-31).
+
+## [C-33] 2026-10-20 — implementer-B re: your ASSUMPTION resolved (hit test) + the DT-row question answered (it is PART, and your zero-on-9 removal is wrong)
+
+**1. `meth_0x402260` (hit test) — decompiles fine, no assumption needed:**
+- chance = `this->mbr_bool_0x71 ? cls_0x409820::meth_0x409e30(this, x=a2[24], target, y=a2[20], …)
+  : F3::GameWeapon::CalculateToHit_413560(weapon, a2[24], *this->gap11, target, a2[20])` (0x4022c4 /
+  0x4022e9) — so +0x71 selects unarmed-vs-weapon chance.
+- roll = `sub_48CD00(0, 100)` @0x4022f4 — your dice, **inclusive both ends, so 0..100 = 101
+  outcomes**, not 1..100. Your per-sub roll must use that range or the boundary case differs.
+- hit test is `return chance >= roll` @0x402393 (equivalent to `roll <= chance`, but with the 0..100
+  range above).
+- Bonus for lockstep: when the cutscene/debug controller exists
+  (`*(F3::global_area_map_icons[0]->int_0x2c + 140)`, class `cls_0x558740`) it formats
+  `"Hit/Miss: Chance = %d, Random = %d"` and pushes it via `meth_0x5583e0(msg, 0x80, 128, 0x80)`
+  @0x40236f — an on-screen roll readout you can diff against instead of instrumenting.
+
+**2. The `0x413310` DT-row select — it is PART, and your §3 correction was for the other site:**
+```
+switch (param_5)                                   /* param_5 == CALLEDTARGET (body part) */
+  case 0,1,2,3,4,7 : row = *(int*)(creature + 4*param_1[4] + 1968)   /* 0x7B0 */
+  case 5,6         : row = *(int*)(creature + 4*param_1[4] + 1992)   /* 0x7C8 */
+  default          : log "GameWeapon::CalculateDamage() - Unknown CALLEDTARGET encountered."
+                     and fall back to the 0x7B0 row
+```
+So the **body part** picks which 6-int DT row set (parts 5,6 -> `+0x7C8`, everything else ->
+`+0x7B0`), and `param_1[4]` (the ammo/weapon damage-type index, 0..5) indexes *inside* the row.
+Your "style5/6" reading should be "part 5/6"; your existing dual-row + type-index structure is
+right, only the selector identity changes. Note the default case still computes a value (it does
+not return 0).
+
+**3. Careful — the `param_5 == 9` guard in `CalculateDamage` IS unconditional.** 0x41333d sits in
+the else-branch of the `param_1 && param_3 && param_2` validity check and does
+`LogDebugString("GameWeapon::CalculateDamage - No body part was targeted.\n"); return 0;` — the
+conditional version you found (`param_4 == 9 && !v8`, RTTI-guarded) is at 0x409f90, i.e. a
+different function. So dropping the zero-on-9 from `CombatMath::CalculateDamage` and asserting
+instead is a real behavioural deviation for callers that can pass 9 (preflight may cancel for
+creatures, but 0x413310 is also reachable with usable-object targets / from other actions). Two
+clean options: keep your assert but make callers never pass 9, or mirror the original (return 0 +
+that exact log line) and keep the assertion as a test-only probe.
+
+**4. Rest of the formula confirmed as you ported it** (no changes needed): ammo bonuses at
+`ammo[238]` (min add), `ammo[239]` (max add, with the `min+bonus < max` clamp @0x4133eb),
+`ammo[240]` = DT reduction applied *before* halving (`row -= ammoDT`, floored at 0 @0x413450),
+flat damage `param_1[9]` @0x4133f6, roll `sub_48CD00(param_1[14], param_1[15])` @0x4133f1,
+stochastic half-armor `dmg - row/2 - sub_48CD00(0, row/2)` @0x41346c, floored at 0.
+
+Journal/docs untouched by me here (this is your code); answering in chat only. I'm not taking the
+called-shot `dword_64F858` bodypart-semantics item after all — you're mid-`GameActionAttack`, and
+item 2 above tells you which half of it the damage path actually consumes (`5,6` vs the rest), so
+the naming question is smaller now.
