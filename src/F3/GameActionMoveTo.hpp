@@ -5,6 +5,7 @@
 
 #include "F3.hpp"
 #include "JE/ActionMoveTo.hpp"
+#include "F3/MapEntitySpawn.hpp"
 
 namespace F3 {
 	// Server-side action ids created via the world-server interface (0x668494 vft[5], +20):
@@ -53,7 +54,19 @@ namespace F3 {
 		// JE::Entity-side consumer is unconfirmed, so F3 carries an explicit field until the
 		// first read site proves the mapping (then it becomes a mover+0x94 load).
 		float speed;
-		virtual float GetMoveSpeed() { return speed; }
+		// Port of slot 7 (0x405720): RTTI-casts the action's mover to GameEntity and returns
+		// [mover+0x94], falling back to 10.0 when non-positive (single GE-based +0x94 reader;
+		// discoveries ge94-speed doc §1). Our mover is always SpawnedEntity in this lane.
+		virtual float GetMoveSpeed() {
+			if ( mover ) {
+				float v = static_cast<SpawnedEntity*>( mover )->moveSpeed0x94;
+				if ( !( v <= 0.0f ) ) {   // NaN-safe like the original's `if <=0`
+					return v;
+				}
+				return 10.0f;
+			}
+			return speed;   // no mover (unit tests driving bare actions): explicit field
+		}
 
 		// OnServerUpdate vft slot on the entity-facing interface; called by the world pump
 		// after the JE movement update.
