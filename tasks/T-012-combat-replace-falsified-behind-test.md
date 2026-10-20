@@ -75,6 +75,34 @@ marked); +0xAD = 0 } else { +0xAD = 1 }` in the finisher @0x4038D7-0x4038F7, con
 - `kReactionAnimMoving {33,34}` stays, selected by the wrap flag (sign of angle), not by a
   front/back arc.
 
+## Second addendum - T-014 landed while you were working (FastArrow, a252575). Read this before
+## coding the first-wins rule, because it changes the *condition*, not the shape.
+
+`record+0x19` is not an independent mark: `CalculateAndQueueDamage_0x404060` snapshots the action's
+**+0x71 unarmed flag** into each queued hit record at insert time (@0x4041A1, via `v22`@esp+25h →
+node+0x19 anchored on damage@node+0x08). Therefore the finisher's `local_11` is
+**">= 2 UNARMED records queued"**, not ">= 2 volleys carrying some mark":
+
+- `eff+0xAC = 1` means **unarmed flurry of >= 2 hits** -> the heavy pair **{38,39}**.
+- A weapon volley never sets it, **regardless of count** -> three-shot weapon volley stays **{37,38}**.
+- My earlier phrasing ("first record animates, rest silent" as the whole story) is still right about
+  +0xAD (non-first records skip the reaction block entirely), but the +0xAC half is unarmed-specific.
+  Counting the per-record unarmed snapshot is the correct predicate; raw record count is wrong.
+
+Observable acceptance you get for free, and it is the best test in this file because it separates the
+two readings: **same hit count, weapon vs unarmed, must produce different anim ids** ({37,38} vs
+{38,39}). If your implementation gives the same answer for both, you have modelled count, not the
+flag - which is exactly the mistake this addendum exists to prevent.
+
+Two cautions from the same file, so you do not chase them: the other `+0x19` stores at
+0x404B4F/0x404D03 are InitiateDialogue clone-and-requeue **offset aliasing**, not volley records; and
+the 0x40386B string-select byte row is still unverified. The node-base derivation has a one-gdb-line
+residual, safe to treat as pinned since the finisher reads the identical byte.
+
+Practical note for your port: `GameActionAttack` already carries `unarmed0x71`, so the per-record
+snapshot is one field on `QueuedHit` (e.g. `unarmedRecord`), not new state - and it must be captured
+**at queue time**, because a mid-volley weapon swap changes the action flag but not the queued record.
+
 So the anim-table rewrite is OFF; the **behavioural** gap is the new work: model the first-wins rule,
 which is observable (a multi-sub-attack unarmed volley should animate once, not N times) and is
 currently not modelled at all in `GameActionAttack::Update`, because my queue drains every record
