@@ -1,6 +1,8 @@
 ---
-status: open
-assignee: implementer-B (YoungStorm)
+status: in-progress (STEPS 1-3 DONE via T-066: stem-keyed Gfx_Texture_Manager ported + asserted
+         behind the seam, openje 653fa79; REMAINING = Step 4 device decode (M-001-gated) +
+         Step 5 full miss-census)
+assignee: implementer-B (YoungStorm) / steps 1-3 executed by KeenStorm under T-066
 depends: M-001 slice 1 (device first), then this unblocks texture-bound skins
 ---
 

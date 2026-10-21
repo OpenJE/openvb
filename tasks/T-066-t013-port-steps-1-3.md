@@ -49,3 +49,19 @@ GameCursorManager/CSound/event-kinds (scope freeze honored).
   API (T-062 law); policy comment cites the integer-map negative boundary from the trio addendum.
   14 new asserts incl. the two-names-differ-only-in-case TWO-NODE case-sensitivity test. Gates:
   9/9 (ResourceSystem 132>=111), cppcheck 0, msvc rc0.
+  Fixup `c16ddcb`: id 0 RESERVED as absent-sentinel (first live id 1) - Step-3 grounding showed
+  the shipped allocator (0x51f680) is a free-id POOL returning 0 on empty, and every consumer
+  tests id!=0 (0x4b1b12 slot16 skip, 0x5236da gate skip).
+- **STEP 3 LANDED** - openje `653fa79`: `GUI::GfxTextureSlots` adapter (thunks over
+  Probe/GetOrCreate/Object, ctx=adapter, single-slot view with the shipped consume-before-next-call
+  contract documented; dims 0/0 until Step 4 BY DESIGN, no invented decoder). Real-registry test
+  lane: dotted-name structural probe-miss census (0 hits, one demand/record), EXACT dedupe
+  accounting (UseCountTotal == ids - distinct nodes; second load +1/record, +0 nodes), areamap
+  54-quiet-miss falsifier (0 inserts). 10 new asserts. Gates: 9/9 (GUILoading 197>=116),
+  cppcheck 0, msvc rc0.
+
+## Row status after Step 3
+T-013's port is now **steps 1-3 DONE** (stem-keyed registry live behind the asserted seam);
+remaining T-013 = Step 4 (device decode, M-001-gated) + Step 5 (full 0/0/3/54/0 census + the
+SkinAcquireFn dims supply that Step 4 unblocks). Product-side wiring (one SetTextureSlots call at
+the GUI bootstrap) lands with the boot lane that first loads an interface - the adapter is ready.
