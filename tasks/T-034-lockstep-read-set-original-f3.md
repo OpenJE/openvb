@@ -1,7 +1,6 @@
 ---
-status: open
-assignee: RedXenon (01a157ec) — moved 2026-10-21: NiceHawk has produced no read report while TWO decisions
-# (D-2 severity, R0 vs WorldTickPump) wait on it. NiceHawk keeps any partial findings and should hand them over.
+status: closed-as-miss (accepted alternative; retry re-filed as T-052)
+assignee: NiceHawk `01a15cb7` (live half; prior RedXenon `01a157ec` handed over) — see LIVE HALF VERDICT section below
 depends: nothing; required by T-031 (parity oracle) and by D-2's severity call
 ---
 
@@ -113,3 +112,16 @@ NiceHawk's handover (`b77625e`) diagnosed more than a port collision. Both parts
 ## Boundary
 Six dwords under a debugger see a moment, not a mechanism. A single sample cannot distinguish "capacity 4" from
 "capacity 4 at this instant"; if R3's index looks suspiciously near the cap, say that instead of concluding.
+
+## LIVE HALF VERDICT 2026-10-21 (NiceHawk `01a15cb7`, post-incident session): ZERO of six rows - honest miss list per the row's rule
+Full capture report + six-row table (VALUE column = NOT READ + why): `discoveries/2025-10-21-t034-live-capture-orig-boot-exception.md` (committed `5717bd9`). Summary:
+- 5 attach cycles, all clean (MZ@0x400000 confirmed each time); ImHex/31337 never touched, 31437 workaround attached every cycle.
+- THE BLOCKER (new, mechanism named): the gdb-INSTRUMENTED boot never consumes wine's startup `DbgBreakPoint` - main thread parked at `ntdll+0xe229` (4 identical interrupt samples), TICK probe `0x56af50` NEVER fired => the engine never completed a frame; `0x48ccf6`/`0x552bb5`/`0x550720`/`0x459f5d` all armed, none hit. Plain `continue` on this winedbg+gdb17.2 pair blocks forever; async is dead on the stub (continue & accepted, interrupt no-ops, no wait, stepi refused). Prior "alive at menu" was observed WITHOUT gdb attached - that delta is the whole game.
+- NOT the blocker: port collision (fixed), xdotool (installed; no mapped window to click), attach (works).
+- R0 loud-flag: no live contradiction to T-045 - the pump never ran at all; WorldTickPump assumption stays UNFALSIFIED, not confirmed. R1 handover claim "menus draw dice" did NOT reproduce instrumented.
+- No cold-read padding taken (row forbids); R3/R4/R4b reported unreachable-by-tooling this session.
+- NEXT (post-HOLD, §5 of the doc): fix the startup-stop dance first - winedbg WITHOUT `--no-start` + double-resume-after-attach before arming any judgment; if window still unmaps, escalate wined3d env (LIBGL_ALWAYS_SOFTWARE=1 / Xvfb, render-device-probe case 3). Working harness v3 (interrupt-tolerant, TICK probe, R4 pre/post, R4b deque walk) at /tmp/t034-run.py - re-land under tools/ at the retry owner's choice.
+- Incident (disclosed, accepted): cross-prefix `pgrep -x F3.exe` kill removed the reimpl inferior 320383; 31338 stub 320381 left as-found (LISTEN, orphan); repair = `devenv processes restart ida-reimpl-gdb`, controller-owned. Durable rule proposed as harness item 38: comm-grep is never an owner test; gate kills on /proc/<pid>/environ WINEPREFIX.
+- Environment left CLEAN: stubs killed, no IDB writes, no devenv edits, no commits by the lane.
+
+**Row status: LIVE half CLOSED-as-miss.** The six dwords remain unread; the row is now GATED on the §5 harness retry, not on effort. Board row reflects this.
