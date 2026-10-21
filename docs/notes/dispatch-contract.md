@@ -131,3 +131,18 @@ run took three failures before it worked (coordinator, `6df6f53`):
 Report honestly what such a run covers: it produced **9 pass / 0 fail** with `app-boot` *excluded* because the worktree
 has no linked build output. Nine rows verified plus one quoted is a different claim from "10/10 verified", and the
 second version is what a stale payload taught us to stop saying.
+
+
+## One changefile exception, recorded so the rule survives it
+
+SwiftRaven added `devenv/scripts/f3-json-check.nix` (and its `default.nix` include) **without routing it through the
+coordinator**, which the two-lane build-affecting rule forbids. Outcome first: the content is sound — I verified
+`devenv print-dev-env` exits 0, the script registers, it never writes `artifacts/F3.json`, and it declares its own
+unverified set. So the change stays.
+
+**The exception is granted after the fact, not retroactively legalised.** Two lanes held build-affecting slots at that
+moment and neither was the author; the rule exists because a *bad* changefile edit breaks every lane's reload (the
+`"xvfb-run"` string did exactly that), and "it turned out fine" is only knowable after a check the author cannot be
+assumed to have run. Restated: **ask for the changefile slot, don't take it** — a `tools/` script that the coordinator
+wraps costs one message and no one's build. Notably the lane showed the right instinct two inches from the breach: they
+declined to fold a naming rule into the export schema because *that* decision was mine.

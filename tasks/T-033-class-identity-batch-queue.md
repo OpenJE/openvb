@@ -102,6 +102,13 @@ attribution artifact, which is exactly what a pre-registered number is for.
   vftable mirror). A name with no evidence stays anonymous and gets escalated instead.
 - If a name turns out wrong later, it is retracted in the ledger rather than quietly renamed.
 
+## Acceptance correction after T-040 (`c204c51`)
+
+Any instruction here to "re-run the `F3.json` exporter" is **unsatisfiable on this machine** — stage 2 (`ooprolog`) is
+gone and the installed OOAnalyzer cannot export facts. Deltas are therefore measured on the **live IDB (route A)**, with
+`f3-json-check` pinning the 2024 export against silent drift. Renames still land in the IDB; they simply do not flow into
+`F3.json` here, and a future reader must not infer from an unchanged export that a rename was never applied.
+
 ## Boundary
 Identity is a claim about the shipped binary, not about our port: nothing here changes `src/`. A class
 named from its vftable shape may still be semantically something else, which is why the evidence column is

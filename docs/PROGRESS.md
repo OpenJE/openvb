@@ -64,6 +64,28 @@ a headless run must produce identical state to a run with a window.
 - **T-025 census generator** (in flight) and **T-032 EA→document index** exist to make the above numbers
   automatically re-measurable instead of re-derived by hand each time someone asks.
 
+## What `artifacts/F3.json` actually is (T-040, `c204c51`)
+
+A **frozen OOAnalyzer v2.2.0 export dated 2024-04-04**, not a live index. Producer identified by fingerprint rather than
+by memory: the IDB's own `.id0` carries 11 occurrences of `_PyOOAnalyzer__json_filename` = `Y:\F3.json` and the full JSON
+text under `_PyOOAnalyzer__json_data`, and the sibling archive's `F3.json` md5 `e8827f12560f…` **equals our checked-in
+file** (coordinator re-verified) — so our 2026-05-15 mtime is a *relocation* date, not a generation date. Stage 2
+(`ooprolog`, Java) is gone from this machine and the installed OOAnalyzer can't export facts, so **an IDB rename cannot be
+flowed into this file here.**
+
+**The definitional consequence, which re-reads every number above:** keys follow *"a class owning an RTTI-named vftable is
+keyed by its mangled name; everything else is `cls_0x<cea>`."* So **`cls_0x…` does not mean 'we failed to identify it' —
+it means OOAnalyzer found no RTTI-named vftable in 2024.** Batch 1's "name the anonymous classes" framing should be read
+against that: some of the 698 may simply have no RTTI to name them from, and the 403/698 split is fully explained without
+anyone's effort being missing.
+
+Regression is now caught mechanically: `f3-json-check` (devenv script) re-derives class keys, class sizes, method sets,
+member sizes and usages — **1,101/1,101 keys, 7,736/7,737 member sizes, 0 usage mismatches** — refuses to write the
+file, and declares the 4,059 synthesized base/struc/vftptr entries **UNVERIFIED** rather than passing them. Two rules it
+pins, both of which would have wrecked a guessed exporter: method EAs come from `finalClass`'s 6th argument (not
+`finalMethodProperty`, which covers only 3,384 of 6,624), and member size is `max()` over candidates (first-element gave
+143 wrong). **Measure against the live IDB; quote the export as the 2024 snapshot it is.**
+
 ## Corrections to my own propagated claims (2026-10-21)
 
 - **"Order classes by contiguity ratio"** — withdrawn as a filter. The ratio measures **link placement and compiler
