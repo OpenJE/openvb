@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: CalmRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21)
 type: research (read-only on ida_original_f3; discoveries/ only, no commits of src/ or IDB writes)
 depends: none — spawned by the T-033 batch-6 closure statement (commit `ddd39ec`: "cheap deterministic
@@ -45,3 +45,22 @@ class: shipped strings in regions never mined, to mint or annotate classes beyon
 - `discoveries/2025-10-21-t033-batch4-ledger.md` / batch5 / batch6 (evidence-hierarchy examples,
   registered escalations you must NOT target)
 - `discoveries/2025-10-21-t007-skin-subrecord-g1-g2.md` (model of byte-exhaustive claiming)
+
+## Acceptance evidence (delivered 2025-10-21)
+
+- **(a) Coverage table — self-tested on 3 knowns:** method (string→xref[EA + EA+1 for the
+  `\xc7` boundary artifact]→containing fn→band class) reproduces Actionbar.INT@0x650ae0→CActionbarInterface,
+  Gfx_Texture_Manager@0x677560, Gfx_AnimMeshInstance@0x66c430. Corpus: 422 `::`-strings; 387 sit in
+  68 already-named bands (claimed), 32 touch anon fns → triaged to 0 unexplained.
+- **(b) Prioritized mint-queue** in `discoveries/2025-10-21-t053-string-mining-unexamined-bands.md`:
+  headline `JE::CDebugInterface` (cls_0x558740, **7** contiguous fns; ctor stores own
+  `CDebugInterface_vftable_692e84` + Debug.INT + self-naming strings @0x692eac/@0x692ef0; 5 0x434xxx
+  fns rejected as helper-theft) + 13 GUI window-interface ctor-band own-vft joins + 6 merge-into-
+  existing-class candidates (each with string bytes + string EA + fn EA + owner-band evidence +
+  hierarchy verdict + fns-at-stake). Net honest yield ≈30-31 route-A T2→T1 fns.
+- **(c) Dismissal list:** `sub_5FB742` = DirectX DM/DShow error-string translator (15 strings, vendor,
+  0x224f B, 490 msg-table refs, 47 callers), CRT `printf`/`debug_stream`, `std::string`, n≤2
+  `Gfx_ModelInstance::AttachTo`, already-RTTI-claimed `AnimationCache::Startup`. Registered
+  `_Tree`/vendor bands touched only by single-fn joins (b6 precedent).
+- **READ-ONLY proven:** `artifacts/F3.exe.i64` mtime 14:26:04 (b6 save) unchanged at hand-back; zero
+  renames/comments/type-edits issued. File: `discoveries/2025-10-21-t053-string-mining-unexamined-bands.md`.
