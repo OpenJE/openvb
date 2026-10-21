@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: KeenStorm (dispatched by LoudDragon `01a15f82`, 2026-10-21 — direct follow-on to T-061's named open items)
 type: research (read-only on ida_original_f3; discoveries/ left DIRTY for coordinator checkpoint)
 depends: T-061 (you decoded the facade; now decode the subsystem it fronts)
