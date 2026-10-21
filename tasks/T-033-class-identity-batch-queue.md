@@ -1,6 +1,6 @@
 ---
-status: in-progress
-assignee: GoldYak `01a15f83` (batch 6 AUTHORIZED by LoudDragon after b5 checkpoint `851acf7`; scope narrowed by KeenStorm T-007 G2 doc `06ac911`. Batches 4+5 DONE — see Results blocks. Grant rule unchanged: apply follows whoever reaches the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path)).
+status: open
+assignee: none (batch 6 DONE 2025-10-21 by GoldYak `01a15f83` — see Results-batch-6; **THE BATCH CHAIN CLOSES AT 6: queue exhausted at current evidence** — reopening requires new evidence classes, see b6 ledger §6). Grant rule unchanged: apply follows whoever reaches the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path).
 depends: T-029 (the census that produced this queue)
 ---
 
@@ -176,6 +176,30 @@ gone and the installed OOAnalyzer cannot export facts. Deltas are therefore meas
 > **T2 2,084 (23.48%) → 2,066 (23.28%), −18 exactly predicted; cumulative vs pre-b2: 26.40% → 23.28%
 > (−274 = b2 24 + b3 192 + b4 40 + b5 18).** Saved 14:13, dump-verified disk==live. Batch-6 leads: b5 §5
 > (unnamed VFX_Model+0x200 host ctor_0x564ce0; byte_707CE4/707CE0/70838C/708394 singleton anchors unmined).
+
+## Results — batch 6 APPLIED + CHAIN CLOSED 2025-10-21 (GoldYak; ledger `discoveries/2025-10-21-t033-batch6-ledger.md`)
+> 22/22 renames ok. (1) `cls_0x55dc80` escalation **CLOSED by cross-lane evidence** (KeenStorm G2 doc
+> `06ac911`: shipped manager strings + Gfx_Engine vft `0x6ae7ec` delegations on the `0x70B200` singleton):
+> 11 manager-epoch fns minted → `JE::Gfx_Texture_Manager::` (5 singleton-this-proven, 6 body/propagation-
+> verified incl. the `Texture Mgr / Default|Managed|System Pool` dump @0x51f6d0 and pool-clear +
+> `*byte_70B200=0` shutdown @0x520fc0). CORRECTION on record: the remaining 83 band members are std::_Tree
+> clones in FOREIGN TUs (call-site proof) — b3's conservative half was right, only the band key was wrong.
+> (2) NEW TOOL: **RTTI method-set sweep** (`.?AV*@@` DB classes × live IDB names; method sets proven per
+> T-040) — 8 RTTI-named classes still held anonymous-at-IDB methods, all 11 rejoined (AreaMap dtor/ctor,
+> DialogueManager virt+dtor, AnimationCache dtor, GUI::Font dtor, Gfx_ModelInstance dtor — double-proven by
+> own vft-store body, VFX_ParameterHolder ctor, VFX_VEGCache dtor, VFX_VEGInstance meth,
+> `JE::ModelInstance::ctor_0x564ce0` = the b5 §5 lead). Pattern: map-embedding classes' ctors/dtors had been
+> swallowed into _Tree clone classes; RTTI is the surgical undo, one fn at a time — registered bands NOT
+> bulk-renamed (3 singles sat on escalation bands; single-fn joins only). (3) Anchors mined to honest
+> negatives: 0x707CE0 (writers cls_0x507810-epoch, zero strings/vft → commented unresolved), 0x70838C
+> (read-only scan, no writer → commented), 0x708394 (a {width,height} value pair, not a class); 0x707CE4
+> cited-resolved (KeenStorm), not re-mined. (4) b5 §5 wording corrected: VFX_Model holds the
+> Gfx_AnimMeshInstance as a heap pointer at +0x2C0, not an in-place +0x200 embed (bytes in b6 ledger §4).
+> **T2 2,066 (23.28%) → 2,046 (23.05%) — −20 exactly predicted; T1 48.58%; cumulative vs pre-b2:
+> 26.40% → 23.05% (−294 = 24+192+40+18+20, reconciles with zero gap). Saved 14:26, dump-verified
+> disk==live.** QUEUE EXHAUSTED AT CURRENT EVIDENCE — all 30 OK-gate classes adjudicated, RTTI sweep yields
+> zero further wins; remaining T2 = vendor bands + _Tree families + n≤2 vacuous tail. Reopening needs new
+> evidence classes (lockstep, ecx-flow tooling), not re-scans; batch chain closes at six.
 
 ## Boundary
 Identity is a claim about the shipped binary, not about our port: nothing here changes `src/`. A class
