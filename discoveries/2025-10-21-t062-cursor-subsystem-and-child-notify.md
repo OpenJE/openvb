@@ -180,3 +180,13 @@ sibling-subobject-table signature F3.json's flattened 75-entry list hides (0x4b0
 index 52, 0x4AFC00 at 12). Original citation attached the secondary table's body to the primary's
 address at doc time. CITATION LAW (KeenStorm's root-cause, adopted board-wide): **cite TABLE
 ADDRESS + byte offset, and re-dump raw before trusting slot indices near multi-table vft runs.**
+
+### SECOND-PASS AMENDMENT to the F2 annotation above (T-081, TrueCastle; coordinator applied to own text, 2026-10-21)
+The F2 remediation I just wrote repeated the flattening error it was fixing: '**0x66E574** (= 
+0x66E4D4+0xA0)' is NOT a table base — it is SLOT 40 of the primary run (its [-4] is code). Window's
+actual SECONDARY is **0x66E4CC** (GUI::Window MI view, COL viewOffset 24, one slot = 0x4b0a40),
+installed by `c7 46 18` beside the primary store. Primary slot-12 = 0x4AFC00 (notify-walk) stands
+byte-exact, and the String setter 0x4B06A0 = **slot 52 within the primary** per T-081 §2, not a slot
+of a second table. Evidence: discoveries/2025-10-21-t081-gfx-slot-table-bases.md. Lesson logged
+coordinator-side: a correction written while the correcting tool still trusts the flattened view
+bakes its own phantom — re-key citations through the RAW table before authoring the fix text.
