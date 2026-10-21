@@ -698,3 +698,41 @@ does.** Read the writer before generalising, and when a claim has already propag
 that learns better — the correction chain (`7865068` → `b0f94ef` → `470ec60` → `df8f53c`) is fine as history and bad as
 an accident. Second, cheaper rule from the same trace: when a retired placeholder's name survives in a comment, retire
 the comment too, or the next reader quotes it as live code — including me, twice, today.
+
+## 32. A `nohup ... & disown; tail -f /dev/null` process kills the supervisor's ability to restart it
+
+Two facts, both measured during the 2026-10-21 04:36Z MSVC-gate outage:
+
+1. `processes.docker-rootless` starts dockerd with `nohup dockerd-rootless & disown` and then
+   `tail -f /dev/null`. When dockerd dies, the **leader bash never exits**, so the devenv session
+   guardian (which watches the leader) sees a healthy process and does nothing. `kill -TERM
+   <dockerd-pid>` is therefore a one-way action: the daemon is gone and no supervisor brings it back.
+2. The correct control path is the native manager that is already running:
+   `devenv processes restart docker-rootless` (also `list`, `status`, `logs`, `wait`; the socket is
+   `/run/user/1000/devenv-<hash>/processes/native.sock`). Verified end to end: after the restart,
+   `docker info` returned 29.8.0, `docker pull ghcr.io/openje/msvc2002:latest` returned digest
+   `368eeb63...` with rc 0, and `status` printed `Phase: ready`.
+
+**Why it matters:** the outage looked like "blocked on a human terminal" and a lane correctly
+refused to hand-launch a daemon. It was not human-only work; it was a missing command in my own
+vocabulary. Standing rule for every lane: before escalating a devenv-managed process as
+human-only, run `devenv processes status <name>` and `devenv processes restart <name>`.
+
+**Related, still open (not fixed here — `devenv/**` is not a lane file):** `docker-rootless`
+`ready.exec = docker info` passes against ANY daemon, so a generation whose dockerd died reports
+PROVISIONED rather than red. Same class as the 31337 squatter false-green (T-034): a readiness
+probe that only checks "something answers" measures the port, not the owner.
+
+## 33. An unconditional `docker pull` makes the canonical gate depend on the network it does not need
+
+`devenv/scripts/msvc-build.nix:79` runs `docker pull ${msvcImage}` before any compile. During the
+04:36Z outage the daemon's sandbox resolver was wedged, the pull returned "lookup ghcr.io on
+[::1]:53: connection refused", and the MSVC gate died before it reached a single source file —
+while `ghcr.io/openje/msvc2002:latest` was already present locally.
+
+The gate's contract is "compile with the pinned MSVC 2002 toolchain"; the image's *provenance* is
+a separate question, and conflating them means a DNS outage is reported as a build failure. Not
+edited (harness file, needs its own row): the fix is pull-if-absent or pull-with-`|| warn` and
+state which was done, so the output distinguishes "toolchain refreshed" from "toolchain used as
+cached". Recorded so a lane seeing `BUILD-FAIL` with a resolver error checks the daemon before
+blaming the code.
