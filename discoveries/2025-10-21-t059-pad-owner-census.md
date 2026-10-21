@@ -124,3 +124,38 @@ Every row = an SEH `__except`/cleanup handler (scope = the ctor/method compiled 
 - MINT/annotation queue (writer slot discipline, behind T-055): 21 GUI-interface-ctor rows
   (`SEH-cleans@GUI::Interface+0x4`-style comments), the trio-release scopes, and the
   +0xC4 atexit/embed cross-note; CRT-localic 5 rows labelled proven-foreign boilerplate.
+
+
+---
+
+## AMENDMENT (same day, LoudDragon clarification request; T-057 §1 correction-forward pattern)
+
+**The `basic_streambuf-consistent` label on the 2,062-pad sink is RETRACTED — the answer is
+neither (a) nor (c): (b)-variant, mechanism `string-destructor-in-the-band`.**
+
+Function-level re-check of the pad sink (all byte-verified at pinned md5
+`a68c22f3dd1c256ec9539a70e87cb434`):
+
+- The 2,062 `cls_0x4d8d70` pads are **not** spread over the class — **1,958/2,062 target ONE
+  function, 0x4B2DD0**, whose body is the application-wide **std::string destructor**:
+  `cmp $0x10,0x18(%esi); jb skip; push 0x4(%esi); call free(0x6162E0)` then reset
+  `cap→0xF, len→0, [4]→0` (classic SSO release-then-rearm). Call-site census: 2,322 ordinary
+  code calls from *every string-owning class* (VFX_ParameterInfo 35, Edit@GUI 33, sub_499F10 36,
+  cls_0x50db20 25, Map 20, GameActionEquip 12, …) — a per-class StringTree cleanup would never
+  fan out like that.
+- 0x4B2DD0 sitting under the `cls_0x4d8d70` label is exactly the T-036 **artifact floor**
+  ("73 DB EAs that are not IDB function starts" family): OOAnalyzer aggregated a generic helper
+  into the tree-manager band. The pad-adjust histogram (0×1,782 = whole-object; +0x4/8/12/1C…
+  = member-slot destroys) is a census of **statics/arrays-of-strings cleanup**, not of
+  StringTree instances.
+- **No conflict with the b3 StringTree mint (not (c)):** the mint's own proof is the openje
+  `_Tree/_Tmap_traits` node layout (_Color/_Isnil 0x30 nodes, SSO key in node) on the
+  tree-manager side of the band — unaffected by where the string dtor landed. The remaining
+  ~104 pads spread over 19 other band members (0x56EE40×58, …) carry the same caution: quote
+  pads at FUNCTION granularity, never class granularity.
+
+Queue effect for CalmRaven's wave (verify at write time): check whether the b3 rename applied
+`JE::StringTree::meth_0x4B2DD0` in the live IDB — if yes, recommend an annotation-tier split
+comment there (`std::string dtor aggregated into StringTree band per T-036 floor; not a
+StringTree member`), no rename needed. `pads` mode already prints the function name beside the
+class label; this row's table stands corrected at the interpretation line, bytes unchanged.

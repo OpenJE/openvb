@@ -937,3 +937,23 @@ Rules:
   census; PAD-vs-DELEG is decided BY THE TOOL with a printed `evidence=dataref@0x…` bit (pad VA
   dword-referenced in .rdata/.data). Band censuses quote the mode instead of re-deriving the
   taxonomy; a pad bucket dispute now has machine-readable proof, not prose. (Added T-059, 2026-10-21.)
+
+## 43. Pad/cleanup censuses quote at FUNCTION granularity — a class-level pad sink can be an artifact member, not an owner
+
+EpicRaven's T-059 amendment + CalmRaven's T-058 locator catch, 2026-10-21. The 2,062-pad "owner"
+`cls_0x4d8d70` evaporated on function-level re-check: 1,958 of them target ONE function, `0x4B2DD0`,
+whose body is the app-wide std::string SSO destructor (cap≥16 -> free, cap->0xF/len->0 rearm) with
+2,322 ordinary calls fanning out to EVERY string-owning class. It sat under the StringTree band label
+as a T-036 artifact-floor aggregation — OOAnalyzer landing a generic helper inside a real class's
+address range. A per-class cleanup never fans like that; a generic dtor always does. Corollary from
+the writer side: a census locator (0x507550) that is not a live function HEAD belongs to the
+build-era epoch, not to an annotatable object — force-annotating a non-head EA is itself a false
+attribution; verify head-ness before commenting, log locator discrepancies instead of adjusting.
+
+Rules:
+1. Any pad/cleanup/owner claim names the TARGET FUNCTION EA, never the class key, when counts are
+   aggregated; class-level attribution is derived, after the function-level truth.
+2. Cross-check fan-out: a candidate "per-class cleanup" with calls from dozens of unrelated classes
+   is a generic runtime helper (string/allocator/EH), classify accordingly (T-036 floor).
+3. Writers: refuse to annotate non-head EAs; a locator mismatch is a taxonomy note routed to the
+   census author, not a byte conflict.
