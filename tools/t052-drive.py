@@ -37,6 +37,8 @@
 #   bp8 0x5818d0 the "Cannot find requested mode." pre-fatal stop ($gfx members =
 #        requested adapter/mode/w/h/refresh at +0x2c..+0x44; the live Gfx_D3D mode list is
 #        at *(int*)0x708380 -> +1072 groups -> +228 count / +232 modes[32B]: w,h,REFRESH,?,FMT)
+#   bp9 0x5a94a0 / bp10 0x5a955d  T-050 skip-advance seam watch (re-entrancy observation,
+#        rung-2/DXVK row T-067; dump $ecx/$eax and per-site counts, NEVER assume order)
 import sys, time, re, os
 FIFO, LOG = sys.argv[1], sys.argv[2]
 DEADLINE = time.time() + int(os.environ.get("T052_DEADLINE", "1200"))
@@ -78,7 +80,7 @@ GFX2 = ("x/8wx $gfx+0x28", "x/1bx $gfx+0x48", "set $ad=*(int*)0x708380",
         "set $grp=*(int*)($ad+1072)", "x/1wx $grp+228", "set $md=*(int*)($grp+232)",
         "x/8wx $md", "x/8wx $md+32", "continue")
 
-tick = [0]; fun = [0]; r1 = [0]; post = [0]; segv = [0]; pump = [0]
+tick = [0]; fun = [0]; r1 = [0]; post = [0]; segv = [0]; pump = [0]; seam = [0, 0]
 while time.time() < DEADLINE:
     chunk = readnew()
     if not chunk:
@@ -94,7 +96,7 @@ while time.time() < DEADLINE:
     # match BOTH or you silently mis-service stops (T-052 session J lesson).
     hit = {n: (("Breakpoint %d hit" % n) in chunk or
                re.search(r"Breakpoint %d[, ] 0x" % n, chunk) is not None or
-               ("hit Breakpoint %d," % n) in chunk) for n in range(1, 9)}
+               ("hit Breakpoint %d," % n) in chunk) for n in range(1, 11)}
     if hit[7]:
         send(*GFX1)
     elif hit[8]:
@@ -122,8 +124,14 @@ while time.time() < DEADLINE:
         if tick[0] >= 6: send("disable 6", "continue")
         elif tick[0] == 1: send("print/x $eax", "x/1wx 0x70c2b8", "set $srv=*(int*)0x70bd98", *R2AT, "continue")  # R2 frame-1 leg (unconditional)
         else: send("print/x $eax", "x/1wx 0x70c2b8", "continue")
+    elif hit[9]:
+        seam[0] += 1; send("print/x $ecx", "print/x $eax", "continue")
+        if seam[0] >= 24: send("disable 9")
+    elif hit[10]:
+        seam[1] += 1; send("print/x $ecx", "print/x $eax", "continue")
+        if seam[1] >= 24: send("disable 10")
     elif "received signal" in chunk or "SIGTRAP" in chunk:
         send("continue")                 # THE DANCE: consume thread-start stops
     elif "exited" in chunk and "exit thread" not in chunk:
         vals.write("PROCESS-EXITED\n"); break
-vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d\n" % (r1[0], tick[0], pump[0], fun[0], post[0]))
+vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d seamA=%d seamB=%d\n" % (r1[0], tick[0], pump[0], fun[0], post[0], seam[0], seam[1]))
