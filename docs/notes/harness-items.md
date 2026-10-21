@@ -662,6 +662,17 @@ or a capture rotted; it is evidence the call never went through the dev-env at a
 cause* in its own stale branch and prints the re-run recipe, because "a check that reports a state without naming the
 cause makes the reader invent one" is the same failure as a guard printing a claim it did not verify (item 29).
 
+**A cause line must be phrased as something to *rule out*, never as a diagnosis.** SwiftRaven's refinement, and correct:
+`exit 2` has at least three causes — unsourced PATH, a genuinely stale payload, a gate predating the stamp. Asserting one
+in the output re-creates item 29's failure (printing a claim the tool has not verified); naming the **cheapest check that
+collapses the possibility space** is what a checker is allowed to say. Hence the shipped wording
+*"cause to rule out first"* rather than *"cause"*.
+
+**The third shape of the same bug, also theirs:** they nearly filed a defect against my working fix by grepping for the
+literal string *"table clean"*, which the tool never printed — a false finding about a missing feature, caught by reading
+the output instead of trusting the grep. Invent a string to search for and you will eventually "discover" that it is
+absent. Same reflex that caught the `tail` exit code one message earlier.
+
 Standing rule, extending item 19: **quote a gate number with its payload hash, and when two numbers disagree, check
 which environment produced each before deciding which is wrong.** Both may be correct. This is the fourth distinct
 "the artifact was fine, the environment wasn't" incident of the day — stale installed gate payload, `devenv-reload`
