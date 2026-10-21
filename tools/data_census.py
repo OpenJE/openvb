@@ -160,10 +160,69 @@ def giar_fields(data, off, size):
         return struct.unpack_from("<6i", data, off + 12)
     return (None,) * 6
 
+# ---- stage 2: nested record decoders (RedXenon, T-025 stage 2) ---------------------
+# String wire format, Maps.grp EME2 @0x351fa80: {u16 len, len RAW bytes, NO NUL} —
+# "0e 00" + exactly "Default_PC.CRT" (14 chars) then straight into 3 f32 pos.
+# (First reading here claimed NUL-inclusive; the tile-failure trace falsified it in
+# one step — the rule was "length is the string, whatever it ends in".)
+
+def read_jstr(data, p):
+    """(value, consumed_bytes) or (None, 0) when malformed."""
+    if p + 2 > len(data): return None, 0
+    ln = struct.unpack_from("<H", data, p)[0]
+    if ln == 0 or ln > 64 or p + 2 + ln > len(data): return None, 0
+    raw = data[p + 2:p + 2 + ln]
+    if not all(32 <= b < 127 for b in raw): return None, 0   # printable-ASCII gate
+    return raw.decode("ascii", "replace"), 2 + ln
+
+def parse_eme2(data, coff, csize, rel):
+    """EME2 = record stream {name jstr, 3xf32 pos, 3xf32 rot, u8 flag, SUB-CHUNK}
+    (sess21 handler 0x573f30 steps 1,4,5,6; the embedded EEOV sub-chunk after the flag
+    is the "instance data + EEOV" note in that doc made structural: first record's raw
+    bytes at Maps.grp 0x351fa80 show flag=01 then 'EEOV' ver=2 size=0x54 inside the
+    EME2 payload). Returns rows; None if the stream does not tile the chunk."""
+    rows, p, end = [], coff + 12, coff + csize
+    idx = 0
+    while p < end:
+        name, used = read_jstr(data, p)
+        if name is None: return None
+        p += used
+        if p + 25 > end: return None
+        pos = struct.unpack_from("<3f", data, p); p += 12
+        rot = struct.unpack_from("<3f", data, p); p += 12
+        flag = data[p]; p += 1
+        subtag = data[p:p + 4]
+        subver, subsize = struct.unpack_from("<II", data, p + 4) if p + 12 <= end else (0, 0)
+        if not TAG_RE.match(subtag) or subsize < 12 or p + subsize > end:
+            return None
+        rows.append([rel, hex(coff), idx, name,
+                     "%.3f/%.3f/%.3f" % pos, "%.3f/%.3f/%.3f" % rot, flag,
+                     subtag.decode(), subver, subsize])
+        p += subsize
+        idx += 1
+    return rows if p == end else None
+
+TRIG_TAGS = ("EMTR", "EBTR", "EMEP")
+def parse_trigger(data, coff, csize, rel, tag):
+    """Best-effort name sweep of trigger/point chunks: walk ASCII-ish jstrings inside
+    the payload; first string is the record's own name by convention; rows are
+    (chunk-tag, offset-in-chunk, string). NOT validated to tile - flagged via ."""
+    rows, p, end = [], coff + 12, coff + csize
+    while p < end - 2:
+        name, used = read_jstr(data, p)
+        if name is not None and any(c.isalnum() for c in name):
+            rows.append([rel, tag, hex(coff), p - (coff + 12), name])
+            p += used
+        else:
+            p += 1
+    return rows
+
 # ---- main census ------------------------------------------------------------------
 
 def census(root):
     rows_chunks, rows_gwam, rows_gitm, rows_giar = [], [], [], []
+    rows_eme2, rows_trig = [], []
+    trig_unparsed = {}
     per_file = {}
     for dirpath, _, files in os.walk(root):
         for fn in sorted(files):
@@ -193,6 +252,14 @@ def census(root):
                 payload = data[coff + 12: coff + csize]
                 rows_chunks.append([rel, ri, rid, hex(coff), tag, ver, csize, sha1(payload), route])
                 parsed_bytes += csize
+                if tag == "EME2":
+                    rr = parse_eme2(data, coff, csize, rel)
+                    if rr is None:
+                        trig_unparsed[rel] = trig_unparsed.get(rel, 0) + 1
+                    else:
+                        rows_eme2.extend(rr)
+                elif tag in TRIG_TAGS:
+                    rows_trig.extend(parse_trigger(data, coff, csize, rel, tag))
                 if tag == "GWAM" and ver == 5 and csize > 64:
                     c, t, naive, dw = gwam_fields(data, coff, csize)
                     rows_gwam.append([rel, hex(coff), c, t, naive[0], naive[1]] + [hex(x) if x is not None else "" for x in dw] + [route])
@@ -205,7 +272,7 @@ def census(root):
             per_file[rel] = dict(size=len(data), toc_ok=w["toc_ok"], resources=union,
                                  parsed=parsed_bytes, unparsed=union - parsed_bytes,
                                  nchunks=len(seen_off))
-    return rows_chunks, rows_gwam, rows_gitm, rows_giar, per_file
+    return rows_chunks, rows_gwam, rows_gitm, rows_giar, per_file, rows_eme2, rows_trig, trig_unparsed
 
 # ---- sanity gates -----------------------------------------------------------------
 
@@ -214,6 +281,8 @@ GATES = [
     ("eme2_count_Maps", lambda R: sum(1 for r in R["chunks"] if r[0] == "Maps.grp" and r[4] == "EME2"), 64, "map doc (format falsifier)"),
     ("gwam_v5_count", lambda R: len(R["gwam"]), None, "FastArrow:B10 regex said 57 - TOC-verified count is authoritative; discrepancy = false-tag class (sess35 ignore rule)"),
     ("gwam_consumed_nonzero", lambda R: sum(1 for r in R["gwam"] if r[2]), 0, "FastArrow:B11 §3 (T-019 verdict)"),
+    ("eme2_tiles_all_64_chunks", lambda R: sum(1 for _ in R["eme2_unparsed"]) == 0 and sum(1 for _ in R["chunks"] if _[4] == "EME2") == 64, True, "sess21 map doc: 64 EME2 chunks; stage-2 tiling must not fail silently (any untiled chunk = parse-rule bug, say which)"),
+    ("eme2_first_record_default_pc", lambda R: R["eme2"][0][3] if R["eme2"] else None, "Default_PC.CRT", "sess21 §1 verbatim example"),
     ("gitm_eqslot_armor_values", lambda R: sorted({r[4] for r in R["gitm"] if r[2] == 2 and 0 <= (r[4] or 0) <= 5}), [0, 1], "IronStorm:sess35 §3 (armor-type filter kills 'EEN2' garbage hits)"),
 ]
 
@@ -250,6 +319,10 @@ def emit(outdir, R, per_file, src_hash):
           ["file", "off", "type", "equip", "eqslot", "socketName0"], R["gitm"])
     table(os.path.join(outdir, "giar.csv"),
           ["file", "off", "drBall", "drBio", "drElec", "drEMP", "drNorm", "drHeat"], R["giar"])
+    table(os.path.join(outdir, "eme2.csv"),
+          ["file", "chunk_off", "rec_idx", "name", "pos", "rot_deg_raw", "flag", "sub_tag", "sub_ver", "sub_size"], R["eme2"])
+    table(os.path.join(outdir, "triggers.csv"),
+          ["file", "tag", "chunk_off", "off_in_payload", "string"], R["trig"])
     with open(os.path.join(outdir, "summary.md"), "w") as f:
         f.write(f"# Shipped-data census snapshot\n\n- source dir hash: `{src_hash}`\n- generator: tools/data_census.py (T-025)\n")
         f.write(f"- boundary: on-disk structure only; runtime semantics NOT proven (see header docstring)\n")
@@ -269,6 +342,12 @@ def emit(outdir, R, per_file, src_hash):
         f.write(f"- GWAM v5 records: {len(R['gwam'])}; consumed!=0: {sum(1 for r in R['gwam'] if r[2])}; thrown!=0: {sum(1 for r in R['gwam'] if r[3])}\n")
         f.write(f"- GITM records: {len(R['gitm'])}; eqslot hist: {dict(Counter(r[4] for r in R['gitm']))}\n")
         f.write(f"- GIAR records: {len(R['giar'])}\n")
+        f.write(f"- EME2 records: {len(R['eme2'])}; chunks that FAILED to tile "
+                f"(counted unparsed, never guessed): {sum(R['eme2_unparsed'].values())} "
+                f"{dict(R['eme2_unparsed']) if R['eme2_unparsed'] else ''}\n")
+        f.write(f"- trigger-region strings (EMTR/EBTR/EMEP, best-effort sweep, NOT a tiling claim): "
+                f"{len(R['trig'])}\n")
+        f.write(f"- EME2 name-kind histogram: {dict(Counter(r[3].split('.')[-1] if '.' in r[3] else '(noext)' for r in R['eme2']))}\n")
         f.write(f"- chunk tags: {dict(Counter(r[4] for r in R['chunks']))}\n")
     # markdown views (same rows, pipe tables) kept minimal; csv is canonical
     print(f"emitted to {outdir}")
@@ -288,11 +367,17 @@ def run_query(R, q):
         return sum(1 for r in R["gwam"] if r[2] and r[3])
     if q == "gwam_count":
         return len(R["gwam"])
+    if q == "eme2_kinds":
+        return dict(Counter(r[3].split(".")[-1] if "." in r[3] else "(noext)" for r in R["eme2"]))
+    if q == "eme2_count":
+        return len(R["eme2"])
+    if q == "trigger_names":
+        return sorted({r[4] for r in R["trig"]})
     if q == "eqslot_dist":
         return dict(Counter(r[4] for r in R["gitm"]))
     if q == "unarmed_clips":  # style 3 animClip family from dword columns, e.g.
         return dict(Counter(r[10] for r in R["gwam"]))  # dword10 slot (clip 53/55 family)
-    sys.exit(f"unknown query {q!r} (known: consumed_and_thrown, gwam_count, eqslot_dist, unarmed_clips)")
+    sys.exit(f"unknown query {q!r} (known: consumed_and_thrown, gwam_count, eqslot_dist, unarmed_clips, eme2_kinds, eme2_count, trigger_names)")
 
 def main():
     ap = argparse.ArgumentParser()
@@ -302,8 +387,9 @@ def main():
     ap.add_argument("--emit", action="store_true", default=False)
     args = ap.parse_args()
     root = data_dir()
-    C, G, ITM, IA, per_file = census(root)
-    R = {"chunks": C, "gwam": G, "gitm": ITM, "giar": IA}
+    C, G, ITM, IA, per_file, E2, TRG, E2BAD = census(root)
+    R = {"chunks": C, "gwam": G, "gitm": ITM, "giar": IA,
+         "eme2": E2, "trig": TRG, "eme2_unparsed": E2BAD}
     if args.query:
         print(json.dumps(run_query(R, args.query), default=str))
         return

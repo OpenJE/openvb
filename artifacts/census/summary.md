@@ -40,4 +40,7 @@
 - GWAM v5 records: 57; consumed!=0: 0; thrown!=0: 3
 - GITM records: 33; eqslot hist: {0: 7, 1: 1, 1699217421: 5, 2: 20}
 - GIAR records: 7
+- EME2 records: 64; chunks that FAILED to tile (counted unparsed, never guessed): 0 
+- trigger-region strings (EMTR/EBTR/EMEP, best-effort sweep, NOT a tiling claim): 0
+- EME2 name-kind histogram: {'CRT': 2, 'USE': 1, 'DOR': 1, 'WEA': 32, 'AMO': 18, 'CON': 9, 'ITM': 1}
 - chunk tags: {'SILE': 1, 'EMAP': 14, 'EMEP': 3, 'ECAM': 14, 'EMNP': 13, 'XFIL': 1, 'EME2': 64, 'EMEF': 1, 'EMTR': 1, 'EBTR': 1, 'L555': 1, 'EEN2': 94, 'GENT': 94, 'GITM': 33, 'GIAM': 6, 'GIAR': 7, 'GOBJ': 26, 'GCON': 16, 'GWAM': 57, 'GCRE': 36, 'GDOR': 4, 'GIWP': 19}
