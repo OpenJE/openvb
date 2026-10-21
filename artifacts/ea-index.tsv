@@ -3,7 +3,7 @@
 #   Superseded docs stay in the index; judge them by the reader (see canonical-fact-sheet).
 #   Scope: discoveries/*.md only (not tasks/, not src/, not docs/f3/, not the IDB).
 #   Keys are literal addresses; 0x45c140 and 0x45c141 are unrelated keys here.
-# corpus_docs=137 indexed_eas=5258 mentions=7781 refused_tokens=761 {'vftable slot offset (relative to an unresolved table)': 564, 'bare all-digit hex': 14, 'outside image span 0x400000-0x715800': 112, 'ambiguous +0x hex': 5, 'masked/pattern EA (N significant digits, not an address)': 64, 'range outside image': 2}
+# corpus_docs=137 indexed_eas=5258 mentions=7781 refused_tokens=761 {'vftable slot offset (relative to an unresolved table)': 564, 'bare all-digit hex: could be a decimal count, not indexed': 14, 'outside image span 0x400000-0x715800': 112, 'ambiguous +0x hex: struct offset vs global address': 5, 'masked/pattern EA (N significant digits, not an address)': 64, 'range outside image': 2}
 # 51 keys are backed ONLY by inference from compressed prose (slash lists like @0x45c251/261/271,
 #   zero-padded or after-offset suffixes). They are real but not literally written: list with --inferred.
 #   Every other key appears literally as 0x.../sub_.../name_0x... in at least one document.

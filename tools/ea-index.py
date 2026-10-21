@@ -193,7 +193,8 @@ INFERRED_ONLY = {"slash-sibling", "zero-padded", "after-offset-suffix", "range-e
 
 
 def write_tsv(index, docs, refused, headings, out_path, kinds=None):
-    counts = collections.Counter(r[3].split(":")[0] for r in refused)
+    counts = collections.Counter(r[3] for r in refused)
+    assert sum(counts.values()) == len(refused), "refused categories must sum to the total"
     nref = len(refused)
     uniq = sorted(index, key=lambda k: int(k, 16))
     hdr = [
@@ -340,6 +341,10 @@ def main():
         g = collections.defaultdict(list)
         for f, l, t, why in refused:
             g[why].append("%s:%d %s" % (f, l, t))
+        # Print the total first, so nobody has to add up category lines and get a different number
+        # than the header reports (that disagreement happened once).
+        print("TOTAL REFUSED TOKENS: %d  (= sum of the %d categories below; matches refused_tokens= in the TSV header)"
+              % (len(refused), len(g)))
         for why in sorted(g, key=lambda k: -len(g[k])):
             print("\n%d refused: %s" % (len(g[why]), why))
             for s2 in g[why][:12]:
