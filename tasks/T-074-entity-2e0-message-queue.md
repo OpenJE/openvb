@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: WildZenith (dispatched by LoudDragon `01a15f82`, 2026-10-21 — onboarding row, tight scope by design)
 type: research (read-only on ida_original_f3 + offline tools; NO IDB writes; findings dirty-until-checkpoint)
 depends: T-070 (which NAMED this deferral: "the +0x2E0 first-deque walk is a SEPARATE message queue, named deferred, not conflated")
