@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: TrueCastle (coordinator wave-1 assignment, 2026-10-21 — first-in CalmRaven mesh-stuck ~5h; seat is wave-1 only, CalmRaven retains first-in for wave-2 if he surfaces)
+status: in-progress
+assignee: TrueCastle `01a16096-c00e-7404-8afe-e521a9bb7240` (coordinator wave-1 assignment, 2026-10-21 — first-in CalmRaven mesh-stuck ~5h; seat is wave-1 only, CalmRaven retains first-in for wave-2 if he surfaces)
 type: writer wave (sole IDB writer; rename+annotation load; T-055 ruleset verbatim)
 depends: T-075 queue (doc §8), T-073 queue (doc §8/§3), T-086 retro-sweep running IN PARALLEL — if it flags a band mid-wave, HOLD those rows, route to HappyStorm/EpicRaven arbitration
 ---
