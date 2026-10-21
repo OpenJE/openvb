@@ -1,9 +1,8 @@
 # T-007 — GUI: skin sub-records (Window+0x90 x9, stride 86) + texture binding
 
-status: in-progress
-assignee: KeenStorm — claimed 2026-10-21 for the RE half only (steps 1–2, gaps G1/G2). Prior
-holder NiceHawk rotated out of the mesh; steps 3–4 (the port) stay paused pending the
-coordinator's review — this lane writes `discoveries/` evidence, no code, no commits of src/.
+status: done — steps 1-2 CLOSED (`06ac911`), steps 3-4 LANDED + CHECKPOINTED (openje `a166dfa` /
+parent `2b17631`; coordinator-confirmed via GoldYak's independent 10/0 gate run on the fresh 14:34
+payload incl. GUILoading 187>=116; tail questions live in T-013's narrowing updates)
 
 > **STEPS 1–2 CLOSED (coordinator checkpoint 2026-10-21, LoudDragon `01a15f82`):**
 > `discoveries/2025-10-21-t007-skin-subrecord-g1-g2.md` accepted. Verified independently against
