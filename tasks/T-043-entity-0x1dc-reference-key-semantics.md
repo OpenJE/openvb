@@ -1,8 +1,29 @@
 ---
-status: open
-assignee: WildYak (01a15802) — offered and accepted 2026-10-21; statics only, no debugger, no IDB writes
+status: done
+assignee: WildYak (01a15802) — closed 2026-10-21, statics only (read-only IDB + raw PE parse; no debugger, no
+# IDB writes). Verdict: **a runtime-allocated reference handle** — not a form id, not a pointer.
 depends: T-037 (which found the gap as deviation D-3)
 ---
+
+> **Findings → `docs/f3/EntityRefKey0x1DC.md`.** Zeroed by the ctor (`0x55146f`), **allocated by
+> `Entity::Create`** (`0x55190c`, from `call [vft+24h]` on the `0x70bd98` registry), serialized by
+> `PackState_0x545930` (`0x5459c7`) and restored by `UnpackState` (`0x54e6e9`), and resolved as a key by
+> `meth_0x54be10` (`0x54be33`, matching the **raw AMX cell**), which is what lets `Attack` persist
+> `*(target+0x1DC)` at `record+0x38` and re-resolve per use. Also crosses a subsystem boundary as an argument to
+> `DialogueManager::BeginDialogue_55edb0` (`0x404db6`, `0x404df0`).
+>
+> **Method, and the part worth reusing:** the database could not answer this. `f3_member_index Entity +0x1DC`
+> lists 7 usages and **none is the writer** (the store is attributed to
+> `net::critical::section.mbr_0x1dc`) — harness item 27 exactly. Scanning the **displacement** across `.text`
+> found 135 sites (9 stores / 126 loads), so the per-struct list is ~95% incomplete for this field. The scan
+> also over-collects: 6 of the 9 stores are other classes sharing the offset, excluded by owner. **Both tools
+> fail in opposite directions; neither is an xref set on its own.**
+>
+> **Effect on D-3:** unchanged and sharpened — the port has a serial (`SpawnedEntity::netId`, `GameEntity+0x28`) but
+> no script-carrying handle and no per-use resolution, so "target despawned mid-attack" is unrepresentable.
+> `netId` is explicitly **not** a substitute: different offset, different producer. Routed, not guessed: what
+> the registry's `vft[+24h]` actually does (counter vs free-list vs hash — decides digest-legibility), and what
+> `Entity+0x168` is (`0x551924`, with `0x55192a mov [eax+4], ecx` looking like the handle's reverse link).
 
 # T-043 — What *is* `Entity+0x1DC`? The ref key D-3 hinges on
 
