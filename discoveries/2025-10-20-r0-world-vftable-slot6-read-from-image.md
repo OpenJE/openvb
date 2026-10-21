@@ -1,5 +1,16 @@
 # R0 answered from the shipped image, not a debugger — World vftable slot +24 is `0x404b70`, not `Update_0x544a90`
 
+> **⚠ The data here is right; the conclusion is superseded by T-045 (`docs/f3/WorldTickPump.md`, commits
+> `4bd2d53`/`80b45ce`).** `JE::World` carries **four** vft pointers — `ctor_0x548a80` stores
+> `[esi]=0x691a1c`, `[esi+4]=0x6919e4`, `[esi+0Ch]=0x6919c0`, plus a vbtable write — and the table read in
+> this file is the **+0 primary** one. The pump does not call `+24` of it: `JE::Server::virt_meth_0x552b60`
+> loads `[&World[4]]` (`0x552ba4 lea esi,[eax+4]`, `0x552bab mov ebx,[esi]`) and calls `[ebx+18h]`, i.e.
+> `+24` of **`0x6919e4`**, which is **`0x544a90` = `World::Update`** — and `F3::GameWorld`'s copy of the same
+> interface (`0x66856c+0x18`) is also `0x544a90`. So the tick does reach `Update`, the table is not broken,
+> and "the `+24` the pump calls" in the table below is the row that was wrong: `0x404b70` sits at `+24` of a
+> table the pump never indexes. Lesson kept from this file: a vftable number is not an address — with four
+> vft pointers in one class, "slot 6" answers a question nobody asked until you say which one.
+
 **Coordinator, 2026-10-21. Method:** with `image base 0x400000` and no ASLR, a vftable is just data in `.rdata`.
 Mapping `0x691a1c → raw 0x291a1c` from the PE section table and reading 20 dwords answers the structural half of
 T-034's R0 **with no attach at all**.
