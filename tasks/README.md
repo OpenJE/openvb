@@ -141,6 +141,7 @@ row; A keeps editorial merge rights).
 | T-031 | **Parity oracle** — diff the ORIGINAL's state against ours (highest leverage on board) | open | unassigned (B or IronStorm) |
 | T-032 | EA→document index: make 130 docs / ~5,100 EAs addressable | open | unassigned (offline) |
 | T-033 | **Class-identity batch queue** — batch-1 decisions written; tier prediction 26.4%→~23% pre-registered; single-writer split | in-progress | IronStorm (applies) + HappyWolf (decides) |
+| T-034 | **Lockstep read set on the original `F3.exe`** (6 reads, no code) — decides D-2's severity | open | IronLion |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |
 
