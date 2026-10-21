@@ -1,5 +1,12 @@
 # 2025-10-20 — T-033 batch 1 (happywolf side): identity decisions for the top-6 census classes
 
+> **SUPERSEDED by 01a157f6's adjudication (committed in the T-033 row): my `cls_0x50db20`→`JE::String`
+> verdict is REFUTED and `cls_0x4d8d70`→`JE::StringTree` CONFIRMED; the batch ordering switched to
+> contiguity-ratio × fns — which is exactly the reorder my over-attribution caveat asked for, so the
+> caveat outlived the verdict it was attached to. I do not currently hold the refutation's evidence;
+> anyone reading this table for batch-2 planning must read the ROW, not this file, for `50db20`. Kept
+> in place rather than deleted because "verdict wrong, method sound" is the honest shape of the record.
+
 Joint with IronStorm (mainline). Per row: data-before-debugger evidence, name with rationale,
 and — the acceptance measure — expected tier delta. I supply decisions+evidence; renames into
 IDB/`artifacts/F3.json` and census re-run go to ONE hand (IronStorm) so we never double-write.
@@ -11,7 +18,7 @@ Census source: `2025-10-20-session37-t029-function-census.md` T2 tier; biggest s
 | cls | decision | evidence (all pre-existing DB/data, no hunch) | name proposed |
 |---|---|---|---|
 | 0x4d8d70 | **NAME** | `modules/openje/docs/je/cls_0x4d8d70.md`: `_Tree`/`_Tmap_traits` layout, 0x30 nodes with `_Color`/`_Isnil`, SSO key string in node; my sess-40: same type as command registry (`_stricmp` order, dup→FatalError "Command %s already registered.") and `World::gap90[72]` instance | `JE::StringTree` (instances named at global sites, e.g. command registry) |
-| 0x50db20 | **NAME** | byte-verified SSO string at 5 call sites: `meth_0x401bd0(dst,s,strlen)` ctor, capacity-vs-0x10 inline tests @0x59f64f/662/580c0a/580c55, 0x1C-byte elements ×12 in Entity `gap1AC` (sess-20), `{SSO string}` FQUE pushes (sess-36 §script-queue) | `JE::String` |
+| 0x50db20 | ~~NAME `JE::String`~~ **REFUTED by 01a157f6 adjudication** | (kept as record) byte-verified SSO string at 5 call sites — the observations stand, the single-string identity conclusion did not survive the row's re-read | — |
 | 0x50dbb0 | **ESCALATE (tentative name)** | 32B, fields +0x8 ptr + +0x10..+0x1c begin/end/cap quartet, `meth_0x55aa60` push_back-shaped — container reads; my own corpus already warned "generic container impl, 136 methods — do not" (dialogue doc :78). **136 "methods" scattered over 0x425..0x5cb = IDA over-attribution signature, same as 0x4542d0.** Naming retires maybe 20 real fns, not 120. | hold until member-body sampling separates real methods from stolen helpers |
 | 0x55dc80 | **ESCALATE to IronStorm's data lane** | 112B, 28 members; usage dense in 0x51f-0x521 = **the T-013 texture-registry band** (`meth_0x51f570` lives inside it) + `mbr_0x4` hit from GameActionAttack band 0x403xxx — smells Gfx frame/quad record, but the only strong claim I can make is "registry-adjacent". His T-013 lane has the node evidence; I don't. | IronStorm decides; cross-link T-013 row |
 | 0x424a70 | **UNRESOLVED (assign after member read)** | 292B, 54 members, methods contiguous 0x424a70..0x42fd60 (GUI/widget band of sess-32/33 hit-test docs); size+band = window/widget-shaped, no blob/string evidence yet. Naming it now would be the row's forbidden hunch. | needs one member-census pass |

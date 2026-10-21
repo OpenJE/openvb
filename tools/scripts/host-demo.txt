@@ -1,0 +1,13 @@
+# T-028 example script — two entities, one melee order through the 0x550720 funnel,
+# one wait, 400 simulated frames of both pumps. Digest on: same script + same everything
+# must produce byte-identical digests (T-026 acceptance reused).
+digest /tmp/sd-demo.digest
+spawn actor   0 20.0 0.0 0.0 45
+spawn victim  1 20.4 0.0 0.0 30
+melee actor melee 100
+turn actor
+turn victim
+attack actor victim 2 2 0 0
+wait victim 320
+run 400 16
+end
