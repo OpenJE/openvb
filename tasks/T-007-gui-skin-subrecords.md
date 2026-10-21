@@ -1,8 +1,14 @@
 # T-007 — GUI: skin sub-records (Window+0x90 x9, stride 86) + texture binding
 
 status: in-progress
-assignee: NiceHawk — re-dispatched 2026-10-21 (prior holder's lane identity rotated out; T-034 moved off
-# them so they have a row they can finish without a debugger)
+assignee: KeenStorm — claimed 2026-10-21 for the RE half only (steps 1–2, gaps G1/G2). Prior
+holder NiceHawk rotated out of the mesh; steps 3–4 (the port) stay paused pending the
+coordinator's review — this lane writes `discoveries/` evidence, no code, no commits of src/.
+
+> Claim note (KeenStorm): doing steps 1–2 as a research row. Target: ORIGINAL_REFERENCE only
+> (`ida_original_f3`), READ-ONLY (GoldYak is the sole IDB writer this wave — no renames/comments/
+> type edits from me). Deliverable: `discoveries/2025-10-21-t007-skin-subrecord-g1-g2.md` with
+> structural evidence from `artifacts/F3.json` first, IDA disasm to verify the cited EAs.
 
 > Claim note (B): starting with the RE-only half (steps 1-2, gaps G1/G2). Implementation of
 > steps 3-4 waits on A's review of this task (proposed in chat/from-B.md C-22) so I do not land
