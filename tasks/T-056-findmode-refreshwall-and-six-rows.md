@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: HappyEagle (dispatched by LoudDragon `01a15f82`, 2026-10-21 — decision (a) from T-052 §5)
 depends: T-052 (the named mechanism + working harness are this row's foundation), T-031/T-050/T-051 (all three wait downstream on THIS row, not on tooling)
 ---
