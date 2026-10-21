@@ -59,25 +59,37 @@ def readnew():
     pos = n
     return chunk
 
-R1C = ("print/x $eax", "x/1wx 0x707c60", "x/1bx 0x707c64")
+R1C = ("print/x $eax", "x/1wx 0x707c60", "x/1bx 0x707c64",
+       "set $srv=*(int*)0x70bd98", "print/x $srv")   # + R2 chain via R2AT helper
+R2AT = ("x/1wx $srv+0x3c", "x/1wx *(int*)($srv+0x3c)+0x34")  # ROW FORMULA: world+0x3C -> Gregorian obj, [Greg+0x34]=totalSeconds (srv=[0x70bd98] IS the world ptr — no +4; A' run garbage-6 lesson)
+SEGV = ("bt 18", "info registers eax ebx ecx edx esi edi esp", "x/4wx $esp", "x/4wx $esp+4")
 R0C = ("print/x $ebx", "x/1wx $ebx+0x18", "print/x $esi", "print/x $eax",
        "x/1wx 0x70bd98", "x/1wx 0x70c2b8")
-R3C = ("print/x $ecx", "x/1wx $esp+4", "x/1wx $ecx+0x308", "x/1wx $ecx+0x30c",
-       "x/1wx $ecx+0x310", "x/1wx $ecx+0x314")
+R3C = ("print/x $ecx", "x/1wx $esp+4", "x/5wx $ecx+0x304")
 R4PRE = ("x/1wx *(unsigned*)($esp+4)", "x/1wx *(unsigned*)($esp+4)+0x14")
-R4P = ("print/x $esi", "x/1wx *(unsigned*)($esp+8)", "x/1wx *(unsigned*)($esp+8)+0x14")
+R4P = ("print/x $esi", "x/1wx *(unsigned*)($esp+8)", "x/1wx *(unsigned*)($esp+8)+0x14",
+       "x/1wx $ecx+0x310", "x/1wx $ecx+0x314",                       # post-insert head / LIVE COUNT
+       "set $blk=*(int*)($ecx+0x308)", "x/4wx $blk",                 # slot-array window (decode offline)
+       "set $hd=*(int*)($ecx+0x310)", "x/1wx $blk+4*$hd",             # HEAD slot -> action ptr
+       "x/1wx *($blk+4*$hd)")                                         # R4b: [action] vftptr
 R5C = ("print/x $ecx", "print/x $esi", "x/1wx $esi", "x/1wx $esi+0x14")
 GFX1 = ("set $gfx=$ecx", "x/8wx $gfx+0x28", "continue")
 GFX2 = ("x/8wx $gfx+0x28", "x/1bx $gfx+0x48", "set $ad=*(int*)0x708380",
         "set $grp=*(int*)($ad+1072)", "x/1wx $grp+228", "set $md=*(int*)($grp+232)",
         "x/8wx $md", "x/8wx $md+32", "continue")
 
-tick = [0]; fun = [0]; r1 = [0]; post = [0]
+tick = [0]; fun = [0]; r1 = [0]; post = [0]; segv = [0]; pump = [0]
 while time.time() < DEADLINE:
     chunk = readnew()
     if not chunk:
         time.sleep(0.4); continue
     vals.write("----CHUNK----\n" + chunk)
+    if "received signal SIGSEGV" in chunk:
+        # wined3d_cs / bink-path guard (T-056 run A): DIAGNOSE, don't blind-continue past 2.
+        segv[0] += 1
+        send(*SEGV)
+        if segv[0] <= 2: send("continue")
+        else: send("continue"); vals.write("SEGV-LOOP-CAP at %d\n" % segv[0]); break
     # gdb prints hits as "Breakpoint N hit ..." or "Breakpoint N, 0x..." (no symbols) —
     # match BOTH or you silently mis-service stops (T-052 session J lesson).
     hit = {n: (("Breakpoint %d hit" % n) in chunk or
@@ -88,10 +100,16 @@ while time.time() < DEADLINE:
     elif hit[8]:
         send(*GFX2)                      # stays stopped on purpose: inspect, then resume
     elif hit[1]:
-        r1[0] += 1; send(*R1C, "continue")
-        if r1[0] >= 6: send("disable 1")
+        r1[0] += 1; send(*R1C, *R2AT, "continue")
+        if r1[0] >= 3: send("disable 1")
     elif hit[2]:
-        send(*R0C, "disable 2", "continue")
+        pump[0] += 1
+        if pump[0] == 1:
+            send(*R0C, "set $srv=*(int*)0x70bd98", *R2AT, "continue")      # R0 + clock at frame-0 pump
+        elif pump[0] <= 4:
+            send("x/1wx 0x70c2b8", "set $srv=*(int*)0x70bd98", *R2AT, "continue")  # R2 frame-1..3 legs
+        else:
+            send("disable 2", "continue")
     elif hit[3]:
         fun[0] += 1; send(*R3C, *R4PRE, "continue")
         if fun[0] >= 12: send("disable 3")
@@ -102,9 +120,10 @@ while time.time() < DEADLINE:
     elif hit[6]:
         tick[0] += 1
         if tick[0] >= 6: send("disable 6", "continue")
+        elif tick[0] == 1: send("print/x $eax", "x/1wx 0x70c2b8", "set $srv=*(int*)0x70bd98", *R2AT, "continue")  # R2 frame-1 leg (unconditional)
         else: send("print/x $eax", "x/1wx 0x70c2b8", "continue")
     elif "received signal" in chunk or "SIGTRAP" in chunk:
         send("continue")                 # THE DANCE: consume thread-start stops
     elif "exited" in chunk and "exit thread" not in chunk:
         vals.write("PROCESS-EXITED\n"); break
-vals.write("DRIVER-END r1=%d tick=%d funnel=%d post=%d\n" % (r1[0], tick[0], fun[0], post[0]))
+vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d\n" % (r1[0], tick[0], pump[0], fun[0], post[0]))
