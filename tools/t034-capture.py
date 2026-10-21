@@ -29,8 +29,13 @@ import gdb, time, sys
 #    settle D-2 from T-037's record map + own-seam stress test; report R3 as
 #    unreachable-by-tooling, not unread.
 gdb.execute("set pagination off"); gdb.execute("set confirm off")
-gdb.execute("set architecture i386:intel")
+try: gdb.execute("set architecture i386:intel")
+except gdb.error: pass          # already-32-bit target rejects the re-set; harmless
 gdb.execute(f"target remote 127.0.0.1:{PORT}")
+try:                              # stub may be RUNNING-FREE from a previous attach
+    gdb.execute("interrupt")
+    time.sleep(1.5)
+except gdb.error: pass
 
 def rd(addr, n=4):
     try:
@@ -38,7 +43,7 @@ def rd(addr, n=4):
     except Exception:
         return None
 
-res = {"r1": [], "r2": [], "r0": [], "funnel": 0, "r34": []}
+res = {"r1": [], "r2": [], "r0": [], "funnel": 0, "r34": []}  # r34 rows: (ent, COUNT@314, head@310, cap, blocks)
 bp1, bp0, bpf = (gdb.Breakpoint(a, internal=True) for a in
                  ("*0x48ccf6", "*0x552bb5", "*0x550720"))
 bpfun = gdb.Breakpoint("*0x459f5d", internal=True)  # F3::Attack native -> funnel call site
@@ -46,7 +51,10 @@ bpfun = gdb.Breakpoint("*0x459f5d", internal=True)  # F3::Attack native -> funne
 START_TIME = 0x707C60   # pinned from bytes at 0x48cce9 (A3 60 7C 70 00)
 WORLD = 0x70BD98        # embedded GameWorld object
 
-gdb.execute("continue")  # --no-start: first continue spawns
+try:
+    gdb.execute("continue")  # --no-start: first continue spawns
+except gdb.error:
+    pass  # already running: breakpoints below still arm
 t0 = time.time()
 while time.time() - t0 < DEADLINE_S:
     try:
@@ -74,11 +82,13 @@ while time.time() - t0 < DEADLINE_S:
         if res["r0"]: break
     elif pc == 0x550720:
         res["funnel"] += 1
+        # 9bbdc9e correction: +0x314 is the LIVE COUNT (empty-test 0x4084c0, push ++ at
+        # 0x54ea71, pump bound head!=head+count at 0x54c447) — +0x310 is HEAD INDEX.
         ent = int(gdb.parse_and_eval("$ecx")) & 0xFFFFFFFF
-        idx = rd(ent + 0x314); cap = rd(ent + 0x30C); blocks = rd(ent + 0x308)
-        act = int(gdb.parse_and_eval("$eax")) & 0xFFFFFFFF if res.get("a") else None
+        count = rd(ent + 0x314); head = rd(ent + 0x310)
+        cap = rd(ent + 0x30C); blocks = rd(ent + 0x308)
         if len(res["r34"]) < 12:
-            res["r34"].append((hex(ent), idx, cap, blocks))
+            res["r34"].append((hex(ent), count, head, cap, blocks))
     elif time.time() - t0 > DEADLINE_S * 0.6 and res["funnel"]:
         break
 
