@@ -1,9 +1,19 @@
 ---
-status: open
-assignee: WildYak (01a15802) — re-dispatched 2026-10-21: pure statics, no debugger, and ZenRaven is away.
-# ZenRaven still owns the SimDigest field decision that this row's answer feeds (T-031).
+status: done
+assignee: WildYak (01a15802) — closed 2026-10-21 by statics only; result: **the key IS consumed, but the
+consumer cannot reach `clock`**, so neither of ZenRaven's two branches applies as written (see the doc).
+ZenRaven still owns the SimDigest/ParityOracle edit and has NOT been edited by this row.
 depends: nothing; feeds T-031 (parity oracle) and T-026
 ---
+
+> **Verdict → `docs/f3/WorldYearSeedConsumer.md` (+ D-3 in `docs/DEFERRED-NOTES.md`).** Reader =
+> `JE::World::virt_meth_0x546b50` (`0x546d1d` → `World+0x14`), called as the first statement of
+> `Initialize` (`0x5466b0 call [eax+14h]`). Consumer = `Gregorian::ctor_0x544950`'s 24-byte copy
+> (`0x54497d`, repeated at `0x5a3752`) into the clock's date fields — while `0x5a375a` writes
+> `totalSeconds = 0` and every catch-up branch in `virt_meth_0x5a3740` is dead at construction.
+> `PackState_545930` persists `+0x44/+0x48` but **not** the calendar block. Port status: **mirrored, with
+> one bug filed** (the `?: 2253 / ?: 10 / ?: 18` literals at `GameWorld.cpp:90-92`; shipped's missing-key
+> fallback is its ctor's `0,1,1,0,0,0`). `clock` stays in the compared set; no `year` field is warranted.
 
 # T-038 — `[World] Year = 2253`: the shipped clock is date-seeded. Who consumes it?
 
