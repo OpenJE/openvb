@@ -1,6 +1,6 @@
 ---
-status: open (post-HOLD; do not start until the user resumes)
-assignee: none yet - lockstep lane; owner must be the session holding the 31437 recipe (NiceHawk `01a15cb7` if re-resumed, else whoever)
+status: in-progress
+assignee: HappyEagle `01a15f82`-assigned (T-052 retry; coordinator LoudDragon)
 depends: T-034 (the miss verdict + harness v3 at /tmp/t034-run.py), T-031 (values pairing waits on this)
 ---
 
