@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: research-complete (doc DIRTY at discoveries/2025-10-21-t070-idle-resident-rootcause.md, awaiting checkpoint)
 assignee: KeenStorm (self-queued at T-068 close; coordinator-approved)
 type: research (read-only on ida_original_f3, discoveries/ dirty-until-checkpoint)
 depends: T-068 finding #2 (the divergence this row root-causes)
