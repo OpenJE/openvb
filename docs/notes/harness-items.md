@@ -785,6 +785,13 @@ Standing rules:
 3. Same family as items 27/31: `f3_member_index` reader-bias, comment-vs-writer, and now scan-window
    truncation — three ways the *evidence channel* lies while the bytes stay innocent. The fix is one
    each: usage closure, read the writer, self-test with a known-positive.
+4. **The failure is often in the CALL SHAPE, not the payload.** The T-041 MCP byte-pattern misses, the
+   T-017 empty rescan, and the batch-3 `set_comments` arg-shape rejection were ALL harness-level
+   serialization faults, not data problems. Diagnostic ladder before concluding anything about the
+   TARGET: (a) same shape through a different tool (`rename` worked where `set_comments` refused —
+   coercion exists per-tool); (b) known-positive through the same tool; (c) only then interpret the
+   negative. And a refused/empty result never enters a doc as a finding — it enters the ledger as a
+   blocked write with the text preserved (T-033 b3: 13 comments verbatim in §APPLY, zero silent loss).
 
 
 ## 36. The last gate on a mechanism can be its UNREACHABILITY — and that is worth a full instrumented hunt
