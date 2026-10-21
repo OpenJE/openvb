@@ -572,3 +572,29 @@ Fix = delete the literals and match the ctor defaults; it changes no digest valu
 comes from the live global stream — pin the seed or inject the generator, assert the exact number, and
 keep a sensitivity control (a different seed must give a different answer). Range-only assertions on an
 unseeded stream are how two lanes signed off on a test that asserted nothing.
+
+
+## Port deviations registered from T-037 (WildYak, `0160a9c`/`c925bf6`)
+
+**D-3 — target is carried as a reference KEY with re-resolution; our port carries neither.** Shipped
+`meth_0x403fa0` stores `record+0x38 = *(target + 0x1DC)` and **every** consumer re-resolves it through `0x54BE10`.
+`StartDialogue` inverts the shape: it stores the **pointer** at `+0x1C`, converts to the key in its `OnCreate`
+(`0x404B99`, stored at `+0x20`), and `OnUpdate` re-resolves **every tick**, setting `+0x18=1` if the key died. Two
+doors, one invariant (a target can vanish underneath a queued action), different sites. Our port has no key and no
+re-resolution, so **"target despawned mid-attack" is currently unreachable in the sim** — a representation gap, not a
+missing branch.
+
+**D-4 — `StartDialogue` flushes the source's entire action deque before allocating.** `0x54c440` walks `Entity+0x304`,
+calls `vft+8`, deletes. A scripted dialogue **preempts pending orders**; nothing in the driver can express that, and it
+is part of the door rather than an extra.
+
+**Ledger entry 7 (shipped defect, documented so nobody "restores parity" by copying it):** `ReloadWeapon` enqueues
+**NULL on allocation failure** (`0x45a3fb`), and the funnel then executes `mov [ecx+14h], esi` with `ecx = 0` — an AV in
+the shipped code. Our seam refuses a fifth insert instead of dropping it (D-2, RedXenon), so the failure modes differ
+deliberately; this entry exists so the difference is chosen, not discovered.
+
+**Also noted:** `JustAttack` is literally `Attack` minus two ctor default bytes (`+0x6C` turn-to-face gate, `+0x6F`
+approach gate), and the port has no fields for either — so **`JustAttack` is currently inexpressible in our model**,
+which is a stronger statement than "we invented two fields". And the ctor stores a **never-initialised stack slot** into
+`record+0xBC` (`0x403f27`→`0x403f3e`); our port zeroes it, so a byte-level digest would compare shipped garbage against
+a deliberate 0.

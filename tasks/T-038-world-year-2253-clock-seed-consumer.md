@@ -43,6 +43,44 @@ to fit the answer to the format:
 
 Either way the digest edit is small and the finding is the valuable part.
 
+## Verdict (WildYak, `01554a2` + `a023a62`) — **neither** of the two pre-stated branches
+
+ZenRaven pre-committed to: *no consumer* ⇒ `clock` stays comparable, no `year` field; *consumer found* ⇒ `clockDelta`'s
+meaning changes and the format gets revisited. **The truth is between them: a consumer exists and is still inert.**
+
+- `[World] Year` **is** consumed: `0x546b50`, invoked as the **first statement** of `Initialize`
+  (`0x5466b0: call [eax+14h]`) — not at load — and the key is copied into the clock's date fields by
+  `Gregorian::ctor_0x544950`'s 24-byte copy at `0x54497d`.
+- **But `0x5a375a` writes `totalSeconds = 0` unconditionally**, and **every catch-up branch in
+  `virt_meth_0x5a3740` is dead at construction** (seed == running, so no `>` can be true). **The year cannot reach
+  `clock`.**
+- Consequences: `clock`/`clockDelta` **stay in the compared set**; **no `year` field is warranted**; and because
+  `PackState_545930` persists `+0x44/+0x48` but **not** the calendar block, a restored save carries the leap-causing
+  pair while re-reading 2253 from disk.
+
+Pre-registration earned its keep: because both branches were written down in advance, "consumer exists" could not be
+mistaken for "`clock` is unsafe", and the lane noticed the gap rather than selecting the nearest branch.
+
+**Filed separately as T-042 (ours, a bug not a deviation):** `src/F3/GameWorld.cpp:90-92` falls back to the literals
+**2253 / 10 / 18** when the keys are absent, while shipped's missing-key fallback is its **ctor's** `0,1,1,0,0,0`
+(`0x548af6..0x548b08`) — 2253 only ever came from `sys.ini`. Coordinator confirmed the code and its comment, which
+asserts *"defaults are the sys.ini values"* — i.e. the port **invents** the shipped data's contents as a default.
+Both sides agree while the key ships and diverge the instant it is absent. Related: `JE::World.hpp:13` defaults the
+trio to `0,0,0` where shipped uses `0,1,1`.
+
+**Adjudication of the vftable contradiction WildYak reported (both notes can be true).** `F3.json`'s
+`World_vftable_691a1c` **slot 5 is `0x546b50`** — coordinator-verified by listing the table (slots 0,1,2,4,5,7–17
+present; **holes at 3, 6, 18, 19**). So the DB supports the year-loader-as-slot-5 claim. The `DEFERRED-NOTES` note
+calling it the engine no-op `0x404b70` is *not necessarily wrong*: `0x5466b0` lies **inside** slot 1's function
+(`0x546690` + 0x20) and calls `[eax+0x14]` on whatever `eax` holds there — and `JE::World` carries **four** vft pointers
+(`0x548ab8..0x548ad2`). Slot 5 **of a different table** can legitimately be the no-op. **This does not weaken T-034's
+R0**: `+0x18` = slot 6, which remains an unlisted hole in *every* reading, so the live read is still the only way to
+name the tick target.
+
+**Residual, correctly labelled as inference by the lane:** `param_1 == &World+0x14` is established by shape (six
+consecutive ints, identical ctor defaults, zero direct readers of `World+0x14`), not by resolving the `0x46fda0` thunk.
+The `clock` verdict does not depend on it, because `totalSeconds = 0` is unconditional.
+
 ## Scope (statics first — item 24 applies, grep inside the archives)
 1. Find the consumer of `[World] Year`: which function reads that key, and what it writes — candidate fields are the
    `+0x4C` / `+0x54` stamps `virt_meth_0x546690` seeds from the tick, and anything `JE::Gregorian` initialises from a
