@@ -125,8 +125,16 @@ operands exclude that. Two consequences worth recording:
    → right about `clockDelta`, still wrong about the deadline; v3 (this) traced by consumer rather than
    inferred. Both errors came from citing a path I had read about in a comment instead of at the call site.
 
-3. **T-011 arming: unaffected.** The deadline never reads the world clock, so round-1 numbers are not
-   contaminated by this fold. (My first pass warned otherwise; withdrawn.)
+3. **T-011 arming: unaffected — under the port's current operand.** `accMs_` is fed by
+   `m_secondsPerRound`, never by the clock, so the fold cannot reach `turnDeadline0x29C` today. This is a
+   statement about the code as it stands, not about the shipped line: `docs/DEFERRED-NOTES.md:354-356`
+   records an older reading of the same consumer as `acc_ms += 1000*worldSimSeconds` off
+   `World+0x70`/`IWorldServer` slot 0 (`0x46F250`), while T-010d/T-011 read the operand as `world+0x40`,
+   the immutable `[World]` config. **If that older reading is the correct one and the port moves back to a
+   clock-derived operand, the fold does reach every deadline** and this bullet flips. So the withdrawal is:
+   not contaminated *by the current port*, and the operand question — already T-011's — decides the rest.
+   Worth settling once, because the two readings differ on whether `accMs` is a virtual round clock or a
+   wall clock, and that is exactly the axis a parity diff turns on.
 
 RedXenon verified both load-bearing facts independently — the bytes `a1 b8 c2 70 00 c3` and
 `vsize 0x200e0 > rawsize 0x17000` — and their own T-034 capture note had already named `0x70C2B8` as the
