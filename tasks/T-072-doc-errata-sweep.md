@@ -31,3 +31,17 @@ so the coordinator can batch-fix with provenance (annotate, never rewrite — th
 full coverage table (every doc file x verdict, hits itemized), zero speculative entries (every WRONG
 carries an EA or a row-cite), and a coverage statement ('N docs read, M claims checked'). Ping
 [DISCOVERY-BATCH ready].
+
+## Notes (SwiftMoon, research-complete 2026-10-21)
+Deliverable written and LEFT DIRTY per protocol: `discoveries/2025-10-21-t072-doc-errata-sweep.md`.
+Coverage: 76/76 docs (all docs/f3 + DEFERRED-NOTES), 56 discrete claims adjudicated
+(9 WRONG w/ raw-EA refutations, 17 SUPERSEDED w/ row cites, 12 STILL-TRUE-with-annotation,
+48 stubs no-claim), 27 raw-byte self-verifications off `$OPENVB_ORIG_EXE`.
+Headline: a three-way "frame-0 leap" wording collision (pre-T-045 text in SimDigest/OrigCapture/
+ParityOracle + the DEFERRED "RESOLVED by statics" section vs T-045 vs T-056-R2), the 8 interface-stub
+inheritance graphs vs T-057's composition proof, and DEFERRED-NOTES' phantom 0x691A20 table /
+slot-5-no-op / slot-0-getter mis-numbers (all raw-refuted). Two catches against ACCEPTED docs
+flagged instead of silently accepted: F2 (T-062's Window slot-12 coordinates fail a raw re-read —
+body claims hold, [0x66E4D4+0x30]=0x4AFC00, 0x4b06a0 lives at slot 12 of 0x66E574) and F3 (G5's
+"did not resolve to a clean string" fails raw: zeros + a clean .rdata log literal at 0x64D7E0 —
+cross-doc tension with the gcre doc's byte_64D7D8 reading). Zero docs edited; zero IDB touched.
