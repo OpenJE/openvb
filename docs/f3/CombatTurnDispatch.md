@@ -96,6 +96,19 @@ shipped writer set IS now closed. The only remaining shipped-side question is wh
 `meth_0x5a94a0` is also re-entered from inside a dispatch (the +8 test suggests the authors expected
 it) — that is a lockstep observation, not more statics.
 
+**+8 reentry semantics, decompile-confirmed this wave (`0x5a94a0` full read):** `mbr_0x8` is set at
+`0x5a94ab` only inside the `if (!mbr_0x8)` block, and is cleared by `0x5a9551` — which is the
+SHARED epilogue reached by every exit except the `SetRoundMode(0)` return at `0x5a9586`. So
+normal dispatches RELEASE the guard before returning (the port's `maintaining_` matches), and the
+single documented path that leaves +8 set is exactly the mode-switch return (ported at
+`CombatManager.cpp:180`). A nested `meth_0x5a94a0` from inside a dispatch therefore skips
+maintenance (no TurnPrep, no unlink, no latch-clear) and proceeds to test the head's latch —
+which the inner entity update may have raised at `0x54c833` — and ADVANCE the iterator without the
+non-reentrant sequence ever allowing it. That is the full rotation mechanism minus one fact: the
+re-entering call site. Whether the entity's dispatch (`F3::ServerUpdate` at `0x5a95de`, via
+`vft+0` of the world-server getter chain at `0x5a9596`) re-enters the manager is the routed
+lockstep observation; every other link is now cited.
+
 ## Join, flush, and the order that makes them safe
 
 * `Entity::JoinCombat` **0x5490b0**: throws `"Invalid attempt to retrieve world server instance."`
