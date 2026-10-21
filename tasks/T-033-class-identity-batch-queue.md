@@ -114,6 +114,25 @@ gone and the installed OOAnalyzer cannot export facts. Deltas are therefore meas
 `f3-json-check` pinning the 2024 export against silent drift. Renames still land in the IDB; they simply do not flow into
 `F3.json` here, and a future reader must not infer from an unchanged export that a rename was never applied.
 
+## Results — batch 3 APPLIED 2025-10-21 (`783fb3e`, coordinator GO after per-item draft review)
+> 199 route-A renames, all ok:true. `cls_0x4d8d70`→**JE::StringTree** (145 fns: 142 pre-dump + 3 live-only
+> found by post-census prefix diff — 0x5478b0/0x5479a0/0x547ba0, last role-named `insert_0x547ba0`, the
+> World-load pool insert T-041 cites); `cls_0x424a70`→**F3::GamePlayerAvatarManager** (54 fns; sole non-factory
+> `GamePlayer::ctor_0x411820` caller, call-scan self-test recovered BOTH known positives — factory
+> 0x46f73f + char-gen 0x42eb35, exactly 2 total). **Post-census T2 26.09%→23.93% (−2.16pt, 192 retired)** vs
+> registered ≈23.9% — MET; 196-vs-192 gap itemized (4 link-tail fns ≥0x5FD000 + 1 dump-merge dup). Escalated
+> conservative half per rulings: cls_0x50dbb0 120 (std::_Tree across ResourceSystem cfg reader + entity-ref
+> fallback — push-site precision refuted the coordinator's earlier draft framing BEFORE writes), cls_0x55dc80
+> 94, cls_0x4542d0 50, cls_0x49c610 declared-at-0 (route-disagreement demo: all 43 already JE::ResourceSystem),
+> cls_0x40a220 residual 3 labelled noise, cls_0x50db20 79 annotation-only. **VENDOR: cls_0x668cd8 (46 fns,
+> verbatim `ID3DXMeshOptimize...` D3DX9 strings) — not renamed, not excluded; reported SEPARATELY so named-%
+> is honest in both directions.** Cumulative b2+b3: 26.40%→23.93%. BLOCKED TOOLING (item 35 disclosure, no
+> silent loss): `ida_original_f3::set_comments` rejects every argument shape (harness delivers string where
+> schema demands array/object; `rename` coerces, comments path does not) — 13 comment texts preserved VERBATIM
+> in the ledger §APPLY for re-issue by whoever has a working path (or batch-4 with a fixed tool). Batch-4
+> queue: t036 OK-candidates (cls_0x6bb908 41, cls_0x6bc9d8 30, cls_0x41a2b0 28, cls_0x4b28a0 28…) — 644 anon
+> classes / 2,124 fns remain. Ledger: `discoveries/2025-10-21-t033-batch3-hostband-ledger.md`.
+
 ## Boundary
 Identity is a claim about the shipped binary, not about our port: nothing here changes `src/`. A class
 named from its vftable shape may still be semantically something else, which is why the evidence column is
