@@ -99,12 +99,23 @@ operands exclude that. Two consequences worth recording:
    hypotheses. And the discriminating sample is not safe under a hit-and-hold window either: `now_n - now_0`
    includes stopped time, so a long debugger pause inflates the accumulator in exactly the way uptime would.
    That is an argument for the telescoping proof rather than against it.
-2. **The fold is permanent, not a frame-0 event.** It enters the accumulator at `0x544aab`, is carried into
-   `Gregorian::AddSeconds` in step 6 of `ServerUpdate_0x545d60`, and `CombatManager` derives `accMs` from
-   `totalSeconds` (`0x5a95aa`), so `turnDeadline0x29C = accMs/1000` inherits it **for the remainder of the
-   run**. Seeding the stamp fixes runs after the change; it cannot rescue captures taken before it, and any
-   round-deadline comparison against a shipped capture is offset by those ~29242 s, not merely noisy on
-   frame 1.
+2. **The fold is permanent, not a frame-0 event — but our digest's chosen field hides it.** It enters the
+   accumulator at `0x544aab`, is carried into `Gregorian::AddSeconds` in step 6 of `ServerUpdate_0x545d60`,
+   and stays in `totalSeconds` for the rest of the run. Two consumers, two different exposures:
+   - **`turnDeadline0x29C` is genuinely offset.** `CombatManager.cpp:188` computes
+     `acc = accMs_ + 1000*secondsPerRound` and `0x5a95ce` arms `turnDeadline0x29C = accMs_/1000` —
+     **absolute** seconds on the same inflated clock, no base subtraction. So every shipped-vs-our deadline
+     comparison is offset by ~29242 s at every frame, and a pre-fix capture is a contaminated baseline,
+     not a neutral one.
+   - **`clockDelta` cancels it by construction, which is luck, not correctness.** `src/F3.cpp:842`
+     snapshots `SetBaseClock(w0->ClockSeconds())` at frame 0 and `SimDigest.hpp:166` prints
+     `clockSec - base`, so the constant folds away. The parity oracle therefore **cannot see this bug in
+     its own compared field** — a green `clockDelta` is not evidence the accumulator is clean. The
+     comparison that would catch it is an absolute-`clock` CONTEXT pairing or a deadline check, which is
+     another reason the fold belongs to T-011's lane rather than the digest's.
+
+   Seeding the stamp fixes runs after the change; it cannot rescue captures taken before it, and for
+   `clockDelta` specifically the old captures already look correct, which is the quietly dangerous case.
 
 RedXenon verified both load-bearing facts independently — the bytes `a1 b8 c2 70 00 c3` and
 `vsize 0x200e0 > rawsize 0x17000` — and their own T-034 capture note had already named `0x70C2B8` as the
