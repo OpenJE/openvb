@@ -1023,3 +1023,14 @@ Rules:
    is the backstop that made this a near-miss instead of a wrong-table.
 3. Same family as item 35 (empty results until proven) and T-047's stale-digest-behind-wineserver flake:
    freshness is part of correctness, not housekeeping.
+
+## 48. Before hunting "the string" at a 300+-xref address, read its FIRST BYTE
+
+SwiftMoon's T-078 adjudication (banked as a mirror of the phantom-pattern family), 2026-10-21.
+0x64D7D8 carried 357 aligned referrers and looked like a magnet (or like padding in a raw dump):
+it is the image-wide POOLED EMPTY STRING — one NUL + alignment. Every consumer takes the ADDRESS
+(pointer→strlen→assign); nobody loads content; the printable bytes eight over are a different
+object with one referrer. The float-parsers' "0.0 at this address" reading was a dump-shape
+artifact — under-resolving a dump and over-collecting a scan are the same failure from opposite
+ends. Rule: high-xref read-only address => check byte[0] (0x00 = pooled "" candidate) and
+classify referrers by ADDRESS-vs-CONTENT use before attributing any value semantics.

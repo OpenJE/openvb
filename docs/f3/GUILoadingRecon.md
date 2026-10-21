@@ -493,3 +493,12 @@ primitive our InterfaceFile ReadString mirrors; 0x50B790/7F0 are the save/load-a
 Stream global 0x707DA8 has exactly ONE writer: `a3` @0x59c190 = the cls_0x49c610 ResourceSystem
 session our port already labels. Cursor-sound chain closed end-to-end: .int -> 0x50B880 ->
 Button+0xD24/+0xD40/+0xD5C (three strings, sites 0x4a6bc6/da/ee) -> keyed-by-+0xD40 consumers.
+
+## COORDINATOR CORRECTION (T-078, SwiftMoon byte-run adjudication, applied 2026-10-21)
+§5's "0x64D7D8 did not resolve to a clean string" — **WRONG-as-reason, G5 CLOSED positively**:
+0x64D7D8 is the image-wide POOLED EMPTY STRING "" (1 NUL + 7 alignment bytes, READONLY .rdata;
+357 instruction-aligned referrers, ALL address-taking — push 185 / mov-imm32 172 / 2 CRT-tail
+stack-defaults / 1 cmp; zero content loads, so no float-0.0 reading exists). meth_0x4b4920's reset
+is strlen(0) + assign(ptr,len) via 0x401bd0 into Manager+0x70 — i.e. Manager+0x70 := "". The
+adjacent ASCII ("GameCreature::ReadVersion2() - Making failsafe attack mode…") is a DIFFERENT pool
+object with exactly one referrer (push @0x40da6c). Evidence: discoveries/2025-10-21-t078-byte-run-0x64d7d8.md.
