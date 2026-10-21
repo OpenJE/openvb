@@ -166,3 +166,55 @@ as inputs, with no-acquire meaning *defer and count* rather than store a name wh
 T-013 plugs in by supplying that one function. New fact that narrows its scope: `Gfx_Engine vft+0xD8`
 returns the **object** (the binding dereferences `[obj+0x24]` for extents and tests `[obj+0x28]` as a
 gate) while `+0xDC` returns the **id** — two slots, two shapes.
+
+## Status note (KeenStorm, 2026-10-21 — STEPS 3–4 LANDED; port half complete, awaiting coordinator closure)
+
+What landed (all inside `modules/openje`, this row's own files):
+
+1. **The Fragment wire layout, byte-exact, in the `.int` lane.** `InterfaceFile::ReadFragmentRecord`
+   (new public static, the T-004-family seam, driven by `ReadWidgetBlock` itself) reads
+   `Fragment::ReadFrom_0x4b20a0`'s footprint with the G1 field table's EAs in comments. The two
+   previously-unmodelled port-rule items are now ported **as evidence demanded**: `+0x2C` is
+   parse-and-store with no interpretation (assert: `0xDEADBEEF` round-trips), and the
+   `+0xC0 -> +0xDC/+0xF8/+0x114` broadcast is reproduced as the literal **COPY** of dword[+0xC0]
+   (new `dDC/dF8/d114` fields; assert they equal `d8b`; nothing computes them). The `d8b` comment
+   is corrected from "+8" to `frag+0xC0` per recon §8c.
+2. **The texture binding as BEHAVIOUR, not ABI** (`GUI::TextureSlots` / `BindFragmentTexture` /
+   `ResolveSkinTexture`, new in `JE/GUI/SkinFragments.{hpp,cpp}`): probe (`+0xDC` 0x5c0970) hit
+   **skips the demand** (0x4b21c3/0x523643); miss goes through our `ResourceSystem::Demand_0x49b750`
+   (flag 1, the shipped a3) → `+0xC4` get-or-create on the **resolved** Res name + payload →
+   **negative-clamp to 0** (0x4b2223/0x5236c5) → `Release_0x498eb0` exactly once even on a clamped
+   index → store. LoadDefault's variant additionally runs the `+0xD8` **validity gate** (0x5236d7)
+   that CLEARS a nonzero id with no object (0x5236f8); the reader chain provably has NO gate —
+   asserted as separate shapes, not unified. `InterfaceFile::SetTextureSlots` wires it into the
+   loader (chain consumes zero stream bytes: the whole-lump `BytesConsumed` invariants still hold,
+   asserted with binding ON). `SkinTable::ResolveTextures` runs the LoadDefault tail over a parsed
+   ini into a parallel id array (record+0x04 is the resolved INDEX in the shipped record, recon
+   §8d — the parse-time name stays in `SkinDefault::texture`, the id goes to `ResolvedTextureIndex`).
+   `ResourceSystem::ResName` became public (3 lines) so the convert sees the resolved name like the
+   shipped code does at 0x4b21e8. Demand-COUNT semantics asserted directly: after the chain's
+   release the managed Res survives in the cache at count 0 and a re-demand bumps it to 1.
+   The REAL registry (cls_0x55dc80 node layout, stem-vs-extension key string) stays **T-013**; the
+   seam is what it plugs into.
+3. **Tests**: `tests/je/GUILoading` grew from 150 to **187 asserts** — synthetic byte-level
+   Fragment record → per-field asserts (T-004 family, incl. truncation refusal), all chain shapes
+   (hit-skip / demand-miss-quiet / clamp-still-releases / gate-clears / gate-keeps / key-absent /
+   empty-name-not-special-cased), binding through the real `Mainmenu.INT` loader (bound vs
+   unbound -1 census), and `areamap.ini` (54 named records) end-to-end through
+   `ResolveTextures`. One data discovery worth the coordinator's inventory: with the honest
+   all-miss seam, named `.int` textures whose stem resolves in the rht **do** pass through the
+   demand (our resolver strips the extension before the probe, mirroring
+   `ResolveResourceName_0x499f10`/`ResourceExists_0x49abd0`), so the shipped chain converts them;
+   the census prints instead of being hidden.
+
+Gate evidence (measured with these files dirty on top of `0a8c94e` / parent `4c256a5`):
+- `tools/gate-integrity.sh`: **rc 0** — "table: OK (9 rows identical to the tree)", "gate payload
+  is current and attributable" (build-affecting dirty 3 = other lanes' devenv/tools files, not
+  staged here).
+- `run-all-tests --no-app`: **9 pass / 0 fail**; GATE STAMP `2026-10-21T18:30:10Z`, table hash
+  `483599247`, GUILoading `[187 asserts >= 116]`. Floor NOT raised (row unchanged — no new TU,
+  every touched file is already on the GUILoading row).
+- `cppcheck-openje`: 0 errors / 0 warnings (pre-existing style notes only; exit 0).
+- `msvc-build`: **rc 0**, `[100%] Built target F3` — mandatory this time (public headers
+  `ResourceSystem.hpp`/`InterfaceFile.hpp`/`SkinFragments.hpp`/`SkinTable.hpp` touched across TUs;
+  item 37 respected: mingw-green was NOT claimed as product-green).
