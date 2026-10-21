@@ -303,11 +303,11 @@ the actor still asserted post-enqueue as seam-owned.
 3. **`GameActionAttack::OnServerUpdate` +0x6C gate reachability**: `meth_0x4012e0`'s caller set was not
    enumerated (offline DB has no xrefs for free functions and I kept the IDB read-only). Needed before
    naming `+0x6C`/"turn-to-face" definitively; same for `+0x6F`/"approach".
-4. **`ctor_0x403e40` writes a byte the ctor never initialises into `record+0xBC`**
+4. **`ctor_0x403e40` writes a byte it never initialises into `record+0xBC`**
    (`0x403f27 mov al,[esp+20h+local_11]` → `0x403f3e mov [edi],al`, `edi = record+0xBC`, then
-   `sub_57C2E0` builds the node at `+0xC0`). No store to `local_11` exists in the ctor, so `+0xBC` is
-   caller-frame residue. Is that a real field (an allocator/queue flag) or a compiler artifact?
-   Matters for any byte-level digest: our port zeroes it.
+   `sub_57C2E0` builds the node at `+0xC0`). `local_11` is a slot in the ctor's own frame and **no
+   store in the ctor writes it**, so `+0xBC` is indeterminate at door time. Is that a real field (a
+   queue/allocator flag) or a compiler artifact? Matters for any byte-level digest: our port zeroes it.
 5. **Server packet door** (§ above).
 6. Whether `meth_0x54be10`'s `byte_70BE0C` list walk and the `global_0x70be14` map can disagree
    (two resolution paths, one ref key) — relevant to "target despawned mid-attack".

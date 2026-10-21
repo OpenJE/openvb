@@ -243,6 +243,12 @@ in
     # attribute path: pkgs."xvfb-run". Lesson recorded as harness item 18: verify the TYPE of a
     # changefile edit by evaluating what consumes it, never just that an attribute name exists.
     xvfb   # top-level: devenv warns that xorg.xvfb is deprecated/renamed
+    # T-034 blocker (NiceHawk handover): the shipped demo cannot be driven menu->combat without
+    # window input, and neither tool was in the shell, so "mid-combat sample" was gated by tooling
+    # rather than by debugging. Attr names resolved against this flake's own pinned nixpkgs
+    # (`pkgs.xdotool`, `pkgs.wmctrl` both exist) rather than guessed - see harness item 18.
+    xdotool
+    wmctrl
     pkgs."xvfb-run"
   ]) ++ [
     inputs.wrkflw.legacyPackages.${pkgs.stdenv.hostPlatform.system}.wrkflw

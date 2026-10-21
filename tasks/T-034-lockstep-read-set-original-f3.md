@@ -33,6 +33,26 @@ The native **never** writes `+0x14`, and `ctor_0x403e40` doesn't either (its fir
 call?** `new(0xC8)` may land on reused memory, so a defined pre-call value means either heap reuse or a writer nobody
 has found, and both are findings worth reporting. Take the value on both sides of `0x550720`.
 
+## Environment status (2026-10-21) — two independent bugs found, one still needs the user
+
+NiceHawk's handover (`b77625e`) diagnosed more than a port collision. Both parts are now fixed in the tree:
+
+1. **Port collision** — ImHex and the original's gdb stub were both configured for 31337. Fixed: ImHex → 31347 and
+   the literal no longer exists in three places (`fd6a578`). **The live listener still owns 31337 until the user
+   restarts ImHex** — deferred until their in-flight work finishes; nobody should evict a session they don't own.
+2. **Readiness check could not detect it** — `ready.exec = nc -z 127.0.0.1 31337` passes against *any* listener, so
+   devenv reported the dead stub "ready". Replaced with an owner-verified probe. Measured surprise along the way:
+   **`ss` reports the gdb socket as `wineserver`, not `winedbg`**, so a `grep -q winedbg` matcher would have
+   reported NOT READY on a healthy stub — a false red replacing the false green. Matcher is now `wineserver|winedbg`,
+   proven in both directions (healthy stub rc=0; ImHex on 31337 rc=1), with its own limit recorded: a killed stub
+   leaves wineserver holding the port and the probe still says ready, so it rules out squatters, not liveness.
+3. **Input automation was the real R3/R4b blocker** — no `xdotool`/`wmctrl` in the shell, so the shipped demo could not
+   be driven menu→combat at all. Both added (`pkgs.xdotool`, `pkgs.wmctrl`, attr names resolved against the pinned
+   nixpkgs). If R3 still can't be reached after that, the row's fallback stands: settle D-2 from T-037's record map
+   plus a stress test on our own seam, and record R3 as unreachable-by-tooling.
+4. **False negative to expect**: `0x552bab` dereferences `[esi]` unconditionally and `esi` is null when `[0x70BD98]==0`
+   — at the main menu the pump body never runs, so R0 "never fired" ≠ "attach failed". R1 hits regardless.
+
 ## Environment status (2026-10-21)
 
 - **Port collision fixed in the tree** (`devenv/environment/openvb.nix` + both consumers now read the variable): ImHex
