@@ -121,6 +121,14 @@ namespace F3 {
 		// artifact as "+0x78 series" and "+0x73+3". Modelled stand-in, no shipped offset.
 		bool          volleyContinuing;
 		bool          ammoDeducted;         // +0x58 per-volley guard
+		// POSITION OVERRIDE (packet-91 place-attack surface, T-044/T-047): shipped
+		// meth_0x401100 writes the hasPos byte at +0x48 and the vec3 at +0x4C/+0x50/+0x54.
+		// With +0x48 set, OnServerUpdate (0x404410) SKIPS victim resolution and the attack
+		// aims at these coordinates; the accept guard is attacker && (hasPos || target)
+		// (0x46decb). The script-native door NEVER sets this group (T-037) — only the
+		// packet-91 model path (driver verb attack-pos) does.
+		bool          positionOverride;   // +0x48 (meth_0x401100 flag byte)
+		float         overridePos[3];     // +0x4C/+0x50/+0x54
 		// Shipped sub-attack series is NOT a scalar: it is an STL vector triplet at
 		// +0x7C begin / +0x80 finish / +0x84 storage-end, remaining = (finish-begin)/elem,
 		// ctor-initialised by sub_401690(ecx = &this+0x7C). A SECOND parallel vector at
@@ -164,6 +172,13 @@ namespace F3 {
 		// arm the action (shipped ctor_0x403e40 + meth_0x403fa0(target) equivalents)
 		void Start( SpawnedEntity* who, SpawnedEntity* against, unsigned nowMs,
 		            const AttackModeRecord* m = 0 );
+
+		// meth_0x401100 equivalent (packet-91 place-attack ONLY — see the +0x48 note above):
+		// sets the override flag + coords; call BEFORE Start with a null victim.
+		void SetPositionOverride( float x, float y, float z ) {
+			positionOverride = true;
+			this->overridePos[0] = x; this->overridePos[1] = y; this->overridePos[2] = z;
+		}
 
 		// OnServerUpdate_0x404320 core; gameMs = world frame ms (same clock as pumps).
 		// Returns 1 when the action is finished (pump drops the slot).

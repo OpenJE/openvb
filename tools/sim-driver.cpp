@@ -243,6 +243,38 @@ int main( int argc, char** argv ) {
 				fprintf( stderr, "SIM-DRIVER FAIL line %d: seam did not write owner at +0x14\n", lineno );
 				rc = 1; break;
 			}
+		} else if ( strcmp( verb, "attack-pos" ) == 0 ) {
+			// T-047: models the PACKET-91 place-attack door (rec +0x48 hasPos + XYZ at
+			// +0x4C/+0x50/+0x54, T-044) — NEVER the script-native Attack() (T-037: natives
+			// do not set +0x48). Accept guard attacker && (hasPos || target): no victim needed.
+			char a[ 64 ]; float x = 0.0f, y = 0.0f, z = 0.0f;
+			if ( sscanf( line, " attack-pos %63s %f %f %f", a, &x, &y, &z ) != 4 ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: attack-pos needs <actor> <x> <y> <z>\n", lineno );
+				rc = 1; break;
+			}
+			F3::SpawnedEntity* ea = findEnt( a );
+			if ( !ea ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: attack-pos actor %s not spawned\n", lineno, a );
+				rc = 1; break;
+			}
+			if ( g_atkN >= kMaxActions ) { fprintf( stderr, "SIM-DRIVER FAIL line %d: action pool\n", lineno ); rc = 1; break; }
+			if ( ea->actions[0].kind != 0 && ea->actions[1].kind != 0 &&
+			     ea->actions[2].kind != 0 && ea->actions[3].kind != 0 ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: entity %s queue block full (D-2 refusal)\n", lineno, a );
+				rc = 1; break;
+			}
+			F3::GameActionAttack& o = g_atks[ g_atkN++ ];
+			o.SetPositionOverride( x, y, z );   // meth_0x401100 equivalent (packet handler order)
+			o.Start( ea, 0, 0u, 0 );           // attacker-only guard, 0x46decb shape; mode m=0:
+			                                   // ctor unarmed defaults (same stand-in as bare attack)
+			if ( !F3::EnqueueEntityAction( ea, &o, 4 ) ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: insert seam refused (block full, D-2)\n", lineno );
+				rc = 1; break;
+			}
+			if ( o.actor != ea ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: seam did not write owner at +0x14\n", lineno );
+				rc = 1; break;
+			}
 		} else if ( strcmp( verb, "wait" ) == 0 ) {
 			char who[ 64 ]; int dur = 0;
 			if ( sscanf( line, " wait %63s %d", who, &dur ) != 2 ) { rc = 1; break; }

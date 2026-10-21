@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: unassigned (port work, tools/sim-driver.cpp; follows T-028 driver)
+status: done
+assignee: PureKnight `01a15cb7-e27e`
 depends: T-044 (established the door), T-037 (the native door must NOT be used)
 ---
 
@@ -37,3 +37,24 @@ The port has no network layer; modelling packet 91 as a driver verb is the accep
 (T-028 precedent: the driver reaches seams the shipped code reaches from the wire). The override
 COORDINATES are what parity-compares; whether the shipped AI ever SENDS packet 91 is out of scope
 and unproven either way.
+
+## Result (PureKnight 01a15cb7-e27e, 2025-10-21)
+Implemented. Port `GameActionAttack` gains the packet-91 group verbatim: `positionOverride`
+(shipped +0x48, written by `SetPositionOverride` = meth_0x401100 equivalent) + `overridePos[3]`
+(+0x4C/+0x50/+0x54). `Start()` guard now mirrors the shipped accept shape `attacker && (hasPos || target)`
+(0x46decb); Update's place-branch walks to the coordinates (same step model as the targeted walk), waits
+first-strike due, and WHIFFES with no damage roll — shipped victim-at-coordinate resolution is NOT RE'd,
+so the port invents none (cited comment in-place; if a later lane traces the shipped occupant-damage
+consumer, that parity question is a NEW row, not a silent upgrade here). Driver verb `attack-pos <actor>
+<x> <y> <z>` enqueues through the same seam as `attack` (D-2 block-full refusal, owner-backlink check);
+digest distinguishes ONLY by owner/target-token shape (`ak=GameActionAttack`, no target) — no new digest
+field, per coordinator rule.
+Verify cases 9/10: positive (enqueued+dispatched+walks, bystander untouched) AND the negative pairing
+(bare `attack` with missing target still rc=1 while `attack-pos` needs no victim; malformed `attack-pos`
+fails grammar). One interim FAIL reproduced the stale-digest race in my own case (old /tmp file graded
+while wineserver lagged) → fixed with `rm -f` + non-empty assertion before grading; 8 consecutive green
+runs after. Builds: MSVC cl.exe rc0 after one real portability find (MSVC2002 rejects braced init in the
+mem-init list — moved to body), mingw green; run-all-tests 10 pass / 0 fail (PathManager 88>=80, GUILoading
+150>=116, CombatMath 43>=43, app-boot exit 124 alive-past-6s exe 02:42:09), gate-integrity: table OK 9 rows,
+stamp present, payload current. Files: src/F3/GameActionAttack.{hpp,cpp}, tools/sim-driver.cpp,
+tools/sim-driver-verify.sh.

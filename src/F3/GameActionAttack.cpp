@@ -63,8 +63,11 @@ namespace F3 {
 	GameActionAttack::GameActionAttack()
 	  : actor( 0 ), target( 0 ), calledShotPart( 9 ), reach( 1 ),
 	    firstStrikeDueMs( 0 ), nextSubAttackDueMs( 0 ), subAttackPending( false ),
-	    volleyContinuing( false ), ammoDeducted( false ), seriesRemaining( 0 ),
+	    volleyContinuing( false ), ammoDeducted( false ), positionOverride( false ),
+	    seriesRemaining( 0 ),
 	    moveSpeed( 4.0f ), unarmed0x71( true ), queueCount( 0 ), finished( false ) {
+		overridePos[0] = 0.0f; overridePos[1] = 0.0f; overridePos[2] = 0.0f;  // MSVC2002: no
+		                                                            // braced init in the list
 		for ( int i = 0; i < kQueueCap; ++i ) {
 			queue[i].dmg = 0; queue[i].damageType = 0; queue[i].material = 0;
 			queue[i].flurryGe2 = false;
@@ -101,7 +104,9 @@ namespace F3 {
 		if ( calledShotPart == 9 ) {
 			calledShotPart = 0;
 		}
-		if ( !actor || !target ) {
+		if ( !actor || ( !target && !positionOverride ) ) {
+			// Shipped accept-guard shape (packet-91 case, 0x46decb): attacker && (hasPos || target);
+			// the OnCreate no-target fatal (0x4011da) likewise fires only when BOTH are absent.
 			finished = true;
 			return;
 		}
@@ -152,6 +157,31 @@ namespace F3 {
 		}
 		// target validity (shipped: same-map + alive checks with error strings; entity
 		// list is single-map in this slice -> map check trivially true)
+		// PLACE-ATTACK branch (T-047, packet-91 model): with +0x48 set and no victim, shipped
+		// OnServerUpdate @0x404410 SKIPS victim resolution and aims at the record coordinates.
+		// Shipped victim-at-coordinate resolution is NOT RE'd, so the port invents no victim:
+		// the action walks to the position, waits its first-strike due, consumes the volley with
+		// NO damage roll (a roll requires the unmodelled victim) and finishes. Digest shows it on
+		// the actor exactly like a targeted attack minus the target key.
+		if ( !target && positionOverride && actor ) {
+			const float ax = overridePos[0] - actor->pos[0];
+			const float ay = overridePos[1] - actor->pos[1];
+			const float az = overridePos[2] - actor->pos[2];
+			const float adist = sqrtf( ax * ax + ay * ay + az * az );
+			if ( adist > (float)reach ) {
+				const float step = moveSpeed * 0.016f;   // per-frame proxy (same as targeted walk)
+				const float inv = step / adist;
+				actor->pos[0] += ax * ( inv < 1.0f ? inv : 1.0f );
+				actor->pos[1] += ay * ( inv < 1.0f ? inv : 1.0f );
+				actor->pos[2] += az * ( inv < 1.0f ? inv : 1.0f );
+				return 0;
+			}
+			if ( (int)( gameMs - firstStrikeDueMs ) < 0 ) {
+				return 0;
+			}
+			finished = true;
+			return 1;
+		}
 		if ( !target || target->entityState == kStateDead
 		     || target->entityState == kStateRemoved || target->entityState == kStateDying ) {
 			finished = true;

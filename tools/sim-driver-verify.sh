@@ -79,5 +79,29 @@ else
 fi
 
 
+# 9) T-047 attack-pos (packet-91 place-attack model): enqueues + dispatches with NO victim
+#    entity; the actor walks to the coordinates; a bystander victim is untouched; and the
+#    NEGATIVE pairing: bare `attack` naming a missing target still FAILS the run.
+printf 'spawn walker 0 0 0 0 45\nspawn bystand 1 9 0 0 45\ndigest /tmp/sd-pos.digest\nattack-pos walker 3 0 0\nrun 40 16\nend\n' > /tmp/sd-pos.txt
+rm -f /tmp/sd-pos.digest   # never grade a stale digest if the previous wineserver lags
+"$WINE" tools/sim-driver.exe /tmp/sd-pos.txt >/dev/null 2>&1
+check "attack-pos run exits 0" "$?" "0"
+[ -s /tmp/sd-pos.digest ]
+check "pos digest exists and is non-empty" "$?" "0"
+grep -q 'walker.*ak=GameActionAttack' /tmp/sd-pos.digest
+check "digest shows the place-attack ON the actor (ak=GameActionAttack)" "$?" "0"
+walked=$(grep -o 'walker,pos=[0-9.]*' /tmp/sd-pos.digest | cut -d= -f2 | sort -g | tail -1 | awk '{print ($1>1.0)?"yes":"no"}')
+check "actor walked toward the coordinates (max x past 1.0)" "${walked:-no}" "yes"
+hurt=$(grep 'bystand' /tmp/sd-pos.digest | grep -vc 'hp=45/45' || true)
+check "bystander untouched (no invented victim)" "${hurt:-0}" "0"
+printf 'spawn solo 0 0 0 0 45\nattack solo nosuch\nrun 5 16\nend\n' > /tmp/sd-neg.txt
+"$WINE" tools/sim-driver.exe /tmp/sd-neg.txt >/dev/null 2>&1
+check "negative pairing: bare attack with missing target still refuses (want 1)" "$?" "1"
+
+# 10) T-047 grammar: incomplete attack-pos FAILS (not a quiet skip)
+printf 'spawn w 0 0 0 0 45\nattack-pos w 1 1\nend\n' > /tmp/sd-pos-bad.txt
+"$WINE" tools/sim-driver.exe /tmp/sd-pos-bad.txt >/dev/null 2>&1
+check "attack-pos missing coordinate -> nonzero exit" "$?" "1"
+
 echo "[sim-driver-verify] $([ $fail -eq 0 ] && echo PASS || echo FAIL)"
 exit $fail
