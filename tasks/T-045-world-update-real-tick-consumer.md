@@ -22,18 +22,29 @@ depends: R0 answered from the image (discoveries/2025-10-20-r0-world-vftable-slo
 > **3. `0x404b70`:** raw bytes `c3` — a bare `retn`. It neither stores nor forwards, so it was never a
 > candidate consumer of the tick. The pump story needs no extra hop.
 >
-> **The consequence nobody asked for, and it moves three lanes: the frame-0 leap is OURS.** With the `+4`
-> base, the field `Update` subtracts is primary **`+0x4C`**, which `0x5466bd` **seeds** from the tick; only
-> the accumulator `+0x48` is zeroed (`0x5466b5`). Independently, `JE_TickMilliseconds_0x56af50` is
-> `a1 b8c270 00 c3` = `mov eax,[0x70c2b8]; ret` — **not** `timeGetTime()`. `0x70c2b8` has exactly one writer,
+> **The consequence: the frame-0 leap is OURS — with a smaller blast radius than I first claimed.** With the
+> `+4` base, the field `Update` subtracts is primary **`+0x4C`**, which `0x5466bd` **seeds** from the tick;
+> only the accumulator `+0x48` is zeroed (`0x5466b5`). Independently, `JE_TickMilliseconds_0x56af50` is
+> `a1 b8c270 00 c3` = `mov eax,[0x70c2b8]; ret` — **not** `timeGetTime()`. `0x70c2b8` has one writer,
 > `F3::ProcessMessagesAndUpdateTime` (`0x56afcf..0x56afd7`, `elapsed += now - [0x70c2bc]`), `0x70c2bc` is
-> seeded by `WinMain` at `0x56b8aa`, and both globals sit past `.data`'s file-backed end (`vsize 0x200e0` vs
-> `rawsize 0x17000`) so `elapsed` starts at 0. **The shipped tick is session-relative elapsed.** So
-> `clock=29242` at `frame=0` is produced by our `src/F3.cpp:786` returning raw `timeGetTime()` under
-> `0x56AF50`'s label, twice over — and this row's predecessor page, which said "mirror the leap, do not fix
-> it", is reversed by it. Full write-up: `docs/f3/WorldTickPump.md`.
+> seeded by `WinMain` at `0x56b8aa`, and both globals sit past `.data`'s file-backed end
+> (`vsize 0x200e0 > rawsize 0x17000`), so `elapsed` boots at 0 and telescopes to `now_k − now_0`:
+> **session-relative elapsed**. So the original cannot produce `clock=29242` at `frame=0` on either ground,
+> and our port produces it because `src/F3.cpp:786` returns raw `timeGetTime()` under `0x56AF50`'s label
+> while our `Initialize` never stamps the field. This reverses the predecessor page's "mirror the leap, do
+> not fix it" verdict; the faithful change is to seed the stamp.
 >
-> **Flagged, not edited** (other lanes' files): `ParityOracleDesign.md:47`, `SimDigest.md:173-180`,
+> **Scope, corrected twice by my own consumer trace (`470ec60`): the fold reaches the absolute `clock`
+> CONTEXT number and nothing compared.** `clockDelta` cancels it (base snapshotted on the first tick), and
+> `turnDeadline0x29C` does not read the world clock in the current port — `accMs_` is fed by the configured
+> `secondsPerRound` per dispatched event, and the clock-feeding line was the retired C-23 placeholder I
+> mistakenly quoted as live. Whether a deadline is ever exposed depends on T-011's open operand question
+> (`World+0x70 worldSimSeconds` per `DEFERRED-NOTES.md:354-356` vs `world+0x40` config per T-010d/T-011).
+> The `tickMs`-is-uptime claim in `ParityOracleDesign.md:47`, `SimDigest.md:173-180` and
+> `OrigCapture.md:63` is still wrong and still worth correcting — but the "three lanes are building on a
+> false premise" framing I sent first was overstated, and the row that should carry the lesson is this one.
+>
+**Flagged, not edited** (other lanes' files): `ParityOracleDesign.md:47`, `SimDigest.md:173-180`,
 > `OrigCapture.md:63` all assert `JE_TickMilliseconds == timeGetTime() == machine uptime`, and `tickMs`'s
 > CONTEXT parking rests on it. `SimDigest` is ZenRaven's. T-038's own conclusion survives (the year still
 > cannot reach `totalSeconds`), but its *rationale* sentence about the leap was corrected in the same commit.
