@@ -69,6 +69,20 @@ tree. If a lockstep comparison ever pins clock, start there. ⚠ I did not verif
 > CANCELS. The uncomfortable half: the oracle's own field is structurally blind to this bug — a green
 > `clockDelta` proves the delta steady, never the accumulator clean; only absolute-`clock` CONTEXT
 > pairing or deadline checks can see it. Do not quote the generalization at `clockDelta`.
+
+> **THIRD CASE (470ec60 retraction — WildYak re-opened their own claim rather than let my fence
+> inherit it):** under the CURRENT port operand, `turnDeadline0x29C` does NOT read the world clock
+> either — `accMs_`'s only live writer (`CombatManager.cpp:188`) advances by the CONFIGURED quantum
+> (`m_secondsPerRound`, `(void)ms`); the clock-fed line that WOULD carry the fold is the retired
+> C-23 placeholder (`CombatManager.hpp:114-116` says so — `:38` still contradicts it: a stale
+> comment naming the retired source, reported here and left to the code-owning lane, because it is
+> the mechanism that misled twice). So the fold reaches only the absolute-`clock` CONTEXT number —
+> neither fenced consumer. **CONTINGENCY:** the deadline is exposed again iff T-011's operand
+> question resolves clock-derived (`DEFERRED-NOTES.md:354-356`: acc_ms += 1000·worldSimSeconds via
+> World+0x70 / IWorldServer slot 0, 0x46F250) over config-immutable (T-010d/T-011: world+0x40).
+> If the older reading wins, the ORIGINAL "every deadline, every frame" sentence becomes true again.
+> This fence is a snapshot of a live disagreement, not a settled fact — T-011 is now load-bearing
+> for fold exposure, not only round math.
 > (b)-confirmation needs no attach either: the single writer telescopes — `[0x70C2B8] =
 > now_k − now_0` by construction (`0x56afd2` keeps last=now), so uptime-equality is excluded by the
 > algebra; and a hit-and-hold sample would corrupt the quantity (stopped time counts), so the
