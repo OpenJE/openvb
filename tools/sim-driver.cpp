@@ -5,6 +5,18 @@
 // EntityActionQueueSeam.md) and drained by F3::TickWorldEntities, with F3::CombatManager
 // as the round pump, emitting T-026 digest lines (docs/f3/SimDigest.md grammar).
 //
+// Door-shape deviations accepted with WildYak's T-037 review (see also notes at the
+// attack verb): (1) Start() pre-writes actor before the funnel re-writes it - the port
+// offers no scripted entry without that write; (2) target is a raw pointer here, shipped
+// stores the +0x38 REF KEY and re-resolves every use (despawn-mid-attack reachable there,
+// not here); (3) calledShotPart 9->0 preflight runs inside port Start(). (1)-(3) need a
+// port-side StartScripted to fix - driver-only scope cannot. (4) JustAttack is NOT
+// expressible: our port models neither +0x6C turn-to-face nor +0x6F approach gate, so
+// zeroing them would be setting fields nothing reads - a missing seam, not a missing verb.
+// (5) StartDialogue's door calls 0x54c440 BEFORE allocating - it destroys the whole
+// Entity+0x304 deque: a scripted dialogue preempts pending orders. No dialogue verb yet;
+// when one lands, that side effect is part of the door, not an extra.
+//
 // Build: tools/sim-driver-build.sh  (source list GENERATED from devenv/scripts/
 // run-all-tests.nix's PathManager row - this lane may not edit build files, wave rule 1).
 // Usage: tools/sim-driver.bin <script.txt>
@@ -154,7 +166,13 @@ int main( int argc, char** argv ) {
 			}
 			e->combat.skills[ k ] = v;
 		} else if ( strcmp( verb, "attack" ) == 0 ) {
-			char a[ 64 ], t[ 64 ]; int dmin = 2, dmax = 2, tohit = 0, bonus = 0;
+			// Shipped door (WildYak T-037, docs/f3/ScriptNativeActionDoors.md): Attack() is
+			// TWO cells; no mode data crosses the script boundary - the mode row is resolved
+			// from the equipped weapon inside OnServerUpdate (0x40b380), which our port has
+			// not rebuilt. Bare `attack a t` therefore passes m=NULL: Start() keeps the ctor's
+			// own unarmed defaults (GameActionAttack.cpp:74), the closest honest stand-in for
+			// an unported resolve. The 6-arg form INVENTS a mode and says so on stderr.
+			char a[ 64 ], t[ 64 ]; int dmin = 1, dmax = 3, tohit = 0, bonus = 0;
 			int n = sscanf( line, " attack %63s %63s %d %d %d %d", a, t, &dmin, &dmax, &tohit, &bonus );
 			F3::SpawnedEntity* ea = findEnt( a );
 			F3::SpawnedEntity* et = findEnt( t );
@@ -173,7 +191,17 @@ int main( int argc, char** argv ) {
 			F3::AttackModeRecord m = F3::GameActionAttack::MakeUnarmedMode( dmin, dmax, 1, tohit );
 			m.flatDamageBonus = bonus;   // MakeUnarmedMode hard-codes this to 0 (GameActionAttack.cpp:81)
 			F3::GameActionAttack& o = g_atks[ g_atkN++ ];
-			o.Start( ea, et, (unsigned)g_clockMs, &m );
+			const F3::AttackModeRecord* mp = 0;
+			if ( n >= 6 ) {
+				fprintf( stderr, "SIM-DRIVER NOTE line %d: mode row INJECTED by the driver "
+				         "(dmin/dmax/tohit/bonus are port-side stands-in for the unported "
+				         "weapon resolve, not script data - WildYak T-037)\n", lineno );
+				mp = &m;
+			}
+			// Shipped native also leaves +0x5E/+0x65 timers 0 and +0x78 = 9; Start() nowMs=0
+			// matches the first, the 9->0 preflight is port policy we cannot bypass from here
+			// (documented deviations 2/3 below).
+			o.Start( ea, et, 0u, mp );
 			if ( !F3::EnqueueEntityAction( ea, &o, 4 ) ) {
 				fprintf( stderr, "SIM-DRIVER FAIL line %d: insert seam refused (block full, D-2)\n", lineno );
 				rc = 1; break;
