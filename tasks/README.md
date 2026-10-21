@@ -141,15 +141,15 @@ row; A keeps editorial merge rights).
 | T-031 | Parity oracle — grammar landed (`d43033b`); synthetic `orig-digest.sh` next, real values gated on T-034 | open | HappyKnight (secondary) |
 
 
-| T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
-| T-033 | Class-identity batch queue — batch-2 **decisions re-dispatched to RedXenon**; IDB writer QuickQuartz away (re-confirm) | in-progress | RedXenon (decide) + QuickQuartz (apply) |
+| T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **in progress** — T-036 closed, starting this | SwiftRaven |
+| T-033 | Class-identity batch queue — batch-2 **decisions re-dispatched to RedXenon**; IDB writer QuickQuartz away (re-confirm). **Ranking input changed by T-036: do not rank on contiguity (it is vacuous for 464 of 647 "nameable" classes); `cls_0x49c610` is `JE::ResourceSystem` — retire, mint belongs to this row** | in-progress | RedXenon (decide) + QuickQuartz (apply) |
 | T-034 | Lockstep reads — targets pre-resolved; port fix landed and verified, **waiting on an ImHex restart to free 31337** | open | RedXenon |
 
 
 | T-039 | **`Entity+0x314` is size 4 in the DB but a `unsigned char` in our port**, used as T-011's gate term — count vs flag undecided | open | HappyKnight |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
-| T-036 | **Where did the 998 helper-theft functions come from?** 40% of tier-2 attribution is noise | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven |
+| T-036 | **Where did the 998 helper-theft functions come from?** — **DONE: they were not theft. Artifact floor is 221 (8.9%), 777 of the 998 are real methods; the 1,475/998 split mixed two join routes (2,340 vs 2,473). Rule R36-a…f + re-run: 2,325 attributed (26.2%)** | done | SwiftRaven |
 | T-037 | Second input door: what the script natives write into the Action record | **dispatched, unconfirmed** (0 tool calls) | WildYak |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |

@@ -508,3 +508,31 @@ the shipped clock is **date-seeded**, which nobody had checked because we were l
 
 Corollary for rows I write: when I scope a read, I must state **what statics were searched and where** — if the answer
 is "the tree was listed", that is not a static search.
+
+
+## 25. Two self-inflicted failures, written down because I made them and told others not to
+
+**(a) A readiness probe must identify the owner, and I nearly replaced a false green with a false red.**
+`ready.exec = nc -z 127.0.0.1 <port>` passes against *any* listener. When ImHex and the original's gdb stub shared
+31337, devenv reported the stub ready while `winedbg` had lost the bind and exited — the entire "cannot attach to the
+original" investigation was manufactured by that green. Replacing it with `ss -H -ltnp "sport = :N" | grep -q winedbg`
+looked correct and was not: **winedbg hands its gdb socket to wineserver**, so `ss` reports the listener as
+`wineserver`, and my matcher would have declared a healthy stub NOT READY — a false red blocking `devenv up` for
+everyone. Fixed to `wineserver|winedbg` and falsified in both directions against real processes (healthy stub rc=0;
+the actual ImHex squatter rc=1). Residual limit recorded in the file: a killed stub leaves `wineserver` holding the
+port and the probe still says ready, so **it rules out squatters, not liveness**.
+
+Two general rules: probe for *identity*, not connectivity; and **never ship a checker whose positive case has only
+been reasoned about** — my positive control was only obtained by starting a real `winedbg` against a real prefix.
+
+**(b) Never leave a staged index behind a failed commit.** My commit failed on `argv` size (`Argument list too long`,
+message passed with `-m` after two long heredocs had already bloated the environment) — but `git add` had *already
+run*, so my three files sat in the index. The next commit in the tree belonged to another lane, and it absorbed them:
+the readiness probe, `xdotool`/`wmctrl`, and the T-034 rewrite are now in **`c925bf6`**, whose message is about a
+different subject entirely. The content is correct and in the tree, but attribution and rationale landed under the
+wrong heading.
+
+Rules: stage and commit in **one** step (`git commit -o -- <paths> -F msgfile` or add+commit inside a single shell
+invocation that cannot half-fail); put long messages in a file with `-F`, not `-m`; and if a commit errors,
+**check `git status` and `git diff --cached` before walking away** — a dirty index is a shared resource in a
+six-lane tree.

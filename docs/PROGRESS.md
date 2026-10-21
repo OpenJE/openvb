@@ -13,7 +13,7 @@ Re-measure: `run-all-tests` (stamp first), `tools/gate-integrity.sh` (payload fr
 |---|---|---|---|
 | **Shipped function census** | **8,876 game functions** of 10,173 total | all code behind the link-tail boundary `0x5FD000` | T-029 (`list_funcs` 7 pages, integrity-checked; F3.json join) |
 | — semantically named | 46.7% | functions whose name says what they do | T-029 |
-| — typed-stub | **route-dependent** | DB-method join = 2,473; IDA-name join = 2,340 (2,425 in game region). The 1,475 + 998-noise split does NOT reproduce under a single join (T-036, in flight) — quote the route with the number | T-029 + T-033 batch-1 + T-036 (SwiftRaven) |
+| — typed-stub | **26.2% after rule R36** (route A 2,340 / route B 2,473 before it) | T-036 closed the question: the "998 helper-theft noise" was **not noise**. Artifact floor = **221 (8.9%)** = 73 DB EAs that are not IDB function starts + 48 link-tail + 100 route conflicts; 777 of the 998 are real methods. The 1,475/998 split does not reproduce under either join — **quote the route with the number**, and do not rank classes on contiguity (rho −0.013/+0.248, and vacuous for 464 of 647 "nameable" classes with ≤2 functions) | T-029 + T-033 batch-1 + T-036 `discoveries/2025-10-20-t036-helper-noise-taxonomy.md`, `tools/t036-noise-taxonomy.py` |
 | — unnamed | 26.9% | 2,177 `sub_` in 1,971 owner neighbourhoods | T-029 |
 | **Dispatch tables** | 2,156 vftable slots, **97.9% resolved** | virtual-call structure | T-029 |
 | **DB vs IDA agreement** | 97.4% | 171 declared methods are tail/mid-function vcall targets, not lost code | T-029 (artifact class recorded) |
