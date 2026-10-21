@@ -1,0 +1,8 @@
+file,off,drBall,drBio,drElec,drEMP,drNorm,drHeat
+_ARM.grp,0x46d,0,0,0,0,0,0
+_ARM.grp,0x83f,16,8,4,0,20,4
+_ARM.grp,0xc47,0,0,0,0,0,0
+_ARM.grp,0xff2,0,0,0,0,0,0
+_ARM.grp,0x139c,0,0,0,0,0,0
+_ARM.grp,0x1742,0,0,0,0,0,0
+_ARM.grp,0x1af3,0,0,0,0,0,0
