@@ -98,6 +98,20 @@ Injection is only the trigger; the PAYLOAD is one shape read at the first funnel
     orders waiting across pump ticks -> never-finish reading wins on live data despite the bytes; P-REV
     product queue cancelled. One conditional hit either way.
   - bp10 0x5a955d falsifier-watch UNAFFECTED.
+- >>> PRE-ARM NOTES (LoudDragon relay + KeenStorm T-082 §6, post-correction):
+  * SINGLE DISCRIMINATOR: the DONE-BYTE read AT 0x54c7f6 IN THE SAME WALK ITERATION distinguishes shapes.
+    1 = transient wins (erase-and-continue imminent). 0-with-idle-head is PHYSICALLY IMPOSSIBLE under the
+    transient model — such a frame is a MODEL BREACH TO ESCALATE, not a verdict to report.
+  * Shared-stub adjudication (a): Idle 0x6497c4 and ActionMessage 0x6a5f34 share idx 1/2/3/5/6
+    (predicate 0x404b60, cancel 0x404b70, queued-getter 0x4010d0, done-update 0x5a9070, on-finished
+    0x404bb0); only dtor + start differ (0x405620 vs 0x5a9080). Frozen F3.json is LOSSY on shared stubs —
+    cite RAW TABLE DWORDS in any re-audit (F2 flattened-ten-table family).
+  * VERIFICATION FOOTNOTE (HappyEagle): find_bytes pattern-search returned 0 matches for the raw-dword
+    adjacencies in the vft region — the tool's search range evidently excludes .rdata; adjacency remains
+    LIVE-PROBE territory. Sitting opens with the dword read: [idle+0]+0x14 ?= 0x5a9070. Pre-answer per KS
+    raw dump: YES. Disagreement = model breach escalation, not verdict.
+  * BP map otherwise unchanged: bp9/bp10 raiser legs, L1-L4 resident reads, R5/R6, BONUS-3/4/5, T-050
+    reopen condition (bp10 hit) — all waiting on input keys at :96.
 - Banked by KeenStorm as independent R4b confirm (third boot, second runtime, third entity pointer):
   scripted rounds' count 1→2→3, Idle-first/Anim-after on 0x0A6C6060.
 Also arm (T-070 §5): [idle+0x16]/[idle+0x18] across frames (expect 1/0), [entity+0x184] before/after rebase
