@@ -67,8 +67,9 @@ a headless run must produce identical state to a run with a window.
 ## Corrections to my own propagated claims (2026-10-21)
 
 - **"Order classes by contiguity ratio"** — withdrawn as a filter. The ratio measures **link placement and compiler
-  clone spread**, not attribution quality (`cls_0x49c610`'s 0.02 is five byte-identical inline clones of one 0x355-byte
-  method). Body evidence is nearly identical across low- and high-ratio classes (81% vs 88%), and the
+  clone spread**, not attribution quality (`cls_0x49c610`'s 0.02 is five near-duplicate copies of one ~0x355-byte
+  method, at 93.3-93.7% identity differing only in SEH immediates — **not** byte-identical, a detail
+  I propagated from the lane's earlier draft before their own normalizer falsified it). Body evidence is nearly identical across low- and high-ratio classes (81% vs 88%), and the
   "1,475 nameable + 998 helper-theft" split **reproduces under no single join route** (IDA-name = 2,340; DB-method =
   2,473, 2,425 in the game region). Quote a route with any attributed count.
 - **"13 self-naming classes are the cheap win"** — corrected by batch 2: five of the thirteen are MSVC **derived-class
@@ -79,6 +80,19 @@ a headless run must produce identical state to a run with a window.
 - **`docs/PROGRESS.md` did not exist until today**, though three rows cited it, and a readiness probe plus two shell
   packages landed inside another lane's commit (`c925bf6`) because my own commit half-failed. See harness items 18,
   25, and the sweep rule in 25(b).
+
+- **The 998 "helper-theft noise" figure is withdrawn outright (T-036, 38118cb).** It was arithmetic across two join
+  routes: batch 1 subtracted a route-A split from a route-B total, so 998 appears in **no** single-route variant. The
+  real artifact floor is **221 (8.9%)** = 73 DB EAs that are not IDB function starts + 48 link-tail + 100 route
+  conflicts; **777 of the 998 are genuine methods**. "26.4% -> 16.6% + 11.2% noise" no longer exists.
+- **T-029's denominator understates.** Only 49 of its 171 "vanished" methods are mid-function tails; the other **122
+  are secondary chunks of multi-chunk functions** (live IDB: `0x4154ef` marked "Not a function", `0x4154f0` ->
+  `F3::GameWeapon::virt_meth_0x414680`). `list_funcs` is not a complete entry-point enumeration, so counts derived from
+  it are bounds, not totals.
+- **A named class can be missing from the export entirely.** `cls_0x49c610` (ratio 0.02, batch 1's worst case) is
+  `JE::ResourceSystem` — all 43 methods named so in the IDB, 36/43 with in-body member usage — and `F3.json` contains
+  **zero** occurrences of `ResourceSystem` (coordinator-verified by grep), while our port ships `JE/ResourceSystem.hpp`.
+  Stale export, not misattribution.
 
 ## Deviations and defects (the ledger is the list, not a summary)
 

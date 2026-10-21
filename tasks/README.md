@@ -149,7 +149,7 @@ row; A keeps editorial merge rights).
 | T-039 | **`Entity+0x314` is size 4 in the DB but a `unsigned char` in our port**, used as T-011's gate term — count vs flag undecided | open | HappyKnight |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
-| T-036 | **Where did the 998 helper-theft functions come from?** — **DONE: they were not theft. Artifact floor is 221 (8.9%), 777 of the 998 are real methods; the 1,475/998 split mixed two join routes (2,340 vs 2,473). Rule R36-a…f + re-run: 2,325 attributed (26.2%)** | done | SwiftRaven |
+| T-036 | Helper-theft taxonomy — **DONE (38118cb)**: the 998 was two-route arithmetic; artifact floor 221 (8.9%); T-029 denominator understates | done | SwiftRaven |
 | T-037 | Second input door: what the script natives write into the Action record | **dispatched, unconfirmed** (0 tool calls) | WildYak |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |

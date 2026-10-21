@@ -42,6 +42,22 @@ agrees: member-usage evidence is **81% on low-ratio classes vs 88% on high-ratio
 2,473 (2,425 in the game region), and batch 1 mixed both routes, which is exactly why its split sat between the two.
 **998 is a cross-route artifact; contiguity measures link placement and clone spread, not attribution quality.**
 
+**Hard gate for batch 2 (T-036 rules, 38118cb; re-runnable as `tools/t036-noise-taxonomy.py`).**
+Embedded `.?AV` member types survive the ratio problem because they are a **type-level** fact clone spread and link
+placement cannot manufacture — 12 of 14 show 100% body evidence with ratios spanning **0.07 to 1.00**, i.e. evidence is
+invariant to the metric that fails elsewhere. But the path is only safe behind four conditions:
+- **R36-e composite:** `cls_0x50db20` is on the self-naming list **and** is the water/VFX composite behind the refuted
+  `JE::String`. Filter first: **>=3 embedders means it is a member type, not the class.**
+- **Small-n classes are not classes:** 9 of 14 self-naming classes have n<=2 (one body's worth of evidence), and **464
+  of 647 "nameable" classes hold <=2 functions, where ratio == 1.00 by construction** — a perfect ratio there is the
+  metric, not a signal.
+- **Correlation, recorded so ratio cannot quietly return as a filter:** rho = **-0.013** usage-only, **+0.248** with
+  vftables. `cls_0x668cd8` scores 0.37 with 100% evidence; `cls_0x49c610` scores 0.02 and is a known class.
+- **A rename moves nothing until the export moves with it.** `cls_0x4d8d70` -> `JE::StringTree` will NOT shift route-A
+  tier 2 until the IDB rename **and** an `F3.json` re-export both land. Report deltas per route and name the stale one.
+  Also: `usages` is blind to `__stdcall` walkers, so treating empty usages as no-evidence re-imports T-036's own first
+  error (the reason R36-f exists).
+
 Working rule until their re-run lands: **a low ratio must not disqualify a class** (it may be clone spread of a genuinely
 large one) and **a high ratio must not promote one** (it may be small and tightly packed). Rank by *evidence available* —
 resolved vftable slots, embedded member types, self-naming joins — and treat the ratio as a question to ask, not a filter
