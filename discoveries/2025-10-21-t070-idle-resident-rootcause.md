@@ -53,7 +53,7 @@ Wait differs only at +0x14 (0x5601d0 timer-expiry update, which DOES set +0x18 d
 
 `F3::GameWorld::CreateGameAction_0x46f290` (arg = GameActionType; this-adjusting wrapper at
 GameWorld-sub vft **0x668494 +0x14** → 0x46fdb0 → 0x46f290; sub-object installed by ctors 0x46f1c7/
-0x47039a). THE FACTORY ENUM (case → class → alloc size): 0=GameActionDie 0x20 (+0x1C=7), **1=GameActionIdle
+0x47039a). THE FACTORY ENUM (case → class → alloc size): 0=GameActionDie 0x20 [CORRECTED BY AUTHOR, T-082 §7: alloc = 0x2C — raw push at jump target 0x46f2b9 is push 0x2c; the 0x20 was pattern-completion from a mid-block window that never framed the push — cited-without-frame class, self-caught] (+0x1C=7), **1=GameActionIdle
 0x24 (ctor 0x4055f0 — the class's ONLY construction site)**, 2=GameActionMoveTo 0x48, 3=GameActionPickUp
 0x30, 4=GameActionWander 0x44, 5=GameActionWait 0x24, 6/7=fall-through JE::World::CreateAction
 (engine kinds), 8=FloatingSpeechText 0x34, 9=Equip 0x30, 10=Unequip 0x28, 11=SetActiveWeapon 0x44.
