@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: TrueCastle `01a16096-c00e-7404-8afe-e521a9bb7240` (filed by LoudDragon `01a15f82` in 36db5ce, carried over from SwiftMoon's T-072 sweep F1 flag, 2026-10-21)
 type: research (READ-ONLY on ida_original_f3 — xref-weight queries only; NO IDB writes; discoveries file LEFT DIRTY until coordinator checkpoint)
 depends: T-072 (F1/F2 flags — SwiftMoon's doc-errata sweep), T-007 (GUILoadingRecon G1/G2 — the slot-numbering style at issue), T-062 (Window vft 0x66E4D4 slot-12 claim + ten-table §8a list), DEFERRED-NOTES §8a (the "settled" wording being re-opened), harness items 40-49 (method law; 42 size rule, 49 pairing law)
@@ -56,3 +56,34 @@ table = OWNER (class + tier) or FINAL-ambiguous-with-reasons.
 - Read items 40-49; selftest gates BEFORE verdicts; byte-over-decompiler; EA-anchored everything.
 - Lanes: KeenStorm (product port), HappyEagle (DXVK :96), writer-wave referee role PARKED pending
   CalmRaven reroute — this research row does not touch the IDB regardless.
+
+## Result (TrueCastle, 2026-10-21)
+**Verdict: EVERY contested base resolves to an OWNER — zero FINAL-ambiguous rows; F1 CLOSED with a
+mechanical citation key.** The disputed run is the GUI widget family (root GUI::Base +
+GUI::HeapTracker @+24 MI), not a Gfx_Engine neighbourhood.
+- 16 tables walked COL→TD→CHD→MTD (doc §2): 0x66E4CC = GUI::Window SECONDARY view (viewOffset 24,
+  1 slot, stored `c7 46 18` at [this+0x18]); 0x66E4D4 = Window PRIMARY 75 slots; 0x66EA1C Fragment 17;
+  ten §8a addresses are SLOT addresses (slot 50/+0xC8 = skin-binder 0x4b06c0, slot 52 = 0x4b06a0) of
+  ten real primaries {GameDialogueWindow 0x65575c, POIWaypoint 0x65d15c, Button 0x66c9bc, Label
+  0x66d43c, Window 0x66e4d4, Edit 0x670cac, CSMenuLabel 0x697e4c, CFloatingLabel 0x69dcc4,
+  ReplyLabel 0x69ebcc, DialogueWindow 0x69eea4}; Gfx_Engine = EXACTLY ONE vft 0x6AE7EC (120 slots;
+  Singleton<Gfx_System_Interface> base at +4 has no vft — the "+C manager view" does not exist);
+  0x67140C = CSound (confirms T-062 note; not a Gfx view).
+- Engine slot citations (+0xC4/D8/DC/E0 = 0x5c0a90/0x5c0930/0x5c0970/0x5c0940) ALL byte-correct vs
+  0x6AE7EC (4×slot law holds) — GUILoadingRecon/t007 need NO coordinate fix, only the base-STATED
+  annotation; T-062 Window "slot 12 = 0x4b06a0" mis-anchor CONFIRMED (true: +0x30=0x4afc00;
+  0x4b06a0 = slot 52/+0xD0 same table); F2's own "base 0x66E574" flagged as a PHANTOM ([-4] is code,
+  slot 40 mid-table) — do not bake it into the correction block. Fragment slot-12 row verified exact.
+- F3.json: vft rows NOT fabricated (export==raw incl. both Window views, slot 50 byte-exact) — but
+  the SIZE column is family-cumulative estimates (Base==Window==Fragment==3384, HeapTracker==0);
+  re-confirmed the T-040 F3.json-untrust line with a new mechanism (item-42 sizes must come from
+  ctor-write-span + MTD geometry, never the export size column).
+- Item-49 validated on the receiving side: all 16 bases have exactly {ctor,dtor} imm-vft store
+  pairs, image-wide; none floating, none double-owned. Section trap harnessed: the RTTI TD/name
+  cluster lives ABOVE .rdata stated virtual size (0x6FAF2C.. — .data-side VA); walkers bounding TDs
+  to .rdata-virtual find zero names EVERYWHERE (fresh scanner-artifact family, doc §1).
+- Deliverable: discoveries/2025-10-21-t081-gfx-slot-table-bases.md LEFT DIRTY (§5 = the per-citation
+  resolution table + R1-R4 re-key rule for the checkpoint correction blocks). ZERO renames needed
+  (family already 73-fn live-named) — this row feeds doc corrections, not the writer queue.
+- Selftests: ecx-flow 5/5; walker validated on T-075 Manager known-positive + master-index Window
+  rows before use; zero IDB writes (raw bytes + F3.json + cached objdump only).
