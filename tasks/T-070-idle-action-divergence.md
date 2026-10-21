@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: KeenStorm (self-queued at T-068 close; coordinator-approved)
 type: research (read-only on ida_original_f3, discoveries/ dirty-until-checkpoint)
 depends: T-068 finding #2 (the divergence this row root-causes)
