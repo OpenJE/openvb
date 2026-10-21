@@ -24,3 +24,25 @@ discoveries/ file (DIRTY): 120-row table + counts per bucket (delegation-identif
 FINAL-unknown), classification evidence EAs, and a 'top 5 most interesting unnamed slots' shortlist
 for a possible follow-on. This is anatomy the census never did: 'who calls Gfx_Engine' is attributed;
 'what ARE its slots' is not.
+
+## Notes (SwiftMoon, research-complete 2026-10-21)
+Self-test gate PASSED 6/6 + World-table ground-checks BEFORE any unknown classified (doc §0).
+Raw truth: 0x6ae7ec = 120 slots, all distinct real bodies (no stubs/thunks), ends at idx 119
+(idx 120 is literal text); RTTI COL 0x6D79F4 -> TD 0x7001F0 `.?AVGfx_Engine@@`, primary (COL+0=0);
+install census BOTH directions (item 49): 2 stores, both `c7 06` reg-indirect — ctor 0x5BFE45 +
+dtor-RESTORE 0x5C1CF1 (inside dtor 0x5C1CD0) — no second ctor.
+EXPORT ERRATUM CANDIDATES (T-040's list): (1) F3.json vft declares length 120 but emitted 119
+entries — HOLE at idx 100 whose raw body exists (0x5C0350 = byte getter [this+0x68]); (2) size 2212
+still non-authoritative (T-040 rule re-applied, max member disp 0x894 is consistent but not proof).
+Buckets (mechanically verified to match the table): 68 D / 45 O / 7 U — every U prints its reason.
+Subsystem map resolved the facade: +0x18 device wrapper (cls_0x4c0190, installed ONLY by slot 8
+CreateDevice @0x5C0D19), +0x2C TexMgr, +0x30 buffer mgr ([0x707CE0] self-cache), +0x38 stats mgr
+([0x70C96C] self-cache), +0x3C slot mgr cls_0x50B560 (T-062 addendum "+0x18" = the manager's OWN
+tree field, not an engine offset — disambiguated); the "engine globals" 0x70837C..0x70839C /
+0x708300..0x708328 are FIELDS OF THE STATIC Gfx_D3D AT 0x7082F8 (zero absolute stores from outside
+the band — b6's value-pair finding generalized).
+Top-5 unnamed: slot 9 (CreateDevice's twin teardown), slot 35 (device-lost recovery AND a surfaced
+consumer of cls_0x490150 = one of T-063's 17 orphans — routed to T-073's lane), slot 118
+(per-frame device flush), slots 11/12 (mode-apply THROUGH FindMode 0x502870 = T-052's wall fn),
+slots 101/102 (private texture ids @+0xD4/+0xD8 via self-slot-54).
+Deliverable LEFT DIRTY. Image+JSON only; zero IDB; zero source/doc writes besides this file.
