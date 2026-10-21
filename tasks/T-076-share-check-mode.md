@@ -1,5 +1,5 @@
 ---
-status: done
+status: in-progress
 assignee: EpicRaven (T-076 filed by LoudDragon `01a15f82` in bab1146/69a5792, dispatched on return 2026-10-21)
 type: tooling (offline; tools/ecx-flow.py extension; NO IDB writes; README table untouched per coordinator-only law)
 depends: T-054 (the tool), harness item 44 (rule-1 source), T-064 [B] falsification (the test-case origin)
@@ -55,3 +55,11 @@ future wave needs the lesson again.
   with cleanup-annotation, not membership — visible in the 0x493400 probe).
 - Offline-only, zero IDB writes, zero 8745 use; README/boards table untouched per
   coordinator-only law — status relay via mesh for the table mirror.
+
+## REOPENED (refinement ticket, ruling `fb3d03f`, from HappyStorm's T-073 escalation)
+Family mode counts distinct DEREF PREFIXES; rule-1's words are distinct holder FIELDS.
+Gfx_RenderManager case: three *[X+0x164]-shaped paths to the SAME terminal field read
+SHARING. Fix: field-level distinctness — resolve chains to terminal (anchor, offset) keys
+before counting; ctor-single-call-site fact becomes a printed column, not the arbiter.
+T5 extends with the counterexample pair: cls_0x490150 family must read PASS after the fix,
+0x434250 must STILL read SHARING.
