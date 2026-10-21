@@ -620,6 +620,17 @@ Rules, now the standing form for any checker shipped from this repo:
    rather than re-derived.
 4. **A silent fallback is a lie with extra steps.**
 
+**The sharpest instance is a guard that did not enforce its own headline claim** (`1a8d101`, same afternoon, found by
+the author after a coordinator asked "what happens when this goes red?"). `f3-json-check` *printed* "the export is
+byte-frozen at md5 e8827f12…" while checking **neither** field the sentence rests on: setting `version` to `9.9.9` gave
+`keys_exact True`, no drift, **exit 0** — a clean verdict on a tampered artifact. Now the export's `version` must equal
+the schema constant and its `filemd5` must equal `md5($OPENVB_ORIG_EXE)`, both folded into the drift verdict as
+`DRIFT REASON: PROVENANCE: …`. Coordinator verified: clean → exit 0; version tampered → exit 1 with the provenance
+reason; and the embedded `filemd5` `A68C22F3DD…` really is the shipped `F3.exe`'s md5. **Lesson: if a tool states a
+claim in its output, the claim is part of its contract — assert it, or stop printing it.** (Their first wrong-binary
+test was also invalid: pointing the env var at a nonexistent file made the branch silently no-op and it looked like a
+pass — item 29 catching them once more, immediately.)
+
 **Cross-reference, so item 29 is not read as a single-tool story.** The same lesson in the *indexing* half is T-032
 (`tools/ea-index.py`, follow-up `2fca7d7`): the lane's own refusal **counters** disagreed with its reported total
 (756 vs my 759), and I found it by summing categories the tool already printed. So the rule generalises past mutation
