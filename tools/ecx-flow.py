@@ -368,10 +368,10 @@ class Model(object):
 
     def _collect_data_code_ptrs(self):
         """All 4-aligned dwords in .rdata/.data/.data1 that point into .text.
-        Set of table-referenced code addresses (vfts, atexit pads, EH handler
-        arrays, jump tables in data)."""
+        Map value -> [referring VAs] (table-referenced code addresses: vfts,
+        atexit pads, EH handler arrays, jump tables in data)."""
         lo, hi = self.text_sec[1], self.text_sec[1] + self.text_sec[2]
-        refs = set()
+        refs = collections.defaultdict(list)
         for name, va, size, fo in self.secs:
             if name == ".text":
                 continue
@@ -380,8 +380,9 @@ class Model(object):
             for i in range(0, n, 4):
                 v = int.from_bytes(buf[i:i + 4], "little")
                 if lo <= v < hi:
-                    refs.add(v)
-        self.data_code_ptrs = refs
+                    refs[v].append(va + i)
+        self.data_code_refs = dict(refs)
+        self.data_code_ptrs = set(refs)
 
     def _collect_pads(self):
         """MSVC SEH/vector-iterator pad thunks:
@@ -400,17 +401,19 @@ class Model(object):
                 continue
             j = i + 1
             adj = False
+            d = 0
             if j < n and self.insns[j].mn == "add" and len(self.insns[j].ops) == 2 \
                     and norm_reg(self.insns[j].ops[-1]) == "ecx" \
                     and self.insns[j].ops[0].startswith("$"):
                 adj = True
+                d = int(self.insns[j].ops[0][1:], 16)
                 j += 1
             if j >= n or self.insns[j].mn not in ("jmp", "call"):
                 continue
             t = self._branch_target(self.insns[j])
             if t is None or ins.addr not in refs:
                 continue
-            self.pads[ins.addr] = (t, adj, self.insns[j].mn)
+            self.pads[ins.addr] = (t, adj, self.insns[j].mn, d)
             self.starts.add(ins.addr)
             if not self.thunks_done and self.insns[j].mn == "jmp":
                 self.thunks[ins.addr] = t
@@ -977,6 +980,134 @@ class Model(object):
             return self.ea2cls[owner_start][0]
         return "sub_%X" % owner_start
 
+    def enclosing_fn(self, va):
+        """Largest non-pad function head strictly below va (the scope a pad/EH
+        handler is compiled inside)."""
+        s = self.starts_sorted
+        import bisect
+        i = bisect.bisect_left(s, va)
+        while i > 0:
+            i -= 1
+            if s[i] not in self.pads:
+                return s[i]
+        return None
+
+    def bucket_entries(self, band_eas):
+        """T-057 taxonomy as an executable rule. Returns dict
+        E -> (bucket, evidence) where bucket is:
+          LIVE  - direct external edge from a non-pad owner
+          PAD   - external edges ONLY from registered pad thunks
+                  (evidence bit: pad VA dword-referenced in .rdata/.data --
+                   registration REQUIRES it, so a pad edge IS the evidence)
+          DELEG - no direct non-pad external edge, but transitive intra-band
+                  callers have one (includes tail-jmp-only thunks WITHOUT data
+                  ref: those are NOT pads -> DELEG, per the ratified rule)
+          ISO   - none of the above
+        """
+        band = set(band_eas)
+        band_r = set(band) | {self.resolve_to(e) for e in band}
+        ext = collections.defaultdict(list)
+        callers = collections.defaultdict(set)
+        for e in self.edges:
+            if e["kind"].startswith("alloc"):
+                continue
+            if e["target"] in band_r:
+                o = self.owner_of(e["site"])
+                if o in band_r and o != e["target"]:
+                    callers[e["target"]].add(o)
+                elif o not in band_r:
+                    ext[e["target"]].append(e)
+        out = {}
+        for E in sorted(band):
+            es = ext.get(E, [])
+            nonpad = [e for e in es if e["owner"] not in self.pads]
+            pads = [e for e in es if e["owner"] in self.pads]
+            if nonpad:
+                out[E] = ("LIVE", {"n": len(nonpad),
+                                   "owners": collections.Counter(
+                                       self.owner_class(e["owner"])
+                                       for e in nonpad),
+                                   "edges": nonpad})
+            elif pads:
+                ph = sorted({e["owner"] for e in pads})
+                out[E] = ("PAD", {"pads": ph,
+                                  "kinds": [self.pads[p][2] for p in ph],
+                                  "data_refs": [self.data_code_refs.get(p, [])[:2]
+                                               for p in ph]})
+            else:
+                seen = set()
+                stack = [E]
+                up = []
+                while stack:
+                    x = stack.pop()
+                    for c in callers.get(x, ()):
+                        if c not in seen:
+                            seen.add(c)
+                            stack.append(c)
+                            up += [e for e in ext.get(c, [])
+                                   if e["owner"] not in self.pads]
+                if up:
+                    out[E] = ("DELEG", {"via": sorted(seen), "edges": up,
+                                        "owners": collections.Counter(
+                                            self.owner_class(e["owner"])
+                                            for e in up)})
+                else:
+                    out[E] = ("ISO", {})
+        return out
+
+    def pads_report(self):
+        L = []
+        P = L.append
+        kinds = collections.Counter(p[2] + ("-adj" if p[1] else "")
+                                    for p in self.pads.values())
+        P("== pads census: %d registered pad thunks (rule: ebp->ecx producer "
+          "[+disp adjust] then jmp|call T AND pad VA dword-referenced in "
+          ".rdata/.data) ==" % len(self.pads))
+        P("kinds: %s" % dict(kinds))
+        P("")
+        seh = sorted(p for p, v in self.pads.items() if v[2] == "call")
+        P("EH-`call` pads (%d) -- per-pad cleanup-owner table:" % len(seh))
+        by_target_cls = collections.Counter()
+        for p in seh:
+            t, adj, _k, d = self.pads[p]
+            t_r = self.resolve_to(t)
+            enc = self.enclosing_fn(p)
+            refs = [hex(x) for x in self.data_code_refs.get(p, [])][:2]
+            cls_t = self.ea2cls.get(t_r, ("sub_%X" % t_r, "?"))[0]
+            role = self.ea2cls.get(t_r, (None, "?"))[1] if t_r in self.ea2cls else "?"
+            by_target_cls[cls_t] += 1
+            ins = self.pad_installs.get(p, [])
+            P("  pad 0x%X -> 0x%X (%s %s) scope=%s adj=%s data-ref=%s push=%s" % (
+                p, t_r, cls_t, role,
+                self.owner_name(enc) if enc else "-",
+                ("+0x%X" % d if d else ""), refs,
+                [hex(i) for i in ins[:2]]))
+        P("")
+        P("EH-pad target classes: %s" % by_target_cls.most_common(20))
+        jmp_pads = [p for p, v in self.pads.items() if v[2] == "jmp"]
+        # group the (large) vector/atexit jmp-pad population by target-class of
+        # the dtor they dispatch to, with adjustment histogram
+        tgt_cls = collections.Counter()
+        adj_h = collections.Counter()
+        arrays = 0
+        for p in jmp_pads:
+            t, adj, _k, d = self.pads[p]
+            t_r = self.resolve_to(t)
+            tgt_cls[self.ea2cls.get(t_r, ("sub_%X" % t_r, "?"))[0]] += 1
+            if adj:
+                adj_h["+0x%X" % d] += 1
+            refs = self.data_code_refs.get(p, [])
+            if len(refs) >= 2:
+                arrays += 1
+        P("vector/atexit `jmp` pads: %d ; in multi-ref arrays: %d" % (len(jmp_pads), arrays))
+        P("  top dtor-target classes: %s" % tgt_cls.most_common(15))
+        P("  adjustment histogram (member slot destroyed): %s" % adj_h.most_common(15))
+        P("")
+        P("evidence-bit rule: PAD requires the pad VA to be dword-referenced in a data")
+        P("section (registration precondition here); tail-jmp thunks WITHOUT a data-ref")
+        P("count as DELEG -- the ratified T-057 taxonomy, executable in bucket_entries().")
+        return "\n".join(L)
+
     def families_report(self, band_eas, label):
         band = set(band_eas)
         band_r = set(band) | {self.resolve_to(e) for e in band}
@@ -1070,19 +1201,18 @@ class Model(object):
                               ", ".join("%s:%d" % (k, v) for k, v in del_g.most_common(6)),
                               dict(up_shapes)))
                     else:
-                        via_pad = [(p, adj) for p, (t, adj, _k) in self.pads.items()
+                        via_pad = [(p, adj) for p, (t, adj, _k, _d) in self.pads.items()
                                    if self.resolve_to(t) == E]
                         if via_pad:
                             for p, adj in via_pad[:3]:
                                 inst = self.pad_installs.get(p, [])
-                                P("        [Q1-padthunk] SEH/vector pad thunk 0x%X%s "
-                                  "-> entry; installed at %s (owners %s)"
-                                  " -- indirect dispatch, flow NOT proven end-to-end"
-                                  " -- installed-by is the candidate host"
-                                  % (p, ",adj" if adj else "",
-                                     [hex(x) for x in inst[:6]],
-                                     sorted({self.owner_class(self.owner_of(x))
-                                             for x in inst})[:6]))
+                                P("        [Q1-padthunk] evidence=dataref@%s "
+                                  "pad 0x%X (%s%s) -> entry; push-installs=%s%s"
+                                  % (
+                                      [hex(x) for x in self.data_code_refs.get(p, [])][:2],
+                                      p, self.pads[p][2], ",adj" if adj else "",
+                                      [hex(x) for x in inst[:4]] or "none",
+                                      "installed-by is the candidate host" if inst else ""))
                         else:
                             P("        [Q1-delegated] no external flow through any "
                               "intra-band caller either")
@@ -1348,6 +1478,37 @@ def selftest(m):
     check("T3 Gfx_Texture_Manager <- *[0x70B200] pointer-slot join", len(nt) >= 5,
           "%d edges this==*[0x70B200] into manager band (b6 join reproduced)" % len(nt))
 
+    # T4: T-057 21-row PAD snapshot + 0-orphan invariant, via the executable
+    # bucket rule (PAD requires the pad's data-ref evidence; tail-jmp-only -> DELEG)
+    snap = {
+        "cls_0x50dbb0": {0x48EE00, 0x4933D0, 0x493400, 0x49F290, 0x4B51F0, 0x4B5220,
+                         0x4BC020, 0x507550, 0x50DAF0, 0x520340, 0x54ECC0, 0x54ECF0,
+                         0x572EE0, 0x593500, 0x5CB270},
+        "cls_0x50db20": set(),
+        "cls_0x4542d0": {0x422920, 0x4A40B0, 0x4BB6B0, 0x54ED20, 0x57F2D0, 0x5984F0},
+    }
+    ok4 = True
+    detail4 = []
+    iso_tot = 0
+    for cls, want in snap.items():
+        eas = resolve_cls_eas(m, cls)
+        if eas is None:
+            ok4 = False
+            detail4.append("%s missing from dump" % cls)
+            continue
+        b = m.bucket_entries(eas)
+        got = {E for E, (k, _ev) in b.items() if k == "PAD"}
+        iso_tot += sum(1 for _E, (k, _ev) in b.items() if k == "ISO")
+        if got != want:
+            ok4 = False
+            detail4.append("%s PAD mismatch extra=%s missing=%s" % (
+                cls, sorted(hex(x) for x in got - want),
+                sorted(hex(x) for x in want - got)))
+    if ok4:
+        detail4.append("21/21 PAD rows exact + 0-orphan across the 3 bands")
+    check("T4 T-057 21-row PAD snapshot reproduces + 0-orphan invariant", ok4 and iso_tot == 0,
+          "; ".join(detail4))
+
     ok = all(r[1] for r in results)
     for name, passed, detail in results:
         print("%s %s\n    %s" % ("PASS" if passed else "FAIL", name, detail))
@@ -1366,7 +1527,7 @@ def resolve_cls_eas(m, cls):
 
 def main():
     ap = argparse.ArgumentParser(prog="ecx-flow.py")
-    ap.add_argument("mode", choices=["selftest", "band", "global", "cases", "families"])
+    ap.add_argument("mode", choices=["selftest", "band", "global", "cases", "families", "pads"])
     ap.add_argument("--cls")
     ap.add_argument("--addrs")
     ap.add_argument("--label", default=None)
@@ -1386,7 +1547,15 @@ def main():
     if args.mode == "selftest":
         return 0 if selftest(m) else 1
 
-    gate_ok = selftest(m) if args.mode in ("band", "global", "cases", "families") else True
+    gate_ok = selftest(m) if args.mode in (
+        "band", "global", "cases", "families", "pads") else True
+
+    if args.mode == "pads":
+        if not gate_ok and not args.allow_red:
+            print("\nGATE RED (item 35) -- pads census suppressed.")
+            return 1
+        print(m.pads_report())
+        return 0
 
     if args.mode == "cases":
         if not gate_ok and not args.allow_red:
