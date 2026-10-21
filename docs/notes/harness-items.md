@@ -434,3 +434,53 @@ rather than inventing a flag to satisfy it, and registered `actions[4]` as the s
 = count & 3, block = count >> 2, unbounded growth in the original) as deviation **D-2** instead of quietly
 promoting our fixed array to "the list". Refusing a fifth insert with a one-time log line is honest; pretending the
 array is a deque is not.
+
+
+## 23. Auto-compact threshold is a per-model token reserve, not a percentage
+
+Want "compact at 80%"? Pi has no percentage setting. `shouldCompact()` in `dist/core/compaction/compaction.js` is:
+
+    contextTokens > contextWindow - settings.reserveTokens
+
+So a fraction has to be **inverted into a reserve per model**: `reserveTokens = (1 - fraction) * contextWindow`.
+Resolution order (`settings-manager.js:609-623`) is `compaction.modelOverrides["<provider>/<modelId>"].reserveTokens`
+→ `compaction.reserveTokens` → built-in default 16384, and the model key is exact and case-sensitive
+(provider/id, line 614). Two traps I walked into while writing this:
+
+- **The key is `modelOverrides`, not `models`.** My first attempt used `models` and would have been silently
+  ignored — the reader only touches named fields, so a wrong key never errors. Verified by reading the resolver
+  instead of the docs table (item 18, again).
+- **A single top-level value cannot serve a fleet with different windows.** This machine has 116 known models
+  spanning 32k to 1M context. The live session model (`opencode-go/qwen3.8-flash`) is a **1,000,000**-token window
+  with `maxTokens: 131072`, so the fallback reserve sized for a 262,144 window made it trigger at **94.8%**, not
+  80%. Any percentage request must therefore be generated from the model store, not typed once.
+
+Regenerate after adding a model (repo `.pi/settings.json`, which is **gitignored** — per-machine):
+
+```python
+import json, pathlib
+A = pathlib.Path.home()/".pi"/"agent"
+found = {}
+def walk(o):
+    if isinstance(o, dict):
+        if o.get("id") and o.get("provider") and isinstance(o.get("contextWindow"), int):
+            found[f"{o['provider']}/{o['id']}"] = o["contextWindow"]
+        for v in o.values(): walk(v)
+    elif isinstance(o, list):
+        for v in o: walk(v)
+for f in ("models.json", "models-store.json"):
+    p = A/f
+    if p.exists(): walk(json.loads(p.read_text()))
+FRACTION = 0.80
+overrides = {k: {"reserveTokens": round(w*(1-FRACTION)),
+                 "keepRecentTokens": min(65536, max(4096, round(w*0.125)))} for k, w in found.items()}
+```
+
+Set the top-level `reserveTokens` to `(1-FRACTION) * <most common window>` so unlisted models still land near the
+target rather than at the built-in 16384 (93.75% of 262k, 98.4% of 1M). Keep `reserveTokens >= maxTokens` for the
+model you run — reserving less than the model's own maximum output can trigger compaction with no room to answer.
+`keepRecentTokens` is what survives the summarization; raising it preserves more detail per compaction at the cost
+of a smaller next-turn headroom, so it should stay well under the reserve.
+
+**Lanes pick this up automatically:** every session in this repo reads the project `.pi/settings.json`. Existing
+sessions apply it on their next compaction check; a new session starts with it.
