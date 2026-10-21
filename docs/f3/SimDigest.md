@@ -115,6 +115,15 @@ pinned-clock driver. The suite also carries the CONTEXT falsification directly: 
 uptimes must hash **equal**, while the printed lines must still **differ** — so a future edit that folds the
 CONTEXT span back into the hash fails a test instead of quietly making every replay look divergent.
 
+## PARITY= — where the claim stands now, and what it does not mean
+
+`PARITY=not established. The shipped side has a PRODUCER (`tools/orig-digest.sh`, grammar in
+`docs/f3/OrigCapture.md`) and no VALUES: every artifact it writes today is labelled
+`# SYNTHETIC`, and the comparator refuses to compare a synthetic side against evidence
+(`MIXED-PROVENANCE`, exit 3). So the digest row is no longer the only place that says "not parity" —
+the shipped side says it too, in its own header, and the boundary is the same on both files:
+same-state parity under a pinned LCG state, never same-seed-from-clock parity.
+
 ## T-039: `q=` replaced a boolean that was never a boolean (correction, not a feature)
 
 The `st=` triple used to carry a fourth value: `busy0x314`, a `unsigned char` in

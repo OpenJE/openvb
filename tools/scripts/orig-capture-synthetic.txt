@@ -1,0 +1,22 @@
+# T-031 EXAMPLE CAPTURE - DELIBERATELY SYNTHETIC. Every value below was typed, not read: no
+# process was inspected to produce this file. It exists so the emitter and the comparator can
+# be exercised, and rendered with --provenance synthetic it is labelled SYNTHETIC in the output.
+# The action vftptrs ARE real (read from artifacts/F3.json: GameActionWait 0x64bc6c,
+# GameActionMoveTo 0x649c1c, GameActionAttack 0x647bbc) because name resolution is the part of
+# the pipeline this fixture is there to test. Replace with a lockstep capture (record=read lines,
+# exe=<filemd5>) before anyone calls a result parity.
+# T-031 fixture capture - SYNTHETIC VALUES, not read from any process. Two entities, three frames,
+# an action queue that fills and drains. Real GameAction* vftptrs are used on purpose: name
+# resolution must be exercised even when the numbers around it are invented.
+record=frame frame=100 tickms=3456789 clocksec=34567
+record=entity frame=100 slot=0 name=CAPFIX_A pos=20.00/0.00/0.00 yaw=0.00 hpcur=45 hpmax=45 state=4 moving=0 acted=0 q=0 vt=-,-,-,-
+record=entity frame=100 slot=1 name=CAPFIX_B pos=20.40/0.00/0.00 yaw=1.57 hpcur=30 hpmax=30 state=4 moving=0 acted=0 q=1 vt=0x64bc6c,-,-,-
+record=world frame=100 pathjobs=0 turns=2 turnorder=CAPFIX_A,CAPFIX_B
+record=frame frame=101 tickms=3456789 clocksec=34567
+record=entity frame=101 slot=0 name=CAPFIX_A pos=20.00/0.00/0.00 yaw=0.00 hpcur=45 hpmax=45 state=4 moving=0 acted=0 q=1 vt=0x649c1c,-,-,-
+record=entity frame=101 slot=1 name=CAPFIX_B pos=20.40/0.00/0.00 yaw=1.57 hpcur=28 hpmax=30 state=4 moving=0 acted=1 q=1 vt=0x64bc6c,-,-,-
+record=world frame=101 pathjobs=0 turns=2 turnorder=CAPFIX_A,CAPFIX_B
+record=frame frame=103 tickms=3456790 clocksec=34568
+record=entity frame=103 slot=0 name=CAPFIX_A pos=20.10/0.00/0.00 yaw=0.00 hpcur=45 hpmax=45 state=4 moving=1 acted=0 q=2 vt=0x649c1c,0x647bbc,-,-
+record=entity frame=103 slot=1 name=CAPFIX_B pos=20.40/0.00/0.00 yaw=1.57 hpcur=26 hpmax=30 state=4 moving=0 acted=1 q=0 vt=-,-,-,-
+record=world frame=103 pathjobs=0 turns=2 turnorder=CAPFIX_A,CAPFIX_B

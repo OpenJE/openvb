@@ -1,10 +1,50 @@
 ---
-status: in progress
-assignee: implementer-B (YoungStorm, 01a15802)
+status: in progress — synthetic shipped side DELIVERED; the VALUES are still gated on T-034
+assignee: HappyKnight (01a15be7), inherited from implementer-B/ZenRaven (01a15802)
 depends: T-026 (digest format exists), T-027 (seeded stream exists)
 ---
 
 # T-031 — Parity oracle: read the ORIGINAL's state and diff it against ours
+
+## Status note (HappyKnight 01a15be7, 2026-10-21): the synthetic half is BUILT - `tools/orig-digest.sh`
+
+`tools/orig-digest.sh` + `tools/orig-digest.py` render a **capture file** into the ours side's exact
+line grammar, and `tools/orig-digest-verify.sh` proves it in 47 checks. Per the coordinator's two
+hardenings:
+
+1. **PROVENANCE is required input** (`--provenance` or a `record=provenance` line): none means exit 3
+   and NOTHING written. Anything short of an earned `lockstep` claim emits
+   `# SYNTHETIC - exercises the tool, proves nothing about F3.exe` in the artifact itself. A
+   `lockstep` label is **checked, not believed**: it must name its reads, carry a `record=read` line
+   per read (address / value / when / breakpoint - T-034's own columns), have those values appear in
+   its own frames (r3 in some `q=`, r4b in some `vt=`, r1 in some `lcgstate=`), and cite
+   `exe=<md5>` matching `artifacts/F3.json`. Stated limitation: **sloppy-proof, not forgery-proof**
+   (the md5 is public); what it stops is a fixture being compared as evidence.
+2. **Mixed provenance is refused by the comparator**: `tools/diff-digest.sh` prints
+   `MIXED-PROVENANCE: no comparison performed` and exits 3 BEFORE comparing a line. Sanctioned
+   pairings: `synthetic`/`synthetic`, `lockstep`/`unrecorded`, `unrecorded`/`unrecorded`.
+3. **The fixture violates invariants so the refusals are proven to fire**: an out-of-order frame
+   (`frame=99` after `frame=100`) gives `INVARIANT-VIOLATION` exit 4 with nothing written; an action
+   whose vftptr is in no class prints `UNKNOWN_VT=0xdeadbeef` AND counts it in
+   `# AK-RESOLUTION=4/5`, and `--require-resolved-ak` turns that into a refusal. Also refused:
+   unknown record type or field, non-dense entity slots, `vt` not exactly four entries, `q` above
+   what the capture's own pointers imply, and a capture with no frames at all - an empty digest would
+   otherwise compare IDENTICAL to any other empty digest.
+
+Grammar decisions worth knowing from here: vftptr to class resolution is offline through the DB (the
+half of R4b that needs no debugger); `draws` prints `NA:no-counter-on-shipped-generator` and the
+comparator now separates a **COVERAGE** difference (NA vs a value, or two NA reasons) from a state
+divergence - without that, every ours-vs-original run reports the same fake finding; the pinned R1
+state rides in CONTEXT as `lcgState=`; and the contract block is a deliberate copy, asserted
+byte-for-byte against a real binary-produced digest by `verify` - that check found the CRLF/LF bug
+the day it was written, where an LF-only emitter makes EVERY frame of a real comparison diverge by one
+invisible byte.
+
+**What is still not here, unchanged from the note below:** the values.
+`tools/scripts/orig-capture-synthetic.txt` is typed, not read, and says so. The acceptance line
+`first divergence at line N, frame=M` **against the original** still needs T-034's R1/R3/R4b - and
+that row's field list is now corrected (`+0x314` = COUNT, `+0x310` = head index), so the capture side
+will not be handed bad labels. The oracle's boundary is printed in every file it emits.
 
 ## Status note (coordinator, 2026-10-21): stalled at the read boundary
 
@@ -31,7 +71,8 @@ fields our digest prints, then diff. No GPU is required — state lives in memor
    `31337`/`31338` already exist) or by a read-only memory dump at fixed frame boundaries. Prefer
    whatever needs no code injection into a shipped binary.
 3. Emit an original-side digest file, same line grammar, and point `tools/diff-digest.sh` at
-   `original vs ours` instead of `ours vs ours`.
+   `original vs ours` instead of `ours vs ours` — **done as the renderer** (`tools/orig-digest.sh`);
+   the values are not.
 4. **Seeding is the whole game**: the shipped generator is one global LCG seeded from `time32(NULL)`
    behind `byte_707C64`. A parity run must pin both sides to a known seed (T-027 gave us
    `SeedShippedRand`) or the streams diverge on frame 1 and nothing else is measurable.
