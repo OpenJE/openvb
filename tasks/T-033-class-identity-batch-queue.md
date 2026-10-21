@@ -1,6 +1,6 @@
 ---
-status: in-progress
-assignee: GoldYak (batch 4, dispatched by LoudDragon `01a15f82` 2025-10-21). Prior grant note retained: PureKnight `01a15cb7-e27e` (apply GRANTED via coordinator after all prior holders departed; rule in force: the grant follows whoever can reach the shared IDB MCP session on 8745). Caveat: T-040 — route-B deltas unmeasurable (no export path). Batch 3 APPLIED (`783fb3e`).
+status: open
+assignee: none (batch 4 DONE 2025-10-21 by GoldYak `01a15f83` under LoudDragon dispatch — see Results-batch-4 below; batch 5 unowned). Prior grant note retained: PureKnight `01a15cb7-e27e` (apply GRANTED via coordinator after all prior holders departed; rule in force: the grant follows whoever can reach the shared IDB MCP session on 8745). Caveat: T-040 — route-B deltas unmeasurable (no export path).
 depends: T-029 (the census that produced this queue)
 ---
 
@@ -132,6 +132,31 @@ gone and the installed OOAnalyzer cannot export facts. Deltas are therefore meas
 > in the ledger §APPLY for re-issue by whoever has a working path (or batch-4 with a fixed tool). Batch-4
 > queue: t036 OK-candidates (cls_0x6bb908 41, cls_0x6bc9d8 30, cls_0x41a2b0 28, cls_0x4b28a0 28…) — 644 anon
 > classes / 2,124 fns remain. Ledger: `discoveries/2025-10-21-t033-batch3-hostband-ledger.md`.
+
+## Results — batch 4 APPLIED 2025-10-21 (GoldYak, sole writer; ledger `discoveries/2025-10-21-t033-batch4-ledger.md`)
+> **RESTART-EROSION FOUND + REVERSED FIRST**: the 13:13 devenv/imhex restart reloaded `F3.exe.i64` from disk
+> and ALL IDB writes since the prior disk-save were gone — live census read T2 2,341 (26.37%), not the
+> registered 2,124. Batch-2 (24) + batch-3 (StringTree 142 prefix + avatar 54) + the committed `0x548a80
+> → JE::World::ctor_0x548a80` pair (docs/DEFERRED-NOTES.md:360) = 221 renames re-applied from ledgers ONLY,
+> 221/221 ok, saved; T2 hit **2,124 = 23.93% EXACT** (registered b3 value reproduced bit-for-bit). Two lost
+> names stayed LOST as lost-unledgered per ruling (0x46f250/0x46f260 — c23 doc has roles, no committed
+> name+EA pair; zero T2 impact, still `JE::`). **Tooling unblocked**: harness `set_comments` still string-coerces
+> (re-disclosed), but the SAME server accepts the array over direct JSON-RPC — all 13 b3-preserved comments
+> re-issued VERBATIM, 13/13 ok, get_cmt readback SET. Batch-4 writes: **40 renames, 40/40 ok** — 3 mints on
+> per-class evidence: `cls_0x41a2b0→JE::CActionbarInterface` (28; sole vft-0x6505b8 store + Actionbar.INT +
+> ~40 shipped control names + in-band named trio), `cls_0x502870→JE::Gfx_D3D` (10; in-band named
+> CreateDevice IS a cls_0x502870 DB method + DeviceReset/DXErr strings), `cls_0x5240e0→JE::Gfx_G3D_Mesh::
+> ExportGfx{Model,Skin}Mesh` (2 of 7; shipped error prefixes name the class; residual 5 labelled-not-minted).
+> **Queue heads #1/#2 = VENDOR, not wins**: `cls_0x6bb908` 41 proven D3DX8/COM (QI memcmp vs
+> IID{648B1CEB-…}+IUnknown inside the d3d8.dll/D3DX8 string blob; IUnknown IID shared-xref'd by the 0x474xxx
+> D3DX9 band) — 8-class vendor-adjacent band **148 fns, not renamed, not excluded, reported separately**
+> (comment at vft 0x6bb908). `_Tree` family ruling extended to 5 new small clones (48 fns). Escalated
+> owner-unresolved incl. heads #4 `cls_0x4b28a0` (27) and `cls_0x4a5be0` (anim-player, role-only evidence) —
+> 321 fns conservative half, per-class evidence in ledger §3. Registered escalations 0x50dbb0/0x55dc80/
+> 0x4542d0 untouched as ordered. **T2: 2,124 (23.93%) → 2,084 (23.48%), −0.45pt batch-4; cumulative honest
+> vs pre-b2: 26.40% → 23.48% (−256 fns = b2 24 + b3 192 + b4 40; no averaging). Save discipline now
+> proven on-disk: mtime 13:13→14:03, three save_database(True) checkpoints, post-save dumps match.**
+> Batch-5 leads in ledger §7.
 
 ## Boundary
 Identity is a claim about the shipped binary, not about our port: nothing here changes `src/`. A class
