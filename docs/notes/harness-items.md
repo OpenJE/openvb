@@ -893,3 +893,25 @@ Rules:
    batch goes to the ledger verbatim, not the trash.
 3. File the harness bug **pi-side** (here: `set_comments` items coercion — `rename` accepts the shape the
    tool rejects); do not let a harness limitation masquerade as a target constraint in a task row.
+
+## 41. A "no owner" negative is only valid if it answers THREE independent queries — one blind spot does not make a class
+
+EpicRaven's T-054 wave, 2026-10-21. b5 recorded cls_0x445350 as owner-unresolved because "zero
+external direct call sites AND zero vft slots pointing into the band". The wave's verdict was WRONG,
+and wrong for three SEPARATE reasons — containment ran through callers-of-callers (the band's host is
+called by the host's OWN method 0x4465E0, invisible to a direct-site scan), through table->thunk->band
+resolution (vft 0x659DB0 idx2 = adjusted thunk 0x4468B0 `sub -0x4(%ecx),%ecx; jmp host` — the table
+points at the host's thunk, never into the band), and the vft scan window was .rdata-only while the
+install edges live in .data/.data1. Each mechanism defeats a different scan; passing one does not
+excuse skipping the others.
+
+Rules for any future "no owner / owner-unresolved" note:
+
+1. State ALL THREE answers explicitly: (a) callers-of-callers, (b) thunk-adjusted table resolution
+   (sub/add-ecx + jmp shapes, delta from [view-4]), (c) full .rdata + .data + .data1 coverage.
+   A negative that lists one is a note about a scan, not about the class.
+2. Prefer the tool: `python3 tools/ecx-flow.py band --cls X` runs all four joins against the
+   md5-pinned cache; a negative that skipped an existing tool must say why.
+3. The corrected predicate for vft-owner claims (CalmRaven's T-055 finding): ctor = sole OBJECT-SIDE
+   storer; a factory slot-install may hold the only other xref — that is EXPECTED, not a rival;
+   rival-class ctors = zero. Naive one-xref-equality fails 14/14 on legitimate classes.
