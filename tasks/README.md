@@ -142,7 +142,7 @@ row; A keeps editorial merge rights).
 
 
 | T-032 | EA→document index — **DONE (6bde789)**: 137 docs / 5,258 EAs / 7,778 mentions, 0 silent misses in a 720k-pair recall audit, refusals counted by category | done | SwiftRaven |
-| T-033 | Class-identity batch queue — **BATCH 2 APPLIED** (`b97db72`): 6 mints, 24 route-A fns, T2 26.40%→26.09% inside the re-registered ≤1.3pt band; ledger + tag/noise conditions met; batch-3 queue = R36-e host-band residuals + 30 t036-passing classes | open (batch 3 unowned) | PureKnight `01a15cb7` (batches 1-2 apply, granted) |
+| T-033 | Class-identity batch queue — **BATCH 2 APPLIED** (`b97db72`): 6 mints, 24 route-A fns, T2 26.40%→26.09% inside the re-registered ≤1.3pt band; **BATCH 3 GRANTED + pre-registered**: upper bound ≈533 fns (T2 → ~20.1% if all named cleanly), reported band **0.0–8.0pt route-A** with cls_0x40a220 residual + cls_0x49c610 at 0 (R36-b route-disagreement demo); deliverable framing = HOST-band names, not struct names, per R36-e | in-progress (batch 3, draft-to-signoff stage) | PureKnight `01a15cb7` (apply, granted) |
 | T-034 | Lockstep reads — R0 answered from the image (later superseded by T-045: pump uses World's `+4` table slot 6 = Update_0x544a90); R3/R4 reduced to plain reads; LIVE capture running on the 31437 stub | partially-done — live half in progress | NiceHawk `01a15cb7` |
 
 
