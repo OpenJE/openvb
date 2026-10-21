@@ -42,3 +42,13 @@ NOT the R1 draw).
 ## Acceptance
 - EITHER the six-row table WITH values (pairing ready for T-031), OR named-and-sampled next
   mechanism under 1+2 attempted. Xvfb/:0/DXVK-null results already banked in T-052 §3 — do not re-walk.
+
+## COORDINATOR ADDENDUM — bonus observations for whoever crosses the wall (post-`70c86f3`)
+KeenStorm's static tail made the six rows CHEAPER and added two new lockstep asks for the same
+run (they cost nothing once you're past the mode gate and driving to combat):
+- BONUS-1 (was T-013's last open key question): statically DECIDED (stem-keyed registry, verbatim
+  probe) — confirm only which shipped names carry dots if the census (157/165) needs live backing.
+- BONUS-2: what the Fragment vertex-block CORNER FIELD 0 int (+0xC0 wire dword, copied x4) indexes
+  into — watch a textured skin in motion at two different wire values if reachable.
+- BONUS-3: mode-1/2 frame-pair interpolation quality (linear vs blend weight) — slot16 repaint
+  path under a rate<0 skin, if the menu/areamap surface shows one.
