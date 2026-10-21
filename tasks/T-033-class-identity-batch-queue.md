@@ -1,13 +1,18 @@
 ---
 status: open
-assignee: **RedXenon (01a157ec) — apply scope RE-GRANTED 2026-10-21.** QuickQuartz (01a157f6) has been
-# away 1h25m with no renames applied; the grant follows whoever can actually reach the shared IDB MCP
-# session (.idalib-mcp on 8745) tonight. Caveat: T-040 — no route-A delta is measurable until an export path exists.
-# + RedXenon (01a157ec) — batch-2 DECISIONS, dispatched 2026-10-21 by row edit (MintEagle departed, hole was open)
+assignee: PureKnight `01a15cb7-e27e` (apply GRANTED via coordinator after all prior holders departed; rule in force: the grant follows whoever can reach the shared IDB MCP session on 8745). Caveat: T-040 — route-B deltas unmeasurable (no export path). Batch 3 UNOWNED while no writer lane is online.
 depends: T-029 (the census that produced this queue)
 ---
 
 # T-033 — Class-identity batch queue: the third kind of worker
+
+> **BATCH 2 APPLIED 2025-10-21 (PureKnight 01a15cb7-e27e, grant via ZenNova):** 6 classes minted → 24 route-A fns
+> retired, T2 26.40% → 26.09% (0.31pt, inside RedXenon's re-registered ≤1.3pt band; route-B stale per T-040).
+> Pair-suffix died (0x4d4650 = converting ctor of cls_0x4cb300); fstream class renamed only on its dense 7-fn band,
+> 3 labelled-noise fns left anonymous (R36-e composite, embedders=9). Ledger + pre-checks:
+> `discoveries/2025-10-21-t033-batch2-apply-ledger.md`. Batch 3 queue = the R36-e host-band residuals (cls_0x4d8d70,
+> cls_0x50dbb0, cls_0x40a220 residual, five CEngineInterface embedders) + `OK rename candidate` classes from
+> `tools/t036-noise-taxonomy.py` gate output (30 classes currently pass).
 
 ## Why
 The census (T-029) gives the shape: **2,340 typed-stub functions sit under ~300 anonymous `cls_0xADDR`
