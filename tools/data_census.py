@@ -345,8 +345,12 @@ def emit(outdir, R, per_file, src_hash):
         f.write(f"- EME2 records: {len(R['eme2'])}; chunks that FAILED to tile "
                 f"(counted unparsed, never guessed): {sum(R['eme2_unparsed'].values())} "
                 f"{dict(R['eme2_unparsed']) if R['eme2_unparsed'] else ''}\n")
-        f.write(f"- trigger-region strings (EMTR/EBTR/EMEP, best-effort sweep, NOT a tiling claim): "
-                f"{len(R['trig'])}\n")
+        f.write(f"- trigger-region strings (EMTR/EBTR/EMEP sweep): {len(R['trig'])} — NAMED GAP: "
+                f"walked payloads are NOT name blobs (EMTR @Maps.grp 0x4270b4a = u32 counts + f32 "
+                f"geometry; EBTR @0x4270c06 = wrapper embedding EMNP/ETRE/HEAD sub-chunks; EMNP "
+                f"sample @Engine.grp 0x4212f = 4 zero bytes). Trigger NAMES, if they ship, live in "
+                f"the un-parsed (compressed) region or a chunk class this sweep has no evidence for. "
+                f"Empty here means NOT-FOUND-WALKABLE, never absent.\n")
         f.write(f"- EME2 name-kind histogram: {dict(Counter(r[3].split('.')[-1] if '.' in r[3] else '(noext)' for r in R['eme2']))}\n")
         f.write(f"- chunk tags: {dict(Counter(r[4] for r in R['chunks']))}\n")
     # markdown views (same rows, pipe tables) kept minimal; csv is canonical
