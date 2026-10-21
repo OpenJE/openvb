@@ -20,7 +20,16 @@ namespace F3 {
 	//      leaving SPAWNED, session 14 §3).
 	//   2. with count>0 and not paused(+4): per-node dispatch - entities holding the
 	//      +0x319 latch get their deadline cleared (+0x29C=0) and are skipped this
-	//      frame; otherwise, when (+0x1E4==0 || +0x314!=0), the deadline is armed
+	//      frame; otherwise, when (+0x1E4==0 || +0x314!=0) AT 0x5a95c1, the deadline is armed.
+	//      T-039 settled the second term: +0x314 is the ELEMENT COUNT of the action deque at
+	//      Entity+0x304 (push `++` at 0x54ea71; erase `--` at 0x54b637/0x54b672; zeroed in the
+	//      ctor at 0x5515e6), and `Entity::virt_meth_0x4084c0` is literally
+	//      `return *(this + 0x314) == 0`. So the term reads "HAS ACTIONS QUEUED", not "is busy"
+	//      - a queued order FORCES the turn even when the +0x1E4 test is false. Our port derives
+	//      that count from actions[] (SpawnedEntity::QueuedActionCount, T-039) because our
+	//      actions[4] is the deque's first block only (deviation D-2).
+	//      +0x1E4's MEANING is still open (DB size 4; its other readers gate per-map entity
+	//      counts at 0x54bc3a), so mirror the test at 0x5a95c1 - do not name it after a guess.
 	//      (accMs/1000) and the entity receives its turn update F3::ServerUpdate(dt+accMs).
 	//
 	// CLOCK-CAVEAT (chat C-23): the original's accMs line multiplies an IWorldServer

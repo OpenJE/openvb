@@ -12,7 +12,7 @@ edit `run-all-tests.nix`).
 One line per sampled frame of *game state decided independently of whether anything is drawn*:
 
 ```
-frame=4 tickMs=64 clock=4 ents=2 e0=DIGEST_A,pos=0.00/0.00/0.00,yaw=0.00,hp=42/45,st=4,0,0,0,ak=0/0/0/0 \
+frame=4 tickMs=64 clock=4 ents=2 e0=DIGEST_A,pos=0.00/0.00/0.00,yaw=0.00,hp=42/45,st=4,0,0,q=1,ak=GameActionMoveTo/-/-/- \
   e1=DIGEST_B,... pathJobs=0 turns=2 turnOrder=DIGEST_A,DIGEST_B draws=2 drawsSrc=injected-counter \
   fnv=7E1C8ABB
 ```
@@ -45,7 +45,7 @@ has no END line, so a missing END means "killed", not "corrupted".
 | field | source | note |
 |---|---|---|
 | `frame` `tickMs` `clock` | caller / `Host::TickMilliseconds` / `GameWorld::ClockSeconds` | see the time-base note below |
-| `ents`, `eN=name,pos,yaw,hp,st,ak` | `F3::g_spawnedEntities[128]` | `hp=statCur/statMax`, `st=entityState,moving,busy,acted`, `ak` = the 4 action-queue slots — this *is* the per-entity action queue in our architecture |
+| `ents`, `eN=name,pos,yaw,hp,st,q,ak` | `F3::g_spawnedEntities[128]` | `hp=statCur/statMax`, `st=entityState,moving,acted`, **`q` = queued-action COUNT** (see the T-039 section), `ak` = the 4 action-queue slots — this *is* the per-entity action queue in our architecture |
 | `pathJobs` | `JE::PathManager::PendingJobCount()` | world+0xF0 == the steerer |
 | `turns`, `turnOrder` | `F3::CombatManager` | **order-sensitive on purpose**: who-acts-when is the gameplay fact, so the same actors in a different order must differ |
 | `draws`, `drawsSrc` | T-027's `RandFn` seam | see exclusions |
@@ -114,6 +114,41 @@ stated in the header: cross-run elapsed time is only sound when the clock is *su
 pinned-clock driver. The suite also carries the CONTEXT falsification directly: same state at two different
 uptimes must hash **equal**, while the printed lines must still **differ** — so a future edit that folds the
 CONTEXT span back into the hash fails a test instead of quietly making every replay look divergent.
+
+## T-039: `q=` replaced a boolean that was never a boolean (correction, not a feature)
+
+The `st=` triple used to carry a fourth value: `busy0x314`, a `unsigned char` in
+`src/F3/MapEntitySpawn.hpp` named after a *busy flag*. It is not one. Shipped `Entity+0x314` is the
+**live element count** of the block deque at `Entity+0x304` (DB `mbr_0x314`, size 4; the deque's own
+`mbr_0x10`, and `0x304 + 0x10 = 0x314`), whose writers are `++` at `0x54ea71` (the push_back funnel
+`0x55072e` calls) and `--` at `0x54b637`/`0x54b672` (the erase that walks it), zero-initialised at
+`0x5515e6`. Readers agree: `Entity::virt_meth_0x4084c0` is literally `return Entity+0x314 == 0`, and the
+pump loops at `0x54c447`/`0x54c788` bound themselves by `head != head + count`. Full write-up:
+`docs/f3/EntityActionQueueSeam.md`.
+
+Why this row owns the fix rather than the gate row: **a hashed comparison field must mean what its name
+says.** Printing a depth inside a `st=` state triple made the digest claim "this entity is busy (1)"
+where the shipped state is "this entity has N orders queued". And a byte cannot hold the number that
+matters — 256 aliases to 0, i.e. *idle*, which is the worst possible value for a parity oracle to read
+as a fact. So:
+
+- the field is now **`q=`**, printed as a count, inside the same comma-chained `eN` token (so
+  `tools/diff-digest.sh` names a divergence as `e0.q`, not `e0.st`);
+- `st=` is three values (`entityState,moving,acted`) — a fourth means the old byte crept back, and the
+  PathManager suite asserts the exact substring `,st=5,0,0,q=4,` to keep that true;
+- the port **derives** it from `actions[]` (`SpawnedEntity::QueuedActionCount()`) instead of storing a
+  second number that must be updated at every push and at each of the five auto-clear sites in
+  `MapEntitySpawn.cpp` — a derived count cannot disagree with the queue it describes;
+- **D-2 became visible, which is the payoff.** A derived count cannot exceed 4 because our queue
+  cannot; the shipped `mbr_0x10` grows past one block. So a parity diff showing shipped `q>4` against
+  our `q=4` is deviation D-2 *firing* — a dropped order — rather than a digest artifact. That is the
+  same quantity T-034's R3 reads live (`Entity+0x314`), so the digest row and the debugger row now
+  measure one thing with one name.
+
+The companion field rename in the same commit: `noTurn0x1E4` → `flag0x1E4`, `unsigned char` →
+`unsigned int`. `mbr_0x1e4` is size 4 and its *meaning* is unresolved (its readers gate per-map entity
+counts at `0x54bc3a`), so the port keeps a neutral name and the question stays on the board instead of
+being answered by a field name.
 
 ## What the digest found on its first run (routed, not fixed here)
 

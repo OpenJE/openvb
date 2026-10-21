@@ -42,11 +42,16 @@ namespace F3 {
 			fprintf( f,
 				"# SIM-DIGEST v1 include=frame clockDelta ents <eN=name,pos,yaw,hp,st,ak> "
 				"pathJobs turns turnOrder draws\n"
-				"# entity-fields=name pos[3] yaw hp=cur/max st=entityState,moving,busy,acted "
+				"# entity-fields=name pos[3] yaw hp=cur/max st=entityState,moving,acted q=QUEUED ACTION "
+				"COUNT (shipped Entity+0x314, the action deque's ELEMENT COUNT - ++ at 0x54ea71, -- at "
+				"0x54b637/0x54b672, never a 0/1 store; our side derives it from actions[] so it can be "
+				"at most 4, and a shipped q above 4 beside our q=4 is deviation D-2, i.e. a DROPPED "
+				"ORDER, not a digest bug - T-039 verdict, harness item 22; it is printed as a COUNT and "
+				"was never a busy flag, which is why it left the st= triple) "
 				"ak=ACTION CLASS NAMES: our side maps port kind->class in code, the original side maps "
 				"[action+0x00] vftptr->class via artifacts/F3.json, UNKNOWN_VT=<ea> when unresolved and "
 				"those are counted, never named | cap %d entities, excess -> entsMore=1\n"
-				"# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/ak pathJobs turns turnOrder draws | "
+				"# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/q/ak pathJobs turns turnOrder draws | "
 				"CONTEXT(after ' ctx:')=tickMs clock (ABSOLUTE) - printed, captured, NOT hashed: uptime and the "
 				"shipped first-Update leap make both incomparable across processes, so the digest carries "
 				"clockDelta (seconds elapsed since frame 0) as the comparable axis instead; promote a "
@@ -173,8 +178,13 @@ namespace F3 {
 				             (double)e->pos[0], (double)e->pos[1], (double)e->pos[2] );
 				n = Append( line, cap, n, ",yaw=%.2f", (double)e->yaw );
 				n = Append( line, cap, n, ",hp=%d/%d", e->statCur, e->statMax );
-				n = Append( line, cap, n, ",st=%d,%d,%d,%d", (int)e->entityState,
-				             (int)e->movingFlag, (int)e->busy0x314, (int)e->actedLatch0x319 );
+				n = Append( line, cap, n, ",st=%d,%d,%d", (int)e->entityState,
+				             (int)e->movingFlag, (int)e->actedLatch0x319 );
+				// Queue DEPTH, not a boolean. T-039: shipped Entity+0x314 is the action deque's element
+				// count (writers are ++/--), so printing it inside st= as if it were "busy" made a
+				// HASHED field mean something it does not - and would have hidden the only number
+				// that shows deviation D-2 firing (a shipped depth above our 4-slot block).
+				n = Append( line, cap, n, ",q=%u", e->QueuedActionCount() );
 				n = Append( line, cap, n, ",ak=%s/%s/%s/%s",
 				             ActionKindName( e->actions[0].kind ), ActionKindName( e->actions[1].kind ),
 				             ActionKindName( e->actions[2].kind ), ActionKindName( e->actions[3].kind ) );

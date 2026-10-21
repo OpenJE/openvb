@@ -37,6 +37,49 @@ original appends blocks; when our 4 slots are full the seam returns 0 instead of
 deviation **D-2**. Refusing is correct behaviour for the port (a dropped order is not), and the test
 asserts the refusal rather than the silent loss.
 
+### T-039: `Entity+0x314` is THIS DEQUE'S LIVE COUNT — not a busy flag, never was
+
+The port declared `unsigned char busy0x314` and T-011 was about to build the turn gate
+`+0x1E4 == 0 || +0x314 != 0` on it as a boolean. The DB types `Entity::mbr_0x314` as **size 4**, and the
+field is the deque's own `mbr_0x10` (`0x304 + 0x10 = 0x314`). The writers settle it:
+
+| EA | form | what it is |
+|---|---|---|
+| `0x54ea71` | **`++this->mbr_0x10`** | the push_back that funnel `0x55072e` calls — appends at `head + count`, then count++ |
+| `0x54b637`, `0x54b672` | **`--count`, store** | `cls_0x54b5c0::meth_0x54b5c0`, the erase that walks the deque (both deques use it) |
+| `0x5515e6` | `= 0` | `Entity::ctor_0x5513a0` |
+
+A `++`/`--` pair on a 4-byte field with a zero-init is a **count**. There is no `mov reg, 0/1` writer
+anywhere in the usage set. The readers say the same thing:
+
+- `Entity::virt_meth_0x4084c0` is *one line*: `return Entity+0x314 == 0;` — an "is my queue empty" predicate;
+- the pump `Entity::virt_meth_0x54c570` bounds its action loop by `head != head + count` (0x54c77c/0x54c788),
+  and `meth_0x54c440` does the same at 0x54c447/0x54c4a0 before deleting the head action;
+- **the gate readers the coordinator pointed at are readers, not writers**: `0x54ab30`
+  (`virt_meth_0x54ab00`) and `0x54ab80` (`virt_meth_0x54ab50`) both *test* `+0x314`, and they test it
+  **beside `mbr_0x2f0`** — which is the live count of a *second* deque of the same 20-byte shape at
+  `Entity+0x2E0`. So that pair asks "does this entity have anything queued in either list".
+
+⇒ **T-011 step 3's second term means "has queued actions"**, and the byte model was wrong twice: one
+byte cannot hold a depth (256 aliases to 0, i.e. *idle*), and a non-zero test on it silently collapses
+"1 pending order" and "4 pending orders" into the same value.
+
+`Entity+0x1E4` was resized in the same edit (`mbr_0x1e4`, **size 4**, ctor `= 0` at `0x55147b`, unpacked
+from the entity record at `0x54e739`) and renamed `flag0x1E4`: its readers gate **map-membership**
+bookkeeping (`0x54bc3a` guards `--*(oldMap+280)` / `++*(newMap+280)`; `0x54947e` bails out of a movement
+update when it is 0), so the old name `noTurn0x1E4` asserted a meaning the evidence does not support.
+**What it means is still an open question and T-011 must not pick one** — the shape of the shipped test
+is all the port may mirror until a read or a record-format doc settles it.
+
+**PORT CHOICE (stated, not hidden):** the count is **derived** from `actions[]`
+(`SpawnedEntity::QueuedActionCount()`) rather than stored beside it. The shipped container keeps its own
+counter because it is a real unbounded deque; our `actions[4]` is the only queue storage we have, so a
+second number maintained at every push *and* at every one of the five auto-clear sites in
+`MapEntitySpawn.cpp` could only drift from the slots it claims to count. Consequence for **D-2**: a
+derived count cannot exceed 4 because our queue cannot, while the shipped `mbr_0x10` grows past one
+block — so in a parity diff, **shipped `q>4` beside our `q=4` is deviation D-2 firing (a dropped order),
+not a digest bug.** That is why `SimDigest` now prints `q=` as its own field.
+
 ### The owner back-link
 
 `*(param_1 + 20) = this` is unconditional and type-free: every shipped action class carries the owner at

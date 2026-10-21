@@ -36,7 +36,12 @@ than invented. This task closes that, plus the join path, using only raw-verifie
   called-shot attack the part comes from `this+0x78`, and otherwise from the per-volley record —
   T-011 must not assume the action carries one scalar part for the whole series.
 - Turn protocol fields already exist on `SpawnedEntity`: `frameDt0x300`, `actedLatch0x319`,
-  `turnDeadline0x29C`, `noTurn0x1E4`, `busy0x314` (cited to the 0x5A94A0 decompile).
+  `turnDeadline0x29C`, `flag0x1E4` (T-039: DB size 4, meaning OPEN — do not rename it after a guess),
+  and the queue depth, which is **derived**: `SpawnedEntity::QueuedActionCount()`. **T-039 settled step
+  3's second term:** `+0x314` is the action deque's ELEMENT COUNT (`++` at 0x54ea71 via the funnel push,
+  `--` at 0x54b637/0x54b672 on erase, `virt_meth_0x4084c0` returns `+0x314 == 0`), so
+  `+0x1E4 == 0 || +0x314 != 0` at 0x5a95c1 dispatches when the entity **has queued actions** — NOT "is
+  busy". Mirror that test; cite the writer EAs, not the reader EAs.
 - Gate interlock is live: `World::CombatTick` runs before `ProcessJobs` (0x545E0D/0x545E18) and the
   step-5 entity loop is skipped when `CombatMidTurn()` (0x545E23).
 

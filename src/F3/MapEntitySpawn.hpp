@@ -35,7 +35,7 @@ namespace F3 {
 		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
 		              queuedAnimEvent(0), lastHitVeg(0),
 		              frameDt0x300(0), actedLatch0x319(0), turnDeadline0x29C(0),
-		              noTurn0x1E4(0), busy0x314(0),
+		              flag0x1E4(0),
 		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
@@ -63,9 +63,36 @@ namespace F3 {
 		int   frameDt0x300;     // Entity+0x300: per-frame dt written by TurnPrep (0x549090)
 		unsigned char actedLatch0x319; // Entity+0x319: per-frame "updated" latch, cleared by
 		                       // TurnPrep, checked by the combat manager (0x5A955D)
-		int   turnDeadline0x29C; // Entity+0x29C: turn deadline in clock-seconds
-		unsigned char noTurn0x1E4;   // Entity+0x1E4: skip-turn flag (0x5A95C1)
-		unsigned char busy0x314;     // Entity+0x314: second gate term (0x5A95BF read as +788)
+		int   turnDeadline0x29C; // Entity+0x29C: turn deadline in clock-seconds (DB size 4)
+		// Entity+0x1E4: DB `mbr_0x1e4` is SIZE 4, so a byte model was wrong whatever it means -
+		// and the old name `noTurn0x1E4` asserted a reading the evidence does not support. It is
+		// unpacked from the entity record at 0x54e739 (`Entity::UnpackState_0x54e690`), defaults
+		// 0 in the ctor at 0x55147b, and both readers gate MAP-MEMBERSHIP bookkeeping: 0x54bc3a
+		// guards `--*(oldMap+280)` / `++*(newMap+280)` (per-map entity counts) and 0x54947e bails
+		// out of a movement/path update when it is zero. The turn gate at 0x5a95c1 tests it as a
+		// DWORD (`!*(v11+484)`; 484 = 0x1E4). What it MEANS is a routed question (T-011 step 3),
+		// not a name to invent. See docs/f3/EntityActionQueueSeam.md.
+		unsigned int flag0x1E4;
+		// Entity+0x314 is NOT a busy flag and never was: it is the ELEMENT COUNT of the block
+		// deque embedded at Entity+0x304 (DB `cls_0x54e070`, size 20: mbr_0x4 = block-array
+		// pointer, mbr_0x8 = block capacity, mbr_0xc = slot/head, mbr_0x10 = count, and
+		// 0x304 + 0x10 = 0x314). Its writers are increments/decrements, never 0/1 stores:
+		//   ++     0x54ea71           cls_0x54e070::meth_0x54ea00 - the push_back funnel 0x55072e calls
+		//   --     0x54b637/0x54b672  cls_0x54b5c0::meth_0x54b5c0 - the erase/pop that walks it
+		//   = 0    0x5515e6           Entity::ctor_0x5513a0
+		// Its readers are all `!= 0` tests (0x4084c0 literally RETURNS *[+0x314] == 0; the drain
+		// loops at 0x54c447/0x54c788 bound themselves by it), so the shipped gate
+		// `+0x1E4 == 0 || +0x314 != 0` (0x5a95c1) reads "...or the entity HAS ACTIONS QUEUED",
+		// not "...or the entity is busy". (T-039 verdict; harness item 22.)
+		// PORT CHOICE, stated rather than hidden: the count is DERIVED from `actions[]`, not
+		// stored beside it. The shipped container keeps its own counter because it is a real
+		// deque; our actions[4] is the only queue storage we have, so a second number that must
+		// be updated at every push and at every one of the five auto-clear sites in
+		// MapEntitySpawn.cpp can only ever DRIFT from the slots it claims to count.
+		// CONSEQUENCE FOR D-2: a derived count cannot exceed 4 because our queue cannot, while
+		// the shipped mbr_0x10 grows past one block - so a shipped q>4 beside our q=4 in a
+		// digest diff is not a digest bug, it is deviation D-2 (a dropped order) becoming
+		// VISIBLE. That is the whole reason T-034 R3 reads this dword.
 		int   entityState;      // Entity+0x1E0 semantics (pump dispatch, session-11 table)
 		unsigned char pumpEnabled;  // Entity+0x3A0 (pump master gate, read at 0x549157 region)
 		unsigned char worldLinked;  // Entity+0x1BC (world-link; gates DEAD-state pumping)
@@ -102,6 +129,14 @@ namespace F3 {
 		struct ActionEntry { int kind; void* action; };   // kind 0 empty, 1 move, 2 wait,
 		                                                   // 3 operate-door, 4 attack, 5 die
 		ActionEntry actions[4];
+
+		// The mirror of shipped Entity+0x314 (see the field note above): how many action slots
+		// are live. Inline and DERIVED, so it cannot disagree with the queue it counts.
+		unsigned int QueuedActionCount() const {
+			unsigned int n = 0;
+			for ( int i = 0; i < 4; ++i ) { if ( actions[ i ].kind != 0 ) { ++n; } }
+			return n;
+		}
 	};
 
 	enum {
