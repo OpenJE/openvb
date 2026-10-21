@@ -24,14 +24,24 @@ tooling changed tier definitions, not the IDB — investigate before celebrating
 | 0x4c0190 | 6 | Gfx_Camera(300B) @+0x30, size 640 | **MINT `JE::GfxCameraHolder`** — inline camera by value (76 members say it owns more than the camera; name covers the embed only) |
 | 0x4cb300 / 0x4d4650 | 5 / 1 | **identical shape**: size 152, G3D_Transform(120B) @+0x20 | **MINT PAIRED `JE::G3DTransformHolder` + suffix by address** ONLY IF byte-diff says distinct classes — same-size/same-embed pair is exactly SwiftRaven's clone pattern; QuickQuartz: check the methods byte-identical BEFORE two names (if clones, ONE name + clone note) |
 | 0x40a220 / 0x4cb0a0 | 12 / 1 | std::basic_streambuf<char>(96B) ×2 aliased @+0x8/+0xc / std::strstreambuf(96B) @+0xc | **NAME-BLOCKED, escalation**: two streambuf-bearing classes (sizes 156/136) are almost certainly two instantiations/views of ONE strstream-ish type — IDA-split suspicion matches the batch-1 "171 tail-alias artifact class". Merge-check first; then mint `JE::StrStream` once, not twice |
-| 0x558740 / 0x5b6400 / 0x4395a0 / 0x5b4eb0 / 0x5b7c10 | 12/5/1/1/1 = 20 | **CEngineInterface(49B) value-embed at NON-ZERO offset (+0xc4/+0x3c/+0x8/+0xc/+0x18)** | **KEY FINDING — the embed is a BASE SUBOBJECT, not a member**: 49B at nonzero offset = MSVC derived-class layout. These 5 are **classes DERIVED FROM the shipped `CEngineInterface` base**; minting the base name onto a derived would be the batch's worst poison. Verdict: STAY ANONYMOUS as names, but each gains a DB annotation `derived@CEngineInterface` — that is the honest artifact. Derived identity (device/GUI subsystem role) needs vftable mirrors — batch 3 candidate with openje's `CEngineInterface.hpp` cross-check |
+| 0x558740 / 0x5b6400 / 0x4395a0 / 0x5b4eb0 / 0x5b7c10 | 12/5/1/1/1 = 20 | **CEngineInterface(49B) value-embed at NON-ZERO offset (+0xc4/+0x3c/+0x8/+0xc/+0x18)** | ~~the embed is a BASE SUBOBJECT~~ **CORRECTED PRE-MINT by the R36-e gate (SwiftRaven T-036, 38118cb): >=3 embedders ⇒ it is a MEMBER TYPE, not the class.** Five embedders of a 49B value makes composition the DEFAULT reading; base-subobject survives only as the minority alternative (nonzero offsets ARE legal MSVC base placement in non-primary inheritance, but that is now a hypothesis needing vbptr-adjacency/ctor evidence, not a finding). Verdict unchanged and strengthened: STAY ANONYMOUS; annotation **`embeds@CEngineInterface`** (was `derived@`), name the base onto NONE of them; distinguishing embed-vs-base is batch-3 work with openje's `CEngineInterface.hpp` |
 
 ## What the batch actually yields (pre-registered again)
 Mints available now: **3–5 names / 12–16 fns** (HotKeyTable, MeshHolder, CameraHolder, Transform pair-or-one);
 **83 fns (63% of the self-namers) are NOT nameable** via this join — the refuted aggregate stays fog.
-The 13-cheap-wins framing from the adjudication was directionally right but the win is the **DERIVATION
-DISCOVERY** (5 CEngineInterface derived classes now known-derived — that propagates into every future
-decompile of their methods) more than the tier number. A census that prints how it knows, applied to names.
+The 13-cheap-wins framing was directionally right, but the win is the **COMPOSITE-EMBED DISCOVERY** — five
+classes carrying a 49B CEngineInterface subobject at nonzero offsets is a type-level fact clone spread
+cannot manufacture (R36: 12 of 14 self-namers show 100% body evidence, ratios 0.07–1.00 — the evidence
+class is metric-invariant, unlike contiguity). Whether that fact says composition or inheritance, it
+propagates into every decompile of their methods; the R36-e correction above is the honest form of the
+claim. A census that prints how it knows, applied to names.
+- Small-n per T-036: 7 of my 13 carry <=2 fns (one body of evidence); their wider 14-class join count
+  differs from mine by one — the join is route-dependent and I state mine as `DB member-table join,
+  anonymous cls_* keys only`, not as THE number.
+- Export rule inherited: **no route-A tier movement exists until IDB rename AND F3.json re-export both
+  land**; cls_0x49c610=JE::ResourceSystem with ZERO occurrences in F3.json proves the export can omit
+  named classes outright — absence-in-export is not absence-in-binary, and my delta report will name
+  the stale route rather than averaging.
 
 ## Apply handoff (QuickQuartz, rename-only scope)
 Mintable strings + keywords above; two PRE-CHECKS gate the mints: (1) byte-identical test on the
