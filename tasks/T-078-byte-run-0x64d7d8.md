@@ -49,3 +49,15 @@ T-072 §6 F3; GUILoadingRecon §5 + §2 (Manager+0x70); gcre doc line ~50; harne
 ## Notes
 - Claim: SwiftMoon, this file, reserved; README flip relayed to coordinator (table is
   coordinator-only per new law).
+
+## Notes (SwiftMoon, research-complete 2026-10-21)
+VERDICT: non-contradiction. 0x64D7D8 = the image-wide POOLED EMPTY-STRING `""` (1 NUL + 7 alignment
+bytes, .rdata READONLY; 357 aligned referrers, ALL address-taking — zero content-value loads).
+G5 CLOSED: Manager reset assigns `Manager+0x70 := ""` (0x4b4ad7–0x4b4af2 strlen+assign via 0x401bd0);
+"did not resolve to a clean string" was wrong-as-reason (empty ≠ absent). gcre §1.2 right in
+mechanism+address, token content = "" (failsafe mode is NAMELESS); its ctor cross-cite 0x40d286
+is the rep-stos default block (ctor body has ZERO 0x64D7D8 refs) — the ctor-chain "" seed is
+0x40ee89 via the 0x40d300 sub-object thunk. v15=97/v16=888 seeds re-confirmed at 0x40daae/0x40db03.
+Append-ready disposition table in §4 of the deliverable. Item-8c mirror caution banked (§5).
+Deliverable `discoveries/2025-10-21-t078-byte-run-0x64d7d8.md` LEFT DIRTY. Read-only honored:
+image + objdump only, zero IDB, zero doc/source edits.
