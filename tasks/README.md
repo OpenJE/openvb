@@ -141,7 +141,7 @@ row; A keeps editorial merge rights).
 | T-031 | Parity oracle — grammar landed (`d43033b`); synthetic `orig-digest.sh` next, real values gated on T-034 | open | HappyKnight (secondary) |
 
 
-| T-032 | **EA→document index — DONE: `tools/ea-index.py` + `artifacts/ea-index.tsv`, 137 docs / 5,258 EAs / 7,778 mentions, 720,346-pair recall audit 0 silent misses, 756 refused-and-counted. Four silent-wrongness modes found and fixed (see doc)** | done | SwiftRaven |
+| T-032 | EA→document index — **DONE (6bde789)**: 137 docs / 5,258 EAs / 7,778 mentions, 0 silent misses in a 720k-pair recall audit, refusals counted by category | done | SwiftRaven |
 | T-033 | Class-identity batch queue — decisions audited; **apply re-granted to RedXenon** (QuickQuartz absent); route-A delta blocked by T-040 | in-progress | RedXenon |
 | T-034 | Lockstep reads — **UNBLOCKED on an alternate port (31437)**; ImHex left alone, IDB writes via shared MCP | open | RedXenon |
 
@@ -149,6 +149,7 @@ row; A keeps editorial merge rights).
 | T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |
 | T-040 | **`artifacts/F3.json` has no regeneration path** — four docs require an export re-run nobody can perform; blocks T-033 acceptance | open | SwiftRaven (after T-032) |
 | T-041 | What is `Entity+0x1E4` (size 4, unpacked from the record, readers gate map membership) — name demoted, semantics open | open | unassigned |
+
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
 | T-036 | Helper-theft taxonomy — **DONE (38118cb)**: the 998 was two-route arithmetic; artifact floor 221 (8.9%); T-029 denominator understates | done | SwiftRaven |

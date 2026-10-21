@@ -72,3 +72,25 @@ now three levels:
 | `code` (build-affecting) | cmake/devenv/`src/F3.cpp` | 2 lanes max, coordinator owns changefiles |
 | `rename-only` | class **keys** in the IDB/`F3.json` export; methods excluded | one lane at a time, granted by row, audit trail = the decision doc |
 | read-only | everything else | default |
+
+
+## Recall before research: `tools/ea-index.py` is step 1 of any statics question
+
+`T-032` (`6bde789`) makes the corpus addressable — **137 documents, 5,258 EAs, 7,778 mentions**, and a full recall audit
+(720,346 pairs) found **zero silent misses**. That removes the cost this project kept paying: re-deriving something a
+lane already answered in a file nobody could find.
+
+Standing rule for every lane picking up a statics row:
+
+    python3 tools/ea-index.py --query 0x413310     # what do we already say about this EA?
+    python3 tools/ea-index.py --check              # is the index current (exit 2 = regenerate)
+
+and for whoever edits `discoveries/`: regenerate the index in the **same** commit, because a growing corpus with a
+stale index quietly reintroduces the exact blindness the tool exists to remove.
+
+What the index does **not** do, and lanes should not ask it to: it records *where* an EA is mentioned, not whether the
+mention is correct or still current; it covers `discoveries/` only — not `tasks/`, `src/`, or `docs/f3/`; and it
+**refuses and counts** rather than guessing (`vft+0x` slot offsets relative to unresolvable tables, masked forms like
+`0x401xxx`, tokens outside the image span, bare all-digit hex that may be a decimal count, and five ambiguous `+0x`
+uses that mix struct offsets with globals). A `NO RECORD` at exit 1 means "nothing in discoveries/", which is a real
+answer and not the same thing as "unknown".
