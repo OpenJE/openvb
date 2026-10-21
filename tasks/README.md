@@ -136,12 +136,13 @@ row; A keeps editorial merge rights).
 | T-025 | Shipped-data census generator -> committed greppable tables | open | FastArrow (research) |
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open | implementer-B (YoungStorm) |
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open | implementer-B (YoungStorm) |
-| T-028 | Scripted input driver — **recon DONE** (two front doors; FIFO carries no gameplay verbs; orders are Action objects); driver half gated on T-030 + T-026 | in-progress | HappyWolf (research) |
+| T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
 | T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
 | T-031 | **Parity oracle** — diff the ORIGINAL's state against ours (highest leverage on board) | open | unassigned (B or IronStorm) |
 | T-032 | EA→document index: make 130 docs / ~5,100 EAs addressable | open | unassigned (offline) |
 | T-033 | **Class-identity batch queue** — batch-1 decisions written; tier prediction 26.4%→~23% pre-registered; single-writer split | in-progress | IronStorm (applies) + HappyWolf (decides) |
 | T-034 | **Lockstep read set on the original `F3.exe`** (6 reads, no code) — decides D-2's severity | open | IronLion |
+| T-035 | Two different `F3::GameActionWait` definitions — latent ODR collision; **ruling: keep both, rename the shipped-layout one** | open | RedXenon (granted) |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
 | T-004 | Test coverage: EMAP v5 fog/ambient byte stores | done | implementer-B |
 
