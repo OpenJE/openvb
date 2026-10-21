@@ -133,7 +133,7 @@ row; A keeps editorial merge rights).
 | T-022 | Assert every "verbatim shipped" string is byte-identical in F3.exe | done | implementer-C (UltraBear) |
 | T-023 | Cross-TU compile probe as a command (verify a rename with no linker) | done | implementer-C (UltraBear) |
 | T-024 | Gate integrity: revision/payload stamp + per-suite minimum assertion counts | open | coordinator (NiceFalcon) |
-| T-025 | Shipped-data census generator -> committed greppable tables | open | FastArrow (research) |
+| T-025 | Shipped-data census generator — must **print which operand-mapping version** it used (B11 vs T-019 stage 1) | open | **UNCLAIMED** — moves only by row edit + dispatch |
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open | implementer-B (YoungStorm) |
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open | implementer-B (YoungStorm) |
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
