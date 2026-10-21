@@ -59,9 +59,12 @@ Consequences:
 
 * The **year never enters `clock`**. `GameWorld::ClockSeconds()` = `m_clock->TotalSeconds()`
   (`src/F3/GameWorld.cpp:110`) mirrors shipped `Gregorian+0x34`, and `+0x34` is 0 at init in the
-  original too. The `clock=29242` frame-0 leap is caused by `[World+0x48]=0` vs an absolute
-  `timeGetTime` delta (`0x5466b5` + `Update_0x544a90`), which we already mirror — see
-  `docs/f3/WorldTickPump.md`. **Baseline shared, and the year adds nothing to it.**
+  original too — so the **year** adds nothing to `clock`, and that half of the T-038 verdict stands.
+  What T-045 did overturn is the *other* half of the same paragraph: the `clock=29242` frame-0 value is not
+  a shared shipped leap. The field `Update` subtracts is the *seeded* stamp (primary `+0x4C`, once the
+  mixin base is applied), and `JE_TickMilliseconds_0x56af50` returns an accumulated session delta rather
+  than `timeGetTime()`, so the original cannot produce that value at all. See
+  `docs/f3/WorldTickPump.md`; the leap is a **port artifact** and is not this row's to fix.
 * The date *is* real state (year/month/day/hour/min/sec on the clock object), just not state anything
   in the sim reads. So it must not enter the hashed set.
 
@@ -72,7 +75,7 @@ Consequences:
 `entity+0x1DC` (the script ref key) and `entity+0x15C`, then the map list at `+0xE4`.
 **`+0x14..+0x28` is not packed.** So the calendar is re-seeded from the INI every run and does not
 survive a save; the *tick stamps* do. That is worth remembering for T-031's capture: a restored save
-carries `+0x44/+0x48` (which is exactly the pair that produces the frame-0 leap) but re-reads 2253
+carries `+0x44/+0x48` but re-reads 2253
 from disk. Also note `PackState` requires state 3 (`0x545934`, fatal otherwise) — same gate shape as
 the `UnpackState() method may only be called` guard at `0x54e6b6`.
 

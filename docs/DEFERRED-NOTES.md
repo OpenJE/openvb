@@ -558,10 +558,17 @@ reads `[World] Year/Month/Day/Hour/Minute/Second` + `Seconds Per Round` out of t
 `World+0x14..+0x28` / `+0x40`, and `JE::Gregorian::ctor_0x544950` (`0x54497d`) copies those 24 bytes into
 the clock's running fields. `Gregorian+0x34 totalSeconds` — the quantity the digest prints as `clock` —
 is set to **0** at `0x5a375a`, and every catch-up branch in `virt_meth_0x5a3740` is dead at construction
-because seed == running. `PackState_545930` persists `+0x44/+0x48` (the tick stamps) but **not** the
+because seed == running. `PackState_0x545930` persists `+0x44/+0x48` (the tick pair) but **not** the
 calendar block, so the date is re-read from disk every run. Therefore: `clock`/`clockDelta` stay
-compared, no `year` field belongs in the hashed set, and the frame-0 leap story
-(`docs/f3/WorldTickPump.md`) stands unchanged. Residual inference: `param_1 == &World+0x14` is proved by
+compared, no `year` field belongs in the hashed set. **T-045 later overturned the other half of what this
+row asserted:** the frame-0 `clock=29242` is NOT a shared shipped leap — `Update` is entered with
+`this = &World[4]` (proven twice: its `+0x34` state read is `ChangeState`'s `+0x38`, and `Tick_0x544b30`
+carries an explicit `mov edx,[eax-0Ch]`), so the field it subtracts is primary `+0x4C`, which
+`0x5466bd` **seeds**; and `JE_TickMilliseconds_0x56af50` returns an accumulated session delta
+(`0x56af50 mov eax, [0x70c2b8]`, written only by `F3::ProcessMessagesAndUpdateTime`, with
+`0x70c2bc` seeded in `WinMain` at `0x56b8aa`) — not `timeGetTime()`. The leap is a port artifact of
+`src/F3.cpp:786` returning raw `timeGetTime()` and of our `Initialize` never stamping the field. The year
+conclusion above is unaffected. Residual inference: `param_1 == &World+0x14` is proved by
 shape only (six consecutive ints, identical `0,1,1,0,0,0` ctor defaults, and zero direct readers of
 `World+0x14`), not by resolving the thunk's `-0x230 / -0x154` arithmetic.
 
