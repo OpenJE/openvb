@@ -1,6 +1,6 @@
 ---
 status: in-progress
-assignee: FastArrow (research)
+assignee: PureKnight `01a15cb7` (was FastArrow, departed)
 ---
 
 # T-015 — GWAM attack-mode record map

@@ -1,6 +1,6 @@
 ---
-status: in-progress
-assignee: HappyWolf (research)
+status: open
+assignee: PureKnight `01a15cb7` (queued 3rd; was HappyWolf, departed)
 ---
 
 # T-017 — F3 UI command surface: Command* -> window slot / root-Open mapping

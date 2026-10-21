@@ -1,6 +1,6 @@
 ---
 status: in-progress
-assignee: IronStorm (research)
+assignee: PureKnight `01a15cb7` (was IronStorm, departed)
 ---
 
 # T-018 — One data read: a shipped helmet record's `GameItem+0xA8` required-slot vector
