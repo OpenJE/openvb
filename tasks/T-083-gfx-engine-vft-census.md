@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: SwiftMoon (dispatched by LoudDragon `01a15f82`, 2026-10-21 — the anatomy twin of your errata sweep)
+status: in-progress
+assignee: SwiftMoon `01a16092` (dispatched by LoudDragon `01a15f82`, 2026-10-21 — the anatomy twin of your errata sweep)
 type: research (read-only on ida_original_f3, offline-capable; discoveries DIRTY-until-checkpoint)
 depends: T-007 G2 (slots 49/54/55 texture delegation), T-061/062 (cursor chain), b5/0x5c0c30 Gfx_D3D-create, T-045 (slot 6 tick), T-057 (slot-manager 0x50b560)
 ---
