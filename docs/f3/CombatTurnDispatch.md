@@ -109,6 +109,24 @@ re-entering call site. Whether the entity's dispatch (`F3::ServerUpdate` at `0x5
 `vft+0` of the world-server getter chain at `0x5a9596`) re-enters the manager is the routed
 lockstep observation; every other link is now cited.
 
+**Owner of +8: MANAGER, confirmed two ways after a coordinator retraction scare (same wave).** I
+sent a message "correcting" +8 to an ENTITY byte; that correction was wrong and I reverted it from
+the doc the same hour. The base is settled by the DB, not by decompiler prose: `cls_0x5a9330` (size
+36, the manager) registers `meth_0x5a94a0` as its own method, and `mbr_0x8` (size 1) has its usage
+list closed at exactly `0x5a94a3` test / `0x5a94ab` set / `0x5a9552` clear. Entity cannot own it —
+the whole walk indexes `this+8/12/16/20/28/32`, which are the manager's node/cursor/count fields.
+So the port's `maintaining_` models the shipped field, and T-048 must NOT invent an entity-side
+reentry byte. The mechanism story is unchanged: the nested `meth_0x5a94a0` skips maintenance,
+sees the latch the entity's own update raised, and advances.
+
+**Process note for the next reader of this page (and for the base-claim rule, harness item 31's
+third instance):** my "confirmed two ways" was ONE way plus a guess. The DB evidence
+(class registration + member usage closure) is decisive; the second "confirmation" I cited —
+`F3::ServerUpdate(this: *(this->mbr_0xc + 8), ...)` at 0x5a953b — proves nothing about the base of
+the guard byte: `mbr_0xc` is the walk cursor and `+8` there is that NODE's entity pointer, not
+`entity+8`. Do not reuse that argument; the claim stands on the DB alone, which is why it survived
+being asserted in three directions inside one hour.
+
 ## Join, flush, and the order that makes them safe
 
 * `Entity::JoinCombat` **0x5490b0**: throws `"Invalid attempt to retrieve world server instance."`
