@@ -1,6 +1,6 @@
 ---
-status: in-progress
-assignee: GoldYak `01a15f83` (batch 5 AUTHORIZED by LoudDragon same-session follow-up after batch-4 checkpoint `79d3877`; batch-4 DONE — see Results-batch-4. Prior grant note retained: apply grant follows whoever can reach the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path)).
+status: open
+assignee: none (batch 5 DONE 2025-10-21 by GoldYak `01a15f83` — see Results-batch-5; batch 6 unowned). Prior grant note retained: apply grant follows whoever can reach the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path).
 depends: T-029 (the census that produced this queue)
 ---
 
@@ -157,6 +157,25 @@ gone and the installed OOAnalyzer cannot export facts. Deltas are therefore meas
 > vs pre-b2: 26.40% → 23.48% (−256 fns = b2 24 + b3 192 + b4 40; no averaging). Save discipline now
 > proven on-disk: mtime 13:13→14:03, three save_database(True) checkpoints, post-save dumps match.**
 > Batch-5 leads in ledger §7.
+
+## Results — batch 5 APPLIED 2025-10-21 (GoldYak; ledger `discoveries/2025-10-21-t033-batch5-ledger.md`)
+> 18 fns retired, 18/18 ok — **two positive joins, one evidenced negative, zero padding.** (a)
+> `cls_0x490060→JE::Gfx_D3D` (7): singleton join — `Gfx_Engine::virt_meth_0x5c0c30` constructs Gfx_D3D at
+> `&dword_7082F8` and EVERY caller of the cls's members (170+ sites: all Gfx_RS_*, Gfx_Engine render passes,
+> ParticleSystem, Octree2Gfx, AnimMeshInstance) passes that exact address as `this`; band now 20 fns.
+> (b) `cls_0x4a5be0→JE::Gfx_AnimMeshInstance` (11 of 12; 0x548d10 tail-alias stays labelled): shipped string
+> `Gfx_AnimMeshInstance::RayIntersection - No collision mesh and/or mesh binding!` names the owner, the
+> already-named RayIntersection/RenderOBB sit INSIDE the band, ctor/renders share the same Granny bone-array
+> fields, and `JE::VFX_Model` embeds the object at +0x200 — membership proof, satisfying the dispatch's
+> player-vs-manager condition; slot-number claims avoided (comment says "SetTexture-shaped, not asserted").
+> (c) coordinator-signed restores (T2-neutral): 0x46f250/0x46f260 back to `JE::World::GetWorldSimSeconds_0x46f250`/
+> `SetWorldSimSeconds_0x46f260`, name+EA pairs now self-serve in the b5 ledger §lost-unledgered resolution.
+> NEGATIVE: `cls_0x445350` re-checked for the required join — zero external call sites AND zero vft slots →
+> stays escalated, commented (b6 needs indirect-flow analysis). `cls_0x490150` proven CONSUMER (calls
+> &dword_7082F8 members), not member — stays escalated. Registered escalations + vendor bands untouched.
+> **T2 2,084 (23.48%) → 2,066 (23.28%), −18 exactly predicted; cumulative vs pre-b2: 26.40% → 23.28%
+> (−274 = b2 24 + b3 192 + b4 40 + b5 18).** Saved 14:13, dump-verified disk==live. Batch-6 leads: b5 §5
+> (unnamed VFX_Model+0x200 host ctor_0x564ce0; byte_707CE4/707CE0/70838C/708394 singleton anchors unmined).
 
 ## Boundary
 Identity is a claim about the shipped binary, not about our port: nothing here changes `src/`. A class
