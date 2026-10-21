@@ -80,7 +80,7 @@ field rename can't desynchronise them because the contract line is in both files
 row's: one command prints `first divergence at line N, frame=M` against the original, and the tool is
 demonstrated to fail by corrupting one operand on our side and watching the diff name it.
 
-## 4b. `ak` — DECIDED (it was mine to decide, not to escalate)
+## 4b. `ak` — DECIDED, then IMPROVED by the coordinator's ruling
 
 I framed this as a two-option question and routed it to the coordinator. Their answer was better than
 either option and it exposes the flaw in my framing: **the choice was not between "map it" and "exclude
@@ -89,7 +89,15 @@ possible"** — and I had let the second become a TODO. Rule now recorded as har
 *when a field cannot be compared, decide whether the goal is a comparison now or a measurement later —
 and do not invent a mapping to make it comparable.*
 
-Decision, and it is buildable now and promotable later without re-running any debugger session:
+**Final ruling (mine to decide, better than my two options):** do NOT exclude `ak` and do NOT compare
+pointers — **compare CLASS NAMES**. Implemented in `src/F3/SimDigest.hpp` as `ActionKindName()` on our side;
+the original side maps `[action+0x00]` vftptr → class through `artifacts/F3.json` (R4b), printing
+`UNKNOWN_VT=<ea>` and COUNTING the unresolved instead of naming them. If the unresolved bucket turns out to
+contain every combat action, that is a finding about the DB, not about parity. Downgrade to
+`ak=EXCLUDED(reason=unmapped)` only if the vftptr turns out to need a second dereference (thunks) — the
+ruling explicitly forbids letting this become a mapping project.
+
+Buildable-now / promotable-later details:
 
 1. **Exclude `ak` from the comparison by default** and print the exclusion IN the file
    (`# EXCLUDE=ak:our kind tags vs their action-object pointers, no verified mapping`), with the reason

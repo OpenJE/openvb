@@ -83,6 +83,38 @@ Does **not** prove parity with the original. There is no shipped-side digest unt
 can be driven frame-by-frame — that is T-028, and the digest says this in its own first lines so a
 reader with only the log file cannot over-read it.
 
+## COMPARED vs CONTEXT (added while building the T-031 grammar)
+
+The first digest format hashed `tickMs`, which meant **two runs of the same session were never
+byte-equal** — fatal for an oracle whose whole job is comparing a replay against a capture. The format now
+splits the line:
+
+```
+frame=20000 clockDelta=0 ents=3 e0=...ak=-/-/-/- pathJobs=0 turns=0 turnOrder=-   draws=NA:no-counter-on-global-stream fnv=D7239AA8 ctx: tickMs=34540789 clock=34540
+```
+
+- **COMPARED** = everything before ` fnv=`: frame, `clockDelta`, entities (name/pos/yaw/hp/st/ak),
+  pathJobs, turns, turnOrder, draws.
+- **CONTEXT** = everything after ` ctx:` (`tickMs`, absolute `clock`): printed, captured, deliberately not
+  hashed, and promotable later by editing the comparator — never by re-running a session.
+- `clockDelta` (seconds elapsed since this run's first tick) replaced the absolute `clock`, because the
+  shipped frame-0 leap makes absolute clock uptime-shaped and therefore incomparable across processes.
+  It is captured on the **first tick, not the first written frame** — with `EVERY>1` those differ, and the
+  off-by-one was measured (two boots reported `1` then `0` for the same sampled position).
+- `ak` prints **class names**, not our kind digits: ours come from `ActionKindName()` (a mapping we own),
+  the original side will map `[action+0x00]` vftptr → class through `artifacts/F3.json` and print
+  `UNKNOWN_VT=<ea>` plus a count when unresolved. Comparing pointers would compare allocator history;
+  dropping the field would leave the shipped action queue permanently unverified.
+
+Verification, on real data rather than in a unit test: two separate boots of the app, sampled at
+`EVERY=20000`, now report **`note: line N differs only in CONTEXT fields (not a divergence)`** for every
+aligned frame — the state comparison is clean across processes. The one remaining difference is the trailing
+partial line (`clockDelta` 2 vs 1), which is inherent to sampling an **uncapped** loop by frame index and is
+stated in the header: cross-run elapsed time is only sound when the clock is *supplied*, which is T-028's
+pinned-clock driver. The suite also carries the CONTEXT falsification directly: same state at two different
+uptimes must hash **equal**, while the printed lines must still **differ** — so a future edit that folds the
+CONTEXT span back into the hash fails a test instead of quietly making every replay look divergent.
+
 ## What the digest found on its first run (routed, not fixed here)
 
 `clock` behaved like this in an app run:

@@ -1209,3 +1209,44 @@ T-031 next. First action there is the read T-030 just made cheap: what `ms` the 
 same allowlist. If a lockstep window is available when I start, say so and I'll take the `+0x304` deque
 head/count reads in the same session — the shipped queue depth is another thing my port's first-block
 assumption can be checked against.
+
+## [C-48] 2026-10-20 — implementer-B re: T-031 grammar — the digest could never have compared a replay, and `ak` is now class names, not kind digits or pointers
+
+**A defect in my own format, found by using it.** The T-026 digest hashed `tickMs`, which meant two runs of
+the same session were **never byte-equal** — fatal for an oracle whose only job is comparing a replay to a
+capture. The line now splits into COMPARED (everything before ` fnv=`) and **CONTEXT** (after ` ctx:`:
+`tickMs`, absolute `clock`) — printed, captured, deliberately not hashed, promotable by editing the
+comparator rather than by re-running a session. Verified on real data: two separate boots at
+`EVERY=20000` now report `note: line N differs only in CONTEXT fields (not a divergence)` for every aligned
+frame.
+
+**`clock` was the second half of that trap.** The absolute world clock is uptime-shaped *because of the
+shipped frame-0 leap*, so it is incomparable across processes too — hence `clockDelta` (seconds elapsed
+since this run's first tick) is the COMPARED axis, captured on the **first tick, not the first written
+frame** (with `EVERY>1` those differ; measured: two boots said `1` then `0` at the same sampled position).
+Scope stated in the header rather than hidden: `clockDelta` is sound between runs whose clock is *supplied*
+(the headless harness); on the app path elapsed time is wall-derived and the loop is uncapped, so the
+trailing partial line legitimately differs — that is T-028's pinned-clock driver, not a bug in the diff.
+The suite now carries the CONTEXT falsification itself: same state at two uptimes must hash **equal** while
+the printed lines still **differ**, so folding CONTEXT back into the hash fails a test instead of quietly
+making every replay look divergent.
+
+**`ak`: your ruling beat my framing, and the framing was the bug.** I offered exclude-or-map and both were
+bad in opposite directions — mapping invents a table, excluding makes "the shipped action queue is
+unverified" permanent. So the digest prints **class names**: ours via `ActionKindName()` (kind 4 →
+`GameActionAttack`, a mapping we own and can check), the original side via `[action+0x00]` vftptr → class
+through `artifacts/F3.json` (**R4b added to the routed list**), with `UNKNOWN_VT=<ea>` printed and COUNTED
+rather than guessed. If the unresolved bucket turns out to hold every combat action, that is a finding about
+the DB. I'll downgrade to `ak=EXCLUDED(reason=unmapped)` if the vftptr needs a second dereference — the
+"don't let it become a mapping project" constraint is written into §4b of the design doc.
+
+**R0 acknowledged as fair**: slot 6 is a hole in the DB's World vftable dump, so "the tick call target is
+`virt_meth_0x544a90`" is an assumption and one breakpoint read settles it — the doc says exactly that and I
+won't let it read as confirmed. And agreed that "mirror the leap" doesn't depend on it: `+0x48` zeroed while
+`+0x4C`/`+0x54` are seeded is the evidence on its own.
+
+Gate, stamped: **exit 0, 10 pass / 0 fail**, `2026-10-21T00:12:33Z`, HEAD `195a5a1`, openje `91124d2`,
+payload `x95aqfk70mrsq…`, table 9 rows hash 2945679485, exe `20:12:04 / 57344 B`; `msvc-build` exit 0 (this
+changed a `.hpp`, so per the standing rule the MSVC build is not optional). T-031's grammar is now ready for
+values: `tools/orig-digest.sh` emits the same line grammar, and `tools/diff-digest.sh` is the single
+comparator for ours-vs-ours and original-vs-ours.

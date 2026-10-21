@@ -40,11 +40,18 @@ namespace F3 {
 		// and `head -1` answers "what is in here" without reading the code.
 		inline void WriteHeader( FILE* f, const Sources& src ) {
 			fprintf( f,
-				"# SIM-DIGEST v1 include=frame tickMs clock ents <eN=name,pos,yaw,hp,st,ak> "
+				"# SIM-DIGEST v1 include=frame clockDelta ents <eN=name,pos,yaw,hp,st,ak> "
 				"pathJobs turns turnOrder draws\n"
 				"# entity-fields=name pos[3] yaw hp=cur/max st=entityState,moving,busy,acted "
-				"ak=action-kind x4 (cap %d, excess -> entsMore=1)\n"
-				"# caller-supplied=clock tickMs - a headless harness owns simulated time; the app "
+				"ak=ACTION CLASS NAMES: our side maps port kind->class in code, the original side maps "
+				"[action+0x00] vftptr->class via artifacts/F3.json, UNKNOWN_VT=<ea> when unresolved and "
+				"those are counted, never named | cap %d entities, excess -> entsMore=1\n"
+				"# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/ak pathJobs turns turnOrder draws | "
+				"CONTEXT(after ' ctx:')=tickMs clock (ABSOLUTE) - printed, captured, NOT hashed: uptime and the "
+				"shipped first-Update leap make both incomparable across processes, so the digest carries "
+				"clockDelta (seconds elapsed since frame 0) as the comparable axis instead; promote a "
+				"CONTEXT field in the comparator, never by "
+				"re-running the session | caller-supplied=clock tickMs - a headless harness owns simulated time; the app "
 				"path passes Host::TickMilliseconds (timeGetTime, machine uptime) and the world "
 				"clock Gregorian::TotalSeconds, which STARTS AT 0 and grows by Update(ms)-last "
 				"(mbr_0x48 initialises to 0 against an ABSOLUTE tick, so the first pump adds the "
@@ -57,6 +64,9 @@ namespace F3 {
 				"that coupling named instead of implicit; excluding the reaction id alone would be "
 				"an unnamed coupling, not a separation.\n"
 				"# NA-means=the seam is not ported, NEVER =unchanged\n"
+				"# SEED-LIMIT: a parity run pins ONE captured LCG state, so it proves SAME-STATE parity, "
+				"NOT same-seed-from-clock parity: identical under a pinned state and divergent in real "
+				"time is a possible and meaningful outcome\n"
 				"# PROVES=self-consistency of our sim. DOES NOT PROVE=parity with F3.exe (needs "
 				"T-028 + a bootable exe).\n",
 				kMaxEntitiesInLine );
@@ -98,14 +108,57 @@ namespace F3 {
 		// seam), while the app path draws from the global LCG, which has no draw counter yet -
 		// adding one means editing CombatMath.cpp, a file another lane is editing right now. The
 		// digest therefore prints drawsSrc=injected-counter or NA:global-stream-has-no-counter.
+		// The frame-0 clock, so `clockDelta` (seconds ELAPSED in this run) can be the comparable
+		// field. The ABSOLUTE clock cannot: the shipped first-Update leap makes it
+		// uptime-shaped (docs/f3/WorldTickPump.md), so two runs of one session - let alone the
+		// original and ours - never share it. Elapsed time is the axis a parity diff needs.
+		inline unsigned& BaseClockRef() {
+			static unsigned b = 0xFFFFFFFFu;   // 0xFFFFFFFF = "not captured yet"
+			return b;
+		}
+		inline void ResetBaseClock() { BaseClockRef() = 0xFFFFFFFFu; }
+		inline bool BaseClockPending() { return BaseClockRef() == 0xFFFFFFFFu; }
+		inline void SetBaseClock( unsigned c ) { BaseClockRef() = c; }
+
+		// Our action kinds are a PORT tag, not a shipped field: the shipped deque at Entity+0x304 holds
+		// pointers to action OBJECTS. Comparing those pointers is comparing allocator history; dropping
+		// the field leaves the shipped action queue permanently unverified, which is the thing the oracle
+		// exists to check. So BOTH sides print a CLASS NAME: ours from this table (a mapping we own and
+		// can check), the original's from [action+0x00] vftptr -> class via artifacts/F3.json. Anything
+		// unresolved prints UNKNOWN_VT=<ea> and is COUNTED, never named - if the unresolved bucket held
+		// every combat action that would be a finding about the DB, not about parity. (T-031 ruling;
+		// harness item 23: do not invent a mapping to make a field comparable.)
+		inline const char* ActionKindName( int kind ) {
+			switch ( kind ) {
+			case 0:  return "-";
+			case 1:  return "GameActionMoveTo";
+			case 2:  return "GameActionWait";
+			case 3:  return "GameActionOperateDoor";
+			case 4:  return "GameActionAttack";
+			case 5:  return "GameActionDie";
+			default: return "UNKNOWN_KIND";   // never a silent name
+			}
+		}
+
 		inline void WriteFrame( FILE* f, const Sources& src, unsigned frame, unsigned tickMs,
 		                        unsigned clockSec, int draws, const char* drawsSource ) {
-			char line[ 2048 ];
+			// Room for 12 entities x 4 class names. Truncation is still reported (truncated=1 is
+			// hashed) but it must not be the normal case, and names are longer than digits.
+			char line[ 4096 ];
 			const int cap = (int)sizeof( line );
 			int n = 0;
 			line[0] = 0;
 
-			n = Append( line, cap, n, "frame=%u tickMs=%u clock=%u", frame, tickMs, clockSec );
+			// CONTEXT vs COMPARED - not cosmetics. tickMs is timeGetTime() (machine uptime) and the
+			// shipped frame-0 leap makes `clock` uptime-shaped too, so a digest that HASHES tickMs can
+			// never be byte-compared across two runs of one session, which is precisely what the parity
+			// oracle (T-031) must do. The value is still PRINTED because it is real state and elapsed
+			// time has to be attributable. Convention: text before " ctx:" is hashed, text after it is
+			// captured-not-compared and can be PROMOTED by changing the comparator, never by re-running
+			// a debugger session.
+			unsigned& base = BaseClockRef();
+			if ( base == 0xFFFFFFFFu ) { base = clockSec; }   // captured on the first frame written
+			n = Append( line, cap, n, "frame=%u clockDelta=%u", frame, clockSec - base );
 
 			int count = 0;
 			for ( int i = 0; i < 128; ++i ) { if ( g_spawnedEntities[ i ] ) { ++count; } }
@@ -122,8 +175,9 @@ namespace F3 {
 				n = Append( line, cap, n, ",hp=%d/%d", e->statCur, e->statMax );
 				n = Append( line, cap, n, ",st=%d,%d,%d,%d", (int)e->entityState,
 				             (int)e->movingFlag, (int)e->busy0x314, (int)e->actedLatch0x319 );
-				n = Append( line, cap, n, ",ak=%d/%d/%d/%d", e->actions[0].kind,
-				             e->actions[1].kind, e->actions[2].kind, e->actions[3].kind );
+				n = Append( line, cap, n, ",ak=%s/%s/%s/%s",
+				             ActionKindName( e->actions[0].kind ), ActionKindName( e->actions[1].kind ),
+				             ActionKindName( e->actions[2].kind ), ActionKindName( e->actions[3].kind ) );
 				++shown;
 			}
 			if ( count > shown ) { n = Append( line, cap, n, " entsMore=1" ); }
@@ -150,12 +204,17 @@ namespace F3 {
 			if ( drawsSource ) { n = Append( line, cap, n, " draws=%d drawsSrc=%s", draws, drawsSource ); }
 			else { n = Append( line, cap, n, " draws=NA:no-counter-on-global-stream" ); }
 
-			// A truncated frame is a changed contract, so it is hashed as such: the suffix goes
-			// into the string that gets FNV'd, not just into the printed line.
-			char out[ 2112 ];
+			// A truncated frame is a changed contract, so the suffix is hashed too, not just printed.
+			char out[ 4300 ];
 			strcpy( out, line );
 			if ( n >= cap - 1 ) { strcat( out, " truncated=1" ); }
-			fprintf( f, "%s fnv=%08X\n", out, Fnv1a( out ) );
+
+			// ORDER MATTERS AND IS THE WHOLE POINT: the hash covers everything printed BEFORE
+			// " ctx:". Hashing the CONTEXT span instead (which an earlier draft of this file did)
+			// makes two runs of the same session differ on every line and quietly defeats the
+			// cross-run comparison this format exists to enable - so the CONTEXT fields are
+			// appended AFTER the hash is computed.
+			fprintf( f, "%s fnv=%08X ctx: tickMs=%u clock=%u\n", out, Fnv1a( out ), tickMs, clockSec );
 			fflush( f );
 		}
 	} // namespace Sim

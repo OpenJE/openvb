@@ -823,6 +823,7 @@ namespace JE {
 				return 0;
 			}
 			g_simDigestFrame = 0;
+			F3::Sim::ResetBaseClock();   // clockDelta is measured from THIS run's first frame
 			F3::GameWorld* w = F3::GetWorldServerInstance();
 			F3::Sim::Sources src;
 			src.combat = w ? w->GetCombat() : NULL;
@@ -833,6 +834,13 @@ namespace JE {
 
 		void DumpSimState() {
 			if ( !g_simDigest ) { return; }
+			// The frame-0 clock is captured on the FIRST TICK, not on the first WRITTEN frame: with
+			// EVERY>1 those differ, and `clockDelta` would then inherit an off-by-one sampling
+			// artifact (measured: two boots gave 1 then 0 for the same sampled position).
+			if ( F3::Sim::BaseClockPending() ) {
+				F3::GameWorld* w0 = F3::GetWorldServerInstance();
+				F3::Sim::SetBaseClock( w0 ? w0->ClockSeconds() : 0u );
+			}
 			if ( ( g_simDigestFrame % g_simDigestEvery ) != 0u ) { ++g_simDigestFrame; return; }
 			F3::GameWorld* w = F3::GetWorldServerInstance();
 			F3::Sim::Sources src;
