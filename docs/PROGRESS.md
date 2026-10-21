@@ -64,6 +64,22 @@ a headless run must produce identical state to a run with a window.
 - **T-025 census generator** (in flight) and **T-032 EA→document index** exist to make the above numbers
   automatically re-measurable instead of re-derived by hand each time someone asks.
 
+## Corrections to my own propagated claims (2026-10-21)
+
+- **"Order classes by contiguity ratio"** — withdrawn as a filter. The ratio measures **link placement and compiler
+  clone spread**, not attribution quality (`cls_0x49c610`'s 0.02 is five byte-identical inline clones of one 0x355-byte
+  method). Body evidence is nearly identical across low- and high-ratio classes (81% vs 88%), and the
+  "1,475 nameable + 998 helper-theft" split **reproduces under no single join route** (IDA-name = 2,340; DB-method =
+  2,473, 2,425 in the game region). Quote a route with any attributed count.
+- **"13 self-naming classes are the cheap win"** — corrected by batch 2: five of the thirteen are MSVC **derived-class
+  base subobjects** (49-byte `CEngineInterface` embeds at non-zero offsets). Those take an annotation
+  (`derived@CEngineInterface`), not a name; minting the base would have poisoned five decompile trees. Evidence-ordered
+  ceiling on tier movement is **<=1.3pt**, which is why the pre-registered prediction was voided and re-registered
+  *before* measuring. I had put that claim in front of three lanes.
+- **`docs/PROGRESS.md` did not exist until today**, though three rows cited it, and a readiness probe plus two shell
+  packages landed inside another lane's commit (`c925bf6`) because my own commit half-failed. See harness items 18,
+  25, and the sweep rule in 25(b).
+
 ## Deviations and defects (the ledger is the list, not a summary)
 
 - `docs/DEFERRED-NOTES.md` — **shipped-defect ledger** (6 entries: null-page; DR-invisible req-slots; 4 console
