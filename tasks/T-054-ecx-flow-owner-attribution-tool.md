@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: EpicRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21)
 type: tooling + analysis (reads image/IDB dump; writes tools/ + tests, NO IDB writes)
 depends: none — spawned by the T-033 batch-6 closure statement ("deeper indirect-call/ecx-flow
