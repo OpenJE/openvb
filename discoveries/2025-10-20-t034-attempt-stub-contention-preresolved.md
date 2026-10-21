@@ -1,5 +1,13 @@
 # 2025-10-20 — T-034 attempt report (redxenon 01a157ec): stub contention; everything resolved except the attach
 
+> **SUPERSEDED-IN-PART by NiceHawk's handover (b77625e, `…t034-handover-orig-gdb-port-collision.md`):**
+> attach itself works once the ImHex collision is respected (`set architecture i386:intel`, store-path
+> winedbg, one-gdb-per-stub lifecycle); R0's read is a REGISTER at 0x552bb5 ($ebx = World vftptr →
+> `x/1wx $ebx+0x18`); main-menu demo NEVER reaches 0x552bb5 (esi-null at 0x552bab) — menu-phase
+> "never fired" is by design, not attach failure; R3/R4 mid-combat is gated by MISSING INPUT
+> TOOLS (xdotool/wmctrl absent from the shell), making R3 a candidate for unreachable-by-tooling
+> with D-2 settled from T-037 + own-seam stress instead. All merged into tools/t034-capture.py.
+
 Status: **R0–R4 NOT READ — reported as misses per the row's own rule.** All statics are pre-resolved
 so the read session is one attach away; the blocker is debugger ownership, not knowledge.
 

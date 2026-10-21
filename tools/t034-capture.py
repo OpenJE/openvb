@@ -12,7 +12,24 @@ import gdb, time, sys
 PORT = int(sys.argv[-1]) if len(sys.argv) > 1 and sys.argv[-1].isdigit() else 31441
 DEADLINE_S = 420  # boots are slow under headless wine; R0 needs the first pump
 
+import gdb, time, sys
+
+# 2026-05 handover merge (NiceHawk b77625e, adopted by row holder RedXenon):
+#  * `set architecture i386:intel` REQUIRED before target remote (winedbg 32-bit).
+#  * Image base 0x400000, no ASLR => IDA EA == target VA (no slideware).
+#  * At 0x552bb5: $ebx IS the World vftptr already -> R0 = `x/1wx $ebx+0x18`;
+#    $esi = [0x70BD98]+4, $eax = tickMs. Keep the memory-read fallback below.
+#  * FALSE NEGATIVE BY DESIGN: 0x552bab derefs [esi] unconditionally; esi is NULL when
+#    [0x70BD98]==0 -> a demo parked at the MAINMENU hits 0x48ccf6 (R1) but NEVER 0x552bb5
+#    (R0). "never fired" != "attach failed". Same for R3: menu has no combat.
+#  * R1 reseed gate: [0x707C64] byte; first-call seed = time32 via SetStartupTime.
+#  * One gdb per stub: when gdb EXITS the listener dies but F3.exe keeps running free.
+#    Kill leftovers (match /proc/<pid>/environ WINEPREFIX to spare reimpl runs) before attach.
+#  * R3/R4 mid-combat needs INPUT the shell lacks (xdotool/wmctrl absent). If unreachable,
+#    settle D-2 from T-037's record map + own-seam stress test; report R3 as
+#    unreachable-by-tooling, not unread.
 gdb.execute("set pagination off"); gdb.execute("set confirm off")
+gdb.execute("set architecture i386:intel")
 gdb.execute(f"target remote 127.0.0.1:{PORT}")
 
 def rd(addr, n=4):
@@ -47,7 +64,12 @@ while time.time() - t0 < DEADLINE_S:
         if len(res["r1"]) < 4: res["r1"].append((st, eax))
         if len(res["r2"]) < 4: res["r2"].append((hex(clk) if clk else None, ts))
     elif pc == 0x552bb5:
-        vft = rd(WORLD); tgt = rd(vft + 24) if vft else None
+        try:
+            ebx = int(gdb.parse_and_eval("$ebx")) & 0xFFFFFFFF
+        except Exception:
+            ebx = None
+        vft = ebx if ebx and ebx > 0x400000 else rd(WORLD)
+        tgt = rd(vft + 24) if vft else None
         res["r0"].append((hex(vft) if vft else None, hex(tgt) if tgt else None))
         if res["r0"]: break
     elif pc == 0x550720:
