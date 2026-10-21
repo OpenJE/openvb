@@ -138,12 +138,12 @@ row; A keeps editorial merge rights).
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
 | T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
-| T-031 | Parity oracle — **synthetic shipped side DELIVERED (`40b215a`)**: `tools/orig-digest.sh` + 47-check verify, PROVENANCE required, MIXED-PROVENANCE refused, invariants violated on purpose. **VALUES still gated on T-034** (R1/R3/R4b) | in-progress | HappyKnight (secondary) |
+| T-031 | Parity oracle — **synthetic shipped side DELIVERED (`40b215a`)**: `tools/orig-digest.sh` + 47-check verify, PROVENANCE required, MIXED-PROVENANCE refused, invariants violated on purpose. **VALUES still gated on T-034** (R1/R3/R4b) | in-progress | NiceHawk `01a15cb7` (via T-034) |
 
 
 | T-032 | EA→document index — **DONE (6bde789)**: 137 docs / 5,258 EAs / 7,778 mentions, 0 silent misses in a 720k-pair recall audit, refusals counted by category | done | SwiftRaven |
-| T-033 | Class-identity batch queue — decisions audited; **apply re-granted to RedXenon** (QuickQuartz absent); route-A delta blocked by T-040 | in-progress | RedXenon |
-| T-034 | Lockstep reads — **R0 answered from the image** (slot 6 = `0x404b70`; assumption falsified); R3/R4 reduced to plain reads | partially-done | RedXenon (tool handed over) |
+| T-033 | Class-identity batch queue — **BATCH 2 APPLIED** (`b97db72`): 6 mints, 24 route-A fns, T2 26.40%→26.09% inside the re-registered ≤1.3pt band; ledger + tag/noise conditions met; batch-3 queue = R36-e host-band residuals + 30 t036-passing classes | open (batch 3 unowned) | PureKnight `01a15cb7` (batches 1-2 apply, granted) |
+| T-034 | Lockstep reads — R0 answered from the image (later superseded by T-045: pump uses World's `+4` table slot 6 = Update_0x544a90); R3/R4 reduced to plain reads; LIVE capture running on the 31437 stub | partially-done — live half in progress | NiceHawk `01a15cb7` |
 
 
 | T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |
