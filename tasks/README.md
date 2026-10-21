@@ -191,5 +191,5 @@ row; A keeps editorial merge rights).
 | T-017 | F3 UI surface: Command* -> GameInterfaces slot / root-Open mapping | in-progress | HappyWolf (research) |
 | T-018 | Data read: shipped helmet record's `GameItem+0xA8` required-slot vector | in-progress | IronStorm (research) |
 | T-021 | Retire the anatomy wording 10c disproved (rename + comments, no link needed) | done | implementer-C (UltraBear) |
-| T-020 | Verify the reachable reaction-id set {33,34,37,38,40,41}; 39 unreachable | open | NiceWolf (research) |
+| T-020 | **DONE — three-source CONFIRMS {33,34,37,38,40,41}, 39 unreachable** (Implementer-C derivation + PureKnight cold byte re-read + coordinator dd/objdump re-check); §5b pair wording and the 40/41-death-boundary premise both falsified and corrected in the T-010a doc; port tables were already right | done | PureKnight `01a15cb7` |
 | T-019 | Consumed+thrown FatalError on shipped data — **answered: 0/57, never fires** (B11) | done | FastArrow (research) |

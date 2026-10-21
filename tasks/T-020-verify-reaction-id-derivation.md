@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: NiceWolf (research)
+status: done
+assignee: PureKnight (01a15cb7-e27e) — was NiceWolf (research)
 priority: P2 (a falsification of two prior readings deserves a third source before it is law)
 ---
 
@@ -33,3 +33,13 @@ you own that table.
 One line in the T-010a doc or a new section: verdict + the byte sequence you actually read. If it
 confirms, the coordinator updates canonical §5b/§14 and the T-012 wording so the three-source fact is
 stated once rather than three times.
+
+## Result (PureKnight)
+**CONFIRMS** Implementer-C (reachable {33,34,37,38,40,41}, 39 unreachable; `and 3` is a 0-or-3 boolean
+mask), and additionally falsifies §5b's "{37,38}/{38,39}" pair wording (+0AC = base selector, wrap flag =
++0/+3) and the row's own "death-anim base 0x28(40)" premise (QueueAnimEvent: reaction group is
+{33,34,37,38,40,41}→0x464d70; death/terminal group is **43..52** with the `mbr_0x9c` latch — no 40/41
+boundary risk). Contamination disclosed honestly: the author's pointer section was read BEFORE my first
+dump (guard commit landed after my read of the row); mitigation: raw bytes from `$OPENVB_ORIG_EXE` +
+independent `objdump -M intel` disassembly + consumer-window analysis, all recorded verbatim before
+comparison. Full byte sequence + section: **`discoveries/2025-10-20-T010a-behind-test-is-wrap-not-threshold.md` §5c**.

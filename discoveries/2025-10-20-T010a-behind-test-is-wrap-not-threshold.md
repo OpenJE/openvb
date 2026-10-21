@@ -106,5 +106,54 @@ mix it with real-ms action deadlines unless the +0x319 selector says explicit-re
 - The WRAP FLAG finding stands unchanged: 4-compare chain vs {0,±180,360}, radians ⇒ the
   ±180/360 compares are unreachable (degree-read retracted as a live path by the
   coordinator's ruling: radians literal, degrees kept as comment only).
+- **[§5c]** The 40/41-vs-death-anim boundary question from the T-020 row is **VOID**: shipped
+  `QueueAnimEvent_0x4673D0` groups reactions {33,34,37,38,40,41} → `meth_0x464D70` and
+  death/terminal {43..52} → `meth_0x464940` behind the `mbr_0x9c` latch (set @0x4674C9, blocks later
+  re-queues). There is no 0x28-base death group, so no reaction id can conflate with a death id; id
+  39 IS consumable by the queue (case 19/39) but the Apply site never emits it.
 - FIDELITY NOTE for the reimpl port: first-record-silent-rest pattern is a behavioural gap,
   observable as multi-sub-attack unarmed hits animating once, not N times.
+
+## 5c. T-020 THIRD-SOURCE RE-READ (PureKnight 01a15cb7-e27e) — verdict: **confirms Implementer-C**, and breaks §5b's "{37,38}/{38,39}"
+Independence caveat stated up front: I read the T-020 row **including the author's pointer section**
+before my first byte dump (the BLIND GUARD commit 28489e4 arrived after), so this is not a fully
+blind third source. To keep it load-bearing anyway: I dumped raw bytes from `$OPENVB_ORIG_EXE` myself,
+disassembled with `objdump -M intel` (independent of IDA), and derived the set and the reaction-vs-death
+boundary from the consumer window before comparing with any prior wording.
+
+Bytes actually read (0x45C30C..0x45C359, raw file at `.text` offset map, byte-for-byte):
+```
+38 9e ad 00 00 00   cmp  byte [esi+0ADh], bl
+75 4b               jne  0x45c35f                      ; non-first volley records: no reaction anim
+8b 4e 48 / 8b 41 04 / 8b 50 04                         ; ecx=[esi+48], eax=[ecx+4], edx=[eax+4]
+38 9c 0a a6 03 00 00   cmp byte [edx+ecx+3A6h], bl
+74 10               je   0x45c336
+8a 54 24 0f         mov  dl, [esp+0Fh]                 ; WRAP FLAG byte
+33 c0 / 3a d3 / 0f 95 c0   xor eax,eax; cmp dl,bl; setne al
+83 c0 21            add  eax, 21h  ; base 33, mask +1  ⇒ {33,34}
+eb 22               jmp  0x45c358
+38 9e ac 00 00 00   cmp  byte [esi+0ACh], bl
+8a 44 24 0f         mov  al, [esp+0Fh]
+74 0c               je   0x45c34e
+f6 d8 / 1b c0 / 83 e0 03   neg al; sbb eax,eax; and eax,3   ; 0 or 3 from (wrap!=0)
+83 c0 26            add  eax, 26h  ; base 38           ⇒ {38,41}
+eb 0a               jmp  0x45c358
+f6 d8 / 1b c0 / 83 e0 03   (0x45c34e: same mask)
+83 c0 25            add  eax, 25h  ; base 37           ⇒ {37,40}
+53 50 … call 0x4673d0 (GameEntity::QueueAnimEvent)
+```
+- Reachable set from this selector: **{33,34} ∪ {37,38,40,41}**; **39 unreachable** here.
+  `and eax,3` after `neg/sbb` is a boolean mask yielding 0-or-3 — confirmed byte-for-byte,
+  i.e. Implementer-C's encoding note `f6d8 1bc0 83e003 83c025 / 83c026` is exactly what the file holds.
+- §5 original ("37/38/39(/40)") and §5b correction ("+0xAC-gated {37,38}/{38,39} (clear/set)") are BOTH
+  wrong as *sets*: +0xAC selects the **base** (37 vs 38); the wrap flag selects **+0 vs +3**. §5b's pair
+  reading implies mask=±1 behaviour that these bytes do not have. Note the 33/34 branch legitimately uses
+  a +1 mask (`setne`+`add eax,21h`) — the two masks differ by branch; that is shipped behaviour, not a misread.
+- Reaction-vs-death boundary, from MY read of `QueueAnimEvent_0x4673d0`: cases **33,34,37,38,40,41 all
+  dispatch together to `meth_0x464d70`** (hit-reaction group). Death/terminal group is **43..52**
+  (sets the `mbr_0x9c=1` latch that also blocks any later re-queue, then `meth_0x464940`).
+  There is **no death base at 0x28(40)** — 40/41 cannot conflate with a death id; 39 is consumed
+  (case 19/39 → `meth_0x464b80(1)`) but simply never emitted by this window. The T-020 parenthetical
+  premise ("death-anim base of 0x28(40) in the 43..52 set") is self-inconsistent and should die.
+- §5b's wrap-flag and volley-silencing ([+0AD]!=0 → jump past block) findings stand; this section only
+  corrects the reachable-id set, per Implementer-C's derivation.
