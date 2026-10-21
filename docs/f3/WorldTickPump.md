@@ -99,23 +99,34 @@ operands exclude that. Two consequences worth recording:
    hypotheses. And the discriminating sample is not safe under a hit-and-hold window either: `now_n - now_0`
    includes stopped time, so a long debugger pause inflates the accumulator in exactly the way uptime would.
    That is an argument for the telescoping proof rather than against it.
-2. **The fold is permanent, not a frame-0 event — but our digest's chosen field hides it.** It enters the
-   accumulator at `0x544aab`, is carried into `Gregorian::AddSeconds` in step 6 of `ServerUpdate_0x545d60`,
-   and stays in `totalSeconds` for the rest of the run. Two consumers, two different exposures:
-   - **`turnDeadline0x29C` is genuinely offset.** `CombatManager.cpp:188` computes
-     `acc = accMs_ + 1000*secondsPerRound` and `0x5a95ce` arms `turnDeadline0x29C = accMs_/1000` —
-     **absolute** seconds on the same inflated clock, no base subtraction. So every shipped-vs-our deadline
-     comparison is offset by ~29242 s at every frame, and a pre-fix capture is a contaminated baseline,
-     not a neutral one.
-   - **`clockDelta` cancels it by construction, which is luck, not correctness.** `src/F3.cpp:842`
-     snapshots `SetBaseClock(w0->ClockSeconds())` at frame 0 and `SimDigest.hpp:166` prints
-     `clockSec - base`, so the constant folds away. The parity oracle therefore **cannot see this bug in
-     its own compared field** — a green `clockDelta` is not evidence the accumulator is clean. The
-     comparison that would catch it is an absolute-`clock` CONTEXT pairing or a deadline check, which is
-     another reason the fold belongs to T-011's lane rather than the digest's.
+2. **Blast radius, measured — and I have overstated it twice, so here is the trace that ends it.** The fold
+   runs `0x544aab` accumulator → step-6 carry → `Gregorian::AddSeconds` → `totalSeconds`. Following every
+   consumer of that value:
+   - `ClockSeconds()` (`src/F3/GameWorld.cpp:118`) has exactly two call sites, both in the digest
+     (`src/F3.cpp:842` base capture, `:851` the printed value).
+   - So **`clockDelta` cancels it**: the base is snapshotted on the first tick and the line prints
+     `clockSec - base`. The compared field cannot see this bug — which is a limitation of the digest, not
+     reassurance about the accumulator.
+   - **`turnDeadline0x29C` is NOT reached.** I asserted it was, twice, and was wrong both times. The live
+     `accMs_` is a **round-based virtual clock** — `accMs_ += 1000 * secondsPerRound`, once per dispatched
+     queue event (`CombatManager.cpp:188`, `GameWorld.cpp:53-58`) — and the `accMs_ += clockSeconds*1000`
+     line that *would* have carried the fold is the **C-23 placeholder, retired by T-011**
+     (`CombatManager.hpp:114-116`, canonical fact sheet §13). I quoted a retired placeholder as live code.
 
-   Seeding the stamp fixes runs after the change; it cannot rescue captures taken before it, and for
-   `clockDelta` specifically the old captures already look correct, which is the quietly dangerous case.
+   Net: **the fold is invisible in the compared set and touches no arm, no deadline, no capture baseline.**
+   What survives is smaller and still real: (a) our absolute `clock` prints uptime-shaped where the
+   original's prints session-shaped — a fidelity defect in a CONTEXT number and in the pages explaining
+   it; (b) `CombatManager.hpp:38` still says the port "feeds accMs from `JE::Gregorian::TotalSeconds()`",
+   contradicting both the code and its own comment twelve lines below. One-line stale-comment fix, in that
+   lane's hands, not mine.
+
+   Correction history, kept because it is the useful part: v1 "three lanes are building on a false premise,
+   deadlines contaminated" → wrong about deadlines; v2 "permanent in the deadline, cancels in `clockDelta`"
+   → right about `clockDelta`, still wrong about the deadline; v3 (this) traced by consumer rather than
+   inferred. Both errors came from citing a path I had read about in a comment instead of at the call site.
+
+3. **T-011 arming: unaffected.** The deadline never reads the world clock, so round-1 numbers are not
+   contaminated by this fold. (My first pass warned otherwise; withdrawn.)
 
 RedXenon verified both load-bearing facts independently — the bytes `a1 b8 c2 70 00 c3` and
 `vsize 0x200e0 > rawsize 0x17000` — and their own T-034 capture note had already named `0x70C2B8` as the
