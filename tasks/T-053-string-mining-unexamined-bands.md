@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: CalmRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21)
 type: research (read-only on ida_original_f3; discoveries/ only, no commits of src/ or IDB writes)
 depends: none — spawned by the T-033 batch-6 closure statement (commit `ddd39ec`: "cheap deterministic
