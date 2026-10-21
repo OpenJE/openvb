@@ -71,9 +71,19 @@ Injection is only the trigger; the PAYLOAD is one shape read at the first funnel
 - SHAPE A (predicted): slot0 stays 0x6497C4 (Idle RESIDENT), injected order lands slot1+, frame-over-frame
   unchanged, never advances → HOL live-confirmed; T-056/R-H "Attack never fired" upgrades from gap to
   DEMONSTRATED designed behavior; T-071 push-verb HOL stands.
-- SHAPE B (KeenStorm's recorded falsifier): injected order advances WITHOUT a funnel-visible drain
-  (slot0 becomes the order, idle gone, no 0x551bbe drain) → dual-shape model wrong live-side, LOUD report,
-  verb split revised. Either shape is a win; cost of the verdict = one dump.
+- SHAPE B (THE ONLY TRUE FALSIFIER, KeenStorm refined): slot0 STILL 0x6497C4 (idle PRESENT) while the order
+  behind it ADVANCES — count decreasing, or the order's Update bp hits, or idle skipped/erased with no
+  meth_0x54c440 drain. Pump eating PAST a never-finishing head. LOUD in-session ping, verb split revised.
+- SHAPE C (CONSISTENT — do NOT alarm): (1) count hits 0 and STAYS 0 — nothing re-feeds idle on empty
+  (pump's empty branch 0x54c849+ is the anim-level default meth_0x548d80, not a re-enqueue; only rebase
+  sites present idle); (2) mid-round the EXECUTING order IS the head — self-re-queue sites (MoveTo
+  waypoints 0x4064bd x6, attack self-re-queues 0x40470e x6) enqueue non-idle heads with no drain at that
+  instant; (3) PRACTICAL TRAP: injecting into an entity whose queue is EMPTY fires the order IMMEDIATELY —
+  that is C, not B. Stall only holds while the resident lives.
+- READING RULE: slot0-vft + count as a PAIR at every advance observation; B is idle-PRESENT-and-consumed-past,
+  never advance-per-se. Frame-over-frame stands.
+- Banked by KeenStorm as independent R4b confirm (third boot, second runtime, third entity pointer):
+  scripted rounds' count 1→2→3, Idle-first/Anim-after on 0x0A6C6060.
 Also arm (T-070 §5): [idle+0x16]/[idle+0x18] across frames (expect 1/0), [entity+0x184] before/after rebase
 (world-ms stamp), drain @0x551bbe vs create @0x551bde same-frame cadence, count>4 (D-2 minus resident) rides
 along. Re-opener watch: bp10 0x5a955d — zero across sustained boot is consistent with raiser-exclusion
