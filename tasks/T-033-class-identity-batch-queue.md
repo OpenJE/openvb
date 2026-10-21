@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: none (batch 4 DONE 2025-10-21 by GoldYak `01a15f83` under LoudDragon dispatch — see Results-batch-4 below; batch 5 unowned). Prior grant note retained: PureKnight `01a15cb7-e27e` (apply GRANTED via coordinator after all prior holders departed; rule in force: the grant follows whoever can reach the shared IDB MCP session on 8745). Caveat: T-040 — route-B deltas unmeasurable (no export path).
+status: in-progress
+assignee: GoldYak `01a15f83` (batch 5 AUTHORIZED by LoudDragon same-session follow-up after batch-4 checkpoint `79d3877`; batch-4 DONE — see Results-batch-4. Prior grant note retained: apply grant follows whoever can reach the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path)).
 depends: T-029 (the census that produced this queue)
 ---
 
