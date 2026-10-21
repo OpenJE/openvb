@@ -45,3 +45,18 @@ for 1-2-fn ctor families.
 
 - T-033 ledgers b4/b5/b6 (hierarchy + escalation rules), T-053 queue (scope), harness items 35/40/43
 - `.pi/skills/openvb-ida-mcp/SKILL.md` (save discipline)
+
+## EXTENSION (coordinator, same wave, post-checkpoint): apply the T-054 adjudications
+After the T-053 queue lands and you checkpoint-save, fold EpicRaven's wave-queue into the same wave
+(ledger sections clearly separated by source row):
+- cls_0x445350 band -> owner naming per MINT-READY chain: host cls_0x4468C0 (COptionsHotKeysInterface
+  impl; vft 0x65A290 outer + interface vft 0x659DB0 at +0x198; thunk 0x4468B0; 14 sites at -0x198) —
+  name both the host methods and the band entries per EpicRaven's §2, citing their doc; factory-2nd
+  xref 0x445763 logged EXPECTED per corrected predicate.
+- cls_0x507810 (+ cls_0x5067c0 same-object question) -> Gfx_Engine+0x30 heap member mint per §verdicts;
+  naming choice is yours — no shipped string; ctor site 0x5BFFEC / install / dtor 0x5C1D41 cited.
+- cls_0x4b28a0 -> ANNOTATE ONLY: comment at 0x4B28A0 recording 166/166 this==&0x707E48 singleton purity
+  + vacuous membership so future waves stop hunting an owner that doesn't exist. NO rename.
+Acceptance unchanged plus: T2 delta itemized THREE ways (T-053 queue / T-054 extension / annotation-only
+zero-delta), and EpicRaven's discoveries doc is your citation source, not your evidence — re-verify at
+write time same as everything else.
