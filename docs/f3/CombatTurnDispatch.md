@@ -43,12 +43,16 @@ rule; they are open questions, not TODOs with a shape I guessed.
 | 0x5a9575-0x5a957f | `if (+14)` ⇒ `SetRoundMode(0)` and return — and this is the one return that does **not** clear +8 | so the world's step-5 loop stays suppressed after a mode switch |
 | 0x5a95aa | `v9 = 1000 * (world server read) + this->mbr_0x10` — the quantum | `Tick(dtMs, secondsPerRound)`, added **once per dispatched event** |
 | 0x5a95ac | `this->mbr_0x10 = v9` — unconditional after the branch | **the skipped-actor path therefore writes accMs = 0**: skipping an actor that already acted RESETS the round clock. Mirrored, not "fixed" |
-| 0x5a95c1 | gate `*(entity+484) == 0 \|\| (v = *(entity+788)) != 0` — +0x1E4 and **T-039's +0x314 count** | `flag0x1E4 == 0 \|\| QueuedActionCount() != 0` |
+| 0x5a95c1 | gate `*(entity+484) == 0 \|\| (v = *(entity+788)) != 0` — +0x1E4 and **T-039's +0x314 count** | `inMap0x1E4 == 0 \|\| QueuedActionCount() != 0` |
 | 0x5a95ce | `*(entity+668) = accMs / 1000` | deadline armed in SECONDS from the round accumulator |
 | 0x5a95de | `F3::ServerUpdate(entity, dt + accMs)` | `F3::TickEntityServerUpdate(e, dtMs + accMs)` — the one place the two clock domains meet |
 
 The consequence for a port that reads +0x314 as "busy" (it is not — see
 `docs/f3/EntityActionQueueSeam.md`): a queued order **forces** the turn even when +0x1E4 says
+**T-041 closed the +0x1E4 half of that predicate**: it is the map-membership flag (`inMap0x1E4`,
+writer `Entity::SetInMap_0x551ba0`, driven by the `ENGINE_ID_ENTITY_ADDTOMAP`/`REMOVEFROMMAP`
+packet pair) — "not placed in a map, or has an order queued". Evidence and the full writer set:
+`tasks/T-041-entity-flag0x1e4-semantics.md` Result section.
 otherwise. That is a dispatch-behaviour difference, not a naming nicety.
 
 ## Why the walk does not rotate in the port yet, and why that is not "unfinished"
@@ -68,6 +72,29 @@ PathManager suite asserts the stable head so that if someone adds a rotation wit
 fails loudly instead of looking like progress. Open question, routed: which shipped writer raises
 +0x319 on the combat path, and is the re-entrant `meth_0x5a94a0` reachable from a node's own
 ServerUpdate (the +8 test says the authors expected it).
+
+**+0x319 raiser, deverified from the decompilation (coordinator, this wave).** The DB usage list is
+`0x549094` (clear, TurnPrep), `0x54c833`/`0x54c864` (the two stores), `0x54c83a` (load paired with
+the stores), `0x5515ff` (ctor zero) — plus the manager's test at `0x5a955d`, which reaches the byte
+by raw offset. The stores are in **`Entity::virt_meth_0x54c570`**, which
+decompiles as the entity's own per-frame update: it walks the SECOND deque (`+0x2E0`, head `+0x2EC`,
+count `+0x2F0` — the animated-event queue per T-039's structural note, distinct from the `+0x304`
+action deque), and:
+- `0x54c833` sets the latch when an event's remaining time falls below `event+0xC` — the event
+did not finish this frame;
+- `0x54c864` sets it when `+0x2E0.flag` is clear, the event list is EXHAUSTED, and the dt budget at
+`+0x179` is still nonzero — i.e. "the pump stopped early".
+Both branches also touch the sibling byte at `+0x2E0+0x34` (`0x54c85d/0x54c86d`). `+0x319` is
+therefore the **entity's per-frame "more work pending" latch raised by its own update**, consumed by
+the manager test at `0x5a955d` and cleared by TurnPrep only for SPAWNED (state-5) nodes.
+
+**Consequence for the port — an unregistered deviation:** our `SpawnedEntity` has
+`actedLatch0x319` with NO writer (only the ctor zero and the digest read), so the shipped raise
+never happens and the walk is permanently head-stable. The port's `OnServerUpdate` path must set the
+latch under the shipped two conditions above; that is port work, not a shipped question, and the
+shipped writer set IS now closed. The only remaining shipped-side question is whether the manager's
+`meth_0x5a94a0` is also re-entered from inside a dispatch (the +8 test suggests the authors expected
+it) — that is a lockstep observation, not more statics.
 
 ## Join, flush, and the order that makes them safe
 

@@ -189,11 +189,14 @@ namespace F3 {
 		}
 		accMs_ = acc;                                              // 0x5a95ac
 
-		// 0x5a95c1 gate, T-039's reading stated plainly: +0x314 is the queued-action COUNT of the
-		// entity's own action deque, so the term is "HAS ACTIONS QUEUED" - a pending order FORCES
-		// the turn even when +0x1E4 is set. +0x1E4's own meaning is still open (T-041); the test
-		// is mirrored as shipped, which is the only thing the port is entitled to reproduce.
-		if ( e->flag0x1E4 == 0 || e->QueuedActionCount() != 0u ) {
+		// 0x5a95c1 gate, both terms now settled: +0x314 is the queued-action COUNT of the entity's
+		// own action deque (T-039), so the term reads "HAS ACTIONS QUEUED"; +0x1E4 is the
+		// map-membership flag `inMap0x1E4` (T-041: docs/f3/EntityFlag0x1E4.md, sole runtime writer
+		// Entity::SetInMap_0x551ba0, doors = the ADDTOMAP/REMOVEFROMMAP packet pair). The shipped
+		// test is therefore "not in a map, or has a pending order" - a queued order FORCES the turn
+		// even for a placed entity, and an unplaced one turns regardless. Mirrored as shipped,
+		// predicate untouched (the row's boundary).
+		if ( e->inMap0x1E4 == 0 || e->QueuedActionCount() != 0u ) {
 			// 0x5a95ce: arm the deadline in SECONDS from the round accumulator...
 			e->turnDeadline0x29C = (int)( accMs_ / 1000u );
 			// 0x5a95de: ...and hand the entity its turn on `dt + accMs`. The round clock and the

@@ -35,7 +35,7 @@ namespace F3 {
 		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
 		              queuedAnimEvent(0), lastHitVeg(0),
 		              frameDt0x300(0), actedLatch0x319(0), turnDeadline0x29C(0),
-		              flag0x1E4(0),
+		              inMap0x1E4(0),
 		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
@@ -64,15 +64,20 @@ namespace F3 {
 		unsigned char actedLatch0x319; // Entity+0x319: per-frame "updated" latch, cleared by
 		                       // TurnPrep, checked by the combat manager (0x5A955D)
 		int   turnDeadline0x29C; // Entity+0x29C: turn deadline in clock-seconds (DB size 4)
-		// Entity+0x1E4: DB `mbr_0x1e4` is SIZE 4, so a byte model was wrong whatever it means -
-		// and the old name `noTurn0x1E4` asserted a reading the evidence does not support. It is
-		// unpacked from the entity record at 0x54e739 (`Entity::UnpackState_0x54e690`), defaults
-		// 0 in the ctor at 0x55147b, and both readers gate MAP-MEMBERSHIP bookkeeping: 0x54bc3a
-		// guards `--*(oldMap+280)` / `++*(newMap+280)` (per-map entity counts) and 0x54947e bails
-		// out of a movement/path update when it is zero. The turn gate at 0x5a95c1 tests it as a
-		// DWORD (`!*(v11+484)`; 484 = 0x1E4). What it MEANS is a routed question (T-011 step 3),
-		// not a name to invent. See docs/f3/EntityActionQueueSeam.md.
-		unsigned int flag0x1E4;
+		// Entity+0x1E4: the map-membership flag (T-041 closed: docs/f3/EntityFlag0x1E4.md). DB
+		// `mbr_0x1e4` is SIZE 4; names `noTurn0x1E4`/`flag0x1E4` are retired. Shipped
+		// `Entity::SetInMap_0x551ba0` is the ONLY post-ctor runtime writer (single store at
+		// 0x551c4b); its doors are network packets: Client recv case 14 (0x58c90c, the
+		// ENGINE_ID_ENTITY_ADDTOMAP/REMOVEFROMMAP family, strings 0x69cb80/0x69cd98) and
+		// JE::Server::meth_0x555750 (0x555775), reached only from the server receive pump. The
+		// ctor zeroes it (0x55147c); `Entity::UnpackState_0x54e690` restores it from the 3rd int
+		// of the entity state record (0x54e739, right after the +0x1E0 valid-marker) - persisted
+		// state. Readers are membership-consistent: 0x54bc3a guards the `--oldMap+280 /
+		// ++newMap+280` transfer, 0x54947e skips movement when 0, 0x54973e skips map-icon paint,
+		// 0x58c476 gates ADDTOMAP on the current map context. The turn gate at 0x5a95c1 tests it
+		// as a DWORD on the plain Entity base (verified disasm at 0x5a95b0: `mov eax,[edi+1E4h]`)
+		// - being OUT of the map also forces the turn; that is the shipped shape, mirrored.
+		unsigned int inMap0x1E4;
 		// Entity+0x314 is NOT a busy flag and never was: it is the ELEMENT COUNT of the block
 		// deque embedded at Entity+0x304 (DB `cls_0x54e070`, size 20: mbr_0x4 = block-array
 		// pointer, mbr_0x8 = block capacity, mbr_0xc = slot/head, mbr_0x10 = count, and

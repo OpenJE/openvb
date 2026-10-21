@@ -83,8 +83,15 @@ Read from the original and ported line by line; the durable write-up is **`docs/
    re-entry latch, 0x5a94a3) plus the pump raising +0x319 (0x54c833/0x54c864). Nothing in `src/F3`
    writes `actedLatch0x319`. Adding a round-robin would change WHO acts — the one fact `turnOrder=` exists
    to compare — so a test pins the stable head and fails loudly if a rotation appears without the store.
-   Question: which shipped writer raises +0x319 on the combat path, and is `meth_0x5a94a0` re-entered
-   from a node's own ServerUpdate?
+   **CLOSED statically (coordinator, this wave, via `ida_original_f3` decompile of `0x54c570`):** the raiser
+   is `Entity::virt_meth_0x54c570` — the entity's own per-frame update — which sets the byte when an
+   animated-event-queue item does not finish (0x54c833, event remaining < `event+0xC`) or when the event
+   list is exhausted with dt budget left (0x54c864). The combat walk is therefore driven by the entity's
+   OWN update raising "more work pending", and the DB usage set for +0x319 is closed: `0x549094` clear,
+   `0x54c833`/`0x54c864` set, `0x54c83a` load, `0x5515ff` ctor, `0x5a955d` reader. Full write-up:
+   docs/f3/CombatTurnDispatch.md §"+0x319 raiser". What REMAINS open is the second half — whether
+   `meth_0x5a94a0` is re-entered from inside a dispatch (lockstep observation, not more statics) — and
+   the port-side gap: our `OnServerUpdate` never sets the latch, filed as **T-048**.
 2. **Who sets manager+0x04 nonzero, and who sets +14 nonzero.** The DB has no nonzero writer for either,
    and the only xref'd caller of `meth_0x5a9330` passes 0. Until that is read, the round-walk branch is
    reachable only from tests that call `SetRoundMode()` and say so.
