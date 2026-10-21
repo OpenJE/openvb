@@ -1,6 +1,6 @@
 ---
-status: in-progress
-assignee: HappyEagle `01a15f82`-assigned (T-052 retry; coordinator LoudDragon)
+status: done (branch b - second blocker NAMED with static+live samples; six rows stay NOT READ behind the named wall)
+assignee: HappyEagle `01a15f82`-assigned (T-052 retry; coordinator LoudDragon) - closed this sitting
 depends: T-034 (the miss verdict + harness v3 at /tmp/t034-run.py), T-031 (values pairing waits on this)
 ---
 
@@ -23,3 +23,11 @@ depends: T-034 (the miss verdict + harness v3 at /tmp/t034-run.py), T-031 (value
 
 ## Boundary
 One gdb per stub; ImHex 31337 never evicted; kill loops must gate on /proc/<pid>/environ WINEPREFIX (comm-grep is never an owner test - T-034 incident 320383). The row must not conclude "shipped never pumps" from "our harness can't run it" - R1's "menus roll dice" non-reproduction is already flagged as instrumented-boot-specific, not shipped behavior.
+
+## VERDICT 2025-10-21 (HappyEagle, this sitting) - full report: `discoveries/2025-10-21-t052-startup-dance-retry.md`
+1. **DANCE FIXED (shape that produced the result: manual `winedbg --gdb --port 31440 F3.exe` WITHOUT `--no-start`, stdin = held-writer fifo, private cloned prefix).** wine-11 auto-spawns a frontend gdb already attached at the ntdll startup stop; the dance is **N resumes (one per thread-start `DbgUiRemoteBreakin` SIGTRAP), not 2** - that is what made T-034's `continue` "block forever". Driver re-landed: `tools/t052-drive.py`; `tools/t034-capture.py` rewritten (v4) documenting the shape; RedXenon's +0x314/+0x310 corrections kept.
+2. **Progress proof:** six bps armed on a live instrumented session; **TICK probe 0x56af50 HIT** (engine pumps frames), RNG state seeded (`[0x707C60]=0x6AD906E5`), **real 800x600 `F3` window mapped** (Xvfb+softpipe; also on :0 instrumented). "Shipped never pumps" is FALSIFIED as a general claim; `0x552bb5`/`0x48ccf6` still never execute because the boot dies one step earlier.
+3. **TERMINAL MECHANISM (named, branch b):** `JE::Gfx_D3D::meth_0x502870` (FindMode behind `Graphics::Initialize` `0x5818c4`) rejects any adapter mode with **`RefreshRate < 60`** (gate `0x50292b`); wined3d-11's X11 backend publishes `RefreshRate=0` in EVERY mode on every reachable display (live read at the pre-fatal stop: `{1024x768, refresh=0, fmt=23}` x2) - Xvfb keeps RandR `vrefresh=0` server-side (`xrandr --newmode` 67.2 Hz not picked up; `ForceVideoModeList` ignored by the GL backend), so `JE::FatalError("Cannot find requested mode.")` at `0x5818d0` is unavoidable. `:0` (Xwayland+glvnd "driver (null)") fails EARLIER (`get_pixel_formats` 100% spin; reproduced on a PRIVATE prefix -> zombie-stub cross-talk exonerated for the spin). `LIBGL_ALWAYS_SOFTWARE=1` fixes nothing on `:0` (converts spin into `glGetTexImage` sleep) but is REQUIRED on Xvfb (with `GALLIUM_DRIVER=softpipe`) to get the adapter up at all. `renderer=vulkan` is worse for d3d8: the shipped enumeration itself fails the legacy caps (`[Enum] Device doesn't support minimum of 2 simultaneous textures!` -> `No Compatible D3D Adapters found!`).
+4. **Six rows: R0-R4b = NOT READ** (behind the named wall; no cold padding; R0 loud-flag: no live contradiction of T-045 - pump never reached; `WorldTickPump` assumption still unfalsified-not-confirmed).
+5. **Env-decision routed to LoudDragon (not executed here, no devenv edits):** (1) DXVK native `d3d8=n` (host Vulkan works; DXVK = real refresh + legacy caps) - best odds; (2) Xorg `-dummy` (server-computed vrefresh RandR modes); (3) real GPU X session. PLUS independent repair: managed `ida-orig-gdb` stub (46779/46781) is CLOSE-WAIT-wedged at ~35-40% CPU while `devenv processes list` says ready - restart is controller-lane.
+6. **Downstream:** T-031 pairing stays blocked on the env decision (values NOT killable-by-effort); T-050 stays GATED (this retry says nothing about re-entrancy either way - engine never reached gameplay orders); T-051 gate resolves the same way. Distinction per row: **"harness can't run past mode validation"**, not "shipped never pumps".
