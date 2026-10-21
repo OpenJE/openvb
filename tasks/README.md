@@ -150,9 +150,9 @@ row; A keeps editorial merge rights).
 | T-040 | **`artifacts/F3.json` provenance — DONE: it is a frozen 2024-04-04 OOAnalyzer v2.2.0 export; producer identified from the IDB's own `_PyOOAnalyzer__` strings, sibling inputs byte-identical (md5 e8827f12…), `ooprolog` stage-2 inference verifiably absent so the current IDB cannot regenerate it. Stage 3 rebuilt + proven (1,101/1,101 keys, sizes, method sets, member sizes/usages; 4,059 synthesized entries declared UNVERIFIED). `f3-json-check` added. `cls_0x…` = "no RTTI-named vftable in 2024", not "unidentified"** | done | SwiftRaven |
 | T-041 | What is `Entity+0x1E4` (size 4, unpacked from the record, readers gate map membership) — name demoted, semantics open | open | unassigned |
 | T-042 | Port **invents shipped data as defaults** (`GameWorld.cpp:90-92` 2253/10/18 vs shipped ctor `0,1,1,0,0,0`) | open | NiceHawk `01a15bd1` (after T-007) |
-| T-043 | **What is `Entity+0x1DC`?** The ref key D-3 hinges on — persisted vs recomputed decides a day or a subsystem | open | WildYak `01a15802` |
+| T-043 | **What is `Entity+0x1DC`?** — **done**: a runtime-allocated reference handle (allocated in `Entity::Create` `0x55190c`, serialized by `PackState`, matched against the raw AMX cell by `meth_0x54be10`); not a form id, not a pointer; `netId` is not a substitute, so D-3 stands | done | WildYak `01a15802` |
 | T-044 | Can any door attack a **location**? Callers of `meth_0x401100` | open | unassigned |
-| T-045 | Slot +24 is a shared stub, not `Update` — re-derive who consumes the per-frame tick (load-bearing for T-011/T-026/T-031) | open | WildYak |
+| T-045 | **Slot +24 of WHICH vft?** — **done**: the pump indexes World's `+4` table (`0x6919e4`), whose slot 6 **is** `Update_0x544a90`; the stub is the primary table's slot 6. Also reversed the frame-0-leap verdict: the shipped tick is session-relative elapsed and the stamp is seeded, so the leap is ours — scoped to the absolute `clock` CONTEXT number only | done | WildYak |
 
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **DONE (01554a2/a023a62)**: Year has a consumer but `totalSeconds=0` makes it inert — `clock` stays compared, no `year` field; spawned T-042 | done | WildYak |
