@@ -141,7 +141,7 @@ row; A keeps editorial merge rights).
 | T-031 | Parity oracle — grammar landed (`d43033b`); synthetic `orig-digest.sh` next, real values gated on T-034 | open | HappyKnight (secondary) |
 
 
-| T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **in progress** — T-036 closed, starting this | SwiftRaven |
+| T-032 | **EA→document index — DONE: `tools/ea-index.py` + `artifacts/ea-index.tsv`, 137 docs / 5,258 EAs / 7,778 mentions, 720,346-pair recall audit 0 silent misses, 756 refused-and-counted. Four silent-wrongness modes found and fixed (see doc)** | done | SwiftRaven |
 | T-033 | Class-identity batch queue — decisions audited; **apply re-granted to RedXenon** (QuickQuartz absent); route-A delta blocked by T-040 | in-progress | RedXenon |
 | T-034 | Lockstep reads — **UNBLOCKED on an alternate port (31437)**; ImHex left alone, IDB writes via shared MCP | open | RedXenon |
 
