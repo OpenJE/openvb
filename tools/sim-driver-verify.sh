@@ -66,5 +66,18 @@ hit=$(awk '{ if (match($0,/victim,pos=[^ ]+,yaw=[^ ]+,hp=[0-9]+\/30/)) { s=subst
 [ "$hit" = "yes" ] && r=0 || r=1
 check "combat round reached: victim hp below max after orders" "$r" "0"
 
+# 8) T-051: the driver must NEVER arm the dead walk branch - the audit PRINTS its counts, and
+#    the branch trace reports the manager's live mode (free-run expected; round-walk = bug).
+arming=$(grep -c "SetRoundMode" tools/sim-driver.cpp || true)
+check "sim-driver SetRoundMode call sites (want 0: no invented arming, T-051)" "${arming:-0}" "0"
+tr=$("$WINE" tools/sim-driver.exe /tmp/sd-a.txt 2>&1 >/dev/null | grep -o "combat branch: [a-z-]*" | head -1)
+check "branch trace line present and names free-run" "$tr" "combat branch: free-run"
+if printf '%s' "$tr" | grep -q "round-walk"; then
+	say "T-051 walk-arming guard" "FAIL (driver armed the shipped-dead branch)"; fail=1
+else
+	say "T-051 walk-arming guard" "ok (no round-walk trace; free-run only)"
+fi
+
+
 echo "[sim-driver-verify] $([ $fail -eq 0 ] && echo PASS || echo FAIL)"
 exit $fail

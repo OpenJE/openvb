@@ -33,6 +33,17 @@ rule; they are open questions, not TODOs with a shape I guessed.
 
 ## The round walk, line by line (0x5a9514-0x5a95de)
 
+> **DEAD IN SHIPPED — pinned (T-010 10e, closed `045a7ec`; suite + driver asserts landed by T-051).**
+> Everything below is the `+4 != 0` branch, and `+4` (mode) plus the `+14` (rearm) that gates its sole
+> writer have **NO nonzero producer anywhere in the image** — `meth_0x5a9330` is called exactly once
+> (`0x5a957f`) behind `[this+14]!=0`. The shipped demo only ever runs the free-run loop (`0x5a9525`).
+> The port mirrors the branch for completeness; it is reachable in TESTS only, via explicit
+> `SetRoundMode(1)` calls, each annotated as test-only, and `sim-driver-verify` audits that the
+> driver never arms it. Consequence for the rotation questions: even a nested `meth_0x5a94a0`
+> re-entry cannot rotate anything in the shipped configuration — **T-050's Branch 2 (writer-study
+> reopen, no probe) is the strong prior**. The observation outranks this banner: if a T-034 capture
+> ever shows a live nonzero `+4`/`+14` producer, THIS line is what gets rewritten.
+
 | EA | what it does | port |
 |---|---|---|
 | 0x5a94a3-0x5a9511 | maintenance runs only when +8 == 0; state-5 nodes get TurnPrep `vft+96` (0x549090: `+0x300 = dt`, **clears +0x319** at 0x549094), any other state UNLINKS its node; then the iterator is refreshed | already ported, unchanged |

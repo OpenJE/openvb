@@ -68,6 +68,7 @@ namespace {
 
 	F3::CombatManager  g_cm;
 	JE::PathManager*   g_pm = 0;      // no map loaded -> NA:path-manager-in-this-context
+	static bool        g_branchPrinted = false;   // T-051: combat-branch trace, once per run
 
 	unsigned long g_clockMs  = 0;     // the harness owns simulated time (SimDigest header)
 	// T-011 step 4: CombatManager::Tick's second argument is the ROUND quantum - shipped reads
@@ -105,6 +106,19 @@ namespace {
 			g_clockMs += (unsigned long)stepMs;
 			F3::TickWorldEntities( (int)g_clockMs );
 			g_cm.Tick( stepMs, (unsigned)( g_secondsPerRound > 0 ? g_secondsPerRound : 0 ) );
+			if ( !g_branchPrinted ) {
+				// T-051: name the branch the manager actually took, read from the LIVE mode -
+				// one trace line, not a digest field. Free-run is the only shipped-LIVE branch:
+				// +4 (mode) and +14 (rearm) have no nonzero producer anywhere in the image
+				// (T-010 10e, 045a7ec), so the round-walk is dead code in shipped config and
+				// this driver must never arm it. If the second arm of this ternary ever
+				// prints, something armed the dead branch - that is a BUG REPORT, not a feature.
+				g_branchPrinted = true;
+				fprintf( stderr, "sim-driver: combat branch: %s\n",
+				         g_cm.RoundMode() == 0u
+				           ? "free-run (mode0x4_==0) - the only shipped-live path (10e); round-walk is dead in shipped config"
+				           : "round-walk (mode0x4_!=0) - DEAD in shipped; SOMETHING ARMED IT - T-051 audit expects never" );
+			}
 			if ( g_digest ) {
 				F3::Sim::WriteFrame( g_digest, src, g_frame, (unsigned)g_clockMs,
 				                     (unsigned)( g_clockMs / 1000u ), 0, 0 );
