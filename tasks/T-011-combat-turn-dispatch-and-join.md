@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: unassigned (pick up after T-009; implementer-B may take it after T-007)
+status: in-progress
+assignee: HappyKnight — dispatched 2026-10-21 as PRIMARY feature work (sequenced ahead of T-031)
 depends: T-010a (behind-sector constants, for the reaction anim side of a landed hit)
 ---
 

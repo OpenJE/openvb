@@ -138,7 +138,7 @@ row; A keeps editorial merge rights).
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
 | T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
-| T-031 | Parity oracle — grammar landed (`d43033b`); **building `orig-digest.sh` against SYNTHETIC data now**, real values still gated on T-034 | in-progress | ZenRaven (back) |
+| T-031 | Parity oracle — grammar landed (`d43033b`); synthetic `orig-digest.sh` next, real values gated on T-034 | open | HappyKnight (secondary) |
 
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
@@ -163,7 +163,7 @@ row; A keeps editorial merge rights).
 
 | T-010 | Research queue (10a answered, 10b resolved-as-defect, 10c one data read, 10d closed, 10e open) | open | research |
 
-| T-011 | Combat: turn-queue per-turn dispatch + join-on-attack | open | unassigned |
+| T-011 | Combat: per-turn dispatch + join-on-attack — **the day's first feature row, dispatched as code** | in-progress | **HappyKnight** |
 
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | done | implementer-C (UltraBear) |
 
