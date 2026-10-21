@@ -808,3 +808,14 @@ Rules banked from the pass:
 3. **Dead-code discovery is a full-value deliverable.** "The mechanism exists and nothing runs it" is
    the answer a gated row was waiting for; it retires the question instead of forwarding it. (Item 31's
    family: the writer hunt is the instrument; here it produced the strongest possible negative.)
+
+## 37. mingw accepting a construct is not evidence the canonical compiler will — header touches REQUIRE the MSVC leg
+
+T-047 (`attack-pos` verb): the port's ctor used a C++11 braced init in the member-init list
+(`overridePos{ 0.0f, 0.0f, 0.0f }`). The mingw cross leg of `sim-driver-build.sh` compiled it silently;
+`msvc-build` (MSVC 2002, the canonical toolchain) failed it at `GameActionAttack.cpp(68)` C2447. The fix
+is a ctor-body assignment — but the durable fact is the ORDER: any lane that validates a `src/F3` header
+edit only against mingw has NOT built the product. One line, per ZenNova's request after commit 8e272e6:
+**edit a src/F3 header or a cross-TU table ⇒ msvc-build before quoting any green.** Same family as item
+35: a tool that accepts too much is an evidence channel lying quietly — the negative proof (MSVC rc0)
+belongs in the report, not the positive one (mingw ok).
