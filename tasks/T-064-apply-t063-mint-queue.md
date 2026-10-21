@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: CalmRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21 — writer slot, first-in per standing rule)
 type: writer wave (sole WRITER on ida_original_f3; T-055 rules verbatim)
 depends: T-063 queue (doc `b3ba8e7`-era, coordinator checkpointed)
