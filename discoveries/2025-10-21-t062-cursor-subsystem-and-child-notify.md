@@ -168,3 +168,15 @@ cap cmp 0x437ad3) · facade slot-2 dispatch sites `call/jmp 0x5803e0` at 0x41cfa
 0x4953e0-0x495416 · Fragment vft 0x66EA1C slot 12/13 = 0x4b1610/0x4b1640 (F3 vft dump + raw
 disasm) · Window vft 0x66E4D4 slot 12 = 0x4b06a0 raw disasm · `call [reg+0x30]` raw scan = 218
 hits (uncollapsible without owner attribution; see census note).
+
+---
+## COORDINATOR ANNOTATION (F2 erratum, T-072 sweep -> KeenStorm raw-confirm; applied 2026-10-21)
+Window PRIMARY slot12 (+0x30 @0x66E4D4) = **0x4AFC00 notify-walk** (iterates iface+0x28 children
+AND the 9 inline fragment records at this+0x90 stride 0x158, calls [X+0x30] fadd-reduced — the
+primary anchor is itself a displayer of the vft+0x30 polymorphic slot, so the heterogeneity section
+is STRENGTHENED by the erratum, not merely repaired). The String setter **0x4B06A0 = slot 12 of the
+SECONDARY table 0x66E574 (=0x66E4D4+0xA0)** — its `add ecx,0x40` this-adjust prologue is the
+sibling-subobject-table signature F3.json's flattened 75-entry list hides (0x4b06a0 sits at flat
+index 52, 0x4AFC00 at 12). Original citation attached the secondary table's body to the primary's
+address at doc time. CITATION LAW (KeenStorm's root-cause, adopted board-wide): **cite TABLE
+ADDRESS + byte offset, and re-dump raw before trusting slot indices near multi-table vft runs.**
