@@ -483,6 +483,8 @@ Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachmen
 the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's
 `socketIdx = id+1` bridge was retracted.
 
+## [SUPERSEDED-READING: see RECONCILIATION APPENDIX at end of file — "mirror the leap" is WRONG at the uptime magnitude, and this heading predates T-045; read on for the original claim]
+
 ## RESOLVED by statics (was: candidate defect surfaced by the T-026 digest) — it is SHIPPED behaviour, mirror it
 
 **World clock starts ~8 hours old.** `JE::World::Update_0x544a90(ms)` (
@@ -661,3 +663,30 @@ Not a parity claim: this is a default-selection bug in our code, it cannot show 
 ship today, and it would only ever surface on a stripped INI, a failed compressed-region read, or a
 save from a build without the block. Anyone tempted to "restore robustness" by re-adding
 `? : 2253` is re-introducing the invention — the authored-zero assertion is there to make that loud.
+
+---
+
+## RECONCILIATION APPENDIX — the 'frame-0 clock leap' three-way collision, resolved (coordinator, T-072 sweep item 1 / T-045 statics / T-056-R2 + T-067 live, 2026-10-21)
+
+One mechanism, three magnitudes; every older wording is preserved above and gets read against this:
+
+1. **The uptime-scale leap (`clock=29242`, ~8h) is a PORT ARTIFACT, not shipped** — T-045 overturned the
+   mid-file 'mirror it' claim: shipped `Update` is entered as `this = &World[4]` (proven twice — its `+0x34`
+   state read IS `ChangeState`'s `+0x38`; `Tick_0x544b30` carries `mov edx,[eax-0Ch]`), so the field it
+   subtracts is primary `+0x4C`, SEEDED at `0x5466bd`; and `JE_TickMilliseconds_0x56af50` returns an
+   accumulated SESSION delta from `[0x70c2b8]` (written only by `F3::ProcessMessagesAndUpdateTime`,
+   `0x70c2bc` seeded in `WinMain` `0x56b8aa`) — NOT raw `timeGetTime()`. Our `src/F3.cpp:786` returning
+   `timeGetTime()` with an unstamped field produced the huge first-frame fold. FIX DIRECTION: session-
+   relative tick + seeded stamp (already the shape our later work converged to); do NOT mirror 29242.
+2. **A MINIMAL 0->1s carry IS real shipped behavior** — T-056-R2 (Xorg-dummy) read world+0x3C seconds
+   0 at pump #1 -> 1 at pump #3, and T-067 RE-CONFIRMED the same 0->1 progression under DXVK (cross-
+   runtime invariant). So 'no leap in the original' (the strict post-T-045 wording) is ALSO misleading —
+   shipped DOES advance a whole second across early pumps; it just isn't an uptime dump.
+3. **Both readings agree on `+0x44/+0x48`**: ctor zero-range + PackState persistence stand unchanged; the
+   collision was never about the pair, it was about WHICH field `Update` subtracts and WHICH clock feeds it.
+
+Net for the digest rows: `clock`/`clockDelta` stay compared (this file's standing call, session-relative
+since T-045); the port's frame-0 value must show the SMALL shipped-shaped carry, never the 8h artifact; and
+T-051's dead-walk pins are unaffected (this is the world-clock path, not the round-walk branch).
+Superseded wordings left in place above per the annotate-never-rewrite rule; this appendix is the single
+read-the-rest statement. Refs: docs/f3/WorldTickPump*, discoveries/2025-10-21-t045*, -t056-*, -t067-*.
