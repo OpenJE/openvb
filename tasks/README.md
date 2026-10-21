@@ -142,11 +142,12 @@ row; A keeps editorial merge rights).
 
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **in progress** — T-036 closed, starting this | SwiftRaven |
-| T-033 | Class-identity batch queue — batch-2 **decisions done + R36-e audited across the whole mint set (`c10a3eb`/`1084535`/`00b09b7`)**; apply pending QuickQuartz + F3.json re-export | in-progress | RedXenon (decided) + QuickQuartz (apply, re-confirm) |
-| T-034 | Lockstep reads — targets pre-resolved; port fix landed and verified, **waiting on an ImHex restart to free 31337** | open | RedXenon |
+| T-033 | Class-identity batch queue — decisions audited; **apply re-granted to RedXenon** (QuickQuartz absent); route-A delta blocked by T-040 | in-progress | RedXenon |
+| T-034 | Lockstep reads — **UNBLOCKED on an alternate port (31437)**; ImHex left alone, IDB writes via shared MCP | open | RedXenon |
 
 
-| T-039 | **`Entity+0x314` is size 4 in the DB but a `unsigned char` in our port**, used as T-011's gate term — count vs flag undecided | open | HappyKnight |
+| T-039 | **SETTLED BY STATICS: `Entity+0x314` is the action deque's ELEMENT COUNT** (`++` 0x54ea71 / `--` 0x54b637,0x54b672 / zero 0x5515e6; `0x4084c0` returns `==0`). Gate term reads "has queued actions". Port: byte removed, count derived, digest prints `q=`. `+0x1E4` resized to 4 but its MEANING is still open | done | HappyKnight (01a15be7) |
+| T-040 | **`artifacts/F3.json` has no regeneration path** — four docs require an export re-run nobody can perform; blocks T-033 acceptance | open | SwiftRaven (after T-032) |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
 | T-036 | Helper-theft taxonomy — **DONE (38118cb)**: the 998 was two-route arithmetic; artifact floor 221 (8.9%); T-029 denominator understates | done | SwiftRaven |
@@ -166,7 +167,7 @@ row; A keeps editorial merge rights).
 
 | T-010 | Research queue (10a answered, 10b resolved-as-defect, 10c one data read, 10d closed, 10e open) | open | research |
 
-| T-011 | Combat: per-turn dispatch + join-on-attack — **the day's first feature row, dispatched as code** | in-progress | **HappyKnight** |
+| T-011 | Combat: per-turn dispatch + join-on-attack — **the day's first feature row, dispatched as code**; step 3's gate operand is now SETTLED by T-039 (queue count, not busy) | in-progress | **HappyKnight** |
 
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | done | implementer-C (UltraBear) |
 

@@ -1,6 +1,8 @@
 ---
 status: open
-assignee: QuickQuartz (01a157f6 — IDB writer, rename-only scope; AWAY since 20:10, re-confirm before applying)
+assignee: **RedXenon (01a157ec) — apply scope RE-GRANTED 2026-10-21.** QuickQuartz (01a157f6) has been
+# away 1h25m with no renames applied; the grant follows whoever can actually reach the shared IDB MCP
+# session (.idalib-mcp on 8745) tonight. Caveat: T-040 — no route-A delta is measurable until an export path exists.
 # + RedXenon (01a157ec) — batch-2 DECISIONS, dispatched 2026-10-21 by row edit (MintEagle departed, hole was open)
 depends: T-029 (the census that produced this queue)
 ---

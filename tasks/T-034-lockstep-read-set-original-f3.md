@@ -33,6 +33,18 @@ The native **never** writes `+0x14`, and `ctor_0x403e40` doesn't either (its fir
 call?** `new(0xC8)` may land on reused memory, so a defined pre-call value means either heap reuse or a writer nobody
 has found, and both are findings worth reporting. Take the value on both sides of `0x550720`.
 
+## UNBLOCKED without evicting ImHex (coordinator, 2026-10-21)
+
+`31337` is still held by the live ImHex listener (pid 12337), and the restart is deferred until the user's in-flight work
+finishes. **The port was only ever a convention** — `devenv/scripts/f3-lockstep-debug.nix` reads
+`origPort=''${OPENVB_ORIG_GDB_PORT:-<default>}`, so an env override moves the stub. Verified free: **31437, 31438, 31441,
+31556**. So the reads can proceed now with `OPENVB_ORIG_GDB_PORT=31437`, leaving someone else's session intact — which is
+also the correct precedent: work around a shared resource rather than evict a peer from it.
+
+Note the IDB is served by shared MCP processes (`.idalib-mcp-wrapper` on **8745** original / **8746** reimpl), so an
+"IDB writer" is whoever is issuing writes through that one session — single-writer discipline applies to the MCP, not to
+a person's local file.
+
 ## Environment status (2026-10-21) — two independent bugs found, one still needs the user
 
 NiceHawk's handover (`b77625e`) diagnosed more than a port collision. Both parts are now fixed in the tree:
