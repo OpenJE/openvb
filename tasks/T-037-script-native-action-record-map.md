@@ -1,8 +1,15 @@
 ---
-status: open
+status: in progress
 assignee: WildYak
 depends: T-030 (seam ported), T-033 (class identity helps but is not required)
 ---
+
+> **Statics half delivered 2026-10-21 → `docs/f3/ScriptNativeActionDoors.md`.** All four natives recovered from the
+> read-only IDB: sizes `0xC8`/`0xC8`/`0x24`/`0x3C`; argument-derived stores are **1** (`Attack`: `+0x38` = the
+> target's `Entity+0x1DC` ref key), **3** (`JustAttack`: `+0x6C=0`, `+0x6F=0`, then the same `+0x38`), **2**
+> (`StartDialogue`: `+0x1C`, `+0x19=0` — plus a pre-enqueue flush of `Entity+0x304` via `0x54c440`), **0**
+> (`ReloadWeapon`). Acceptance item 2 remains open: the `attack` verb change is a **proposal in RedXenon's hands**
+> (they hold `tools/sim-driver.cpp`), and item 3's live half is NiceHawk's T-034/R4.
 
 # T-037 — Second input door: what the script natives push into the Action record
 
