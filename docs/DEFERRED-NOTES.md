@@ -547,6 +547,27 @@ Two further deviations inside the same seam, both measured rather than assumed:
    ported and not stubbed**. An absent call with the EA cited is honest; a flag nobody reads is a false
    model of a subsystem we have not reconstructed.
 
+**D-3 — the shipped world clock is INI-seeded with a date; the seed cannot reach `clock`.**
+(`docs/f3/WorldYearSeedConsumer.md`, `modules/openje/src/JE/World.cpp:22`, `src/F3/GameWorld.cpp:89-92`.)
+`JE::World::virt_meth_0x546b50` (called as the FIRST statement of `Initialize`, `0x5466b0` -> vft slot 5)
+reads `[World] Year/Month/Day/Hour/Minute/Second` + `Seconds Per Round` out of the engine ini tree into
+`World+0x14..+0x28` / `+0x40`, and `JE::Gregorian::ctor_0x544950` (`0x54497d`) copies those 24 bytes into
+the clock's running fields. `Gregorian+0x34 totalSeconds` — the quantity the digest prints as `clock` —
+is set to **0** at `0x5a375a`, and every catch-up branch in `virt_meth_0x5a3740` is dead at construction
+because seed == running. `PackState_545930` persists `+0x44/+0x48` (the tick stamps) but **not** the
+calendar block, so the date is re-read from disk every run. Therefore: `clock`/`clockDelta` stay
+compared, no `year` field belongs in the hashed set, and the frame-0 leap story
+(`docs/f3/WorldTickPump.md`) stands unchanged. Residual inference: `param_1 == &World+0x14` is proved by
+shape only (six consecutive ints, identical `0,1,1,0,0,0` ctor defaults, and zero direct readers of
+`World+0x14`), not by resolving the thunk's `-0x230 / -0x154` arithmetic.
+
+**Filed as a BUG, not a deviation:** `src/F3/GameWorld.cpp:90-92` falls back to the literals
+`?: 2253 / ?: 10 / ?: 18`. Shipped's fallback for a missing key is the World ctor's
+`0, 1, 1, 0, 0, 0` (`0x548af6..0x548b08`) — 2253-10-18 comes from `sys.ini`, never from code. Both sides
+agree while the key ships; they disagree the moment it does not. The port's `JE::World` defaults are
+also all-zero (`modules/openje/src/JE/World.hpp:13`) where shipped uses `0,1,1` for year/month/day.
+Fix = delete the literals and match the ctor defaults; it changes no digest value.
+
 **Standing rule from this row:** no test may assert a damage value (or any drawn value) while the draw
 comes from the live global stream — pin the seed or inject the generator, assert the exact number, and
 keep a sensitivity control (a different seed must give a different answer). Range-only assertions on an
