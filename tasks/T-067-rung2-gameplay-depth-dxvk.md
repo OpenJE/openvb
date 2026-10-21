@@ -64,3 +64,17 @@ semantics is the coordinator's pass. Divergence ruling: engine-memory values pai
 identical semantics both runtimes), but HEAP ADDRESSES differ between stacks — T-031/T-068 must pair on
 same-env addresses, cross-env constants. Next cheap step (routed, not built): input injection for live
 Attack/count>4 + bonus cursor watches on this now-endless window.
+
+## T-077 CAPTURE-PLAN ADDENDUM (from KeenStorm T-070/T-071 framing + this lane's data; commit-ready when staffed)
+Injection is only the trigger; the PAYLOAD is one shape read at the first funnel hit on an injected order:
+  `x/2wx <entity+0x308>,<entity+0x314>` + slot0 action `[action+0x00]`
+- SHAPE A (predicted): slot0 stays 0x6497C4 (Idle RESIDENT), injected order lands slot1+, frame-over-frame
+  unchanged, never advances → HOL live-confirmed; T-056/R-H "Attack never fired" upgrades from gap to
+  DEMONSTRATED designed behavior; T-071 push-verb HOL stands.
+- SHAPE B (KeenStorm's recorded falsifier): injected order advances WITHOUT a funnel-visible drain
+  (slot0 becomes the order, idle gone, no 0x551bbe drain) → dual-shape model wrong live-side, LOUD report,
+  verb split revised. Either shape is a win; cost of the verdict = one dump.
+Also arm (T-070 §5): [idle+0x16]/[idle+0x18] across frames (expect 1/0), [entity+0x184] before/after rebase
+(world-ms stamp), drain @0x551bbe vs create @0x551bde same-frame cadence, count>4 (D-2 minus resident) rides
+along. Re-opener watch: bp10 0x5a955d — zero across sustained boot is consistent with raiser-exclusion
+(+0x319 never armed); ANY post-injection bp10 fire = T-050 closure falsifier, report immediately.
