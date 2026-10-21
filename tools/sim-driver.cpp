@@ -186,6 +186,15 @@ int main( int argc, char** argv ) {
 			e.statMax = hp; e.statCur = hp;
 			e.entityState = F3::kStateActive;   // ACTIVE pumps (sess-11/12 switch)
 			registerEnt( &e );
+			// T-071: the harness's spawn IS the add-to-world edge. Shipped fires the idle
+			// rebase from the net path that follows spawn (Entity::SetInMap_0x551ba0: drain
+			// @0x551bbe -> CreateGameAction(1) @0x551bde -> funnel @0x551be4, driven by the
+			// Server/Client pumps), and T-056 run H saw the result as GameActionIdle at the
+			// first insert on 12/12 entities. The head-of-line consequence is the shipped
+			// baseline: orders that do not drain first wait behind the resident (run H's
+			// "Attack never fired"); command-boundary packets drain, so `attack`/`attack-pos`/
+			// `wait` model that pump and `push` below models the no-drain native shape.
+			F3::RebaseOntoIdle( &e, 0 );
 		} else if ( strcmp( verb, "melee" ) == 0 ) {
 			char who[ 64 ], sk[ 32 ]; int v = 0;
 			if ( sscanf( line, " melee %63s %31s %d", who, sk, &v ) != 3 ) { rc = 1; break; }
@@ -213,13 +222,14 @@ int main( int argc, char** argv ) {
 				rc = 1; break;
 			}
 			if ( g_atkN >= kMaxActions ) { fprintf( stderr, "SIM-DRIVER FAIL line %d: action pool\n", lineno ); rc = 1; break; }
-			if ( ea->actions[0].kind != 0 && ea->actions[1].kind != 0 &&
-			     ea->actions[2].kind != 0 && ea->actions[3].kind != 0 ) {
-				// deviation D-2: block of four is full and the seam REFUSES (correct for the port,
-				// but a driver that ignores it under-tests: fail the run, do not queue a phantom order
-				fprintf( stderr, "SIM-DRIVER FAIL line %d: entity %s queue block full (D-2 refusal; drain before more attacks)\n", lineno, a );
-				rc = 1; break;
-			}
+			// T-071 command-boundary drain: the shipped Server packet pump DRAINS the queue
+			// before issuing a replacement order (virt_meth_0x556ea0: case 0x3C drain @0x5576c8
+			// -> create @0x5576d8 -> funnel @0x5576f7; case 0x1A drain @0x557233 -> @0x557267;
+			// case 0x3B is the stop-packet's own idle rebase). The harness is our command pump,
+			// so `attack` takes that shape; the script-native shape (F3::Attack enqueues WITHOUT
+			// draining and head-blocks behind the resident - run H's observed truth) is the `push`
+			// verb below. Accumulation/D-2 therefore drives through `push`, not repeated attack.
+			F3::ClearActionQueue( ea );
 			F3::AttackModeRecord m = F3::GameActionAttack::MakeUnarmedMode( dmin, dmax, 1, tohit );
 			m.flatDamageBonus = bonus;   // MakeUnarmedMode hard-codes this to 0 (GameActionAttack.cpp:81)
 			F3::GameActionAttack& o = g_atks[ g_atkN++ ];
@@ -258,11 +268,9 @@ int main( int argc, char** argv ) {
 				rc = 1; break;
 			}
 			if ( g_atkN >= kMaxActions ) { fprintf( stderr, "SIM-DRIVER FAIL line %d: action pool\n", lineno ); rc = 1; break; }
-			if ( ea->actions[0].kind != 0 && ea->actions[1].kind != 0 &&
-			     ea->actions[2].kind != 0 && ea->actions[3].kind != 0 ) {
-				fprintf( stderr, "SIM-DRIVER FAIL line %d: entity %s queue block full (D-2 refusal)\n", lineno, a );
-				rc = 1; break;
-			}
+			F3::ClearActionQueue( ea );   // command-boundary drain (see the `attack` note;
+			                              // 0x5576c8 -> 0x5576f7 is literally the move-packet
+			                              // shape this harness verb models)
 			F3::GameActionAttack& o = g_atks[ g_atkN++ ];
 			o.SetPositionOverride( x, y, z );   // meth_0x401100 equivalent (packet handler order)
 			o.Start( ea, 0, 0u, 0 );           // attacker-only guard, 0x46decb shape; mode m=0:
@@ -280,9 +288,53 @@ int main( int argc, char** argv ) {
 			if ( sscanf( line, " wait %63s %d", who, &dur ) != 2 ) { rc = 1; break; }
 			F3::SpawnedEntity* e = findEnt( who );
 			if ( !e || g_waitN >= kMaxActions ) { fprintf( stderr, "SIM-DRIVER FAIL line %d: wait\n", lineno ); rc = 1; break; }
+			F3::ClearActionQueue( e );   // command-boundary drain (case 0x1A shape - the engine
+			                             // wait/anim order replaces the queue; 0x557233 -> 0x557267)
 			F3::GameActionWait& w = g_waits[ g_waitN++ ];
 			w.durationMs = (unsigned)dur; w.startMs = 0u;   // lazily stamped by the drain
 			if ( !F3::EnqueueEntityAction( e, &w, 2 ) ) { fprintf( stderr, "SIM-DRIVER FAIL line %d: wait insert refused\n", lineno ); rc = 1; break; }
+		} else if ( strcmp( verb, "push" ) == 0 ) {
+			// T-071: the SCRIPT-NATIVE shape - F3::Attack (0x459f5d) enqueues through the
+			// funnel WITHOUT draining (new 0xC8 -> ctor 0x403e40 -> meth_0x403fa0 -> funnel,
+			// no meth_0x54c440 call anywhere on the path). Behind an idle resident this
+			// head-blocks, which is exactly why run H's scripted Attack never fired. Repeated
+			// `push` is the honest D-2 accumulator: depth grows to 3 ORDERS + 1 resident and
+			// the 4th order hits our first-block wall that the shipped deque would overflow
+			// into a second block (0x54ea54 appends; harness item 22; T-070 §4 re-expression).
+			char a[ 64 ], t[ 64 ]; int dmin = 1, dmax = 3, tohit = 0, bonus = 0;
+			int n = sscanf( line, " push %63s %63s %d %d %d %d", a, t, &dmin, &dmax, &tohit, &bonus );
+			F3::SpawnedEntity* ea = findEnt( a );
+			F3::SpawnedEntity* et = findEnt( t );
+			if ( n < 2 || !ea || !et ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: push needs two spawned entities\n", lineno );
+				rc = 1; break;
+			}
+			if ( g_atkN >= kMaxActions ) { fprintf( stderr, "SIM-DRIVER FAIL line %d: action pool\n", lineno ); rc = 1; break; }
+			if ( ea->actions[0].kind != 0 && ea->actions[1].kind != 0 &&
+			     ea->actions[2].kind != 0 && ea->actions[3].kind != 0 ) {
+				// deviation D-2, now INCLUDING the resident: 3 orders + resident fill the
+				// first block; a shipped deque grows past it, our port refuses - fail loudly
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: entity %s queue block full (D-2 refusal; 3 orders + resident)\n", lineno, a );
+				rc = 1; break;
+			}
+			F3::AttackModeRecord m = F3::GameActionAttack::MakeUnarmedMode( dmin, dmax, 1, tohit );
+			m.flatDamageBonus = bonus;
+			F3::GameActionAttack& o = g_atks[ g_atkN++ ];
+			const F3::AttackModeRecord* mp = 0;
+			if ( n >= 6 ) {
+				fprintf( stderr, "SIM-DRIVER NOTE line %d: mode row INJECTED by the driver (same "
+				         "stand-in policy as `attack`, WildYak T-037)\n", lineno );
+				mp = &m;
+			}
+			o.Start( ea, et, 0u, mp );
+			if ( !F3::EnqueueEntityAction( ea, &o, 4 ) ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: insert seam refused (block full, D-2)\n", lineno );
+				rc = 1; break;
+			}
+			if ( o.actor != ea ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: seam did not write owner at +0x14\n", lineno );
+				rc = 1; break;
+			}
 		} else if ( strcmp( verb, "move" ) == 0 ) {
 			fprintf( stderr, "SIM-DRIVER SKIP line %d: move requires a loaded map + PathManager/grid "
 			                 "(SpawnMove mapfile path not wired here) - reported, not faked\n", lineno );

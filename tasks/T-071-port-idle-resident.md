@@ -1,5 +1,5 @@
 ---
-status: open
+status: landed (gates green; R3 state-agreement achieved IN THE TOOL)
 assignee: KeenStorm (self-proposed §5(a) sketch; coordinator-approved, same author-knowledge lane as T-066)
 type: implementation (product code, submodule-first, full gate law incl. msvc when headers move)
 depends: T-070 (the mechanism is RE'd — this row ports it), T-067/R5-R6+4 live confirms (behavioral backing optional, statics sufficient to start)

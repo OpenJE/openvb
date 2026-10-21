@@ -1,9 +1,16 @@
 # D-2 severity stress (RedXenon; static premise: WildYak T-037 - out-of-range attack
 # pushes TWO actions onto one owner in one pass; depth 5 is the 3rd-4th approach pass
 # in the original, which grows the block chain unboundedly at 0x54ea54).
-# Our port models ONE block (actions[4]); the seam returns 0 on the 5th insert.
+# Our port models ONE block (actions[4]); the seam returns 0 on the block-wall insert.
 # This script asserts the REFUSAL itself: expected outcome = driver FAILS with the
 # D-2 line, proving the sim drops an order the shipped deque would have queued.
+# T-071 RESHAPE (semantics preserved, lines moved): `attack` now models the shipped
+# COMMAND-PUMP shape (drain-then-issue, virt_meth_0x556ea0 cases 0x1A/0x3C - it can
+# never accumulate), so the accumulator is `push`, the honest SCRIPT-NATIVE shape
+# (F3::Attack 0x459f5d enqueues without draining). Spawn rebases onto the idle
+# resident, so the first block holds 3 orders + resident: refusal on the 4th push.
+# Depth math changed from "5 orders" to "4 orders (3 + resident wall)" - the SAME
+# D-2 fact under T-070's re-expression (discoveries/2025-10-21-t070 §4).
 digest /tmp/d2-stress.digest
 spawn brute  0 20.0 0.0 0.0 45
 spawn v1     1 24.0 0.0 0.0 30
@@ -12,10 +19,10 @@ spawn v3     3 26.0 0.0 0.0 30
 spawn v4     4 27.0 0.0 0.0 30
 spawn v5     5 28.0 0.0 0.0 30
 melee brute melee 100
-attack brute v1
-attack brute v2
-attack brute v3
-attack brute v4
-attack brute v5
+push brute v1
+push brute v2
+push brute v3
+push brute v4
+push brute v5
 run 30 16
 end

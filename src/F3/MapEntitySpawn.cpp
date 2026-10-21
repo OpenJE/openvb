@@ -242,6 +242,12 @@ namespace F3 {
 			if ( refused ) { *refused = 1; }
 			break;
 		}
+		case 6:   // the idle resident (T-071): OUR struct carries the owner at the real shipped
+		         // +0x14 (GameActionIdle mbr_0x14, usage 0x40563d reads it in the activation), so
+		         // this is the one kind where the uniform store 0x550737 has an honest target.
+			static_cast< SpawnedEntity::IdleResident* >( action )->owner0x14 = entity;
+			if ( linked ) { *linked = 1; }
+			break;
 		default:
 			// kind 3 (GameActionOperateDoor, MapEntitySpawn.hpp:192) is likewise a flat port-side
 			// pair { door, startMs } with no owner member.
@@ -302,6 +308,42 @@ namespace F3 {
 			}
 		}
 		return 0;   // our actions[4] is the deque's FIRST BLOCK; the original appends blocks
+	}
+
+	// T-071 seam: mirror of JE::Entity::meth_0x54c440 - walk the deque, erase, deldtor(1) each.
+	// The head gets its [vft+8] cancel hook BEFORE the walk (0x54c49a); shipped idle answers it
+	// with ret 0 (0x404b70) and our other kinds have no port-side cancel hook at all, so the
+	// hook is cited-and-omitted rather than faked: nothing on the port side reads it.
+	void ClearActionQueue( SpawnedEntity* e ) {
+		if ( !e ) {
+			return;
+		}
+		for ( int i = 0; i < 4; ++i ) {
+			e->actions[i].kind = 0;
+			e->actions[i].action = 0;
+		}
+	}
+
+	// T-071 seam: the drain-then-feed-idle rebase. Shipped does it at the two membership/command
+	// edges - Entity::SetInMap_0x551ba0 (drain @0x551bbe -> CreateGameAction case 1 @0x551bde ->
+	// funnel @0x551be4, reached from Server::meth_0x555750 and Client::virt_meth_0x58c660) and
+	// the Server stop-packet (virt_meth_0x556ea0 case 0x3B: drain @0x55763b -> create(1)
+	// @0x557657 -> funnel @0x55765d). T-056 run H saw the result as the first insert on 12/12
+	// entities. The object is armed fresh each time (start-pending 0x560184, stamp-flag 0x405605,
+	// done-byte stays 0 at 0x56018d) - shipped allocates anew per rebase; in-place re-arming is
+	// the same observable state. Owner link goes through EnqueueEntityAction so the 0x550737
+	// analog fires exactly like the shipped funnel does.
+	void RebaseOntoIdle( SpawnedEntity* e, unsigned int worldMsUnused ) {
+		if ( !e ) {
+			return;
+		}
+		(void)worldMsUnused;   // the stamp is applied at the resident's FIRST PUMP tick (the
+		                       // shipped start runs inside the pump at sub_55A1C0, not at the
+		                       // feeder) - kept in the signature so call sites read as the
+		                       // shipped chain reads: rebase at world-time.
+		ClearActionQueue( e );
+		e->idleResident = SpawnedEntity::IdleResident();   // ctor defaults ARE the re-arm values
+		EnqueueEntityAction( e, &e->idleResident, 6 );     // slot 0 after the drain; links owner
 	}
 
 	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch );
@@ -447,6 +489,31 @@ namespace F3 {
 					if ( die->Update( e ) == 1 ) {
 						a.kind = 0; a.action = 0;   // static pool: no delete
 					}
+				} else if ( a.kind == 6 ) {
+					// T-071: the idle RESIDENT. Protocol-exact (sub_55A1C0): start runs once while
+					// the pending byte is set, update ticks every frame, the predicate (byte +0x18,
+					// getter 0x404b60) NEVER becomes true - the slot is not cleared, ever. That is
+					// what head-of-line blocking IS in the shipped pump, and the walk above already
+					// mirrors it: this is the first non-empty slot, the tick consumed nothing, and
+					// the branches behind it are not reached until a DRAIN (ClearActionQueue /
+					// RebaseOntoIdle) takes the resident out.
+					SpawnedEntity::IdleResident* ir =
+					    static_cast<SpawnedEntity::IdleResident*>( a.action );
+					if ( ir->startPending0x10 ) {
+						ir->startPending0x10 = 0;   // cleared BEFORE the start (sub_55A1C0:20)
+						if ( ir->stampOnce0x20 ) {  // ctor 0x405605 sets 1, read at 0x405651
+							e->actionStartMs0x184 = ms;   // 0x548f90 store @0x548fa2/0x548fb8
+						}
+						// QueueAnimEvent_0x4673D0 pair: (ent, 9, 0) @0x40566d THEN (ent, 1,
+						// [resident+0x1C]) @0x40567a. The port seam is a single last-id field
+						// (no anim-layer reader yet - consumers checked this pass, T-071:
+						// writers only at GameActionAttack.cpp:312/378), so the observable is
+						// the LAST queued id, with both EAs cited rather than a silent 1.
+						e->queuedAnimEvent = 1;
+					}
+					ir->consumed0x16 = 1;           // update 0x5a9070 - the DIFFERENT byte, never
+					                              // the predicate: idle consumes no budget, never
+					                              // finishes, and stays head until drained
 				}
 			}
 			// T-048: the +0x319 RAISER, mirroring shipped `Entity::virt_meth_0x54c570`, whose
@@ -473,7 +540,14 @@ namespace F3 {
 			// RE-ENTRANCY, which the port does not model (row boundary; lockstep question routed
 			// by T-011). No rotation is invented here: the PathManager T-048 block pins BOTH
 			// the raise and the stable head.
-			if ( acted && actedSlot >= 0 && e->actions[ actedSlot ].kind != 0 ) {
+			if ( acted && actedSlot >= 0 && e->actions[ actedSlot ].kind != 0 &&
+			     e->actions[ actedSlot ].kind != 6 ) {
+				// ...AND NOT for the idle resident (T-071): the shipped raiser 0x54c833 sits on
+				// the ANIM-EVENT deque, not the action deque - a resident idle never raised it,
+				// and shipped rounds tick normally with the resident at head (the command-pump
+				// packets prove it). Letting the resident hold the latch would freeze our
+				// combat manager's skip-advance consumer (CombatManager.cpp:169) in a state
+				// shipped never reaches: the port's FIFO-slot analogy must not over-apply.
 				e->actedLatch0x319 = 1;
 			}
 		}
@@ -650,6 +724,15 @@ namespace F3 {
 			e->entityState = kStateActive;   // add-to-world activation (map load leaves
 			                               // entities at ctor birth 5; the pump head skips
 			                               // them until this flip - session 14 §2)
+			// T-071: add-to-world is the port's membership edge. Shipped fires the rebase
+			// from the net path that follows spawn (Entity::SetInMap_0x551ba0: drain
+			// @0x551bbe -> CreateGameAction(1) @0x551bde -> funnel @0x551be4, driven by
+			// Server::meth_0x555750 / Client::virt_meth_0x58c660 ADDTOMAP), and T-056 run H
+			// observed the result as GameActionIdle at the FIRST insert on 12/12 entities.
+			// The head-of-line consequence is the shipped baseline behavior: script natives
+			// enqueue BEHIND the resident (that is why run H's Attack never fired); the
+			// command-boundary packets drain first (virt_meth_0x556ea0 cases 0x1A/0x3B/0x3C).
+			RebaseOntoIdle( e, 0 );
 			if ( map == GetActiveMap() ) { /* keep latest active registration fresh */ }
 
 			if ( g_spawnedEntityCount < 128 ) {

@@ -141,6 +141,9 @@ namespace F3 {
 			case 3:  return "GameActionOperateDoor";
 			case 4:  return "GameActionAttack";
 			case 5:  return "GameActionDie";
+			case 6:  return "GameActionIdle";   // T-071 resident; the shipped factory name for
+			                                   // case 1 (0x46f290), NOT our numbering - see the
+			                                   // mapping table at SpawnedEntity::ActionEntry
 			default: return "UNKNOWN_KIND";   // never a silent name
 			}
 		}
