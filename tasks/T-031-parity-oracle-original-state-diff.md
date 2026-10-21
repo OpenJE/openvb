@@ -6,6 +6,16 @@ depends: T-026 (digest format exists), T-027 (seeded stream exists)
 
 # T-031 — Parity oracle: read the ORIGINAL's state and diff it against ours
 
+## Status note (coordinator, 2026-10-21): stalled at the read boundary
+
+**Grammar side is landed** (`d43033b`): digest fields split into COMPARED vs CONTEXT, action records compared by
+**class** via vftptr through `F3.json` instead of pointers or kind tags. **The shipped side is not**, and that is not a
+capacity problem — it is a dependency: `tools/orig-digest.sh` needs the T-034 values (R1 pinned LCG state, R3 deque
+depth, R4 pre/post-call owner value), which are NiceHawk's and currently unreported. ZenRaven has been away since the
+20:15 commits, so this row is **blocked on reads, not on will**. Do not treat the oracle as progressing until either
+T-034 reports or a lane picks up `orig-digest.sh` against synthetic input and says plainly that it is testing the
+comparator, not parity.
+
 ## Why
 Every check we have proves **self-consistency**. `SimDigest` says so in its own header:
 `DOES NOT PROVE=parity with F3.exe`. That is why a claim like "reaction ids are {33,34,37,38,40,41}"

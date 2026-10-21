@@ -138,13 +138,13 @@ row; A keeps editorial merge rights).
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
 | T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
-| T-031 | **Parity oracle** — diff the ORIGINAL's state against ours (highest leverage on board) | Parity oracle — **in progress**: digest grammar split COMPARED/CONTEXT + action classes via vftptr (`d43033b`); T-034 reads pending || in-progress || ZenRaven (01a15aff) |
+| T-031 | Parity oracle — grammar landed (`d43033b`), shipped side **STALLED: blocked on T-034 reads**, owner away | blocked | ZenRaven (+ T-034 = NiceHawk) |
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
 | T-033 | **Class-identity batch queue** — order corrected to contiguity-ratio x fns; IDB = rename-only scope, single writer 01a157f6 | in-progress | QuickQuartz (applies) + **unassigned: batch-2 decisions (was MintEagle, departed)** |
 | T-034 | **Lockstep read set on the original `F3.exe`** (6 reads, no code) — decides D-2's severity | open | **NiceHawk** (re-dispatched; IronLion left before first read) |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
-| T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | ZenRaven |
+| T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
 | T-036 | **Where did the 998 helper-theft functions come from?** 40% of tier-2 attribution is noise | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven |
 | T-037 | Second input door: what the script natives write into the Action record | **dispatched, unconfirmed** (0 tool calls) | WildYak |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |

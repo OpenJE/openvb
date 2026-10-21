@@ -1,6 +1,7 @@
 ---
 status: open
-assignee: ZenRaven (owns SimDigest + the time-base question)
+assignee: WildYak (01a15802) — re-dispatched 2026-10-21: pure statics, no debugger, and ZenRaven is away.
+# ZenRaven still owns the SimDigest field decision that this row's answer feeds (T-031).
 depends: nothing; feeds T-031 (parity oracle) and T-026
 ---
 
