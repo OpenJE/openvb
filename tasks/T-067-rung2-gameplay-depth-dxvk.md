@@ -117,6 +117,25 @@ Injection is only the trigger; the PAYLOAD is one shape read at the first funnel
     disagreement would be the breach itself.
   * BP map otherwise unchanged: bp9/bp10 raiser legs, L1-L4 resident reads, R5/R6, BONUS-3/4/5, T-050
     reopen condition (bp10 hit) — all waiting on input keys at :96.
+- >>> FINAL BP SCHEME (WildZenith T-085 §6 via LoudDragon, SUPERSEDES all earlier bp sketches — including
+  the 0x54c7f6 single-discriminator above, which stays valid as the WALK-site reading but is no longer the
+  whole arm):
+    bp7  0x54c833  head-not-finished RAISER
+    bp8  0x54c864  EXHAUSTED — arm FIRST, +0x318 two-occurrence DEBOUNCE (single hit = nothing; the PAIR
+                   means the raise)
+    bp9  0x549090  the CLEARER: blind-clear + [ent+0x300] round-ms stamp
+    bp10 0x5a955d  THE ONLY REFUTATION EVENT
+    bp11 0x5a94a0  re-entrancy DEPTH via mbr_0x8
+    bp12 0x54c9c1 vs 0x54c92a  path discriminator
+    bp13 0x548d80  sink field values (BONUS-3 rides free; ActionAnim BYPASS path = direct sink, clears
+                   +0x288 — explains R4b boot sightings WITHOUT the queue; arm alongside bp12)
+  PRE-SPECIFIED READINGS (do not freelance): raiser-hits-without-bp10 = CONSISTENT (latch raised, consumer
+  mode-gated — NO escalation). bp10 hit OR bp11 depth>=2 = T-050 REOPENS live-refuted. Depth-1-across-a-
+  round = closed-as-unobserved, NOT disproven.
+  CHAIN FACT (may change arming): pump dispatch gate at ServerUpdate state 7 IS [ent+0x1BC] (pop-flag
+  byte) — pop bp and state reads can share one hit-site.
+  SITTING TODO at harness level: t052-drive.py needs the new leg handlers (esp. bp8 debounce-pair logic and
+  bp12 either-or site counts) before first injection — that is code-on-arrival, minutes, not rest-breakers.
 - Banked by KeenStorm as independent R4b confirm (third boot, second runtime, third entity pointer):
   scripted rounds' count 1→2→3, Idle-first/Anim-after on 0x0A6C6060.
 Also arm (T-070 §5): [idle+0x16]/[idle+0x18] across frames (expect 1/0), [entity+0x184] before/after rebase
