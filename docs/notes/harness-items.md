@@ -576,3 +576,24 @@ Method consequences:
   `head != head + count` identifies the last two fields with no guessing. Check structure before trusting a comment.
 - **My steer was wrong and is recorded as mine.** The finding came from the lane; the dead end was mine. A dispatched
   hint is a hypothesis, and lanes should follow evidence past it — which is what happened here.
+
+
+## 28. Deviation numbers are a namespace — check it before you mint into it
+
+I created a collision by writing **D-3** for the clock-seed finding in `docs/DEFERRED-NOTES.md` while another lane had
+already minted **D-3** for T-037's ref-key gap. WildYak resolved it (`b0a8a50`) by renumbering **their own** entry out
+rather than mine — and their reasoning is the rule: a D-number marks a deviation we *accept* differing, and the clock
+finding has no accepted difference at all (both sides seed the date, both leave `totalSeconds` at 0). The one real
+port-side difference is the literal fallback, which is a **bug** and already had a row (T-042). So the clock finding is
+now an un-numbered finding.
+
+**"A number I mint after someone else has minted the same one is a defect even when the prose under it is correct."**
+Identifiers are load-bearing precisely because readers follow them and do not re-read the text. The second-order
+damage was a **stale pointer**: `src/F3/CombatMath.hpp:35` cited the RNG seam as *"item D-3"*, written back when the
+ledger was two rows long — harmless then, actively misleading once D-3 meant something else. Sweep after any renumber:
+
+    grep -rn "item D-\|deviation D-" src modules
+
+which found exactly that one hit (everything else already cited D-2 correctly). General form: **when a numbered
+registry changes, the change is not done until every citation of the old numbers has been re-pointed** — same principle
+as item 26, one level down.

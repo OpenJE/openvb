@@ -32,7 +32,7 @@ namespace F3 {
 	int ShippedRand();
 
 	// Test-only: force the LCG state, mirroring what F3::SetStartupTime (0x48CCA0) stores.
-	// Registered as a deliberate deviation in docs/DEFERRED-NOTES.md (item D-3): the shipped
+	// Registered as a deliberate deviation in docs/DEFERRED-NOTES.md (item D-1, section 2): the shipped
 	// code has no way to reseed, and no per-call generator - the injection points below are
 	// ours. Passing NULL to a CombatMath entry point uses the global stream above, which is
 	// the shipped behaviour; seeding is only ever done by tests.
