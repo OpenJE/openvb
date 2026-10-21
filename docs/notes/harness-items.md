@@ -677,3 +677,24 @@ Standing rule, extending item 19: **quote a gate number with its payload hash, a
 which environment produced each before deciding which is wrong.** Both may be correct. This is the fourth distinct
 "the artifact was fine, the environment wasn't" incident of the day — stale installed gate payload, `devenv-reload`
 missing from PATH, ImHex squatting the debugger port, and now PATH per-subshell.
+
+## 31. An operand claim read from a comment is a hypothesis, not a measurement
+
+Same lane, second half of the day. From T-045 I asserted that a frame-0 clock fold was "permanent, and it reaches
+`turnDeadline0x29C`" — and the sentence got banked by another lane (`7865068`) and fenced twice (`b0f94ef`, then
+corrected at `df8f53c`) before I checked. It does not reach the deadline: `accMs_` has **one** writer
+(`CombatManager.cpp:188`), it is fed by the configured `secondsPerRound` per dispatched queue event, and
+`GameWorld::CombatTick` discards the clock with `(void)ms`. The clock-fed line I was describing was the **C-23
+placeholder, retired by T-011** — and the retirement is spelled out *twelve lines below* the comment I had quoted
+(`CombatManager.hpp:114-116` vs the still-advertising `:38`).
+
+Both of my wrong versions came from trusting prose about a data flow instead of the assignment site. The fix is one
+command and it costs less than the retraction it prevents:
+
+    grep -rn "accMs_\|<any accumulator name>" src      # writers only — then read the RHS
+
+Standing rule: **a comment that names an operand states what the author believed; only the writer states what the code
+does.** Read the writer before generalising, and when a claim has already propagated, correct it in the same message
+that learns better — the correction chain (`7865068` → `b0f94ef` → `470ec60` → `df8f53c`) is fine as history and bad as
+an accident. Second, cheaper rule from the same trace: when a retired placeholder's name survives in a comment, retire
+the comment too, or the next reader quotes it as live code — including me, twice, today.
