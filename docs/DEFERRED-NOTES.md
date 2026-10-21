@@ -625,3 +625,39 @@ approach gate), and the port has no fields for either — so **`JustAttack` is c
 which is a stronger statement than "we invented two fields". And the ctor stores a **never-initialised stack slot** into
 `record+0xBC` (`0x403f27`→`0x403f3e`); our port zeroes it, so a byte-level digest would compare shipped garbage against
 a deliberate 0.
+
+## Ours-to-fix defects corrected — distinct from the shipped-defect ledger above
+
+The ledger at the top of this file is for defects **in the shipped binary**, where the rule is
+mirror-and-cite. This section is the opposite category: a place where **our** code diverged, was
+aligned, and the alignment *changes* behaviour on data we do not currently ship. Recording it here
+because "the digest did not move" is not evidence that a fix was correct — it is evidence the input
+was not being exercised.
+
+**T-042 — the world clock's defaults were the shipped file's contents (`NiceHawk 01a15bd1`).**
+`src/F3/GameWorld.cpp` built the clock as
+`Gregorian( m_calendarYear ? m_calendarYear : 2253, m_calendarMonth ? … : 10, m_calendarDay ? … : 18 )`
+under a comment claiming "defaults are the sys.ini 2253-10-18 13:13:13". `2253-10-18` is what
+`sys.ini` **contains**; it is not a default anywhere in the shipped binary. The actual missing-key
+fallback is `JE::World`'s own ctor: `+0x14 <- 0` (0x548af6), `+0x18 <- 1` (0x548af9),
+`+0x1C <- 1` (0x548afc), `+0x20/+0x24/+0x28 <- 0` (0x548aff/0x548b02/0x548b05) — with `edi = 0` from
+`xor edi,edi` @0x548a9e and `eax = 1` from @0x548aeb, in the function that installs the World
+vftable `0x691a1c` @0x548abb. `vft[4] 0x546B50` then overwrites **only the keys it finds**, and the
+clock factory seeds `Gregorian::ctor_0x544950` with a verbatim 6-dword `rep movsl` (@0x54497d,
+`ecx = 6`) — no conditional, no fallback, no clamp on that path. So shipped reads
+**0-1-1 00:00:00** when the `[World]` block is missing: structurally invalid, but defined.
+
+Two behaviour changes, both intended:
+1. Absent/failed `[World]` keys now yield `0,1,1,0,0,0` instead of `2253,10,18`. On the shipping
+   payload nothing moves, because the keys are present — which is exactly why this needed a test
+   with them **stripped out**, not a code reading.
+2. An **authored** `Year=0` / `Month=0` / `Day=0` is no longer silently retimed to `2253-10-18`.
+   This is the part the ternary hid: the old expression made a legal shipped value unreachable, so
+   aligning the ctor alone would not have fixed the outcome. Order matters and is now pinned by
+   `modules/openje/tests/je/StringSystem/StringSystem.cpp` (ctor-only, section-present-keys-absent,
+   mixed per-key, and authored-zero).
+
+Not a parity claim: this is a default-selection bug in our code, it cannot show up on the data we
+ship today, and it would only ever surface on a stripped INI, a failed compressed-region read, or a
+save from a build without the block. Anyone tempted to "restore robustness" by re-adding
+`? : 2253` is re-introducing the invention — the authored-zero assertion is there to make that loud.

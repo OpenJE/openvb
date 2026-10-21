@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: NiceHawk — sessionId 01a15bd1 (01a15bd1-6c38-71f7-84fb-23e6b3428ba9), reported on first contact.
+status: done
+assignee: NiceHawk 01a15bd1 (edits half-landed, session died mid-gate) — taken over and gated/committed by UltraMoon 01a15cb7 (01a15cb7-c19d-74ae-9744-8221b99fffb5).
 # Small code row, fits alongside T-007; no IDB, no debugger. Order agreed: T-007 first, then this.
 depends: T-038 (which found it)
 ---
@@ -53,3 +53,23 @@ Mirror, don't improve: fall back to the shipped ctor values (`0,1,1,0,0,0`), cit
 ## Boundary
 This is a default-selection bug in **our** code, not shipped behaviour we must mirror, and it is not a parity risk on
 the shipping payload. It becomes one only on data we do not currently ship.
+
+## Acceptance evidence (2026-10-21T04:43:41Z gate, UltraMoon 01a15cb7)
+
+- **Order honored**: ctor aligned to shipped `0,1,1` first (openje `77c18d8`: `JE/World.hpp` + the four absent-key/mixed/authored-zero
+  checks in `tests/je/StringSystem/StringSystem.cpp`), then the `?: 2253/10/18` ternaries deleted in
+  `src/F3/GameWorld.cpp` (this parent commit). The comment asserting sys.ini contents as defaults is gone; both sides
+  now cite `0x548af6..0x548b08`, `0x548abb`, `0x546B50`, and the `rep movsl` seed copy `@0x54497d`.
+- **Absent-key path pinned separately from pass-through**: ctor-only / stripped section / mixed per-key / authored-zero,
+  7 new asserts — StringSystem `[27 asserts >= 20]`, observed above floor exactly by the +7.
+- **Gate, this run**: `tools/gate-integrity.sh` rc **0** — payload `/nix/store/x95aqfk70mrsqicri2x6spbf38cl63ha-run-all-tests-script`,
+  9 rows identical to tree, hash **2945679485**. `run-all-tests` rc **0**: 9 suites + app-boot **10 pass, 0 fail**
+  (cls_0x4d8d70 11≥11, PathManager 103≥74, ResourceSystem 111≥111, StringSystem 27≥20, ActionMoveTo 13≥13,
+  Scripting 6≥6, GUILoading 150≥116, SpawnMove 88≥80, CombatMath 43≥43, app exit 124 = alive past 6s).
+  **`msvc-build` exit 0** (header touch is the real gate): World.cpp/F3.cpp/GameWorld.cpp rebuilt, F3.exe linked
+  2026-10-21 00:43:33 -0400; only pre-existing C4700 warnings in f3.cpp(415/419).
+- **Registered** in `docs/DEFERRED-NOTES.md` under the new “Ours-to-fix defects corrected” section, explicitly stating
+  the absent-key behaviour change is the point, not a regression.
+- Env note for the ledger: the MSVC leg was initially blocked by a wedged rootless dockerd sandbox DNS (`[::1]:53` refused)
+  plus the dead session's 7h-hung `magical_euler` container holding `build/`; container removed, daemon restored via
+  `devenv processes restart docker-rootless` (ZenNova).

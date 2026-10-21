@@ -91,13 +91,17 @@ namespace F3 {
         // is compiled into suites that link neither this file nor src/F3.cpp).
         SetActiveCombatManager( m_combat );
 
-        // World clock (original: GameWorld vb idx4 factory 0x46fda0 -> sub_544D90 ->
-        // new Gregorian seeded from the calendar block; ApplyWorldClockParams ran during
-        // Resources init so defaults are the sys.ini 2253-10-18 13:13:13).
+        // World clock. Original: GameWorld vb idx4 factory 0x46fda0 -> sub_544D90 -> operator
+        // new(0x38) @0x544dab -> Gregorian::ctor_0x544950, which seeds itself with a VERBATIM
+        // 6-dword block copy of the calendar fields (`rep movsl`, ecx = 6, @0x54497d) - no
+        // conditional, no fallback, no clamp anywhere on that path. So whatever the ctor left in
+        // +0x14..+0x28 (0,1,1,0,0,0 - see JE/World.hpp) is what the clock gets when sys.ini has no
+        // [World] block, and 2253-10-18 only ever arrives FROM sys.ini.
+        // The previous three lines here were `x ? x : 2253/10/18`, i.e. the shipped file's CONTENTS
+        // wearing the clothes of a default - and worse, they made the ctor's own 0 unreachable: an
+        // authored Year=0 would have been silently retimed to 2253. (T-042.)
         ApplyWorldClockParams();
-        m_clock = new JE::Gregorian( m_calendarYear ? m_calendarYear : 2253,
-		                             m_calendarMonth ? m_calendarMonth : 10,
-		                             m_calendarDay ? m_calendarDay : 18,
+        m_clock = new JE::Gregorian( m_calendarYear, m_calendarMonth, m_calendarDay,
 		                             m_calendarHour, m_calendarMinute, m_calendarSecond );
 
         // Update-dispatch state (mbr_0x34): 1 selects the per-entity pump path once a
