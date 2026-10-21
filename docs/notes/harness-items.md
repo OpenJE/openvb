@@ -985,3 +985,24 @@ Rules:
 3. This generalizes item 43 (function-granularity for pad sinks) upward on the ownership axis:
    band/caller adjacency is not membership — for fns OR for bases. Author-side adoption (EpicRaven):
    the test runs on EVERY future candidate before queueing — the pre-emptive [B].
+
+## 45. Pairing a live datum against a 'dead/unreachable' pin: ask WHICH HALF of the mechanism the datum exercises
+
+CalmRaven's T-069 gate run, 2026-10-21. T-051's row prose claimed the +0x319 raiser store "is
+exercised ONLY through the walk branch - unreachable in shipped-config". The capture (R2/R3 values)
+did NOT falsify the pin - and the reason is the rule: the RAISER lives in shared code (`PumpEntity`,
+reached by BOTH the world step-5 loop dispatch=0 and manager dispatch=1, ungated on the mode flag) —
+shipped-LIVE; only the CONSUMER (`0x5a955d -> 0x5a9572` skip-advance) is walk-only. A store in shared
+code stays live even when the branch that READS it is dead. A dead-branch pin has two halves
+(producer-site liveness, consumer-branch reachability) and a live datum only refutes the half it
+actually exercises.
+
+Rules:
+1. Before letting a capture "confirm" or "falsify" a dead-path pin, name the half: which site does the
+   datum hit - the store, the load, or the gated consumer?
+2. Prose and asserts diverge silently: T-051's OWN suite block was green all along (latch-before/
+   no-SetRoundMode/latch-again) while its row prose was wrong - behavior-in-tests is evidence,
+   prose-in-rows is a claim. Fix the claim, keep the count; 'assert counts unmoved across the gate'
+   is the proof a doc-only change is honest.
+3. Related consequence (now in CombatTurnDispatch.md): the walk stays head-stable FOR THE
+   RE-ENTRANCY REASON, not for lack of a live store - T-050's gate wording must never drift back.
