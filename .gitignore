@@ -50,3 +50,4 @@ dependencies
 
 # host-built driver/probe binaries (tools/*.sh generate these; not artifacts)
 tools/*.exe
+tools/__pycache__/
