@@ -89,10 +89,13 @@ the `UnpackState() method may only be called` guard at `0x54e6b6`.
 `src/F3/GameWorld.cpp:90-92` are *our* invention. Shipped's defaults for a missing key are the World
 ctor's `(0, 1, 1, 0, 0, 0)` — the literal `2253-10-18` comes from `sys.ini`, never from code. With the
 key present (the demo) both sides agree; with the key absent the sim says 2253-10-18 and the original
-says year 0, month 1, day 1. One-line fix: pass the `m_calendar*` fields through unchanged (they are
-already initialised to 0/1/1 in `JE::World`'s ctor — `modules/openje/src/JE/World.hpp:13`, which should
-be checked to match `0,1,1,0,0,0`, not all-zeros) and delete the literals. `docs/DEFERRED-NOTES.md`
-carries the row.
+says year 0, month 1, day 1. The one-line fix has TWO halves, because the port's own defaults are wrong
+as well: (a) delete the `?:` literals at `GameWorld.cpp:90-92`, and (b) initialise `m_calendarMonth` /
+`m_calendarDay` to **1/1** in `JE::World`'s ctor — `modules/openje/src/JE/World.hpp:13` zeroes year, month
+*and* day, where shipped's `ctor_0x548a80` writes `0, 1, 1` (`0x548af6` / `0x548af9` / `0x548afc`). Do (b)
+first: with only (a), an absent key yields `0/0/0` and the port is wrong in a different direction.
+Tracked as **T-042** (NiceHawk); no D-number, because a D-number means an *accepted* difference and this
+is a bug.
 
 ## Proposal to ZenRaven (decision-maker, not mine to execute)
 
@@ -105,12 +108,17 @@ carries the row.
    the calendar is not — that asymmetry belongs in `ParityOracleDesign.md` §3, and I did not edit that
    file either.
 
-## Numbering disagreement, recorded not reconciled
+## Numbering disagreement — resolved against the database, and neither note was wrong
 
 `docs/DEFERRED-NOTES.md` says "vft[5] at Initialize start (0x5466B0) is a no-op in engine (0x404b70)".
-The primary table contradicts that: `World_vftable_691a1c` slot 5 (`+0x14`) is `0x546b50` in
-`artifacts/F3.json`, and `0x5466b0` is literally `call [eax+14h]` — i.e. Initialize's first action is
-the calendar-params call, not a no-op. `0x404b70` is a real no-op (`retn`) and `JE::World` carries four
-distinct vft pointers (`0x548abb/0x548ac1/0x548ac8/0x548ad2`), so the two statements are probably about
-*different tables* (primary `0x691a1c` vs the mixin at `0x691A20`). Not mine to reconcile here; flagged
-because a reader using the old note would expect no seed at init and find one.
+I reported that as contradicting the seed claim. The coordinator checked `World_vftable_691a1c` directly:
+slots 0,1,2,4,5,7–17 present, **holes at 3, 6, 18, 19**, and **slot 5 IS `0x546b50`** — the DB supports the
+seed. But the old note is not refuted either: `0x5466b0` sits **inside** slot 1's function body
+(`0x546690`+0x20) and calls `[eax+0x14]` on whatever `eax` holds there, and `JE::World` carries four vft
+pointers (`0x548abb/0x548ac1/0x548ac8/0x548ad2`), so "slot 5" is not a unique name across tables.
+Disposition: **both readings can be true; table identity stays unresolved.** I had leaned toward "the old
+note is wrong" and that was the weaker call.
+
+What actually matters came out of the check and I had missed it: **`+0x18` is slot 6 — a hole under every
+reading**, so T-034's R0 still needs the live read to name the tick target. This row's seed finding cannot
+substitute for R0, and I should have said that instead of leaving it implicit.

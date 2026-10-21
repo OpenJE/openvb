@@ -60,13 +60,13 @@ filled. This row answers "what does AMX's door look like", not "is the sim corre
    read at `0x404651`, guarding the `new(0x48) GameActionMoveTo` + `0x550720` at `0x4046a7..0x40470e`).
    **Until they exist, `JustAttack` is not expressible in this port** — the entire difference from
    `Attack` is those two bytes.
-3. **Ref-key vs pointer.** Shipped persists `target = *(Entity+0x1DC)` and re-resolves it at every use
+3. **Ref-key vs pointer — this became D-3.** Shipped persists `target = *(Entity+0x1DC)` and re-resolves it at every use
    (`0x40120b`, `0x401304`, `0x404409`, and `GameActionInitiateDialogue` does the same conversion in
    `OnCreate 0x404b99` then re-resolves each tick at `0x404c08`). The port stores a live
    `SpawnedEntity*`, so *"target despawned mid-attack"* is reachable in the original and unreachable in
    the sim. Needs either a ref-id field on `SpawnedEntity` or a numbered deviation — do not leave it
    implicit.
-4. **`StartDialogue`'s pre-enqueue flush** (`0x54c440` destroys every action already queued on the source,
+4. **`StartDialogue`'s pre-enqueue flush — this became D-4** (`0x54c440` destroys every action already queued on the source,
    walking the same `Entity+0x304` deque the funnel appends to). Any future `dialogue` verb must include
    it or it is modelling a different door.
 5. **Server packet door** `GameServer::virt_meth_0x46dd70` (4 sites) — still unexamined; this row's

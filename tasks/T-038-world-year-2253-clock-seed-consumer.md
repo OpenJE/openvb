@@ -17,9 +17,13 @@ depends: nothing; feeds T-031 (parity oracle) and T-026
 > fallback is its ctor's `0,1,1,0,0,0`). `clock` stays in the compared set; no `year` field is warranted.
 > Numbering note: my first pass registered this as "D-3", which collided with T-037's ref-key D-3; it is
 > renumbered out because nothing here is an *accepted* difference — both sides seed the date and both
-> leave `totalSeconds` at 0. Separately reported (not edited, it is not my file): `CombatMath.hpp:35`
-> from `d6dba3a` still cites "item D-3" for the RNG reseed seam, which is **D-1 §2** — a stale pointer
-> that predates and is unrelated to this row, but now resolves to the wrong deviation entirely.
+> leave `totalSeconds` at 0. That collision also made a pre-existing stale pointer dangerous:
+> `src/F3/CombatMath.hpp:35` from `d6dba3a` (T-027) cited "item D-3" for the RNG reseed seam, which is
+> **D-1 §2**. The coordinator corrected it in `6df6f53` and swept every `item D-`/`deviation D-`
+> citation under `src` and `modules` — that was the only stale hit — and the general form is now harness
+> item 28: **a number I mint after somebody else minted it is a defect even when the prose under it is
+> correct**, and when a numbered registry changes, the change is not done until every citation of the old
+> numbers is re-pointed.
 
 # T-038 — `[World] Year = 2253`: the shipped clock is date-seeded. Who consumes it?
 
@@ -93,7 +97,7 @@ The `clock` verdict does not depend on it, because `totalSeconds = 0` is uncondi
    year value.
 2. Determine whether the seed happens at world-entry (`0x546690` path) or at load/`UnpackState`, and whether
    `PackState_545930` persists the seeded value.
-3. Then answer: does our port reproduce the seed at all? If not, is that a **deviation to register (D-3)** or a bug in
+3. Then answer: does our port reproduce the seed at all? If not, is that a **deviation to register** or a bug in
    the mirror?
 
 ## Acceptance
