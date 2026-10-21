@@ -484,3 +484,27 @@ of a smaller next-turn headroom, so it should stay well under the reserve.
 
 **Lanes pick this up automatically:** every session in this repo reads the project `.pi/settings.json`. Existing
 sessions apply it on their next compaction check; a new session starts with it.
+
+
+## 24. `ls` of a payload is not evidence of absence — search inside the archives
+
+RedXenon closed T-016's map-name question **with zero debugger time**, and the reason it had been scoped as a runtime
+read is an artifact of my own method: the premise "no INI in the payload" came from **listing the demo tree**. The
+shipped `globals.ini` is plaintext **inside** `data/Engine.grp`:
+
+```
+$ strings data/Engine.grp | grep -iE 'Mainmenu|map name|Year'
+[Mainmenu]
+map name = mainmenu.map
+Seconds Per Round = 6
+Year = 2253
+```
+
+Amendment to item 13 ("data before debugger"): **data includes the contents of containers.** Before concluding that a
+value must be observed at runtime, grep the archives — `.grp`, `.pak`, `.veg`, `.int`, SQLite files, and any
+concatenated resource blob. A directory listing proves only where a file *appears*, not what the shipped binary reads.
+The same trap in reverse produced this afternoon's clock story: see T-038, where `Year = 2253` in that same block means
+the shipped clock is **date-seeded**, which nobody had checked because we were looking for a `.ini` file.
+
+Corollary for rows I write: when I scope a read, I must state **what statics were searched and where** — if the answer
+is "the tree was listed", that is not a static search.

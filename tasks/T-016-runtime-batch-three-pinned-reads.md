@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 priority: P3 (unblocks two naming/correctness questions at once, blocks nothing today)
 assignee: whoever holds the debug window next — UltraBear if they boot one during T-012
 type: runtime-observation batch
@@ -55,6 +55,19 @@ Recipe as routed: break @**0x5458AF**, dump `*(World+0x160)` and its `[+0x54]` /
 One read, no stepping required.
 
 ## Read 3 — confirm the `[Mainmenu] Map Name` load preamble ordering (unblocks the warp/save lane)
+
+### CLOSED STATICALLY by RedXenon (01a157ec), zero debugger — see `discoveries/2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md`
+
+The premise that forced this into a runtime read was mine and it was an `ls` artifact: the demo's `globals.ini` ships
+as **plaintext inside `data/Engine.grp`**. Verified independently by the coordinator (`strings data/Engine.grp`):
+`[Mainmenu] map name = mainmenu.map`, `Seconds Per Round = 6`, `Year = 2253`. Recorded as harness item 24.
+
+Chain from one decompile of `0x546fd0`: seed `"none.map"` → `tree[Mainmenu][Map Name]` override (`_stricmp` comparator,
+so the shipped lowercase key matches) → **existence-gate, then request; if the gate fails there is NO request —
+`none.map` is not a safety net.** Separately, `[Server] Start map = 00_03_Tutorial_Junktown.map` is the **new-game door**,
+not a boot fallback, and the reimplementation must keep those two requests distinct. Harness item 13 amended, row
+closed, no session spent.
+
 
 **Re-scoped 2026-10-21 per harness item 13 (RedXenon's objection): try the payload INIs before scheduling a read.**
 This row was written when debugger-first was the habit. The shipped INIs are in the demo payload
