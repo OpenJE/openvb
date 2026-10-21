@@ -1,6 +1,6 @@
 ---
-status: done
-assignee: PureKnight `01a15cb7-e27e`
+status: in-progress
+assignee: UltraMoon `01a15cb7` (dispatched by coordinator at e662a42; pre-work authorized, final gate held for T-034)
 depends: T-034 (lockstop readings) for the digest side, T-011/T-048 (walk + latch, ported)
 ---
 
