@@ -142,3 +142,35 @@ and the *server packet* doors are still absent, which is what T-028's driver mus
 4. fills the block and asserts the fifth insert is **refused**, not dropped.
 
 Step 3 is the acceptance: the drain that ran the order is the same array the insert wrote.
+
+## T-071 addendum: the idle resident and the shipped kind numbering
+
+The seam now carries a seventh kind. Full mapping (port kind → shipped class; the SHARED AXIS
+is the class NAME — the port numbers are NOT shipped `GameActionType` values, because our empty
+sentinel is 0 and shipped kind 0 is GameActionDie; the shipped factory
+`F3::GameWorld::CreateGameAction_0x46f290` dispatches
+`0=Die 1=Idle 2=MoveTo 3=PickUp 4=Wander 5=Wait 6/7=JE::World::CreateAction passthrough
+8=FloatingSpeechText 9=Equip 10=Unequip 11=SetActiveWeapon`, and GameActionAttack is not a
+factory kind at all — direct-constructed by `F3::Attack` at 0x459f33):
+
+| port kind | class name | shipped source |
+|---|---|---|
+| 0 | (empty slot) | port sentinel |
+| 1 | GameActionMoveTo | factory case 2 |
+| 2 | GameActionWait | factory case 5 |
+| 3 | GameActionOperateDoor | engine passthrough |
+| 4 | GameActionAttack | script native |
+| 5 | GameActionDie | factory case 0 |
+| 6 | **GameActionIdle** | factory case 1 — the RESIDENT (T-070 doc) |
+
+Key facts the resident contributed (all EA-pinned in
+`discoveries/2025-10-21-t070-idle-resident-rootcause.md`): the shipped queue is NEVER empty at
+rest (feeder `Entity::SetInMap_0x551ba0` drains then enqueues idle; the stop-packet case 0x3B
+rebases identically); the idle predicate byte `+0x18` is never written by idle code (its update
+writes `+0x16`), so the resident head-blocks later orders until a drain — and orders arrive on
+TWO shapes with different drain semantics: script natives do NOT drain (run H's "Attack never
+fired"), packet-pump commands DO (cases 0x1A/0x3C). The port models both: `attack/attack-pos/wait`
+take the command shape, `push` takes the native shape. The +0x319 raiser is NOT armed by the
+resident (the shipped raiser at 0x54c833 belongs to the anim-event deque; arming it from an idle
+action-head would freeze the combat manager's skip-advance consumer in a state shipped never
+reaches). D-2's capacity re-expresses as **3 orders + resident** filling the first block.
