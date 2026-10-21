@@ -30,7 +30,24 @@ neither is allowed to be reported as progress.
 Also adopted: **single-writer split** — HappyWolf proposes identity decisions, IronStorm applies them to the
 IDB/`F3.json` and runs the census. Two lanes writing one database is how attribution gets lost.
 
-## Scope (one batch = 20 classes, ordered by **contiguity-ratio × functions**)
+## Scope (one batch = 20 classes) — **ordering rule under challenge; read the caveat before ranking**
+
+**Caveat on my own directive (SwiftRaven, T-036, in flight).** I ordered this queue by *contiguity-ratio x function
+count* on batch 1's authority. SwiftRaven traced `cls_0x49c610` (ratio **0.02**) end to end: all 43 DB-attributed methods
+are already `JE::ResourceSystem::*` in the IDB, and the scatter is **five byte-identical inline clones of one 0x355-byte
+method** plus `0x4d`/`0x103` clones — real class mass duplicated by the compiler, not stolen helpers. Body evidence
+agrees: member-usage evidence is **81% on low-ratio classes vs 88% on high-ratio**, nearly identical. And the clincher:
+**the 1,475/998 split does not reproduce under any single join** — IDA-name route = 2,340 attributed, DB-method route =
+2,473 (2,425 in the game region), and batch 1 mixed both routes, which is exactly why its split sat between the two.
+**998 is a cross-route artifact; contiguity measures link placement and clone spread, not attribution quality.**
+
+Working rule until their re-run lands: **a low ratio must not disqualify a class** (it may be clone spread of a genuinely
+large one) and **a high ratio must not promote one** (it may be small and tightly packed). Rank by *evidence available* —
+resolved vftable slots, embedded member types, self-naming joins — and treat the ratio as a question to ask, not a filter
+to apply. When the re-run lands, this block gets **rewritten explicitly**, not silently dropped: quietly deleting my own
+directive would hide that I dispatched a queue on a measure that did not mean what I took it to mean.
+
+## Original scope
 
 **Ordering corrected by batch 1's adjudication (01a157f6, `discoveries/2025-10-20-session38-t033-batch1-adjudication.md`).**
 Ranking by raw function count put the wrong classes first: every headline top-6 class is **low-density
