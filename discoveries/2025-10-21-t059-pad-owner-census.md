@@ -159,3 +159,53 @@ Queue effect for CalmRaven's wave (verify at write time): check whether the b3 r
 comment there (`std::string dtor aggregated into StringTree band per T-036 floor; not a
 StringTree member`), no rename needed. `pads` mode already prints the function name beside the
 class label; this row's table stands corrected at the interpretation line, bytes unchanged.
+
+
+---
+
+## QUEUE v2 (re-issued with head-graded locators; supersedes the T-059 §'Acceptance map' queue and T-057 §2 PAD anchors for APPLY purposes)
+
+Audit per LoudDragon request (b4-era locators vs live-IDB head semantics; offline evidence =
+direct-call head vs pad-only chunk; **the IDB read-back stays the writer-side authority — item 43**):
+
+- **EH-call census (the 49): all 71 distinct locators (targets + ctor scopes) are direct-call
+  heads** — queue-safe as printed, including the two StringTree floor comments 0x4B2DD0 and
+  0x56EE40 (both call-heads; matches your live read-back of `JE::StringTree::meth_*_4b2dd0 /
+  _56ee40`) and `0x4BB6B0` (call-head via its EH handler — the sole PAD row that is also a
+  call-head).
+- **Structural finding: PAD rows are by definition pad-reached, so 20/21 have no direct call
+  site — pad-reached locators can be LIVE-IDB SECONDARY CHUNKS of an earlier function (the
+  0x507550-inside-0x5074D0 pattern CalmRaven caught). Re-anchor table (annotation targets):
+
+  0x48EE00  non-call-head — ANNOTATE AT CONTAINING HEAD 0x48ED60 (.?AVVFX_VEGInstance@@::ctor_0x48ed60); cite chunk 0x48EE00 in text (pad 0x630e90, dataref ['0x6def4c'])
+  0x4933D0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x493340 (sub_493340); cite chunk 0x4933D0 in text (pad 0x63106c, dataref ['0x6df318'])
+  0x493400  non-call-head — ANNOTATE AT CONTAINING HEAD 0x493340 (sub_493340); cite chunk 0x493400 in text (pad 0x631082, dataref ['0x6df328'])
+  0x49F290  non-call-head — ANNOTATE AT CONTAINING HEAD 0x49F150 (cls_0x49f150::ctor_0x49f150); cite chunk 0x49F290 in text (pad 0x631981, dataref ['0x6dfebc'])
+  0x4B51F0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x4B5130 (cls_0x490450::meth_0x4b5130); cite chunk 0x4B51F0 in text (pad 0x6365e0, dataref ['0x6e6a30'])
+  0x4B5220  non-call-head — ANNOTATE AT CONTAINING HEAD 0x4B5130 (cls_0x490450::meth_0x4b5130); cite chunk 0x4B5220 in text (pad 0x63244b, dataref ['0x6e0d50'])
+  0x4BC020  non-call-head — ANNOTATE AT CONTAINING HEAD 0x4BBCF0 (cls_0x55dc80::meth_0x4bbcf0); cite chunk 0x4BC020 in text (pad 0x6328c6, dataref ['0x6e14e4'])
+  0x507550  non-call-head — ANNOTATE AT CONTAINING HEAD 0x5074D0 (sub_5074D0); cite chunk 0x507550 in text (pad 0x635653, dataref ['0x6e528c'])
+  0x50DAF0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x50DA90 (cls_0x50db20::ctor_0x50da90); cite chunk 0x50DAF0 in text (pad 0x635a60, dataref ['0x6e5960'])
+  0x520340  non-call-head — ANNOTATE AT CONTAINING HEAD 0x520290 (cls_0x5206e0::meth_0x520290); cite chunk 0x520340 in text (pad 0x6363c6, dataref ['0x6e6798'])
+  0x54ECC0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x54EBB0 (cls_0x4d8d70::meth_0x54ebb0); cite chunk 0x54ECC0 in text (pad 0x637ad8, dataref ['0x6e822c'])
+  0x54ECF0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x54EBB0 (cls_0x4d8d70::meth_0x54ebb0); cite chunk 0x54ECF0 in text (pad 0x637b02, dataref ['0x6e8244'])
+  0x572EE0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x572E80 (sub_572E80); cite chunk 0x572EE0 in text (pad 0x63931a, dataref ['0x6ea618'])
+  0x593500  non-call-head — ANNOTATE AT CONTAINING HEAD 0x593430 (cls_0x50dbb0::meth_0x593430); cite chunk 0x593500 in text (pad 0x63a316, dataref ['0x6eb8c8'])
+  0x5CB270  non-call-head — ANNOTATE AT CONTAINING HEAD 0x5CB1B0 (cls_0x50dbb0::meth_0x5cb1b0); cite chunk 0x5CB270 in text (pad 0x63c003, dataref ['0x6edb08'])
+  0x422920  non-call-head — ANNOTATE AT CONTAINING HEAD 0x422890 (cls_0x4542d0::meth_0x422890); cite chunk 0x422920 in text (pad 0x62c863, dataref ['0x6da234'])
+  0x4A40B0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x4A3ED0 (cls_0x55dc80::meth_0x4a3ed0); cite chunk 0x4A40B0 in text (pad 0x631cb0, dataref ['0x6e03f4'])
+  0x4BB6B0  call-head — queue as-is (pad 0x4bb755, dataref ['0x6e12ec'])
+  0x54ED20  non-call-head — ANNOTATE AT CONTAINING HEAD 0x54EBB0 (cls_0x4d8d70::meth_0x54ebb0); cite chunk 0x54ED20 in text (pad 0x637b10, dataref ['0x6e824c'])
+  0x57F2D0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x57F220 (sub_57F220); cite chunk 0x57F2D0 in text (pad 0x63983e, dataref ['0x6eace8'])
+  0x5984F0  non-call-head — ANNOTATE AT CONTAINING HEAD 0x598400 (.?AVMapMaskManager@@::dtor_0x598400); cite chunk 0x5984F0 in text (pad 0x63a536, dataref ['0x6ebb88'])
+
+  jmp-pad targets 0x47A6B7/0x493D70/0x6080B4/0x60CE5F: non-call-heads — aggregate rows re-anchored
+  to container heads 0x47A5CD / 0x493CD0 / 0x60809F / 0x60C817 respectively (writer read-back).
+- Tool support landed: `head_hint()` evidence now prints inside `families` [Q1-padthunk] lines
+  (`entry-headness=call-head|non-call-head + containment candidate 0x…`), so every future PAD
+  row arrives queue-ready. T4 gate unaffected (5/5 PASS); buckets are flow facts, headness is a
+  locator fact — kept separate on purpose.
+- Net queue effect for T-060: annotations anchor at the 20 containing heads + 1 direct (0x4BB6B0);
+  comment TEXT still cites the chunk EA (e.g. "vector-pad cleanup reaches cold chunk 0x507550 of
+  this function") — the census numbers themselves (21 PAD / 0 orphan / 2,062→0x4B2DD0 regraded)
+  are locator-independent and stand.
