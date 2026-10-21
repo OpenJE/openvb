@@ -1,6 +1,6 @@
 ---
 status: open
-assignee: GoldYak (dispatched by LoudDragon `01a15f82`, 2026-10-21 — writer-slot ping per b6 exit)
+assignee: CalmRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21 — queue author promoted to writer; GoldYak left the mesh at the T-055 ping)
 type: writer wave (sole WRITER on ida_original_f3; T-033 rules apply verbatim)
 depends: T-053 queue (commit `5d48e35`, accepted by coordinator)
 ---
