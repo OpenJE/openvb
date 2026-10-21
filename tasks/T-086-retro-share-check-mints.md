@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: HappyStorm (dispatched by LoudDragon `01a15f82`, 2026-10-21 — you escalated the case; close the loop)
+status: in-progress
+assignee: HappyStorm `01a16092-41cf-7127-936b-377a304178a4` (dispatched by LoudDragon `01a15f82`, 2026-10-21 — you escalated the case; close the loop)
 type: offline analysis (share-check @90864fd across history; queue-only, NO IDB writes)
 depends: T-073 (your precedent), T-076 refinement (the fixed machine)
 ---
