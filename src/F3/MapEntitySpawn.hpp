@@ -61,8 +61,13 @@ namespace F3 {
 		int           doorLock0xC0;  // v>=1 u32 + optional signed jitter (0x40e6ca)
 		// Combat turn protocol fields (JE::Entity-vb semantics; see F3/CombatManager.hpp)
 		int   frameDt0x300;     // Entity+0x300: per-frame dt written by TurnPrep (0x549090)
-		unsigned char actedLatch0x319; // Entity+0x319: per-frame "updated" latch, cleared by
-		                       // TurnPrep, checked by the combat manager (0x5A955D)
+		unsigned char actedLatch0x319; // Entity+0x319: per-frame "more work pending" latch. WRITER:
+		                       // T-048's raiser in PumpEntity (MapEntitySpawn.cpp:476, the 0x54c833
+		                       // analog) - reached by BOTH pump entrances (world step-5 AND manager
+		                       // dispatch) and NOT gated by combatantDispatch, so it is live on the
+		                       // shipped free-run path (T-069 corrected the older "walk-only" wording).
+		                       // CLEARED by TurnPrep 0x549094 (state-5 nodes); READ by the combat
+		                       // manager's skip-advance at 0x5A955D, which is the walk-only (dead) half.
 		int   turnDeadline0x29C; // Entity+0x29C: turn deadline in clock-seconds (DB size 4)
 		// Entity+0x1E4: the map-membership flag (T-041 closed: docs/f3/EntityFlag0x1E4.md). DB
 		// `mbr_0x1e4` is SIZE 4; names `noTurn0x1E4`/`flag0x1E4` are retired. Shipped

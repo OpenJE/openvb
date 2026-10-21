@@ -76,13 +76,25 @@ raises +0x319 for an entity whose action deferred (`0x54c833`/`0x54c864` in
 `Entity::virt_meth_0x54c570`). A second `meth_0x5a94a0` entered from inside a dispatch skips
 maintenance, sees the latch, and moves on.
 
-Our port's action pump does not raise +0x319 (nothing in `src/F3` writes it), so the walk is stable
-at the head. **I did not add a round-robin to make it move**: a rotation that cites no store changes
+The port's action pump DOES raise +0x319, and on the shipped-live path: T-048 landed the raiser in
+`PumpEntity` (`src/F3/MapEntitySpawn.cpp:476-478`, `actedLatch0x319 = 1` on processed-and-not-finished),
+and `PumpEntity` is reached by BOTH pump entrances — the world's generic step-5 loop (`TickOneEntity`,
+`combatantDispatch=0`) and the manager dispatch (`TickEntityServerUpdate`, `=1`) — and the store itself is
+ungated by `combatantDispatch`. The PathManager suite proves it behaviorally on the free-run path: a node
+latched BEFORE a `Tick` with NO `SetRoundMode` call is found latched AGAIN after it, which is only possible
+if the raiser ran inside a pump that dispatched it (maintenance/TurnPrep zeroes it first in BOTH branches,
+so a non-dispatched node would come out 0). What is walk-only — and therefore dead in shipped — is the
+CONSUMER: the skip-advance at `0x5a955d -> 0x5a9572`. So the walk stays head-stable for the re-entrancy
+reason below, NOT for lack of a store. **I did not add a round-robin to make it move**: a rotation that cites no store changes
 WHO acts, which is precisely the fact `turnOrder=` in the digest exists to compare. The test in the
 PathManager suite asserts the stable head so that if someone adds a rotation without the store, it
-fails loudly instead of looking like progress. Open question, routed: which shipped writer raises
-+0x319 on the combat path, and is the re-entrant `meth_0x5a94a0` reachable from a node's own
-ServerUpdate (the +8 test says the authors expected it).
+fails loudly instead of looking like progress. Open question, routed: whether the re-entrant
+`meth_0x5a94a0` is reachable from a node's own ServerUpdate (the +8 test says the authors expected it).
+T-056's live capture does NOT settle that either way: R3 shows the `+0x304` action DEQUE growing to 3 at
+funnel `0x550720` and R4b its slots holding resolvable action vfts, but that deque is not the `+0x2E0`
+animated-event queue the raiser's second shipped branch reads, and `F3::Attack` never fired in the
+pre-crash window — so no rotation-depth datum exists to test against (blocked-on-rung-2, not
+blocked-on-tooling).
 
 **+0x319 raiser, deverified from the decompilation (coordinator, this wave).** The DB usage list is
 `0x549094` (clear, TurnPrep), `0x54c833`/`0x54c864` (the two stores), `0x54c83a` (load paired with
@@ -99,11 +111,14 @@ Both branches also touch the sibling byte at `+0x2E0+0x34` (`0x54c85d/0x54c86d`)
 therefore the **entity's per-frame "more work pending" latch raised by its own update**, consumed by
 the manager test at `0x5a955d` and cleared by TurnPrep only for SPAWNED (state-5) nodes.
 
-**Consequence for the port — an unregistered deviation:** our `SpawnedEntity` has
-`actedLatch0x319` with NO writer (only the ctor zero and the digest read), so the shipped raise
-never happens and the walk is permanently head-stable. The port's `OnServerUpdate` path must set the
-latch under the shipped two conditions above; that is port work, not a shipped question, and the
-shipped writer set IS now closed. The only remaining shipped-side question is whether the manager's
+**Consequence for the port — CLOSED by T-048, corrected by T-069:** this paragraph's original wording was
+that our `SpawnedEntity` has `actedLatch0x319` with **NO writer** (only the ctor zero and the digest read),
+so the shipped raise never happens. That is superseded: T-048 landed the store at
+`src/F3/MapEntitySpawn.cpp:476` (the `0x54c833` analog; `0x54c864` remains cited-and-absent because the
+port has no `+0x179` dt budget and runs one slot per tick). The shipped writer set is closed and the port
+now mirrors the reachable half of it. What did NOT change is the conclusion: the walk is still permanently
+head-stable, because the CONSUMER needs a latch that survives its own call's maintenance clear, which only
+re-entrancy can provide. The only remaining shipped-side question is whether the manager's
 `meth_0x5a94a0` is also re-entered from inside a dispatch (the +8 test suggests the authors expected
 it) — that is a lockstep observation, not more statics.
 
