@@ -1049,3 +1049,15 @@ Rule: for every this==&global edge, run the store census BOTH directions — (a)
 global, AND (b) `c7 0x <imm-vft>` immediate-table stores inside the callee reached through that edge
 (same for `mov [reg], imm32` forms behind `lea ecx,global; call`). A 'no writers' negative about a global
 is only about your scanner until both halves print empty.
+
+## 50. RTTI TD/name clusters can link ABOVE a section's stated virtual extent — bound the walker by FILE-adjacent reality, not the PE section header
+
+TrueCastle's T-081, 2026-10-21 (F1 closure). First automated COL->TD walk over the contested vft run
+returned ZERO names everywhere — not because the RTTI was absent, but because the TD/name cluster for
+this epoch links past .rdata's stated virtual size (0x6FAF2C+, into .data-side). A walker that bounds
+TD-candidate validation to .rdata-per-headers silently rejects real RTTI. Fix shape: widen the walk to
+observed file layout (here 0x647000..0x708000), then re-gate on a KNOWN POSITIVE (their T-075
+GUI::Manager COL->TD geometry) before believing any negative the new bounds produce.
+Rule: a zero-hit walker is a scanner verdict first, a target verdict second — the item-35 ladder
+applies to BOUNDS exactly as it applies to PATTERNS; section headers are loader claims, link-time
+layouts can exceed them.
