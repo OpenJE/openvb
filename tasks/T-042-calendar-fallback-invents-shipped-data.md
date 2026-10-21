@@ -1,7 +1,7 @@
 ---
 status: open
-assignee: NiceHawk (sessionId to be recorded on first report) — small code row, fits alongside T-007;
-# no IDB, no debugger
+assignee: NiceHawk — sessionId 01a15bd1 (01a15bd1-6c38-71f7-84fb-23e6b3428ba9), reported on first contact.
+# Small code row, fits alongside T-007; no IDB, no debugger. Order agreed: T-007 first, then this.
 depends: T-038 (which found it)
 ---
 

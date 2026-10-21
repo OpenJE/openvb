@@ -149,7 +149,7 @@ row; A keeps editorial merge rights).
 | T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |
 | T-040 | **`artifacts/F3.json` has no regeneration path** — four docs require an export re-run nobody can perform; blocks T-033 acceptance | open | SwiftRaven (after T-032) |
 | T-041 | What is `Entity+0x1E4` (size 4, unpacked from the record, readers gate map membership) — name demoted, semantics open | open | unassigned |
-| T-042 | Port **invents shipped data as defaults**: `GameWorld.cpp:90-92` falls back to 2253/10/18 where shipped uses ctor `0,1,1,0,0,0` | open | NiceHawk |
+| T-042 | Port **invents shipped data as defaults** (`GameWorld.cpp:90-92` 2253/10/18 vs shipped ctor `0,1,1,0,0,0`) | open | NiceHawk `01a15bd1` (after T-007) |
 
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **DONE (01554a2/a023a62)**: Year has a consumer but `totalSeconds=0` makes it inert — `clock` stays compared, no `year` field; spawned T-042 | done | WildYak |
@@ -162,7 +162,7 @@ row; A keeps editorial merge rights).
 
 | T-006 | GUI/SS: `Format_0x56be30` `<tag>` markup + Label text | done | implementer-B |
 
-| T-007 | GUI skin sub-records (Window+0x90 x9) + texture bindings | in-progress | **NiceHawk** (moved from the departed implementer-B) |
+| T-007 | GUI skin sub-records + **texture binding** (`Window::virt_meth_0x4b06c0`, 9-slot apply) — in progress, statics landed | in-progress | NiceHawk `01a15bd1` |
 
 | T-008 | Onboarding: mesh + build + full gate green | done | implementer-C (UltraBear) |
 

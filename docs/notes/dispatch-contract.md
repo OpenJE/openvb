@@ -94,3 +94,22 @@ mention is correct or still current; it covers `discoveries/` only — not `task
 `0x401xxx`, tokens outside the image span, bare all-digit hex that may be a decimal count, and five ambiguous `+0x`
 uses that mix struct offsets with globals). A `NO RECORD` at exit 1 means "nothing in discoveries/", which is a real
 answer and not the same thing as "unknown".
+
+
+## "Run `devenv-reload`" is wrong advice in a harness shell — use the capture by hand
+
+Onboarding says: reload, then `tools/gate-integrity.sh`. But **`devenv-reload` is a devenv *script*, so it exists only
+inside a devenv shell** — and a fresh worker/harness session is not one. Confirmed by the coordinator on 2026-10-21:
+`command -v devenv-reload` → nothing in this session's PATH. NiceHawk (`01a15bd1) hit it first and did the job manually,
+taking `gate-integrity` from **rc 2 → rc 0**.
+
+The recipe, which is what the script does internally:
+
+    devenv print-dev-env > /tmp/openvb-dev-env.sh 2>/tmp/openvb-dev-env.err   # NEVER 2>&1
+    source /tmp/openvb-dev-env.sh
+    bash tools/gate-integrity.sh    # 0 = payload matches the tree and carries the stamp
+
+Two reasons the details matter: merging stderr into the capture corrupts the `export` lines and **silently leaves the
+old PATH** (so you measure the stale payload and think you reloaded), and the script itself is part of the payload being
+replaced — it cannot fix its own absence. Corrected instruction: *"capture the env and source it"* is the primitive;
+`devenv-reload` is a convenience that only works where devenv scripts are on PATH.
