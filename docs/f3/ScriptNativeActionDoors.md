@@ -292,6 +292,23 @@ the actor still asserted post-enqueue as seam-owned.
   depend on `+0x14` being set — consistent with the funnel owning it.
 * `sub_45C140` (hit reaction), `GameProjectile` `0x411e7a`, `sub_467640`, `sub_435480`, `sub_435DE0`.
 
+### The measurable consequence this map hands to D-2
+
+`Entity+0x314` is the deque's **live count** (T-039, `9bbdc9e`: `++` at `0x54ea71` inside the push the
+funnel performs at `0x55072e`, `--` at `0x54b637`/`0x54b672`, zero at `0x5515e6`), so the depth question
+this row raises is *readable*, not inferable. Statics already shows the growth mechanism: a single
+`OnServerUpdate` pass **consumes one action and pushes two onto the same owner** — `0x40470a mov
+ecx,[esi+14h] / push edi /*GameActionMoveTo*/ / call 0x550720` and then `0x40471a mov ecx,[esi+14h] /
+push eax /*meth_0x404270's clone*/ / call 0x550720` — while the drain pops exactly one element per pass
+(`sub_5505F0` 0x550617..0x550647). An out-of-range melee actor therefore grows the deque by ~1 per pass,
+and the container has **no bound**: `cls_0x54e070::meth_0x54ea00` allocates another 4-pointer block node
+at `0x54ea54`. So shipped *expects* >4 live actions, and our one-block `actions[4]` (D-2) drops an order
+the original would run.
+
+What statics cannot do is prove the demo ever *reaches* 5 — that is one read of `Entity+0x314` in T-034,
+and the argument for preferring a **count read** over an x64 hardware breakpoint (harness lesson 12).
+Handed to RedXenon/NiceHawk on exactly that basis; not claimed here.
+
 ## Routed questions (rule 3 — undeterminable here, not coded as guesses)
 
 1. **What exactly is `Entity+0x1DC`?** It is the script-visible ref key (`meth_0x54be10` matches on it;

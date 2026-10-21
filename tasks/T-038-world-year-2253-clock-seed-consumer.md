@@ -6,7 +6,8 @@ ZenRaven still owns the SimDigest/ParityOracle edit and has NOT been edited by t
 depends: nothing; feeds T-031 (parity oracle) and T-026
 ---
 
-> **Verdict → `docs/f3/WorldYearSeedConsumer.md` (+ D-3 in `docs/DEFERRED-NOTES.md`).** Reader =
+> **Verdict → `docs/f3/WorldYearSeedConsumer.md` (+ an deliberately UN-numbered finding in
+> `docs/DEFERRED-NOTES.md`; the port-side defect is `T-042`).** Reader =
 > `JE::World::virt_meth_0x546b50` (`0x546d1d` → `World+0x14`), called as the first statement of
 > `Initialize` (`0x5466b0 call [eax+14h]`). Consumer = `Gregorian::ctor_0x544950`'s 24-byte copy
 > (`0x54497d`, repeated at `0x5a3752`) into the clock's date fields — while `0x5a375a` writes
@@ -14,6 +15,11 @@ depends: nothing; feeds T-031 (parity oracle) and T-026
 > `PackState_545930` persists `+0x44/+0x48` but **not** the calendar block. Port status: **mirrored, with
 > one bug filed** (the `?: 2253 / ?: 10 / ?: 18` literals at `GameWorld.cpp:90-92`; shipped's missing-key
 > fallback is its ctor's `0,1,1,0,0,0`). `clock` stays in the compared set; no `year` field is warranted.
+> Numbering note: my first pass registered this as "D-3", which collided with T-037's ref-key D-3; it is
+> renumbered out because nothing here is an *accepted* difference — both sides seed the date and both
+> leave `totalSeconds` at 0. Separately reported (not edited, it is not my file): `CombatMath.hpp:35`
+> from `d6dba3a` still cites "item D-3" for the RNG reseed seam, which is **D-1 §2** — a stale pointer
+> that predates and is unrelated to this row, but now resolves to the wrong deviation entirely.
 
 # T-038 — `[World] Year = 2253`: the shipped clock is date-seeded. Who consumes it?
 

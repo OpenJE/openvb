@@ -547,7 +547,11 @@ Two further deviations inside the same seam, both measured rather than assumed:
    ported and not stubbed**. An absent call with the EA cited is honest; a flag nobody reads is a false
    model of a subsystem we have not reconstructed.
 
-**D-3 — the shipped world clock is INI-seeded with a date; the seed cannot reach `clock`.**
+**Clock-seed finding (T-038) — NOT a deviation, and deliberately NOT given a D-number.**
+(Renumbered from "D-3" on 2026-10-21: this file already carried a second D-3 for T-037's ref-key gap,
+and a D-number here would have implied the port differs from shipped. It does not — both sides seed the
+date and both leave `totalSeconds` at 0. The only port-side difference is the literal fallback, which is
+a bug and is tracked as **T-042**, not a deviation.)
 (`docs/f3/WorldYearSeedConsumer.md`, `modules/openje/src/JE/World.cpp:22`, `src/F3/GameWorld.cpp:89-92`.)
 `JE::World::virt_meth_0x546b50` (called as the FIRST statement of `Initialize`, `0x5466b0` -> vft slot 5)
 reads `[World] Year/Month/Day/Hour/Minute/Second` + `Seconds Per Round` out of the engine ini tree into
@@ -566,7 +570,8 @@ shape only (six consecutive ints, identical `0,1,1,0,0,0` ctor defaults, and zer
 `0, 1, 1, 0, 0, 0` (`0x548af6..0x548b08`) — 2253-10-18 comes from `sys.ini`, never from code. Both sides
 agree while the key ships; they disagree the moment it does not. The port's `JE::World` defaults are
 also all-zero (`modules/openje/src/JE/World.hpp:13`) where shipped uses `0,1,1` for year/month/day.
-Fix = delete the literals and match the ctor defaults; it changes no digest value.
+Fix = delete the literals and match the ctor defaults; it changes no digest value. **Tracked as T-042
+(NiceHawk).** No D-number: a bug we intend to fix is not a deviation we accept.
 
 **Standing rule from this row:** no test may assert a damage value (or any drawn value) while the draw
 comes from the live global stream — pin the seed or inject the generator, assert the exact number, and
