@@ -391,6 +391,15 @@ resting on an address. (ii) The middle row is `.left/.middle/.right` — **there
 as `group ++ suffix` via `sub_434600`; that is *why* the ini sections are `window.upperleft` and
 `button.up.upperleft`, and it is the port's `SkinTable::Find()` key.
 
+**Corollary for T-033 (class-identity batch):** `artifacts/F3.json` models this address as a class,
+`cls_0x6faf2c`, and `discoveries/2025-10-20-vftable-master-index.md` L468 carries it as a vftable with
+**zero** entries. It is neither: nine consecutive pointers to `.rdata` **string literals**
+(`0x66e460`..`0x66e4bc`), read by a count-bounded loop, with no vftptr above them and no slot targets.
+OOAnalyzer saw a run of same-section pointers and guessed a vftable; the walk at @0x4b0710 is the
+reason it has no methods to find. A rule of "a `cls_0x…` whose entries all point into `.rdata` at
+printable addresses is a name table, not a vftable" would classify this one and probably others in
+that zero-entry group.
+
 ### 8c. Fragment field map — and a correction to §2's "one at +8"
 
 `Fragment::ReadFrom_0x4b20a0` reads six u32 straight into the object; the `lea` operands are
