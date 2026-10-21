@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: EpicRaven (T-076 filed by LoudDragon `01a15f82` in bab1146/69a5792, dispatched on return 2026-10-21)
 type: tooling (offline; tools/ecx-flow.py extension; NO IDB writes; README table untouched per coordinator-only law)
 depends: T-054 (the tool), harness item 44 (rule-1 source), T-064 [B] falsification (the test-case origin)
@@ -36,3 +36,22 @@ future wave needs the lesson again.
 - T-073 (HappyStorm running the weapons/flow census on the 17 orphans) and T-075 (TrueCastle,
   single-writer census pattern on 0x707E48) noted as tool-succession lines; arbitration pings route
   here — share-check is exactly what they should be running before their queues form.
+
+## ACCEPTANCE EVIDENCE (EpicRaven, 2026-10-21)
+
+- Mode committed in tools/ecx-flow.py: `share-check --cls X | --addrs ...` — item-44 rule-1
+  computed from md5-pinned edges (a68c22f3dd1c256ec9539a70e87cb434); per-candidate view
+  constants / holder fields / plain-this / heap census + suggested-owners;
+  overall SHARING (any candidate) > NO-EVIDENCE (zero external edges set-wide) > PASS.
+- Gate extended: selftest **6/6 PASS** including NEW T5 = banked-rulings regression —
+  0x434250 SHARING (this-0xB0 + this-0xC4), 0x434120 SHARING (holders *[in-ecx+0xC]/[+0x8C]/
+  [+0x90]), cls_0x445350-band PASS (single constant this-0x198), 0x507810 PASS (heap shape).
+  Band/cases regression re-run: still 6/6, no drift to T-054/T-057 outputs.
+- Exit-code contract proven: SHARING case exit 1, PASS cases exit 0 (measured via $? without
+  pipeline interference); GATE RED suppresses verdicts (item 35 preserved).
+- Semantics notes: intra-set edges excluded (family leaves get soft NO-EDGE not set-blocking;
+  overall NO-EVIDENCE only if the whole set has zero external edges); pad-head callers appear in
+  suggested-owners for the wave to weigh with item-43 (rule-1 pass + pad-only callers = queue
+  with cleanup-annotation, not membership — visible in the 0x493400 probe).
+- Offline-only, zero IDB writes, zero 8745 use; README/boards table untouched per
+  coordinator-only law — status relay via mesh for the table mirror.

@@ -56,8 +56,10 @@ Usage:
   tools/ecx-flow.py band --addrs 0x507810,0x507580,0x5067c0 --label epoch
   tools/ecx-flow.py families --cls cls_0x50dbb0  # per-entry LIVE/DELEG/PAD/ISO census
   tools/ecx-flow.py cases                        # the three T-054 registered cases
+  tools/ecx-flow.py share-check --addrs 0x434250,0x434120  # item-44 rule-1 pre-queue
+                                                             # gate; exit 1 = SHARING/BLOCKED
   tools/ecx-flow.py global 0x707e48
-Exit codes: 0 ok, 1 self-test red / data missing, 2 inputs missing.
+Exit codes: 0 ok, 1 self-test red / data missing / share-check BLOCKED, 2 inputs missing.
 """
 
 import argparse
@@ -1073,6 +1075,97 @@ class Model(object):
                     out[E] = ("ISO", {})
         return out
 
+    def share_check(self, cand_eas):
+        """Harness item 44, rule 1 -- the executable pre-queue gate.
+        Input: candidate EAs a wave intends to MINT as members of a host.
+        Per candidate, over EXTERNAL edges only (intra-set calls excluded):
+          view constants = distinct adjusted-this shapes (in-ecx+disp / &G+disp);
+          holder fields  = distinct field-access paths (*[...] chains, *global);
+        >=2 view constants OR >=2 holder fields        => per-candidate SHARING
+        zero external edges for the candidate           => NO-EDGE (soft: leaf helper
+          inside a family is legal; overall NO-EVIDENCE only if the WHOLE set is dead)
+        otherwise SINGLE-OWNER (plain-this / heap / untraced edges count as callers
+        but carry no shape claim).
+        Overall: SHARING if ANY candidate shares (rule 1 is per-fn strict); else
+        NO-EVIDENCE if the set has zero external edges at all; else PASS."""
+        cand = set(cand_eas)
+        cand_r = set(cand) | {self.resolve_to(e) for e in cand}
+        details = []
+        any_edge_global = False
+        for E in sorted(cand):
+            targets = {E} | {self.resolve_to(E)}
+            vcons = collections.defaultdict(list)
+            holders = collections.defaultdict(list)
+            plain = heaps = 0
+            for e in self.edges:
+                if e["kind"].startswith("alloc") or e["target"] not in targets:
+                    continue
+                o = self.owner_of(e["site"])
+                if o in cand_r:
+                    continue
+                any_edge_global = True
+                ce = deser(e["ecx"])
+                if ce is None:
+                    plain += 1
+                    continue
+                k = ce[0]
+                if k == "plus":
+                    b = flatten(ce[1]) if ce[1] else None
+                    if b and b[0] == "inecx":
+                        key = ("this+0x%X" % ce[2]) if ce[2] >= 0 else ("this-0x%X" % -ce[2])
+                        vcons[key].append(e["site"])
+                    elif b and b[0] == "addr":
+                        vcons["&0x%X%s0x%X" % (b[1], "+" if ce[2] >= 0 else "-",
+                                               abs(ce[2]))].append(e["site"])
+                    else:
+                        holders[efmt(flatten(ce))].append(e["site"])
+                elif k == "contents":
+                    holders["*[0x%X]" % ce[1]].append(e["site"])
+                elif k == "deref":
+                    holders[efmt(ce)].append(e["site"])
+                elif k == "inecx":
+                    plain += 1
+                elif k in ("heap", "ctorret"):
+                    heaps += 1
+                else:
+                    plain += 1
+            if len(vcons) >= 2 or len(holders) >= 2:
+                verdict = "SHARING"
+            elif not (vcons or holders or plain or heaps):
+                verdict = "NO-EDGE"
+            else:
+                verdict = "SINGLE-OWNER"
+            own = collections.Counter()
+            for e in self.edges:
+                if e["target"] in targets:
+                    o = self.owner_of(e["site"])
+                    if o not in cand_r and o is not None:
+                        own[self.owner_name(o).split("::")[0]] += 1
+            details.append((E, verdict, dict(vcons), dict(holders), plain, heaps,
+                            own.most_common(3)))
+        if any(d[1] == "SHARING" for d in details):
+            overall = "SHARING"
+        elif not any_edge_global:
+            overall = "NO-EVIDENCE"
+        else:
+            overall = "PASS"
+        return overall, details
+
+    def share_check_report(self, cand_eas, label):
+        overall, det = self.share_check(cand_eas)
+        L = []
+        P = L.append
+        P("== share-check %s: item-44 rule-1 pre-queue gate ==" % label)
+        for (E, v, vc, ho, pl, hp, own) in det:
+            P("  0x%-7X %-13s view-constants=%s holders=%s plain-this=%d heap=%d suggested-owners=%s"
+              % (E, v,
+                 ", ".join("%s(%d@%s)" % (k, len(s), hex(s[0])) for k, s in sorted(vc.items())) or "-",
+                 ", ".join("%s(%d)" % (k, len(s)) for k, s in sorted(ho.items())) or "-",
+                 pl, hp, own))
+        P("VERDICT: %s  (exit %d -- SHARING/NO-EVIDENCE are queue-blocking)" % (
+            overall, 0 if overall == "PASS" else 1))
+        return "\n".join(L)
+
     def pads_report(self):
         L = []
         P = L.append
@@ -1503,6 +1596,20 @@ def selftest(m):
     check("T3 Gfx_Texture_Manager <- *[0x70B200] pointer-slot join", len(nt) >= 5,
           "%d edges this==*[0x70B200] into manager band (b6 join reproduced)" % len(nt))
 
+    # T5: item-44 rule-1 regression on the BANKED rulings (T-064 wave outcome):
+    #  [B] set must read SHARING (the falsification); 445350/507810 mints must read PASS.
+    v1, _ = m.share_check([0x434250])
+    v2, _ = m.share_check([0x434120])
+    hot = mod_band = [0x445350, 0x445380, 0x4455D0, 0x445970, 0x445A40, 0x445E20,
+                       0x446080, 0x4461D0]
+    v3, _ = m.share_check(hot)
+    v4, _ = m.share_check([0x507810])
+    check("T5 share-check gate reproduces the banked item-44 rulings",
+          v1 == "SHARING" and v2 == "SHARING" and v3 == "PASS" and v4 == "PASS",
+          "0x434250=%s 0x434120=%s cls_0x445350-band=%s 0x507810=%s "
+          "(expected SHARING/SHARING/PASS/PASS per T-064 outcome + T-054 mints)"
+          % (v1, v2, v3, v4))
+
     # T4: T-057 21-row PAD snapshot + 0-orphan invariant, via the executable
     # bucket rule (PAD requires the pad's data-ref evidence; tail-jmp-only -> DELEG)
     snap = {
@@ -1552,7 +1659,8 @@ def resolve_cls_eas(m, cls):
 
 def main():
     ap = argparse.ArgumentParser(prog="ecx-flow.py")
-    ap.add_argument("mode", choices=["selftest", "band", "global", "cases", "families", "pads"])
+    ap.add_argument("mode", choices=["selftest", "band", "global", "cases", "families",
+                                     "pads", "share-check"])
     ap.add_argument("--cls")
     ap.add_argument("--addrs")
     ap.add_argument("--label", default=None)
@@ -1573,7 +1681,27 @@ def main():
         return 0 if selftest(m) else 1
 
     gate_ok = selftest(m) if args.mode in (
-        "band", "global", "cases", "families", "pads") else True
+        "band", "global", "cases", "families", "pads", "share-check") else True
+
+    if args.mode == "share-check":
+        if not gate_ok and not args.allow_red:
+            print("\nGATE RED (item 35) -- share-check verdicts suppressed.")
+            return 1
+        eas = None
+        label = args.label or args.cls or "candidates"
+        if args.cls:
+            eas = resolve_cls_eas(m, args.cls)
+            if eas is None:
+                print("cls not found in F3.json dump: %s" % args.cls)
+                return 2
+        elif args.addrs:
+            eas = [int(x, 16) for x in args.addrs.split(",")]
+        else:
+            print("share-check mode needs --cls or --addrs")
+            return 2
+        print(m.share_check_report(eas, label))
+        _overall, _det = m.share_check(eas)
+        return 0 if _overall == "PASS" else 1
 
     if args.mode == "pads":
         if not gate_ok and not args.allow_red:
