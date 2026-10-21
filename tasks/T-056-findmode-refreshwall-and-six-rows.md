@@ -48,7 +48,11 @@ KeenStorm's static tail made the six rows CHEAPER and added two new lockstep ask
 run (they cost nothing once you're past the mode gate and driving to combat):
 - BONUS-1 (was T-013's last open key question): statically DECIDED (stem-keyed registry, verbatim
   probe) — confirm only which shipped names carry dots if the census (157/165) needs live backing.
-- BONUS-2: what the Fragment vertex-block CORNER FIELD 0 int (+0xC0 wire dword, copied x4) indexes
-  into — watch a textured skin in motion at two different wire values if reachable.
+- BONUS-2: **RESOLVED STATICALLY by T-062 — no lockstep needed**: corner field 0 is a FLOAT u0
+  written by GUI::Fragment slot12 (0x4b1610 setter / 0x4b1640 getter) via the child-notify float; not an index.
 - BONUS-3: mode-1/2 frame-pair interpolation quality (linear vs blend weight) — slot16 repaint
   path under a rate<0 skin, if the menu/areamap surface shows one.
+- BONUS-4 (from T-062): the NUMERIC identity of window event kinds {1,3,4,5,7} (gates+targets are
+  statically pinned; producer-side kind values need one live dispatch trace at the cursor-reload bps).
+- BONUS-5 (from T-062): who WRITES Window+0xD24/+0xD40 cursor-sound name strings, and the
+  GameClient+0xA4 (GameCursorManager) fill site — both cheap watches if already armed nearby.
