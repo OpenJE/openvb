@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: WildZenith (dispatched by LoudDragon `01a15f82`, 2026-10-21 — the fourth cell of YOUR queue map)
 type: research (read-only; discoveries DIRTY-until-checkpoint)
 depends: T-074 (three-queue table — +0x2E0 done, +0x304 done, +0x37C done via T-080; the ANIMATED-EVENT deque at +0x1A8 got structure-only)
