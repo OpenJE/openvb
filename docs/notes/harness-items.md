@@ -1034,3 +1034,18 @@ object with one referrer. The float-parsers' "0.0 at this address" reading was a
 artifact — under-resolving a dump and over-collecting a scan are the same failure from opposite
 ends. Rule: high-xref read-only address => check byte[0] (0x00 = pooled "" candidate) and
 classify referrers by ADDRESS-vs-CONTENT use before attributing any value semantics.
+
+## 49. Absolute-encoding store scans are structurally blind to register-indirect vft stores — pair them with callee-side imm-vft scans
+
+TrueCastle's T-075, 2026-10-21. Every prior census (b4, T-054) asked 'who stores/loads 0x707E48 by
+absolute encoding' — answer: nobody (zero a3/c7-05/mov-imm; only 168 `mov ecx,imm32` THIS-loads). The
+singleton was therefore assumed to be a subobject at global+X of an unlocated owner. It is a COMPLETE
+object: its ctor stores its vft via `c7 06 cc f2 66 00` (`mov dword ptr [esi], imm32`) — register-
+indirect, invisible to any global-address-keyed scan. The identity was on the callee side all along.
+Scanner self-tested on the 0x707CE4 known-positive (all three writers reproduced) before trusting the
+0x707E48 negative — the positive exists precisely because THAT ctor stored differently.
+
+Rule: for every this==&global edge, run the store census BOTH directions — (a) absolute encodings of the
+global, AND (b) `c7 0x <imm-vft>` immediate-table stores inside the callee reached through that edge
+(same for `mov [reg], imm32` forms behind `lea ecx,global; call`). A 'no writers' negative about a global
+is only about your scanner until both halves print empty.
