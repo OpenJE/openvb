@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 assignee: RedXenon / 01a157ec (formally dispatched 2026-10-21 after a written request; the row moved by
 # coordinator edit + dispatch, never by chat offer - the process this lane itself insisted on)
 depends: nothing
@@ -46,6 +46,33 @@ the **asymmetric-operand trap** on its three candidate hits. Scope item 1 alread
 mapping**, so the requirement is not new — but it becomes testable here: **the generator must print, in its own
 output, which mapping version it used.** A tool that silently reproduces stage-1 pairing would re-emit a retracted
 claim with the authority of a table, which is the exact failure a census exists to prevent.
+
+## Verdict (stage 1 `a16a31d`, stage 2 `521fac2` + `5906d57`) — coordinator-verified, not taken on report
+
+**Seven gates, all PASS**, run independently by the coordinator: `emap_count_Maps` 13, `eme2_count_Maps` 64,
+`gwam_v5_count` 57, `gwam_consumed_nonzero` 0, `eme2_tiles_all_64_chunks` True, `eme2_first_record_default_pc`
+`Default_PC.CRT`, `gitm_eqslot_armor_values` `[0,1]`. `--query eme2_kinds` reproduces
+`{WEA 32, AMO 18, CON 9, CRT 2, DOR 1, USE 1, ITM 1}` from the committed table.
+
+**What the row actually produced, beyond a tool:**
+- **EME2 structure**: all 64 records tile **byte-exactly** as `{u16-len raw string, 3f pos, 3f rot, u8 flag, embedded
+  sub-chunk (EEOV v2)}` — the sub-chunk lives **inside** the record stream, which sess-21's note implied but never
+  stated. Spawn-kind distribution is now one query instead of a decompile.
+- **A NAMED GAP, with evidence**: trigger *names* are not in any walkable chunk — EMTR payloads are counts + f32
+  geometry, EBTR is a wrapper embedding EMNP/ETRE/HEAD sub-chunks, the EMNP sample is four null bytes. `triggers.csv`
+  prints **0 with a printed reason pointing at the compressed region**. `.veg` scope folded into the same line: no `.veg`
+  at the demo's top level, no VEG tag walk available. **Empty ≠ absent**, applied to a table that came back empty — the
+  exact case the row's discipline exists for.
+- **Self-corrections kept visible rather than amended away**: the first `read_jstr` claimed NUL-inclusive lengths and was
+  falsified in one step by the tile trace (`0x0e` = exactly `"Default_PC.CRT"`, straight into the pos floats); the
+  container expressions were re-confirmed offline (`cls_0x54e070` size 20; `+0x04` blocks / `+0x08` capacity /
+  `+0x0C` 4-per-block / `+0x10` element index; push_back triple at `0x54ea03/2a/71`), so T-034's R3 will read the right
+  dwords when a port frees.
+- **Route and mapping provenance are printed** (`FastArrow:B11-corrected`; per-route GWAM counts), which is what turned
+  "57" from a claim into a number that names the walk that earned it.
+
+Snapshot re-emitted under an unchanged dir hash (`99ac4dab13fc`) — the tables grew, the payload did not, and the tool
+says so.
 
 ## Acceptance
 - Reproduces the known results as sanity checks: 57 v5 GWAM records, consumed=0 on all, and the

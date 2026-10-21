@@ -1,6 +1,7 @@
 ---
 status: open
-assignee: QuickQuartz (01a157f6 — IDB writer, rename-only scope GRANTED) + MintEagle (batch-2 decisions)
+assignee: QuickQuartz (01a157f6 — IDB writer, rename-only scope; AWAY since 20:10, re-confirm before applying)
+# + RedXenon (01a157ec) — batch-2 DECISIONS, dispatched 2026-10-21 by row edit (MintEagle departed, hole was open)
 depends: T-029 (the census that produced this queue)
 ---
 
