@@ -15,3 +15,12 @@ vector **contains 1**.
   answer; report which assumption breaks.
 
 Either result is a deliverable. Do not extend into a general item-table audit.
+
+## Coordinator pin (2026-10-21, before the new owner starts) — non-implication to hold
+The row's question is the **`GameItem+0xA8` required-slot vector as it materializes in memory**. The
+`_ARM.grp` on-disk scalar equip-slot (`GITM+24`, session 35's read) is NOT known to be the same field:
+a scalar equip slot and a slot-*vector* can disagree, and one reading does not settle the other.
+The deliverable is specifically: which on-disk bytes serialize into `+0xA8` for the helmet record, and
+does that vector contain 1. Answer `+0xA8` from the record's own path (census artifacts / GITM
+layout / the ctor that fills it), not by assuming `GITM+24`. If `+0xA8` turns out to be *computed*
+from `GITM+24` rather than stored, that derivation is itself the finding — cite the computing site.
