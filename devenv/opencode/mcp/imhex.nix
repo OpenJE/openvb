@@ -3,7 +3,9 @@
 { config, ... }:
 
 let
-  imhexPort = config.env.OPENVB_IMHEX_MCP_PORT or "31337";
+  # no "31337" fallback: a default that collides with the original's gdb port is how this
+  # bug came back after being fixed once.
+  imhexPort = config.env.OPENVB_IMHEX_MCP_PORT;
 in
 {
   opencode.mcp.imhex = {

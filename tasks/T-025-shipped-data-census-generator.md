@@ -12,6 +12,14 @@ The 10d lesson: **before asking whether a bug is observable, ask whether on-disk
 That question settled T-019 at 0/57 in one sitting, and closed 10c from `char_desc` alone. Generalise
 the method so "does shipped data ever do X" stops needing a debugger and stops needing me to dispatch.
 
+## Sequencing decision (coordinator, 2026-10-21): stage 2 is authorised NOW
+
+Stage 2 was sequenced behind T-034's R3/R0. RedXenon's objection is correct and now the rule: **an
+environment-blocked dependency is not a working dependency** — parking a lane on a blocked attach converts a
+sequencing decision into a stall. Stage 2 needs no debugger (EME2 spawn-kind table, `.veg`/trigger names, more
+`--query` verbs, snapshot re-emit), so it proceeds; if R3/R0 land afterwards, the generator's route/mapping prints are
+already there to absorb the new facts.
+
 ## Scope
 1. Extend the existing v5 GWAM walk into a **census generator** emitting stable tables (csv or md) for:
    all v5 GWAM records with the B11-corrected operand mapping; `char_desc` body-part modifier rows;

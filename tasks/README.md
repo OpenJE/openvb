@@ -133,7 +133,7 @@ row; A keeps editorial merge rights).
 | T-022 | Assert every "verbatim shipped" string is byte-identical in F3.exe | done | implementer-C (UltraBear) |
 | T-023 | Cross-TU compile probe as a command (verify a rename with no linker) | done | implementer-C (UltraBear) |
 | T-024 | Gate integrity: revision/payload stamp + per-suite minimum assertion counts | open — **done** || done ||
-| T-025 | Shipped-data census generator — **stage 1 DONE (`a16a31d`)**: adopted FastArrow's seed, route+mapping printed in the artifact, 25 GB accounting bug caught | in-progress | RedXenon (01a157ec) |
+| T-025 | Shipped-data census generator — stage 1 done (`a16a31d`); **stage 2 authorised now** (env-blocked dep is not a working dep) | in-progress | RedXenon (01a157ec) |
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open — **done** || done ||
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
@@ -143,7 +143,8 @@ row; A keeps editorial merge rights).
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
 | T-033 | **Class-identity batch queue** — order corrected to contiguity-ratio x fns; IDB = rename-only scope, single writer 01a157f6 | in-progress | QuickQuartz (applies) + **unassigned: batch-2 decisions (was MintEagle, departed)** |
-| T-034 | Lockstep reads on the original (6) — **pre-resolved to expressions (`44544f0`); BLOCKED on 31337, now unblocked by the port fix** | open | RedXenon |
+| T-034 | Lockstep reads — targets pre-resolved; port fix landed and verified, **waiting on an ImHex restart to free 31337** | open | RedXenon |
+
 
 | T-039 | **`Entity+0x314` is size 4 in the DB but a `unsigned char` in our port**, used as T-011's gate term — count vs flag undecided | open | HappyKnight |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |

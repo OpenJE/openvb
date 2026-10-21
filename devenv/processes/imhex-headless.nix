@@ -2,7 +2,9 @@
 
 let
   imhexNetworkHost = "127.0.0.1";
-  imhexNetworkPort = "31337";
+  # single source of truth: was a hardcoded "31337", which silently collided with
+  # OPENVB_ORIG_GDB_PORT and starved T-034 of the debugger port.
+  imhexNetworkPort = config.env.OPENVB_IMHEX_MCP_PORT;
 
   runImHex = pkgs.writeShellApplication {
     name = "run-imhex-mcp";

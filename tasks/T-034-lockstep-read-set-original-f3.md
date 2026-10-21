@@ -33,6 +33,17 @@ The native **never** writes `+0x14`, and `ctor_0x403e40` doesn't either (its fir
 call?** `new(0xC8)` may land on reused memory, so a defined pre-call value means either heap reuse or a writer nobody
 has found, and both are findings worth reporting. Take the value on both sides of `0x550720`.
 
+## Environment status (2026-10-21)
+
+- **Port collision fixed in the tree** (`devenv/environment/openvb.nix` + both consumers now read the variable): ImHex
+  moved 31337 → **31347**, so `31337` is uniquely the original's gdb port. Verified by evaluating the consumer:
+  `devenv print-dev-env` exits 0 and exports `OPENVB_IMHEX_MCP_PORT='31347'`.
+- **Still blocked on one manual step:** the *running* ImHex listener owns `127.0.0.1:31337` until it is restarted with
+  the new config. That is a user/harness action, not a lane action — nobody should evict a session they don't own.
+- Fresh stubs in this session's state proved unreliable (one `run`-over-RSP failure, one RSP timeout, one silent exit
+  seconds after launch). Prefer launching through `f3-lockstep-debug` after the restart so both stubs have one owner.
+- All six targets are **pre-resolved to loadable expressions** (`44544f0`), so once the port frees: one attach, one sitting.
+
 ## Acceptance
 - One `discoveries/` doc: a six-row table (address / value / instant / breakpoint) **plus an explicit list of
   what was not reached and why**.

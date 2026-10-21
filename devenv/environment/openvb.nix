@@ -23,7 +23,14 @@ in {
     OPENVB_REIMPL_GDB_PORT = "31338";
     OPENVB_IDA_ORIG_MCP_PORT = "8745";
     OPENVB_IDA_REIMPL_MCP_PORT = "8746";
-    OPENVB_IMHEX_MCP_PORT = "31337";
+    # WAS "31337" - the SAME value as OPENVB_ORIG_GDB_PORT above. That collision is what blocked
+    # T-034: the managed headless ImHex binds 31337, so winedbg's single-client stub for the
+    # original could never be attached (ss -ltnp showed the listener owned by the ImHex pid).
+    # ImHex is the non-game consumer, so it moves; the number is no longer duplicated anywhere -
+    # both the process definition and the MCP config now read THIS variable (see
+    # devenv/processes/imhex-headless.nix and devenv/opencode/mcp/imhex.nix), which is the actual
+    # root cause: one port literal written in three places.
+    OPENVB_IMHEX_MCP_PORT = "31347";
 
     # Engram memory (agent memory server). NOTE: deliberately NO ENGRAM_DATA_DIR here.
     # The pi extension compares the running server's instance-id against
