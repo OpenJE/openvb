@@ -50,6 +50,8 @@ Usage:
   tools/ecx-flow.py selftest
   tools/ecx-flow.py band --cls cls_0x445350
   tools/ecx-flow.py band --addrs 0x507810,0x507580,0x5067c0 --label epoch
+  tools/ecx-flow.py families --cls cls_0x50dbb0  # per-entry LIVE/DELEG/PAD/ISO census
+  tools/ecx-flow.py cases                        # the three T-054 registered cases
   tools/ecx-flow.py global 0x707e48
 Exit codes: 0 ok, 1 self-test red / data missing, 2 inputs missing.
 """
@@ -234,6 +236,8 @@ class Model(object):
         self.edges = []        # dicts: site,kind,target,raw_target,ecx,owner
         self.indirect = []     # dicts: site,slot,obj,obj_disp,ecx,owner
         self.stores = []       # dicts: site,base,disp,val,owner
+        self.pad_installs = {}  # pad head VA -> [push sites]
+        self.pads = {}
         self.installs = collections.defaultdict(list)  # table VA -> (site, obj-expr)
         self.global_writes = collections.defaultdict(list)
 
@@ -331,7 +335,8 @@ class Model(object):
                 self.starts.add(ea)
         term_end, gap_pad = None, False
         for i in self.insns:
-            boundary = i.mn.startswith("ret") or i.mn.startswith("j")
+            boundary = (i.mn.startswith("ret") or i.mn.startswith("j")
+                        or i.mn == "int3")
             pad = i.mn in ("nop", ".byte", "int3")
             if (i.addr % 16 == 0 and not boundary and not pad and term_end is not None
                     and gap_pad and 0 < i.addr - term_end <= 0x30):
@@ -343,6 +348,8 @@ class Model(object):
                 gap_pad = False
         self.starts |= set(self.call_targets)
         self.starts = {s for s in self.starts if s in self.by_addr}
+        self._collect_data_code_ptrs()
+        self._collect_pads()
         self.starts_sorted = sorted(self.starts)
         self._collect_jump_tables()
         self.jmp_targets |= set(self.itab_targets)
@@ -358,6 +365,57 @@ class Model(object):
         return int(m.group(1), 16) if m else None
 
     ITAB_RE = re.compile(r"^\*(0x[0-9a-f]+)\(,%[a-z]+,(\d+)\)$")
+
+    def _collect_data_code_ptrs(self):
+        """All 4-aligned dwords in .rdata/.data/.data1 that point into .text.
+        Set of table-referenced code addresses (vfts, atexit pads, EH handler
+        arrays, jump tables in data)."""
+        lo, hi = self.text_sec[1], self.text_sec[1] + self.text_sec[2]
+        refs = set()
+        for name, va, size, fo in self.secs:
+            if name == ".text":
+                continue
+            buf = self.blob[fo:fo + size]
+            n = len(buf) - (len(buf) % 4)
+            for i in range(0, n, 4):
+                v = int.from_bytes(buf[i:i + 4], "little")
+                if lo <= v < hi:
+                    refs.add(v)
+        self.data_code_ptrs = refs
+
+    def _collect_pads(self):
+        """MSVC SEH/vector-iterator pad thunks:
+          `mov|lea disp(%ebp),%ecx [; add $d,%ecx] ; jmp|call T`
+        AND the pad's own VA is table-referenced in .rdata/.data (EH handler /
+        atexit arrays). Registered as heads so tail/cleanup flow is attributed;
+        `jmp` pads also get thunk resolution."""
+        self.pads = {}
+        refs = getattr(self, "data_code_ptrs", set())
+        n = len(self.insns)
+        for i in range(n):
+            ins = self.insns[i]
+            if ins.mn not in ("mov", "lea") or len(ins.ops) != 2:
+                continue
+            if norm_reg(ins.ops[-1]) != "ecx" or not ins.ops[0].endswith("(%ebp)"):
+                continue
+            j = i + 1
+            adj = False
+            if j < n and self.insns[j].mn == "add" and len(self.insns[j].ops) == 2 \
+                    and norm_reg(self.insns[j].ops[-1]) == "ecx" \
+                    and self.insns[j].ops[0].startswith("$"):
+                adj = True
+                j += 1
+            if j >= n or self.insns[j].mn not in ("jmp", "call"):
+                continue
+            t = self._branch_target(self.insns[j])
+            if t is None or ins.addr not in refs:
+                continue
+            self.pads[ins.addr] = (t, adj, self.insns[j].mn)
+            self.starts.add(ins.addr)
+            if not self.thunks_done and self.insns[j].mn == "jmp":
+                self.thunks[ins.addr] = t
+                if adj:
+                    self.adjusted_thunks.add(ins.addr)
 
     def _collect_jump_tables(self):
         """Absolute jump tables: `jmp *0xTAB(,%ecx,4)` -- resurrect their cases
@@ -663,6 +721,13 @@ class Model(object):
                 ts = [t] if t is not None else self.itab_by_site.get(a, [])
                 for x in ts:
                     pending[x] = dict(state)
+                self._resolve_thunks()
+                if (t is not None and t in self.starts and a not in self.thunks
+                        and self.owner_of(a) != t):
+                    self.edges.append({"site": a, "kind": "tail-jmp",
+                                       "target": self.resolve_to(t), "raw_target": t,
+                                       "ecx": ser(flatten(state.get("ecx"))),
+                                       "owner": self.owner_of(a)})
                 state = {}
                 dead = True
                 continue
@@ -678,6 +743,8 @@ class Model(object):
                         last_push = int(op0[1:], 16)
                     except ValueError:
                         last_push = None
+                    if last_push in getattr(self, "pads", {}):
+                        self.pad_installs.setdefault(last_push, []).append(a)
                 continue
             if mn == "pop":
                 r = norm_reg(ins.dst)
@@ -860,6 +927,7 @@ class Model(object):
     def _save_cache(self, path):
         doc = {"md5": self.exe_md5, "edges": self.edges, "indirect": self.indirect,
                "stores": self.stores,
+               "pad_installs": {hex(k): v for k, v in self.pad_installs.items()},
                "installs": {k: v for k, v in self.installs.items()},
                "tables": {hex(k): v for k, v in self.tables.items()},
                "thunks": {hex(k): v for k, v in self.thunks.items()},
@@ -883,9 +951,10 @@ class Model(object):
         self.edges = doc["edges"]
         self.indirect = doc["indirect"]
         self.stores = doc["stores"]
+        self.pad_installs = {int(k, 16): v for k, v in doc.get("pad_installs", {}).items()}
         self.installs = collections.defaultdict(list, doc["installs"])
         self.tables = {int(k, 16): v for k, v in doc["tables"].items()}
-        self.thunks = {int(k, 16): v for k, v in doc["thunks"].items()}
+        self.thunks.update({int(k, 16): v for k, v in doc["thunks"].items()})
         self.thunks_done = True
         self.adjusted_thunks = {int(x, 16) for x in doc["adjusted"]}
         self.global_writes = collections.defaultdict(
@@ -898,6 +967,159 @@ class Model(object):
                 self.f3_tables[int(tv["ea"], 16)] = struct["name"]
 
     # ---------------- band analysis ----------------
+
+    def owner_class(self, owner_start):
+        if owner_start is None:
+            return "?"
+        if owner_start in getattr(self, "pads", {}):
+            return "PAD-THUNK@0x%X" % owner_start
+        if owner_start in self.ea2cls:
+            return self.ea2cls[owner_start][0]
+        return "sub_%X" % owner_start
+
+    def families_report(self, band_eas, label):
+        band = set(band_eas)
+        band_r = set(band) | {self.resolve_to(e) for e in band}
+        self._resolve_thunks()
+        rev = collections.defaultdict(list)
+        for t, r in self.thunks.items():
+            rev[r].append(t)
+        L = []
+        P = L.append
+        P("== families %s: %d entries, %d tables scanned (.rdata+.data+.data1), "
+          "%d thunks resolved ==" % (label, len(band), len(self.tables), len(self.thunks)))
+        ext_by_entry = collections.defaultdict(list)
+        intra = 0
+        for e in self.edges:
+            if e["kind"].startswith("alloc"):
+                continue
+            if e["target"] in band_r:
+                o = self.owner_of(e["site"])
+                if o in band_r:
+                    intra += 1
+                else:
+                    ext_by_entry[e["target"]].append(e)
+        P("external edges into band: %d ; intra-band: %d" %
+          (sum(len(v) for v in ext_by_entry.values()), intra))
+        # intra-band call graph for delegation resolution (Q1 second hop)
+        intra_edges = collections.defaultdict(list)
+        for e in self.edges:
+            if e["kind"].startswith("alloc"):
+                continue
+            o = self.owner_of(e["site"])
+            if e["target"] in band_r and o in band_r:
+                intra_edges[e["target"]].append(o)
+        rows = []
+        for E in sorted(band):
+            es = ext_by_entry.get(E, [])
+            oc = collections.Counter(self.owner_class(x["owner"]) for x in es)
+            shapes = collections.Counter()
+            disps = collections.Counter()
+            for x in es:
+                ce = deser(x["ecx"])
+                shapes[ce[0] if ce else "none"] += 1
+                if ce and ce[0] == "plus":
+                    b = ce[1]
+                    if b and b[0] == "inecx":
+                        disps["in-ecx%+d" % ce[2]] += 1
+                    elif b and b[0] == "addr":
+                        disps["&0x%X%+d" % (b[1], ce[2])] += 1
+            slots = list(self.slotmap.get(E, ()))
+            for t in rev.get(E, ()):
+                slots += [(tv, ix) for (tv, ix) in self.slotmap.get(t, ())]
+            rows.append((E, es, oc, shapes, disps, slots))
+        # family grouping by dominant owner class
+        fams = collections.defaultdict(list)
+        for r in rows:
+            E, es, oc, shapes, disps, slots = r
+            if not es:
+                top = "ZERO-EXTERNAL"
+                share = 0.0
+            else:
+                top, c = oc.most_common(1)[0]
+                share = c / len(es)
+            fams[top].append((E, es, oc, shapes, disps, slots, share))
+        for top, items in sorted(fams.items(), key=lambda kv: -len(kv[1])):
+            n_e = sum(len(x[1]) for x in items)
+            owner_known = top != "ZERO-EXTERNAL" and all(
+                x[6] >= 0.55 for x in items) and len(items) and n_e > 0
+            P("")
+            P("FAMILY %s  entries=%d edges=%d dominant_share_min=%.2f" % (
+                top, len(items), n_e,
+                min((x[6] for x in items), default=0.0)))
+            for (E, es, oc, shapes, disps, slots, share) in items:
+                P("  0x%X edges=%d owner_share=%.2f owners=%s" % (
+                    E, len(es), share,
+                    ", ".join("%s:%d" % (k, v) for k, v in oc.most_common(4))))
+                if not es:
+                    # Q1 second hop: who calls the band-entry that calls this?
+                    del_g = collections.Counter()
+                    up_shapes = collections.Counter()
+                    for I in intra_edges.get(E, ()):
+                        for e2 in ext_by_entry.get(I, []):
+                            del_g[self.owner_class(e2["owner"])] += 1
+                            ce2 = deser(e2["ecx"])
+                            up_shapes[ce2[0] if ce2 else "none"] += 1
+                        slots_I = self.slotmap.get(I, [])
+                        if slots_I:
+                            del_g["VFT-OF-CALLER 0x%X@%s" % (I, slots_I[0])] += 0
+                    if del_g:
+                        P("        [Q1-delegated] via intra-band callers %s: "
+                          "external owners=%s shapes=%s" % (
+                              [hex(x) for x in sorted(set(intra_edges.get(E, ())))][:6],
+                              ", ".join("%s:%d" % (k, v) for k, v in del_g.most_common(6)),
+                              dict(up_shapes)))
+                    else:
+                        via_pad = [(p, adj) for p, (t, adj, _k) in self.pads.items()
+                                   if self.resolve_to(t) == E]
+                        if via_pad:
+                            for p, adj in via_pad[:3]:
+                                inst = self.pad_installs.get(p, [])
+                                P("        [Q1-padthunk] SEH/vector pad thunk 0x%X%s "
+                                  "-> entry; installed at %s (owners %s)"
+                                  " -- indirect dispatch, flow NOT proven end-to-end"
+                                  " -- installed-by is the candidate host"
+                                  % (p, ",adj" if adj else "",
+                                     [hex(x) for x in inst[:6]],
+                                     sorted({self.owner_class(self.owner_of(x))
+                                             for x in inst})[:6]))
+                        else:
+                            P("        [Q1-delegated] no external flow through any "
+                              "intra-band caller either")
+                    thk_E = sorted(rev.get(E, ()))
+                    tabs_E = sorted({tv for t in thk_E
+                                     for (tv, ix) in self.slotmap.get(t, ())})
+                    if thk_E or tabs_E:
+                        P("        [Q2] thunks into entry=%s tables-via-thunk=%s" % (
+                            [hex(t) for t in thk_E], [hex(t) for t in tabs_E]))
+                if disps:
+                    P("        disps: %s" % ", ".join("%s(%d)" % (k, v)
+                                                      for k, v in disps.most_common(6)))
+                P("        shapes: %s ; vft-slots-into-entry: %d%s" % (
+                    dict(shapes), len(slots),
+                    " " + str(slots[:4]) if slots else ""))
+            # item-41 triplet, family level
+            all_slots = sum(len(x[5]) for x in items)
+            thk = sorted({t for x in items for t in rev.get(x[0], ())})
+            P("  [Q2] table->thunk->family: slots=%d thunks=%s" % (
+                all_slots, [hex(t) for t in thk] or "none"))
+            callers = collections.Counter()
+            for x in items:
+                for e in x[1]:
+                    callers[self.owner_class(e["owner"])] += 1
+            for clsname, cnt in callers.most_common(6):
+                # Q1: who calls the callers? top owning classes' own tables + callers
+                heads = [ea for ea, (c, _n) in self.ea2cls.items() if c == clsname]
+                own_tabs = sorted({tv for ea in heads for (tv, ix) in self.slotmap.get(ea, ())})
+                up = collections.Counter()
+                for ea in heads:
+                    for e2 in self.edges:
+                        if e2["target"] == ea and self.owner_of(e2["site"]) != ea:
+                            up[self.owner_class(self.owner_of(e2["site"]))] += 1
+                P("  [Q1] caller-class %s: its own vft tables=%s ; called-by=%s" % (
+                    clsname, [hex(t) for t in own_tabs[:4]] or "none",
+                    ", ".join("%s:%d" % (k, v) for k, v in up.most_common(4)) or "none"))
+        return "\n".join(L)
 
     def band_report(self, band_eas, label):
         band = set(band_eas)
@@ -1144,7 +1366,7 @@ def resolve_cls_eas(m, cls):
 
 def main():
     ap = argparse.ArgumentParser(prog="ecx-flow.py")
-    ap.add_argument("mode", choices=["selftest", "band", "global", "cases"])
+    ap.add_argument("mode", choices=["selftest", "band", "global", "cases", "families"])
     ap.add_argument("--cls")
     ap.add_argument("--addrs")
     ap.add_argument("--label", default=None)
@@ -1164,7 +1386,7 @@ def main():
     if args.mode == "selftest":
         return 0 if selftest(m) else 1
 
-    gate_ok = selftest(m) if args.mode in ("band", "global", "cases") else True
+    gate_ok = selftest(m) if args.mode in ("band", "global", "cases", "families") else True
 
     if args.mode == "cases":
         if not gate_ok and not args.allow_red:
@@ -1181,7 +1403,7 @@ def main():
             print()
         return 0
 
-    if args.mode == "band":
+    if args.mode in ("band", "families"):
         if not gate_ok and not args.allow_red:
             print("\nGATE RED (item 35): selftest positive failed; band verdicts "
                   "suppressed -- fix the scanner first or pass --allow-red.")
@@ -1196,9 +1418,12 @@ def main():
         elif args.addrs:
             eas = [int(x, 16) for x in args.addrs.split(",")]
         else:
-            print("band mode needs --cls or --addrs")
+            print("%s mode needs --cls or --addrs" % args.mode)
             return 2
-        print(m.band_report(eas, label))
+        if args.mode == "families":
+            print(m.families_report(eas, label))
+        else:
+            print(m.band_report(eas, label))
         return 0
 
     if args.mode == "global":
