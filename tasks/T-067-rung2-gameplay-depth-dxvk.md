@@ -82,6 +82,22 @@ Injection is only the trigger; the PAYLOAD is one shape read at the first funnel
   that is C, not B. Stall only holds while the resident lives.
 - READING RULE: slot0-vft + count as a PAIR at every advance observation; B is idle-PRESENT-and-consumed-past,
   never advance-per-se. Frame-over-frame stands.
+- >>> STOP-DOWN-TOOLS CORRECTION (KeenStorm T-082 audit, 2026-10-21; byte-verified by HappyEagle in the
+  ORIGINAL IDB: 0x5a9070 = `mov byte [ecx+18h],1; xor eax,eax; retn 8`; getter 0x404b60 = `mov al,[ecx+18h]`).
+  The resident-NEVER-finishes premise is DEAD: the one-tick-arm update writes the done-byte UNCONDITIONALLY.
+  CAVEAT as verified: the frozen DB attributes 0x5a9070 to class ActionMessage slot 5 (vft 0x6a5f34);
+  GameActionIdle's vft 0x6497c4 slot-5 target is NOT resolved in artifacts/F3.json — LIVE-CHECK REQUIRED:
+  at bp4, on a fresh idle object, read [action+0] (vft) then x/1wx vft+0x14 and compare to 0x5a9070.
+  SHAPE TABLE REWORK: insert-frame dumps (0x550720/0x550741) can NO LONGER distinguish anything — idle-at-
+  slot0 at an insert bp is normal AND self-clearing. THE live probe moves to the pump walk at
+  **0x54c7f6** (predicate test site): arm it; dump slot0-vft + count + [head+0x18] THERE.
+  - Transient reading CONFIRMED (predicted normal): walk shows erase-and-continue; steady-state +0x314 = 0;
+    KeenStorm's port fix mandatory; old shape-C (empty-after-completion, immediate-fire-into-empty) is now
+    the PREDICTED NORMAL, not the anomaly family — standing rule survives INVERTED.
+  - Old shape B is the live vindication case instead: EVER seeing idle-at-head UNFINISHED at 0x54c7f6, or
+    orders waiting across pump ticks -> never-finish reading wins on live data despite the bytes; P-REV
+    product queue cancelled. One conditional hit either way.
+  - bp10 0x5a955d falsifier-watch UNAFFECTED.
 - Banked by KeenStorm as independent R4b confirm (third boot, second runtime, third entity pointer):
   scripted rounds' count 1→2→3, Idle-first/Anim-after on 0x0A6C6060.
 Also arm (T-070 §5): [idle+0x16]/[idle+0x18] across frames (expect 1/0), [entity+0x184] before/after rebase
