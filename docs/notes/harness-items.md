@@ -963,3 +963,25 @@ header of every `python3 tools/ecx-flow.py pads` run and of the module docstring
 doc now quote each other. Practical effect: an agent that never read this file still gets the
 buckets-vs-headness boundary and the head_hint()/live-read-back authority rule BEFORE its first
 verdict. That is how a rule graduates from prose to infrastructure.
+
+## 44. View-adjust = SHARING by default — membership requires a SINGLE-OWNER view (machine-checkable form)
+
+CalmRaven's T-064 [B] falsification + EpicRaven's independent two-query concurrence from the pinned
+cache, 2026-10-21. A queue cited "-0xB0/-0xC4 view-adjust callers" as band-MEMBERSHIP evidence for
+five functions under CDebugInterface. The opposite reading was true: meth_0x434250/0x4342C0 are reached
+from TWO different CEngineInterface methods with DIFFERENT view constants (0x434395 via -0xB0,
+0x557C45 via -0xC4), each host storing its OWN interface vft (654304 CFeedback / 692e84 CDebug), and
+they call the shared GUI::Interface cleanup 0x4b9d60; 0x434120 is additionally reached through two more
+holder fields (GameInterfaces *[this+0xC], Client *[this+0x8C/0x90]). Multi-holder sharing, written all
+over; the original evidence was real but NON-EXCLUDING.
+
+Rules:
+1. **Machine test before queuing any (a)-candidate mint**: `reached from >=2 distinct view constants
+   OR >=2 distinct holder fields => SHARING by default` (computable directly from ecx-flow edges;
+   tools/ecx-flow.py data shape). Membership claims need a single-owner view — one host, one adjust.
+2. Practical one-check version (CalmRaven): when the only evidence is "a named member of host X calls
+   it," ask whether a DIFFERENT host's view also reaches it; two hosts each storing their own interface
+   vft settles it without arbitration.
+3. This generalizes item 43 (function-granularity for pad sinks) upward on the ownership axis:
+   band/caller adjacency is not membership — for fns OR for bases. Author-side adoption (EpicRaven):
+   the test runs on EVERY future candidate before queueing — the pre-emptive [B].
