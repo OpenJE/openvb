@@ -641,3 +641,28 @@ that disagreement was wrong in the same way (reading `$?` after a pipeline), whi
 same place from two directions.
  A bad explicit `--results` path used to quietly pick up another copy
    elsewhere on the machine and verify an export against unrelated facts while reporting clean; it exits 2 now.
+
+
+## 30. A gate number is meaningless without its payload hash — the same command legitimately prints 0 and 2
+
+Measured on 2026-10-21 in the **same repo, same minute, two fresh subshells**:
+
+| invocation | exit | payload resolved |
+|---|---|---|
+| plain `bash -c tools/gate-integrity.sh` | **2** | pre-T-024 derivation, no stamp |
+| `bash -c 'source /tmp/openvb-dev-env.sh; tools/gate-integrity.sh'` | **0** | current, stamped |
+
+Even the launcher paths differed, so this is not one tool being flaky: **a harness subshell keeps the PATH it was
+handed at session start**, and every tool call is a new subshell, so the dev-env capture has to be re-sourced per call.
+
+**The correction that matters, because the first theory was mine and wrong.** I predicted two captures taken minutes
+apart would resolve to *different* payloads and prove that captures go stale. They did not — both resolved to the same
+current derivation. **The variable is sourced-vs-not, not capture age.** So an `exit 2` is not evidence a reload failed
+or a capture rotted; it is evidence the call never went through the dev-env at all. `gate-integrity.sh` now *names that
+cause* in its own stale branch and prints the re-run recipe, because "a check that reports a state without naming the
+cause makes the reader invent one" is the same failure as a guard printing a claim it did not verify (item 29).
+
+Standing rule, extending item 19: **quote a gate number with its payload hash, and when two numbers disagree, check
+which environment produced each before deciding which is wrong.** Both may be correct. This is the fourth distinct
+"the artifact was fine, the environment wasn't" incident of the day — stale installed gate payload, `devenv-reload`
+missing from PATH, ImHex squatting the debugger port, and now PATH per-subshell.

@@ -50,6 +50,17 @@ if [ "$held" != "$want" ]; then
     "$(printf '%s\n' "$held" | grep -c .)" "$(printf '%s\n' "$want" | grep -c .)"
   diff <(printf '%s\n' "$held") <(printf '%s\n' "$want") | grep -E '^[<>]' | cut -c1-72 | sed 's/^/    /' | head -8
   printf '           => results from the installed gate measure the INSTALLED rows. devenv-reload.\n'
+  # NAME THE CAUSE, do not make the reader infer it (SwiftRaven, 2026-10-21). A plain harness
+  # subshell keeps the PATH it was given at session start, so an unsourced call resolves to an OLD
+  # installed derivation and legitimately reports 2 - while the same repo, same minute, run under
+  # the captured dev-env, resolves to the CURRENT one and reports 0. Both are true. Measured, not
+  # theorised: the difference is sourced-vs-not, NOT capture age (two different captures from
+  # minutes apart both resolve to the same current payload). So an exit 2 here is not evidence that
+  # a reload failed or that the tree is broken; it is evidence the check never went through the
+  # dev-env. Re-run it under the capture before concluding anything about the tree.
+  printf '  cause to rule out first: UNSOURCED PATH. Re-run under the captured dev-env:\n'
+  printf '    devenv print-dev-env > /tmp/openvb-dev-env.sh 2>/tmp/env.err; . /tmp/openvb-dev-env.sh\n'
+  printf '    then: bash tools/gate-integrity.sh   (only then judge the tree)\n'
   rc=2
 else
   printf 'table    : OK (%s rows identical to the tree)\n' "$(printf '%s\n' "$want" | grep -c .)"
@@ -59,6 +70,8 @@ if ! grep -q 'GATE STAMP' "$payload"; then
   printf 'stamp    : ABSENT - this payload predates the T-024 integrity stamp.\n'
   printf '           Any number it prints carries no revision, payload path or table hash, so it is\n'
   printf '           not quotable as evidence even when it says 9/9.\n'
+  printf '           Cross-check the payload path against a stamped run before believing either: the\n'
+  printf '           same command can legitimately print rc=0 and rc=2 in the same minute via PATH.\n'
   [ $rc -eq 0 ] && rc=3
 else
   printf 'stamp    : present (run-all-tests prints HEAD/openje/payload/table-hash before any result)\n'
