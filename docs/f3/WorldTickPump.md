@@ -81,6 +81,36 @@ accumulates **deltas**: `diff = timeGetTime() - SYSTEM_TIME_MS_0x70c2bc + elapse
 loads as **0**). A dword scan of `.text` finds no other reference to either global. So the shipped tick is
 **elapsed-since-process-start, beginning near 0** — structurally incapable of carrying machine uptime.
 
+## This needs no live sample: the writer's own algebra closes it
+
+The proposed confirmation — read `[0x70c2b8]` twice, ~200 frames apart — is unnecessary, and a foreign
+`winedbg.exe` is alive on port 31338, so it is not free to spend. The single writer telescopes:
+
+```
+elapsed_n = elapsed_(n-1) + (now_n - now_(n-1))     ; now = timeGetTime(); 0x56afd2 keeps last = now_n
+          = now_k - now_0                            ; every intermediate term cancels
+```
+
+with `now_0` the `WinMain` seed at `0x56b8a0`. So `[0x70c2b8]` is **`timeGetTime() − timeGetTime at WinMain`**
+by construction; it can equal machine uptime only if the second term were absent, and the writer's own
+operands exclude that. Two consequences worth recording:
+
+1. **A first sample of `0` is uninformative.** Before the pump has run once, `elapsed` is `0` under *both*
+   hypotheses. And the discriminating sample is not safe under a hit-and-hold window either: `now_n - now_0`
+   includes stopped time, so a long debugger pause inflates the accumulator in exactly the way uptime would.
+   That is an argument for the telescoping proof rather than against it.
+2. **The fold is permanent, not a frame-0 event.** It enters the accumulator at `0x544aab`, is carried into
+   `Gregorian::AddSeconds` in step 6 of `ServerUpdate_0x545d60`, and `CombatManager` derives `accMs` from
+   `totalSeconds` (`0x5a95aa`), so `turnDeadline0x29C = accMs/1000` inherits it **for the remainder of the
+   run**. Seeding the stamp fixes runs after the change; it cannot rescue captures taken before it, and any
+   round-deadline comparison against a shipped capture is offset by those ~29242 s, not merely noisy on
+   frame 1.
+
+RedXenon verified both load-bearing facts independently — the bytes `a1 b8 c2 70 00 c3` and
+`vsize 0x200e0 > rawsize 0x17000` — and their own T-034 capture note had already named `0x70C2B8` as the
+tick value: the mis-inference was call-site-equals-global, and the mis-numbered table is why R0 looked
+live-only. That pair of independent reads is why this section states the algebra rather than a request.
+
 That is the mechanism of our own artifact: `src/F3.cpp:786` is
 `int TickMilliseconds() { return (int)timeGetTime(); } // 0x56AF50` — labelled as the shipped accessor while
 returning the raw API value. So `tickMs=29242857 clock=29242` at `frame=0` is our port putting uptime into an
