@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: HappyStorm (dispatched by LoudDragon `01a15f82`, 2026-10-21 — onboarding row: every board weapon in one hunt)
+status: in-progress
+assignee: HappyStorm `01a16092-41cf-7127-936b-377a304178a4` (dispatched by LoudDragon `01a15f82`, 2026-10-21 — onboarding row: every board weapon in one hunt)
 type: research (read-only on ida_original_f3 + offline tools; NO IDB writes; MINT-READY queues to coordinator)
 depends: T-063 (defined the orphan set), the tool corpus (T-053 method, ecx-flow T-054/57/59/63, T-062 RTTI-chain anatomy)
 ---
