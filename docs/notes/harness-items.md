@@ -957,3 +957,9 @@ Rules:
    is a generic runtime helper (string/allocator/EH), classify accordingly (T-036 floor).
 3. Writers: refuse to annotate non-head EAs; a locator mismatch is a taxonomy note routed to the
    census author, not a byte conflict.
+
+Item 43 TOOL CITATION (reciprocal, per EpicRaven eccdb24): the wording above is the permanent
+header of every `python3 tools/ecx-flow.py pads` run and of the module docstring — tool and harness
+doc now quote each other. Practical effect: an agent that never read this file still gets the
+buckets-vs-headness boundary and the head_hint()/live-read-back authority rule BEFORE its first
+verdict. That is how a rule graduates from prose to infrastructure.
