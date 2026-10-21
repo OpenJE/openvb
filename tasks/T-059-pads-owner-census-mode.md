@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: EpicRaven (offered during T-057 arbitration, pre-approved by LoudDragon `01a15f82`)
 type: tooling (offline, tools/ecx-flow.py extension; NO IDB writes)
 depends: T-057 (families mode + installer data-refs already emitted)
