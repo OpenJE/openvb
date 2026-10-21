@@ -1,0 +1,850 @@
+### LANDED bands (from on-disk wave-dump diffs; per class label) ###
+
+=== WAVE b2-b6-survivors ===
+
+BAND F3::Display (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::Display [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x56B1A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_56B810', 1)]
+  0x56B470  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_56B810', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GameCharacter (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameCharacter [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4117A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_4117C0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GameCreature (5 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameCreature [b2-b6-survivors] n=5: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x409830  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x4(1) plain-this=18 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionEquip@@', 13), ('cls_0x412f50', 3), ('cls_0x409820', 1)]
+  0x409A60  SINGLE-OWNER  view-constants=this-0x804(2@0x409c2a) holder-fields=- plain-this=9 heap=0 ctor-sites=0 suggested-owners=[('cls_0x412f50', 3), ('sub_409BE0', 2), ('cls_0x41a2b0', 2)]
+  0x409F90  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x1C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionAttack@@', 1)]
+  0x40D9E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x40E360  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_40E530', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GameItem (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameItem [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x411260  SINGLE-OWNER  view-constants=this-0x7C(1@0x41554e) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_408510', 1), ('sub_408910', 1), ('sub_415530', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GamePlayerAvatarManager (54 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GamePlayerAvatarManager [b2-b6-survivors] n=54: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x424A70  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x424BE0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x424C60  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x424CA0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x424CD0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x424D40  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_428910', 1)]
+  0x424D50  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_428910', 1)]
+  0x424D60  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_428910', 1)]
+  0x424D70  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_428800', 1), ('sub_428910', 1)]
+  0x425000  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x424a70', 1)]
+  0x425020  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x425040  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x425090  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4250E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x425100  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_428800', 1)]
+  0x425120  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_428910', 1)]
+  0x425520  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x425B50  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x425BB0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x426C20  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x-34(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_42F770', 1)]
+  0x426CE0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x-34(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_42F770', 1)]
+  0x426E40  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x-34(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_42F770', 1)]
+  0x426F80  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x-34(3) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_42F770', 3)]
+        field ('o', -52) read via 3 paths at sites 0x42f84f, 0x42f8bf, 0x42f9bb
+  0x427040  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x4271A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x427480  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x427560  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x427910  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x428250  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4284B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4285D0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4286F0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x428B60  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x429900  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707794(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_429DB0', 1)]
+  0x429AB0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x429B20  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x429DD0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x429E20  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42A190  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x42A200  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+  0x42C6D0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42C860  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42CDB0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42D130  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42D4C0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42D880  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42DC40  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42E070  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42E4A0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42E870  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x424a70', 1)]
+  0x42F5A0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x42F710  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x-34(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_42F770', 1)]
+  0x42F9E0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x38(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_440CE0', 1)]
+  0x42FD60  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCNASInterface@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GameProjectile (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameProjectile [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x412090  SINGLE-OWNER  view-constants=this-0xBC(1@0x4123d6) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_412180', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GameWeapon (13 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameWeapon [b2-b6-survivors] n=13: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x40DBA0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_40E360', 1)]
+  0x412B10  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x28(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionAttack@@', 1)]
+  0x412B90  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x28(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionAttack@@', 1)]
+  0x412F50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x412FE0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x413150  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x413310  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x28(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionAttack@@', 1)]
+  0x413560  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x28(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionAttack@@', 1)]
+  0x4135C0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x413A90  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x1C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionReload@@', 1)]
+  0x413CA0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x1C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionReload@@', 1)]
+  0x415190  SINGLE-OWNER  view-constants=this-0x430(1@0x415565) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_415530', 1)]
+  0x415740  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x28(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionAttack@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND F3::GameWorld (1 fns): VERDICT: NO-EVIDENCE  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameWorld [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x46F290  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+VERDICT: NO-EVIDENCE  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::AnimationCache (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::AnimationCache [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x59BCC0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70c658(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVModelInstance@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CActionbarInterface (28 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CActionbarInterface [b2-b6-survivors] n=28: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x416B80  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_4172E0', 2)]
+  0x416CD0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x416D80  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x416DF0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x416E30  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x416E80  SINGLE-OWNER  view-constants=this-0x29C(8@0x41cd6a) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 8)]
+  0x416EB0  SINGLE-OWNER  view-constants=this-0x29C(4@0x41cd81) holder-fields=fo:+0x10(6) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 4), ('sub_45EED0', 4), ('.?AUGameActionSetActiveWeapon@@', 2)]
+        field ('o', 16) read via 6 paths at sites 0x4078c9, 0x4078e0, 0x45ef2d, 0x45ef38, 0x45ef4f, 0x45ef5a
+  0x416FB0  SINGLE-OWNER  view-constants=this-0x29C(2@0x41ce74) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 2)]
+  0x416FF0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4172D0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x10(3) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_434180', 1), ('sub_4420A0', 1), ('sub_46FCC0', 1)]
+        field ('o', 16) read via 3 paths at sites 0x4341c4, 0x4420fc, 0x46fd0a
+  0x417370  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x417450  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x417A50  SINGLE-OWNER  view-constants=this-0x29C(1@0x41cd0f) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 1)]
+  0x417CF0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x417F50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x418040  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_41C000', 2)]
+  0x4186F0  SINGLE-OWNER  view-constants=this-0x29C(1@0x41ce8f) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 1)]
+  0x418820  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4188A0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x419C70  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x41A2B0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+  0x41BFA0  SINGLE-OWNER  view-constants=this-0x29C(1@0x41ca7b) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 1)]
+  0x41C040  SINGLE-OWNER  view-constants=this-0x29C(1@0x41ce6d) holder-fields=fo:+0x10(2) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 2), ('sub_45EE60', 2)]
+        field ('o', 16) read via 2 paths at sites 0x45eeb1, 0x45eebe
+  0x41C2E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x41C4C0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x10(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameClient@@', 1)]
+  0x41C790  SINGLE-OWNER  view-constants=this-0x29C(2@0x41cc28) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_41CA00', 2)]
+  0x41C910  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x10(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+  0x41C9D0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x10(2) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1), ('.?AUGameClient@@', 1)]
+        field ('o', 16) read via 2 paths at sites 0x43983d, 0x4616ac
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CRect (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CRect [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x52EAA0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_ParameterInfo@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Common (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Common [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4C5650  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_46FB20', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::DialogueManager (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::DialogueManager [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x55EDB0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x5064(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionInitiateDialogue@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::G3DMeshHolder (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::G3DMeshHolder [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x56E460  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x8(2) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUMap@@', 2), ('sub_5773A0', 1)]
+        field ('o', 8) read via 2 paths at sites 0x578d7c, 0x57adea
+  0x56EB70  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=1 ctor-sites=1 suggested-owners=[('.?AUMap@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::G3DTransformHolder (6 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::G3DTransformHolder [b2-b6-survivors] n=6: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4CB2E0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_4DDAF0', 1)]
+  0x4CB300  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('sub_4D4560', 1), ('sub_4DDAF0', 1), ('sub_4DE120', 1)]
+  0x4D07F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_4DDAF0', 1)]
+  0x4D09B0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_4DE120', 1)]
+  0x4D09D0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_4DE680', 1)]
+  0x4D4650  SINGLE-OWNER  view-constants=- holder-fields=f?:+0x8(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4D8000', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::GfxCameraHolder (6 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::GfxCameraHolder [b2-b6-survivors] n=6: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x424880  SHARING       view-constants=- holder-fields=fo:+0x8C(1), fo:+0x18(3), fo:+0x1C(3), fo:+0x290(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 7), ('cls_0x43cd50', 1), ('cls_0x4b2ac0', 1)]
+        field ('o', 24) read via 3 paths at sites 0x5bf84a, 0x5bf975, 0x5c0d33
+        field ('o', 28) read via 3 paths at sites 0x5bf8a5, 0x5bf9d0, 0x5c0db7
+  0x4248F0  SHARING       view-constants=- holder-fields=fo:+0xB8(1), fo:+0xD78(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x42a780', 1), ('sub_5921B0', 1), ('.?AVGfx_Engine@@', 1)]
+  0x424DB0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 2)]
+  0x429D20  SHARING       view-constants=- holder-fields=fo:+0x8C(1), fo:+0xB8(1), fo:+0x18(1), fo:+0x290(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x42a780', 1), ('cls_0x43cd50', 1), ('cls_0x4b2ac0', 1)]
+  0x4BFFD0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVDialogueWindow@@', 1)]
+  0x4C0190  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=6 ctor-sites=5 suggested-owners=[('.?AVGfx_Engine@@', 2), ('cls_0x42a780', 1), ('cls_0x43cd50', 1)]
+VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_AnimMeshInstance (13 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_AnimMeshInstance [b2-b6-survivors] n=13: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4A4C90  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x2C4(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_Model@@', 1)]
+  0x4A4CE0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_40F3C0', 1), ('.?AVClient@@', 1)]
+  0x4A4F10  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x6C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_509740', 1)]
+  0x4A55D0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4A5640  SHARING       view-constants=- holder-fields=fo:+0xC(1), fo:+0xD9C(1), fo:+0x2C4(1) plain-this=3 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_Model@@', 2), ('cls_0x49cc40', 1), ('.?AUEntity@@', 1)]
+  0x4A5BE0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=4 ctor-sites=4 suggested-owners=[('.?AVVFX_Model@@', 3), ('.?AVModelInstance@@', 1)]
+  0x4A5D70  SHARING       view-constants=- holder-fields=fo:+0xC(1), fo:+0xD9C(1), fo:+0x2C4(3), fo:+0x4C(4), fo:+0x8(1) plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_Model@@', 6), ('.?AVDialogueWindow@@', 2), ('cls_0x49cc40', 1)]
+        field ('o', 708) read via 3 paths at sites 0x4f42b8, 0x4f445a, 0x4f4815
+        field ('o', 76) read via 4 paths at sites 0x49dd54, 0x49f3dd, 0x4f4584, 0x4f47ec
+  0x4A5EA0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4A5F20  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4A5F60  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_5643A0', 1)]
+  0x4A6070  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4A62B0  SHARING       view-constants=- holder-fields=fo:+0xC(1), fo:+0xD9C(1), fo:+0x2C4(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49cc40', 1), ('.?AVVFX_Model@@', 1), ('.?AVModelInstance@@', 1)]
+  0x4A6880  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=1 ctor-sites=1 suggested-owners=[('cls_0x49cc40', 1)]
+VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_AnimationData (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_AnimationData [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4A2110  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a1f30', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_AnimationObject (11 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_AnimationObject [b2-b6-survivors] n=11: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4A1F80  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(2) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a5be0', 2)]
+        field ('o', 12) read via 2 paths at sites 0x4a5cd2, 0x4a697a
+  0x4A1FA0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4A2070  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a5be0', 1)]
+  0x4A2280  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x2C0(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_Model@@', 1), ('sub_59BCC0', 1)]
+  0x4A26D0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(9) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_40FD60', 2), ('.?AUEntity@@', 2), ('sub_40F3C0', 1)]
+        field ('o', 12) read via 9 paths at sites 0x40f53e, 0x40fe0e, 0x40fecf, 0x4676c3, 0x548e6e, 0x548fe8
+  0x4A2750  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a5be0', 1)]
+  0x4A39B0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(2) plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a5be0', 4)]
+        field ('o', 12) read via 2 paths at sites 0x4a6027, 0x4a605a
+  0x4A4820  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGameAnimationCache@@', 1)]
+  0x4A4880  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGameAnimationCache@@', 1)]
+  0x4A49D0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a1f30', 1), ('.?AVDialogueWindow@@', 1)]
+  0x4A4A70  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x2C0(1) plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGameAnimationCache@@', 1), ('.?AVVFX_Model@@', 1), ('.?AVDialogueWindow@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_D3D (20 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_D3D [b2-b6-survivors] n=20: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x490060  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 2)]
+  0x4900A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4a4f10', 1)]
+  0x502870  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 2)]
+  0x502950  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x502BB0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x502BE0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x502CB0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x502F40  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x503120  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x503170  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x503220  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x503320  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=179 heap=0 ctor-sites=0 suggested-owners=[('cls_0x490150', 87), ('.?AVGfx_Engine@@', 32), ('.?AVGfx_ParticleSystem@@', 11)]
+  0x503360  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=13 heap=0 ctor-sites=0 suggested-owners=[('cls_0x490150', 4), ('cls_0x4960d0', 2), ('cls_0x4b94d0', 2)]
+  0x503390  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=46 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_RS_B_LM_HeightFog@@', 6), ('.?AVGfx_Engine@@', 5), ('.?AVGfx_RS_B_EM@@', 4)]
+  0x503400  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=77 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 35), ('cls_0x4b94d0', 16), ('cls_0x490150', 7)]
+  0x503920  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x503CD0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 2)]
+  0x503D90  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 2)]
+  0x503E30  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x5047A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x505170', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_G3D_Mesh (3 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_G3D_Mesh [b2-b6-survivors] n=3: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x524AB0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_527FD0', 1)]
+  0x5255C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_527FD0', 1)]
+  0x5267E0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_527FD0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_HeightFog (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_HeightFog [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x505ED0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x44(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_490330', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_Light (1 fns): VERDICT: NO-EVIDENCE  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_Light [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4B90B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+VERDICT: NO-EVIDENCE  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_RenderManager (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_RenderManager [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x490400  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x164(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x4915E0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x490150', 2)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_SkinMesh (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_SkinMesh [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x50A600  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x5240e0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_TCFX_Param (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_TCFX_Param [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4B5D50  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=38 heap=0 ctor-sites=0 suggested-owners=[('cls_0x5240e0', 25), ('sub_4BE5F0', 13)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_Texture (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_Texture [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x535170  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_5972E0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_Texture_Manager (17 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_Texture_Manager [b2-b6-survivors] n=17: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x51EF10  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51F160  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(32) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_RS_B_LM_HeightFog@@', 3), ('.?AVGfx_RS_B_LM_HFog_FOW@@', 3), ('.?AVGfx_RS_SK_B_LM_HeightFog@@', 3)]
+        field ('g', 7385600) read via 32 paths at sites 0x5114e5, 0x522dcd, 0x53bc31, 0x53c307, 0x53c35d, 0x53c858
+  0x51F1A0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x51F200  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51F340  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x51F3E0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x51F570  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x51F680  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51F6D0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x2C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x520A60  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x520AB0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(21) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_WaterTile@@', 4), ('.?AVGfx_ParticleSystem@@', 4), ('.?AVVFX_Snow@@', 3)]
+        field ('g', 7385600) read via 21 paths at sites 0x4e4413, 0x4e469f, 0x4e4eba, 0x4f2651, 0x4f2cd1, 0x4f2d85
+  0x520FC0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x2C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x5212E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5218E0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x521B10  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x521CA0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x521DB0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70b200(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::HotKeyWindowFormatTable (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::HotKeyWindowFormatTable [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4461E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4468C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::MapMaskManager (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::MapMaskManager [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x596A30  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x14(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionEquip@@', 1)]
+  0x5979D0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x14(2) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x441d20', 1), ('.?AUGameActionEquip@@', 1), ('sub_5994D0', 1)]
+        field ('o', 20) read via 2 paths at sites 0x441d54, 0x44aca7
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::MemorySystem (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::MemorySystem [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x5B3C70  SINGLE-OWNER  view-constants=- holder-fields=fg:0x70c950(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVMemorySystem@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::ModelCache (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::ModelCache [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x585C00  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=1 ctor-sites=1 suggested-owners=[('sub_45E270', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Octree2Gfx (3 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Octree2Gfx [b2-b6-survivors] n=3: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4B94D0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x4C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x490150', 1)]
+  0x4B9B90  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x10(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUWorld@@', 1)]
+  0x4BDEA0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4b8f70', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Res (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Res [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x498D60  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x8(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49c610', 1), ('sub_50B9E0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::ResourceCache (4 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::ResourceCache [b2-b6-survivors] n=4: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x50CAA0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x50caa0', 2)]
+  0x50CB40  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50CBF0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50CC80  SINGLE-OWNER  view-constants=this+0x12C(1@0x49b989) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49c610', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::ResourceFileManager (3 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::ResourceFileManager [b2-b6-survivors] n=3: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x50D4C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x50dbb0', 1)]
+  0x50D740  SINGLE-OWNER  view-constants=this+0x0(1@0x50e23b) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x50dbb0', 1)]
+  0x50DC60  SINGLE-OWNER  view-constants=this+0x108(1@0x49b219) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49c610', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::ResourceSystem (47 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::ResourceSystem [b2-b6-survivors] n=47: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x498170  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(329) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUMap@@', 134), ('.?AVcritical_section@net@@', 26), ('sub_40DBA0', 21)]
+        field ('g', 7372200) read via 329 paths at sites 0x408178, 0x408198, 0x4081b1, 0x4081ca, 0x4081e3, 0x40844f
+  0x498800  SHARING       view-constants=- holder-fields=fg:0x707da8(17), fo:+0x4(4) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_40C300', 4), ('.?AVCSound@@', 4), ('.?AUEntity@@', 3)]
+        field ('g', 7372200) read via 17 paths at sites 0x40c785, 0x40c7af, 0x40c804, 0x40c82a, 0x41175d, 0x411787
+        field ('o', 4) read via 4 paths at sites 0x4c74ad, 0x4c74c8, 0x4c75cd, 0x4c765f
+  0x498A00  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(3) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_59B050', 2), ('.?AUChunk@Common@@', 1)]
+        field ('g', 7372200) read via 3 paths at sites 0x4a1dc9, 0x59b0a5, 0x59b0cb
+  0x498EB0  SHARING       view-constants=- holder-fields=fg:0x707da8(13), fo:+0x50(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVPicture@GUI@@', 2), ('.?AVFragment@GUI@@', 2), ('cls_0x441d20', 1)]
+        field ('g', 7372200) read via 13 paths at sites 0x4425e4, 0x44f3a2, 0x4ab08a, 0x4ab3c6, 0x4b1fdd, 0x4b2232
+  0x498F30  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(36) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x5240e0', 4), ('sub_527FD0', 4), ('sub_5773A0', 3)]
+        field ('g', 7372200) read via 36 paths at sites 0x408558, 0x408958, 0x408c08, 0x40e57b, 0x40e768, 0x4112ab
+  0x499220  SHARING       view-constants=- holder-fields=fg:0x707da8(51), fo:+0x4(10) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVLabel@GUI@@', 13), ('.?AVWindow@GUI@@', 13), ('sub_4C6E50', 9)]
+        field ('g', 7372200) read via 51 paths at sites 0x495bbd, 0x495bda, 0x495c61, 0x495c78, 0x495cae, 0x4a6b78
+        field ('o', 4) read via 10 paths at sites 0x4c6e6a, 0x4c6e84, 0x4c6e94, 0x4c6ed5, 0x4c6ee5, 0x4c6f42
+  0x4993B0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(115) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_40BB80', 42), ('sub_40C300', 28), ('.?AUEntity@@', 26)]
+        field ('g', 7372200) read via 115 paths at sites 0x40bc03, 0x40bc1e, 0x40bc49, 0x40bc71, 0x40bc9c, 0x40bcb9
+  0x499900  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_49C1D0', 1)]
+  0x49A910  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x424a70', 1)]
+  0x49AA90  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x49ABD0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(14) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_567010', 3), ('cls_0x41a2b0', 1), ('sub_433BE0', 1)]
+        field ('g', 7372200) read via 14 paths at sites 0x417df2, 0x433d80, 0x437a1e, 0x43af5e, 0x54715d, 0x547840
+  0x49ACD0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_5565B0', 1)]
+  0x49AE90  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x49B1D0  SHARING       view-constants=- holder-fields=fg:0x707da8(17), fo:+0x4(6) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVCSound@@', 5), ('.?AVCLoadMapInterface@@', 4), ('sub_4E0960', 4)]
+        field ('g', 7372200) read via 17 paths at sites 0x4299b4, 0x42a0fa, 0x495c4e, 0x495c89, 0x495d04, 0x495d75
+        field ('o', 4) read via 6 paths at sites 0x4c779d, 0x4c7d26, 0x4c8410, 0x4c847a, 0x539464, 0x5398ed
+  0x49B240  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x49B670  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x49B750  SHARING       view-constants=- holder-fields=fg:0x707da8(13), fo:+0x50(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVPicture@GUI@@', 2), ('.?AVFragment@GUI@@', 2), ('cls_0x441d20', 1)]
+        field ('g', 7372200) read via 13 paths at sites 0x442559, 0x44f303, 0x4ab02d, 0x4ab253, 0x4b1f88, 0x4b21dd
+  0x49B9F0  SHARING       view-constants=- holder-fields=fg:0x707da8(8), fo:+0x4(5) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVCSound@@', 4), ('cls_0x424a70', 2), ('.?AVCLoadMapInterface@@', 1)]
+        field ('g', 7372200) read via 8 paths at sites 0x42997f, 0x42a0ca, 0x495b9a, 0x4e09c3, 0x56d992, 0x57b2e9
+        field ('o', 4) read via 5 paths at sites 0x4c7752, 0x4c7fb6, 0x4c833f, 0x539490, 0x539919
+  0x49BC60  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_49C1D0', 1)]
+  0x49BEB0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(29) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x5240e0', 8), ('sub_527FD0', 4), ('sub_5773A0', 3)]
+        field ('g', 7372200) read via 29 paths at sites 0x4b859b, 0x4beafd, 0x4bebc6, 0x4e2b8d, 0x4f44e1, 0x4f48bd
+  0x49BF20  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707da8(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUResources@@', 1)]
+  0x49C610  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=1 ctor-sites=1 suggested-owners=[('.?AUResources@@', 1)]
+  0x4E8F50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4EA010  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4EA390  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4EC880  SINGLE-OWNER  view-constants=this+0x258(1@0x4ed0b2) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_Lightning@@', 1)]
+  0x50BA50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50BB00  SHARING       view-constants=- holder-fields=fo:+0x0(1), fo:+0x4(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x50ca60', 2)]
+  0x50BDD0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50BF30  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_49C1D0', 1)]
+  0x50C4C0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50C510  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50C870  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50C9A0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50C9E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x516580  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x518F10  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x519CA0  SINGLE-OWNER  view-constants=this+0x38(1@0x51aa17) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_ParticleSystem@@', 1)]
+  0x571550  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x572650  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x574820  SINGLE-OWNER  view-constants=this+0x4(1@0x5b8c1e) holder-fields=fo:+0x8(1) plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUMap@@', 1), ('sub_59A410', 1), ('cls_0x5b8bd0', 1)]
+  0x579660  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5796E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x579F60  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x57A2C0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x57A680  SINGLE-OWNER  view-constants=this+0x8(1@0x57a912) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_57A8A0', 1)]
+  0x57A790  SINGLE-OWNER  view-constants=this+0x8(1@0x57aa8c) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_57AA00', 1)]
+VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Script_Small (1 fns): VERDICT: NO-EVIDENCE  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Script_Small [b2-b6-survivors] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x5A8030  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+VERDICT: NO-EVIDENCE  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::StringTree (139 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::StringTree [b2-b6-survivors] n=139: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x401D20  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=744 heap=0 ctor-sites=0 suggested-owners=[('sub_63E340', 469), ('cls_0x4468c0', 64), ('sub_5B6BC0', 30)]
+  0x408B80  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_408BC0', 1)]
+  0x41F880  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x41FB90  SINGLE-OWNER  view-constants=this+0xF8(1@0x57735a) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_577290', 1)]
+  0x4213F0  SHARING       view-constants=this+0x2C4(1@0x5525a2), this+0xF8(1@0x57b0c8) holder-fields=- plain-this=7 heap=0 ctor-sites=0 suggested-owners=[('.?AVAreaMapWindow@@', 3), ('.?AUEntity@@', 2), ('.?AUScriptTrigger@@', 2)]
+  0x4214B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x421B10  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4223B0  SINGLE-OWNER  view-constants=this+0x2C4(2@0x551de1) holder-fields=- plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('.?AVAreaMapWindow@@', 4), ('.?AVcritical_section@net@@', 2), ('sub_5773A0', 1)]
+  0x4256E0  SINGLE-OWNER  view-constants=this+0xD20(1@0x4aa292) holder-fields=- plain-this=22 heap=0 ctor-sites=0 suggested-owners=[('sub_567010', 4), ('sub_5773A0', 3), ('.?AV?$num_get@DV?$istreambuf_iterator@DU?$char_traits@D@std@@@std@@@std@@', 2)]
+  0x4257D0  SINGLE-OWNER  view-constants=this+0x70C8(1@0x556631) holder-fields=- plain-this=39 heap=0 ctor-sites=0 suggested-owners=[('cls_0x50dbb0', 6), ('.?AVFontPage@GUI@@', 4), ('sub_5773A0', 4)]
+  0x458A20  SHARING       view-constants=this+0x218(1@0x54dca0), this+0x4(1@0x52d98a) holder-fields=- plain-this=10 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49c610', 5), ('.?AUGameActionOperateContainer@@', 1), ('sub_499F10', 1)]
+  0x458EF0  SHARING       view-constants=this+0x218(1@0x54dcb3), this+0x4(1@0x52d999) holder-fields=- plain-this=46 heap=0 ctor-sites=0 suggested-owners=[('.?AVEdit@GUI@@', 24), ('cls_0x49c610', 8), ('sub_499F10', 2)]
+  0x4703F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameMap@@', 1)]
+  0x470420  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x470460  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x470770  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1)]
+  0x4708C0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x470920  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x470B00  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x470C90  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x-24(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUEntity@@', 1)]
+  0x470D00  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x470D90  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameMap@@', 1)]
+  0x496800  SINGLE-OWNER  view-constants=this+0xD20(1@0x4c3b84) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVEdit@GUI@@', 1)]
+  0x496820  SINGLE-OWNER  view-constants=this+0xD20(1@0x4c3b75) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVEdit@GUI@@', 1)]
+  0x4985F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=4 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49c610', 1), ('sub_574500', 1), ('sub_574690', 1)]
+  0x49C7A0  SHARING       view-constants=this+0x20(1@0x590bbd), this+0x4(1@0x590b8a), this+0xB0(1@0x5c0e82), this+0xD20(2@0x4aa207), this+0xF8(1@0x5c0beb) holder-fields=- plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('.?AUAudio@@', 2), ('.?AVGfx_Engine@@', 2), ('sub_49C800', 1)]
+  0x4A8140  SHARING       view-constants=this+0x4(3@0x57c6d0), this+0xD20(3@0x4a9781) holder-fields=- plain-this=10 heap=0 ctor-sites=0 suggested-owners=[('.?AVPicture@GUI@@', 4), ('.?AVEdit@GUI@@', 4), ('.?AVLabel@GUI@@', 3)]
+  0x4B2DD0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x8(5) plain-this=2317 heap=0 ctor-sites=0 suggested-owners=[('sub_499F10', 36), ('.?AVVFX_ParameterInfo@@', 35), ('.?AVEdit@GUI@@', 33)]
+        field ('o', 8) read via 5 paths at sites 0x52cfea, 0x557a7e, 0x59db6e, 0x5b5022, 0x5b58d4
+  0x4B39D0  SINGLE-OWNER  view-constants=this+0x3C(1@0x4b4a05) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVManager@GUI@@', 1)]
+  0x4B3D90  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B44B0  SINGLE-OWNER  view-constants=this+0x3C(1@0x4b540a) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AVManager@GUI@@', 1)]
+  0x4B4B00  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B4FD0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B5470  SINGLE-OWNER  view-constants=this+0x3C(1@0x4b5cd6) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4b5c30', 1)]
+  0x4C0810  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVEdit@GUI@@', 2)]
+  0x4C8E50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CBDF0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=5 heap=0 ctor-sites=0 suggested-owners=[('sub_5773A0', 3), ('sub_51DE30', 1), ('.?AUMap@@', 1)]
+  0x4CCE30  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CCE70  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CCEB0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CE6B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CE6F0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CF180  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4CF2B0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('sub_4F3DE0', 1)]
+  0x4CF370  SINGLE-OWNER  view-constants=this+0x10(1@0x4f3f9f) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('sub_4F3DE0', 1)]
+  0x4CF430  SINGLE-OWNER  view-constants=this+0x34(1@0x4f3f19) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('sub_4F3DE0', 1)]
+  0x4CFB10  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4D43E0  SINGLE-OWNER  view-constants=this+0x1C(1@0x4f3f73) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('sub_4F3DE0', 1)]
+  0x4D44A0  SINGLE-OWNER  view-constants=this+0x28(1@0x4f3f46) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('sub_4F3DE0', 1)]
+  0x4D7090  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4D73B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4D7EA0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4D8CB0  SHARING       view-constants=this+0x28(1@0x4d9041), this+0x34(1@0x4d90d1) holder-fields=- plain-this=3 heap=0 ctor-sites=0 suggested-owners=[('sub_4D8E30', 1), ('sub_4D8F10', 1), ('sub_4D8FF0', 1)]
+  0x4D8D70  SINGLE-OWNER  view-constants=this+0x7C(1@0x4d936e) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Water@@', 1)]
+  0x4D9240  SINGLE-OWNER  view-constants=this+0x7C(1@0x4d9583) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4D9510', 1)]
+  0x4FB6C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=18 heap=0 ctor-sites=0 suggested-owners=[('sub_52FF00', 13), ('cls_0x4fb1e0', 2), ('.?AVVFX_ParameterInfo@@', 2)]
+  0x51DAB0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51DB20  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_51DE30', 1)]
+  0x51DF60  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51E0B0  SHARING       view-constants=this+0x7C(1@0x4d81e7), this+0xCC(1@0x51e803) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Water@@', 1), ('.?AVGfx_Water@@', 1)]
+  0x51E110  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51E2F0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x51E450  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_646110', 1)]
+  0x51E480  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_4D8DE5', 1), ('sub_636249', 1)]
+  0x51E4C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_51E8C0', 1)]
+  0x52AF40  SINGLE-OWNER  view-constants=this+0xC(2@0x599760) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_52AFE0', 1), ('sub_52BA50', 1), ('sub_599720', 1)]
+  0x52B0E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x52B120  SINGLE-OWNER  view-constants=this+0xC(1@0x5997ff) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameHotKeys@@', 1)]
+  0x52B540  SINGLE-OWNER  view-constants=this+0xD4(1@0x5a7640) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AUHotKeys@@', 1), ('.?AUScript_Small@@', 1)]
+  0x52B700  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_52BC00', 1)]
+  0x52B760  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x52BB40  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x52BC90  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=5 heap=0 ctor-sites=0 suggested-owners=[('sub_5A6520', 3), ('.?AUGameHotKeys@@', 1), ('sub_5A8030', 1)]
+  0x52BE20  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_646170', 1)]
+  0x52BEC0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_52BF40', 1)]
+  0x52C260  SHARING       view-constants=this+0x210(1@0x4f6e67), this+0x21C(1@0x4f6e72), this+0x228(1@0x4f6e7d), this+0x234(1@0x4f6e88), this+0x60(1@0x4e0f56) holder-fields=- plain-this=5 heap=0 ctor-sites=0 suggested-owners=[('.?AUVFXEFFECTTYPE_PARTICLESYSTEM_Struct@@', 4), ('.?AVVFX_ParameterInfo@@', 2), ('.?AUVisualEffect@@', 2)]
+  0x52E410  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_ParameterInfo@@', 1)]
+  0x52E440  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=5 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_ParameterInfo@@', 5)]
+  0x52E470  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=11 heap=0 ctor-sites=0 suggested-owners=[('.?AVVFX_ParameterInfo@@', 10), ('sub_4FE650', 1)]
+  0x52E850  SHARING       view-constants=this+0x10C(1@0x4ee1b9), this+0x118(1@0x4e90cc), this+0x11B(1@0x4e90d7), this+0x120(1@0x4e90e2), this+0x131(1@0x4f3893), this+0x132(1@0x4e90ed), this+0x136(1@0x4f389e), this+0x149(1@0x4f38a9), this+0x14E(1@0x4f38b4), this+0x24C(1@0x4f6e93), this+0x254(1@0x4f6e9e), this+0x25C(1@0x4f6ea9), this+0x264(1@0x4f6eb4), this+0x26C(1@0x4f6ebf), this+0x274(1@0x4f6eca), this+0x27C(1@0x4f6ed5), this+0x284(1@0x4f6ee0), this+0x375(1@0x4f6eeb), this+0x380(1@0x4f6ef6), this+0x70(1@0x4f1703), this+0x78(1@0x4f170b), this+0x7E(1@0x4e8ba3), this+0x80(1@0x4e7fce), this+0x83(1@0x4e8bae), this+0x88(1@0x4e7fd9), this+0x8B(1@0x4e7fe4), this+0x95(1@0x4e8bb9), this+0x98(1@0x4e5f69), this+0x9A(1@0x4e8bc4), this+0xB4(1@0x4e7fef), this+0xC6(1@0x4e7ffa), this+0xCA(1@0x4f502e), this+0xCF(1@0x4f5039), this+0xDA(1@0x4e8005), this+0xE0(1@0x4e4044) holder-fields=- plain-this=3 heap=0 ctor-sites=0 suggested-owners=[('.?AUVFXEFFECTTYPE_PARTICLESYSTEM_Struct@@', 10), ('.?AUVFXEFFECTTYPE_LIGHT_Struct@@', 6), ('.?AUVFXEFFECTTYPE_MODELEFFECT_Struct@@', 4)]
+  0x545710  SHARING       view-constants=this+0x10(1@0x5858aa), this+0xD8(1@0x546153), this-0x84(1@0x547d05) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AUWorld@@', 1), ('sub_547C30', 1), ('sub_5857F0', 1)]
+  0x546210  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x546250  SINGLE-OWNER  view-constants=this-0x84(1@0x5468b5) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_546870', 1)]
+  0x5471D0  SINGLE-OWNER  view-constants=this+0xE4(1@0x5484fe) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AUWorld@@', 1)]
+  0x5475C0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x547600  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5478B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5479A0  SINGLE-OWNER  view-constants=this+0x158(1@0x54841a) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AUWorld@@', 1)]
+  0x547BA0  SHARING       view-constants=this+0xD8(1@0x548075), this-0x84(1@0x547df6) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_547C30', 1), ('.?AUWorld@@', 1)]
+  0x54EBB0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x54FE10  SINGLE-OWNER  view-constants=this+0x2C4(1@0x5525af) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUEntity@@', 1)]
+  0x560490  SHARING       view-constants=this+0x130(1@0x4ee1c4), this+0x138(1@0x4ee1cf), this+0x150(1@0x4ee1da), this+0x158(1@0x4ee1e5), this+0x160(1@0x4ee1f0), this+0x168(1@0x4ee1fb) holder-fields=- plain-this=4 heap=0 ctor-sites=0 suggested-owners=[('.?AUVFXEFFECTTYPE_WATER_Struct@@', 6), ('sub_4FE650', 1), ('.?AVVFX_ParameterInfo@@', 1)]
+  0x56B950  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x56BC60  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x56C2A0  SINGLE-OWNER  view-constants=this+0x16C(1@0x56c425) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVEngineStringSystem@SS@@', 1)]
+  0x56EE40  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x8(1) plain-this=107 heap=0 ctor-sites=0 suggested-owners=[('sub_52FF00', 26), ('.?AVVFX_ParameterInfo@@', 14), ('cls_0x4fb1e0', 4)]
+  0x56F520  SHARING       view-constants=this+0x10(2@0x4cd050), this+0x1C(1@0x4d9482), this+0x240(1@0x576e39), this+0x3C(1@0x4b5c59), this+0x4(2@0x4cd020) holder-fields=fo:+0xF8(1) plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('sub_52BF40', 2), ('.?AVAreaMapWindow@@', 1), ('cls_0x4b5c30', 1)]
+  0x5700E0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUMap@@', 1)]
+  0x570120  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUMap@@', 1)]
+  0x570B50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x570F10  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x571B20  SINGLE-OWNER  view-constants=this+0x240(1@0x57ae63) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AUMap@@', 1)]
+  0x571BE0  SINGLE-OWNER  view-constants=this+0x24C(1@0x57ae30) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AUMap@@', 1)]
+  0x572BE0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x572DC0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('sub_5773A0', 1)]
+  0x574B80  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5755F0  SINGLE-OWNER  view-constants=this+0x240(1@0x576eca) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AUMap@@', 2), ('sub_5773A0', 1)]
+  0x583930  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x583990  SINGLE-OWNER  view-constants=this+0x10(1@0x585416) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_5853E0', 1)]
+  0x583A20  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x585040  SINGLE-OWNER  view-constants=this+0x10(2@0x58543e) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_5853E0', 1), ('.?AVModelCache@@', 1)]
+  0x585460  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x585640  SINGLE-OWNER  view-constants=this+0x10(1@0x585ba5) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1), ('.?AVModelCache@@', 1)]
+  0x585700  SINGLE-OWNER  view-constants=this+0x10(1@0x58598e) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_5857F0', 1)]
+  0x590170  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5904C0  SINGLE-OWNER  view-constants=this+0x140(1@0x590739) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVCFloatingTextInterface@@', 1)]
+  0x59EC40  SHARING       view-constants=this+0x10(2@0x4dedc0), this+0x158(1@0x548c61), this+0x16C(1@0x56c3a1), this+0x1C(1@0x4dedf0), this+0x240(1@0x57b767), this+0x24C(1@0x57b79a), this+0x28(1@0x4dee20), this+0x2C4(1@0x551566), this+0x34(1@0x4dee50), this+0x3C(1@0x4b569c), this+0x4(1@0x4ded8f), this+0xC(2@0x52bddd), this+0xD4(1@0x5a72b0), this+0xE4(1@0x548b9b), this+0xF8(1@0x57b496) holder-fields=- plain-this=4 heap=0 ctor-sites=0 suggested-owners=[('sub_4DED60', 5), ('.?AUMap@@', 3), ('.?AVAreaMapWindow@@', 2)]
+  0x59ECE0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x59ED20  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x59F0B0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4d8d70', 1)]
+  0x59F200  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x59F3E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x59F500  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=3 heap=2 ctor-sites=2 suggested-owners=[('.?AUGamePlayer@@', 1), ('sub_5A8030', 1), ('.?AUScriptTrigger@@', 1)]
+  0x59F540  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_59F5D0', 1)]
+  0x5A0000  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=3 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInventory@@', 3)]
+  0x5A00F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInventory@@', 1)]
+  0x5A0150  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5A0330  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5A0420  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_5A04B0', 1)]
+  0x5ACE40  SINGLE-OWNER  view-constants=this+0x16C(1@0x56bdb5) holder-fields=fo:+0x16C(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4c5ac0', 1), ('.?AVEngineStringSystem@SS@@', 1)]
+  0x5AD090  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5AD270  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5AD3D0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x5AD460  SINGLE-OWNER  view-constants=this+0x16C(1@0x56be01) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVGameDialogueWindow@@', 1), ('cls_0x4c5ac0', 1), ('sub_5C3AE0', 1)]
+  0x5AD530  SINGLE-OWNER  view-constants=this+0x16C(1@0x56bd1b) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVEngineStringSystem@SS@@', 1)]
+  0x60573D  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=69 heap=0 ctor-sites=0 suggested-owners=[('.?AV_Locimp@locale@std@@', 4), ('.?AV?$basic_filebuf@DU?$char_traits@D@std@@@std@@', 4), ('.?AV?$basic_streambuf@DU?$char_traits@D@std@@@std@@', 3)]
+  0x605760  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=80 heap=0 ctor-sites=0 suggested-owners=[('.?AV_Locimp@locale@std@@', 4), ('.?AV?$basic_filebuf@DU?$char_traits@D@std@@@std@@', 4), ('.?AV?$basic_streambuf@DU?$char_traits@D@std@@@std@@', 3)]
+  0x605DFB  SINGLE-OWNER  view-constants=this+0x4(1@0x496aa6) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AV?$basic_streambuf@DU?$char_traits@D@std@@@std@@', 1)]
+  0x605E13  SINGLE-OWNER  view-constants=this+0x4(1@0x496533) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AV?$basic_streambuf@DU?$char_traits@D@std@@@std@@', 1), ('sub_631210', 1)]
+VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Vector3 (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Vector3 [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x401030  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=12 heap=0 ctor-sites=0 suggested-owners=[('sub_415740', 2), ('.?AUGameActionOperateDoor@@', 1), ('.?AUGameActionOperateContainer@@', 1)]
+  0x401070  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x4(2) plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('sub_415740', 4), ('.?AUActionMoveTo@@', 3), ('.?AUGameActionAttack@@', 1)]
+        field ('o', 4) read via 2 paths at sites 0x55b702, 0x55b7dc
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::World (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::World [b2-b6-survivors] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x544E00  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_46F290', 1)]
+  0x545160  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_46F290', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+=== WAVE T-055 ===
+
+BAND F3::GameWeapon (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check F3::GameWeapon [T-055] n=2: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x413810  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_413CA0', 1)]
+  0x4148A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_415190', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CCharacterGenerationInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CCharacterGenerationInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x42A780  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CDebugInterface (7 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CDebugInterface [T-055] n=7: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x557A50  SINGLE-OWNER  view-constants=this-0xC4(1@0x557c4c) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVCEngineInterface@@', 1)]
+  0x557D90  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_5A6520', 1)]
+  0x557FF0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_558B70', 1)]
+  0x558190  SHARING       view-constants=- holder-fields=fo:+0x8C(1), fo:+0x90(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVClient@@', 2)]
+  0x5583E0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x8C(47) plain-this=10 heap=0 ctor-sites=0 suggested-owners=[('sub_437030', 15), ('.?AUGameActionAttack@@', 14), ('cls_0x5a49d0', 3)]
+        field ('o', 140) read via 47 paths at sites 0x402102, 0x40222b, 0x40236f, 0x402476, 0x4024f3, 0x40254a
+  0x558510  SINGLE-OWNER  view-constants=this-0xC4(1@0x558d3a) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_558B70', 1)]
+  0x558740  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVClient@@', 1)]
+VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CFeedbackInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CFeedbackInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x434F70  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CInventoryInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CInventoryInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x43CD50  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CMainmenuInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CMainmenuInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x440990  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CMessageBoxInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CMessageBoxInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x441420  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x42a780', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CMiniMapInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CMiniMapInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x442340  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CNASInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CNASInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x426720  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x42a780', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::COptionsGameInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::COptionsGameInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x444530  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::COptionsInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::COptionsInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4436D0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::COptionsLoadInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::COptionsLoadInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x448C40  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::COptionsMultiplayerInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::COptionsMultiplayerInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4491F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::COptionsVideoInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::COptionsVideoInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4496A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CPipBoyAddNoteInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CPipBoyAddNoteInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x44DA10  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x455e40', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::CPipBoyInterface (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::CPipBoyInterface [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x455E40  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_BufferManager (4 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_BufferManager [T-055] n=4: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x5067C0  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707ce0(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x506890  SINGLE-OWNER  view-constants=- holder-fields=fg:0x707ce0(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x507580  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x30(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x507810  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=1 ctor-sites=1 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_RenderManager (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_RenderManager [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4930F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_493430', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Gfx_SkinMesh (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Gfx_SkinMesh [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x507C90  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x490150', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::HotKeyWindowFormatTable (8 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::HotKeyWindowFormatTable [T-055] n=8: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x445350  SINGLE-OWNER  view-constants=this-0x198(2@0x44677a) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4465E0', 2)]
+  0x445380  SINGLE-OWNER  view-constants=this-0x198(1@0x4466a0) holder-fields=fo:+0x58(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x442bf0', 1), ('sub_4465E0', 1)]
+  0x4455D0  SINGLE-OWNER  view-constants=this-0x198(1@0x44665b) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4465E0', 1)]
+  0x445970  SINGLE-OWNER  view-constants=this-0x198(1@0x44673e) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4465E0', 1)]
+  0x445A40  SINGLE-OWNER  view-constants=this-0x198(6@0x446654) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4465E0', 6)]
+  0x445E20  SINGLE-OWNER  view-constants=this-0x198(1@0x4467dc) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4465E0', 1)]
+  0x446080  SINGLE-OWNER  view-constants=this-0x198(2@0x446662) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4465E0', 2)]
+  0x4461D0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x442bf0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::Map (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::Map [T-055] n=1: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x577290  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('sub_579760', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND JE::ResourceFileManager (3 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::ResourceFileManager [T-055] n=3: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x50DD90  SINGLE-OWNER  view-constants=this+0x108(1@0x49c57d) holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_49C530', 1), ('sub_631759', 1), ('sub_6317A9', 1)]
+  0x50DEE0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x50DFA0  SINGLE-OWNER  view-constants=this+0x108(1@0x49b0c4) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('cls_0x49c610', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+=== WAVE T-064 ===
+
+BAND JE::G3D_NodeRecordSet (12 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check JE::G3D_NodeRecordSet [T-064] n=12: item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x48F870  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48F940  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48FAC0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48FB60  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48FCE0  SINGLE-OWNER  view-constants=this+0xA0(1@0x4d764d) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Node@@', 1)]
+  0x48FE50  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48FE70  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48FEE0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Node@@', 1)]
+  0x48FF20  SINGLE-OWNER  view-constants=this+0xA0(1@0x4d7689) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Node@@', 1)]
+  0x48FF70  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x48FFD0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Transform@@', 1)]
+  0x490010  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVG3D_Transform@@', 1), ('.?AVG3D_Node@@', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+=== VENDOR/foreign-labelled bands (T-060/T-057 exclusion tier — reported, NOT flip-listed) ===
+
+BAND ATL::CStringT_wchar_t_StrTraitMFC_wchar_t_ATL::ChTraitsOS_wchar_t___::CStringT_wchar_t_StrTraitMFC_wchar_t_ATL::ChTraitsOS_wchar_t___(wchar_t_const___int_ATL (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::_String_base (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::basic_string_char_std::char_traits_char__std::allocator_char__ (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::basic_string_ushort_std::char_traits_ushort__std::allocator_ushort__::append(std::basic_string_ushort_std::char_traits_ushort__std (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::basic_string_wchar_t_std::char_traits_wchar_t__std::allocator_wchar_t__ (4 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::ios_base (2 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::istreambuf_iterator_char_std::char_traits_char__ (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::istreambuf_iterator_char_std::char_traits_char__::equal(std::istreambuf_iterator_char_std (1 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND std::locale (2 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+=== QUEUED bands (not yet applied) ===
+
+BAND T-073[A] Gfx_RenderManager ext (9) (9 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check T-073[A] Gfx_RenderManager ext (9): item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x490150  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x490510  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4911B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4913E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x491B10  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x491FC0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4931E0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x494B40  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x164(6) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 6)]
+        field ('o', 356) read via 6 paths at sites 0x5c1a13, 0x5c1a21, 0x5c1a49, 0x5c1aa2, 0x5c1ab0, 0x5c1ad9
+  0x494CA0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x164(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('sub_4BFF20', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND T-073[A2] composite (ctor_0x4950D0+cls_0x4903e0 x2) (3 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check T-073[A2] composite (ctor_0x4950D0+cls_0x4903e0 x2): item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4903E0  SINGLE-OWNER  view-constants=- holder-fields=fo:+0x164(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVGfx_Engine@@', 1)]
+  0x491F90  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x4903e0', 1)]
+  0x4950D0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=0 heap=1 ctor-sites=1 suggested-owners=[('cls_0x4c0190', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND T-073[B] cls_0x4fc0e0 (annotated, no mint) (8 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check T-073[B] cls_0x4fc0e0 (annotated, no mint): item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4FB0B0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4FB560  SINGLE-OWNER  view-constants=this+0x18(1@0x4fd2bb) holder-fields=- plain-this=11 heap=0 ctor-sites=0 suggested-owners=[('sub_4FC74E', 1), ('sub_4FCC30', 1), ('sub_4FCC60', 1)]
+  0x4FBB60  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4FC0E0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_4FC760', 1), ('sub_4FCB30', 1)]
+  0x4FC340  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4FC6C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=3 heap=0 ctor-sites=0 suggested-owners=[('sub_4FCC60', 1), ('sub_4FD1A0', 1), ('cls_0x4fb050', 1)]
+  0x4FCAC0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4FCBA0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=3 heap=0 ctor-sites=0 suggested-owners=[('sub_4FCD00', 2), ('cls_0x4fd780', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND T-064[B]-rejected (expected SHARING) (5 fns): VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check T-064[B]-rejected (expected SHARING): item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x434120  SHARING       view-constants=- holder-fields=fo:+0xC(1), fo:+0x8C(1), fo:+0x90(1) plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('cls_0x558740', 6), ('.?AVClient@@', 2), ('.?AUGameInterfaces@@', 1)]
+  0x434250  SHARING       view-constants=this-0xB0(1@0x434395), this-0xC4(1@0x557c45) holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVCEngineInterface@@', 2), ('cls_0x558740', 1)]
+  0x4342C0  SINGLE-OWNER  view-constants=this-0xB0(1@0x43439c) holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AVCEngineInterface@@', 1)]
+  0x434760  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x434f70', 1)]
+  0x434910  SINGLE-OWNER  view-constants=- holder-fields=fo:+0xC(1) plain-this=0 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameInterfaces@@', 1)]
+VERDICT: SHARING  (exit 1 -- SHARING/NO-EVIDENCE are queue-blocking)
+
+BAND T-075 queued GUI::Manager (cls_0x4b28a0, -0x619B38) (27 fns): VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
+== share-check T-075 queued GUI::Manager (cls_0x4b28a0, -0x619B38): item-44 rule-1 pre-queue gate (terminal-FIELD keying per fb3d03f; prefix chains listed under the field they read) ==
+  0x4B28A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AVAreaMapWindow@@', 1), ('.?AVWindow@GUI@@', 1)]
+  0x4B28C0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=42 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionEquip@@', 14), ('.?AVAreaMapWindow@@', 10), ('cls_0x441d20', 2)]
+  0x4B28E0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=11 heap=0 ctor-sites=0 suggested-owners=[('.?AVAreaMapWindow@@', 4), ('.?AUGameActionEquip@@', 2), ('.?AVScrollBar@GUI@@', 2)]
+  0x4B2AB0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('.?AVWindow@GUI@@', 4), ('.?AVCLoadMapInterface@@', 1), ('sub_4A9C00', 1)]
+  0x4B2AD0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=6 heap=0 ctor-sites=0 suggested-owners=[('.?AVEdit@GUI@@', 4), ('.?AVCLoadMapInterface@@', 1), ('sub_56B1B0', 1)]
+  0x4B2C10  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_4518A0', 1), ('.?AVClient@@', 1)]
+  0x4B2C20  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B2D40  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameCursorManager@@', 1)]
+  0x4B2F30  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B2F80  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B2FE0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=30 heap=0 ctor-sites=0 suggested-owners=[('sub_440CE0', 5), ('sub_433EE0', 4), ('.?AVCLoadMapInterface@@', 3)]
+  0x4B3000  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('sub_4518A0', 1), ('sub_453540', 1)]
+  0x4B3040  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGraphics@@', 1)]
+  0x4B3430  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('cls_0x495420', 1)]
+  0x4B34B0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVLabel@GUI@@', 1)]
+  0x4B3500  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B3570  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B35F0  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B3780  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B37F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGraphics@@', 1)]
+  0x4B3920  NO-EDGE       view-constants=- holder-fields=- plain-this=0 heap=0 ctor-sites=0 suggested-owners=[]
+  0x4B40A0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=2 heap=0 ctor-sites=0 suggested-owners=[('.?AUGraphics@@', 2)]
+  0x4B40F0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGraphics@@', 1)]
+  0x4B4DD0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AVInterface@GUI@@', 1)]
+  0x4B4E60  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=1 heap=0 ctor-sites=0 suggested-owners=[('.?AUGameActionOperateContainer@@', 1)]
+  0x4B4F00  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=20 heap=0 ctor-sites=0 suggested-owners=[('sub_5B6BC0', 3), ('cls_0x424a70', 2), ('.?AUGameInterfaces@@', 2)]
+  0x4B58D0  SINGLE-OWNER  view-constants=- holder-fields=- plain-this=11 heap=0 ctor-sites=0 suggested-owners=[('.?AVEdit@GUI@@', 8), ('.?AVLabel@GUI@@', 2), ('sub_4C2FE0', 1)]
+VERDICT: PASS  (exit 0 -- SHARING/NO-EVIDENCE are queue-blocking)
