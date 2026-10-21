@@ -1,6 +1,7 @@
 ---
 status: open
-assignee: FastArrow (01a157ef)
+assignee: UNCLAIMED (01a157ef departed 2026-10-21; deliberately NOT re-assigned by chat offer —
+# a row moves only by a coordinator edit + dispatch, or it is not attributable)
 depends: nothing
 ---
 
@@ -20,6 +21,14 @@ the method so "does shipped data ever do X" stops needing a debugger and stops n
 3. Output goes to `artifacts/census/` and is **committed**, so lanes cite a snapshot rather than
    re-deriving it and disagreeing about the walk.
 4. Every table records the file, size, and a hash of the parsed region so a re-run is comparable.
+
+## Baseline caveat (RedXenon, 01a157ec) — do not re-derive a claim and call it data
+
+The **57 consumed / 0 thrown** figure quoted across the board is **T-019 stage 1**, and that lane already self-caught
+the **asymmetric-operand trap** on its three candidate hits. Scope item 1 already names the **B11-corrected operand
+mapping**, so the requirement is not new — but it becomes testable here: **the generator must print, in its own
+output, which mapping version it used.** A tool that silently reproduces stage-1 pairing would re-emit a retracted
+claim with the authority of a table, which is the exact failure a census exists to prevent.
 
 ## Acceptance
 - Reproduces the known results as sanity checks: 57 v5 GWAM records, consumed=0 on all, and the

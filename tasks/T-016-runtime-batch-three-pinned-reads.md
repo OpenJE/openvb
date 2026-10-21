@@ -56,6 +56,13 @@ One read, no stepping required.
 
 ## Read 3 — confirm the `[Mainmenu] Map Name` load preamble ordering (unblocks the warp/save lane)
 
+**Re-scoped 2026-10-21 per harness item 13 (RedXenon's objection): try the payload INIs before scheduling a read.**
+This row was written when debugger-first was the habit. The shipped INIs are in the demo payload
+(`OPENVB_F3DEMO_ROOT`), so the `none.map` fallback order may resolve statically — and if it stays ambiguous the debugger
+work shrinks to **one** question, not three. Sequence note if a read is still needed: it goes **behind T-034**, because
+the `Entity+0x304` depth read can convert deviation D-2 from stylistic to a dropped-order bug, and that outranks a
+fallback-chain curiosity.
+
 `0x546FD0` (LOAD-MAP) statically reads: `ChangeState(3)`, map name from VFX_Parameter ini
 `[Mainmenu] Map Name` with a `none.map` fallback, behind a ResourceSystem gate. This independently
 corroborates YoungStorm's `<gv_NAME>` finding from a second direction. Confirm live, in one step,
