@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 assignee: RedXenon (01a157ec) — granted; they surfaced it while building the driver
 depends: nothing
 ---
@@ -40,6 +40,22 @@ most need when fidelity work closes the gap. So:
 - `run-all-tests` stays 10 pass / 0 fail with floors intact, quoted with its `GATE STAMP` after
   `tools/gate-integrity.sh` exits 0.
 - The rename is comment-and-name only: **no field offsets change**, and the commit states which struct is documentation.
+
+## Sibling survey — is this a singleton? (no: 7 name collisions found, 2 real)
+
+Grepped every `struct|class` name defined in more than one header across `src/F3` + `modules/openje`:
+
+| name | headers | verdict |
+|---|---|---|
+| `F3::GameActionWait` | `GameActionWait.hpp` (shipped layout) vs `GameActionMoveTo.hpp` (pump model) | **REAL — fixed by RedXenon (`2f849d3`)** |
+| `F3::GameActionDie` | `GameActionDie.hpp` (shipped layout, 0 includers) vs `GameActionAttack.hpp:64` (pump model, cast by the drain) | **REAL — fixed here**, same rename (`GameActionDieShipped`), same red/green proof |
+| `F3::GameActionOperateDoor` | `GameActionOperateDoor.hpp` (F3) vs `MapEntitySpawn.hpp` (**JE**) | false alarm — different namespaces, cannot collide |
+| `JE::Client`, `JE::Server`, `JE::net::client`, `JE::net::server`, `JE::exception` | `JE/X.hpp` vs `JE/Y/X.hpp` | false alarm — the nested path is the nested namespace (`JE::Server::Client` etc.) |
+
+**Method note that generalises:** a duplicate name is only a landmine if the **namespaces match**. Five of the seven
+looked alarming and are not; the two that were real share an exact signature — a shipped-layout header with **zero
+includers** sitting beside a pump model that the drain actually casts through. That zero-includers pattern is the
+search key for the next one, and it is worth re-running this scan whenever a new DB-layout header lands.
 
 ## Boundary
 Renaming does not make the two models agree — it makes them *distinguishable*. Whether the pump-side model should

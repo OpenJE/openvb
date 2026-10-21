@@ -142,7 +142,7 @@ row; A keeps editorial merge rights).
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
 | T-033 | **Class-identity batch queue** — order corrected to contiguity-ratio x fns; IDB = rename-only scope, single writer 01a157f6 | in-progress | QuickQuartz (applies) + **unassigned: batch-2 decisions (was MintEagle, departed)** |
 | T-034 | **Lockstep read set on the original `F3.exe`** (6 reads, no code) — decides D-2's severity | open | **NiceHawk** (re-dispatched; IronLion left before first read) |
-| T-035 | Two different `F3::GameActionWait` definitions — latent ODR collision; **ruling: keep both, rename the shipped-layout one** | open | RedXenon (granted) |
+| T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-036 | **Where did the 998 helper-theft functions come from?** 40% of tier-2 attribution is noise | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven |
 | T-037 | Second input door: what the script natives write into the Action record | **dispatched, unconfirmed** (0 tool calls) | WildYak |
 | T-029 | IDA function census — **done: 8,876 game fns of 10,173; 46.7% named / 26.4% typed-stub / 26.9% unnamed** | done | IronStorm (research) |
