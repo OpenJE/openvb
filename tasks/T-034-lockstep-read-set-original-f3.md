@@ -1,6 +1,6 @@
 ---
 status: open
-assignee: IronLion (locked to this row by dispatch)
+assignee: NiceHawk (0 tool calls at dispatch; IronLion departed before any read)
 depends: nothing; required by T-031 (parity oracle) and by D-2's severity call
 ---
 

@@ -53,6 +53,8 @@ workers is the rotation artifact, not two lanes. Rules that follow:
 1. **Rows record the sessionId** as the durable owner; display names are convenience and may be re-stated.
 2. **Do not infer authorship or duplication from a name.** Check `pi_messenger`'s roster against sessionIds before
    telling a lane they duplicated someone.
+2b. **The coordinator's own name rotates too** — this session was displayed as `NiceFalcon` and is now `HappyOwl`. Identity for every claim, reservation, and commit-attribution rule is the **sessionId**, and a lane that needs to
+   address the coordinator should look up the current display name rather than assuming a historical one.
 3. **Untracked files from a renamed lane are still that lane's work** — the coordinator checkpoints the index row
    (mine), not the content (theirs). Three discovery docs were dangling from exactly this cause on 2026-10-20,
    including the census that three rows cite.
