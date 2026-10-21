@@ -3,13 +3,13 @@
 #   Superseded docs stay in the index; judge them by the reader (see canonical-fact-sheet).
 #   Scope: discoveries/*.md only (not tasks/, not src/, not docs/f3/, not the IDB).
 #   Keys are literal addresses; 0x45c140 and 0x45c141 are unrelated keys here.
-# corpus_docs=137 indexed_eas=5258 mentions=7781 refused_tokens=761 {'vftable slot offset (relative to an unresolved table)': 564, 'bare all-digit hex: could be a decimal count, not indexed': 14, 'outside image span 0x400000-0x715800': 112, 'ambiguous +0x hex: struct offset vs global address': 5, 'masked/pattern EA (N significant digits, not an address)': 64, 'range outside image': 2}
+# corpus_docs=140 indexed_eas=5265 mentions=7810 refused_tokens=763 {'vftable slot offset (relative to an unresolved table)': 565, 'bare all-digit hex: could be a decimal count, not indexed': 14, 'outside image span 0x400000-0x715800': 113, 'ambiguous +0x hex: struct offset vs global address': 5, 'masked/pattern EA (N significant digits, not an address)': 64, 'range outside image': 2}
 # 51 keys are backed ONLY by inference from compressed prose (slash lists like @0x45c251/261/271,
 #   zero-padded or after-offset suffixes). They are real but not literally written: list with --inferred.
 #   Every other key appears literally as 0x.../sub_.../name_0x... in at least one document.
 # ea	count	docs   (count = number of citing documents; docs = ';' separated, newest-in-corpus order not guaranteed)
 ea	count	docs
-0x400000	13	2025-10-20-canonical-fact-sheet.md;2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-entity-class-family-layout.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session32-part-name-table-second-source.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-t032-ea-document-index.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;README.md
+0x400000	14	2025-10-20-canonical-fact-sheet.md;2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-entity-class-family-layout.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session32-part-name-table-second-source.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-t032-ea-document-index.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;README.md
 0x401000	2	2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-t036-helper-noise-taxonomy.md
 0x401010	1	2025-10-20-vftable-master-index.md
 0x4010d0	1	2025-10-20-vftable-master-index.md
@@ -21,6 +21,8 @@ ea	count	docs
 0x4011d0	2	2025-10-20-session23-combat-join-leave-state5.md;2025-10-20-vftable-master-index.md
 0x401229	3	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-session23-combat-join-leave-state5.md;HANDOFF-2025-10-20.md
 0x401240	1	2025-10-20-called-shot-part-second-source.md
+0x40124d	1	2025-10-20-t040-f3json-provenance.md
+0x40125f	1	2025-10-20-t040-f3json-provenance.md
 0x401280	2	2025-10-20-attack-state-machine-damage-formula.md;2025-10-20-called-shot-part-second-source.md
 0x4012c0	1	2025-10-20-attack-state-machine-damage-formula.md
 0x401690	1	2025-10-20-called-shot-part-second-source.md
@@ -109,9 +111,10 @@ ea	count	docs
 0x403f2b	1	2025-10-20-called-shot-part-second-source.md
 0x403f5d	1	2025-10-20-called-shot-part-second-source.md
 0x403f80	1	2025-10-20-vftable-master-index.md
-0x403fa0	3	2025-10-20-attack-state-machine-damage-formula.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-pawn-amx-scripting-architecture.md
+0x403fa0	4	2025-10-20-attack-state-machine-damage-formula.md;2025-10-20-d2-stress-measured.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-pawn-amx-scripting-architecture.md
 0x404010	1	2025-10-20-called-shot-part-second-source.md
 0x404013	1	2025-10-20-called-shot-part-second-source.md
+0x404038	1	2025-10-20-d2-stress-measured.md
 0x404060	5	2025-10-20-attack-state-machine-damage-formula.md;2025-10-20-session15-effect-clone-callers-damage-path.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-t014-record-mark-19-writer.md
 0x4040a8	1	2025-10-20-t014-record-mark-19-writer.md
 0x4040d4	2	2025-10-20-attack-state-machine-damage-formula.md;2025-10-20-canonical-fact-sheet.md
@@ -133,6 +136,8 @@ ea	count	docs
 0x404560	1	2025-10-20-attack-state-machine-damage-formula.md
 0x40456d	1	2025-10-20-session19-attack-preflight-moderec.md
 0x4045fd	1	2025-10-20-attack-state-machine-damage-formula.md
+0x40470a	1	2025-10-20-d2-stress-measured.md
+0x40471a	1	2025-10-20-d2-stress-measured.md
 0x404841	1	2025-10-20-attack-state-machine-damage-formula.md
 0x40487e	1	2025-10-20-attack-state-machine-damage-formula.md
 0x4048a8	1	2025-10-20-called-shot-part-second-source.md
@@ -156,7 +161,7 @@ ea	count	docs
 0x404b40	3	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-server-receive-handler-semantics.md;2025-10-20-t014-record-mark-19-writer.md
 0x404b4f	1	2025-10-20-t014-record-mark-19-writer.md
 0x404b60	1	2025-10-20-vftable-master-index.md
-0x404b70	9	2025-10-20-door-rebase-correction-changestate-machine.md;2025-10-20-examine-flow-actionbar-rtti-recipe.md;2025-10-20-gameclient-layout-command-surface.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-vftable-master-index.md
+0x404b70	10	2025-10-20-door-rebase-correction-changestate-machine.md;2025-10-20-examine-flow-actionbar-rtti-recipe.md;2025-10-20-gameclient-layout-command-surface.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-vftable-master-index.md
 0x404b80	1	2025-10-20-vftable-master-index.md
 0x404bb0	3	2025-10-20-projectile-fire-pipeline-type-tokens-container-correction.md;2025-10-20-type-tokens-capability-lists-gobj-verdicts.md;2025-10-20-vftable-master-index.md
 0x404bc0	5	2025-10-20-entity-class-family-layout.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session38-t033-batch1-adjudication.md;RESPONSES-from-reimpl-agent.md
@@ -2029,7 +2034,7 @@ ea	count	docs
 0x49b9f0	1	2025-10-20-t036-helper-noise-taxonomy.md
 0x49beb0	1	2025-10-20-t036-helper-noise-taxonomy.md
 0x49bf20	1	2025-10-20-t036-helper-noise-taxonomy.md
-0x49c610	5	2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t032-ea-document-index.md;2025-10-20-t033-batch2-selfnaming-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;README.md
+0x49c610	6	2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t032-ea-document-index.md;2025-10-20-t033-batch2-selfnaming-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-20-t040-f3json-provenance.md;README.md
 0x49c730	1	2025-10-20-family-virtual-ledger-gchr-roundtrip.md
 0x49c8d0	7	2025-10-20-b11-gwam-slots-part1-and-census-verdict.md;2025-10-20-class-vft-tables-fourcc-matrix-gcre-gchr.md;2025-10-20-door-polarity-and-clock-consumer-verdicts.md;2025-10-20-scripttrigger-map-factory-cutscene.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-t015-gwam-record-premap.md
 0x49caf0	1	2025-10-20-body-part-table-item-copyfrom-plus18-verdict.md
@@ -2330,7 +2335,7 @@ ea	count	docs
 0x4d8270	1	2025-10-20-vftable-master-index.md
 0x4d84e0	1	2025-10-20-vftable-master-index.md
 0x4d8630	1	2025-10-20-vftable-master-index.md
-0x4d8d70	17	2025-10-20-clip-naming-cues.md;2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-een2-eeov-eent-engine-entity-blocks.md;2025-10-20-effect-registry-consumers-eme2-step12-correction.md;2025-10-20-emef-map-effect-wire-and-registry.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gobj-gdor-gcon-door-geometry-inventory-additem.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t032-ea-document-index.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-20-world-packstate-registries.md;README.md;RESPONSES-from-implementer-B.md
+0x4d8d70	18	2025-10-20-clip-naming-cues.md;2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-een2-eeov-eent-engine-entity-blocks.md;2025-10-20-effect-registry-consumers-eme2-step12-correction.md;2025-10-20-emef-map-effect-wire-and-registry.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gobj-gdor-gcon-door-geometry-inventory-additem.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t032-ea-document-index.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-20-t040-f3json-provenance.md;2025-10-20-world-packstate-registries.md;README.md;RESPONSES-from-implementer-B.md
 0x4d9110	1	2025-10-20-vftable-master-index.md
 0x4d9390	1	2025-10-20-session38-t033-batch1-adjudication.md
 0x4d9590	1	2025-10-20-vftable-master-index.md
@@ -2785,7 +2790,7 @@ ea	count	docs
 0x544a50	1	2025-10-20-vftable-master-index.md
 0x544a60	4	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md
 0x544a70	5	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-session8-entity-lifecycle-state-die.md
-0x544a90	9	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-view-arithmetic-correction.md;2025-10-20-world-tick-state-evasion-stub.md;README.md
+0x544a90	10	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-view-arithmetic-correction.md;2025-10-20-world-tick-state-evasion-stub.md;README.md
 0x544aa1	1	2025-10-20-view-arithmetic-correction.md
 0x544b0f	1	2025-10-20-view-arithmetic-correction.md
 0x544b30	4	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;README.md
@@ -2802,7 +2807,7 @@ ea	count	docs
 0x544d80	1	2025-10-20-gameworld-interfaces-effects-classid.md
 0x544d90	7	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-scripting-abi-native-tables.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;README.md
 0x545100	5	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;README.md
-0x545250	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md
+0x545250	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-vftable-master-index.md
 0x5452b0	4	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-vftable-master-index.md;README.md
 0x545310	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md
 0x545370	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md
@@ -2810,7 +2815,7 @@ ea	count	docs
 0x545430	6	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-vftable-master-index.md;RESPONSES-from-implementer-B.md
 0x545490	4	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-vftable-master-index.md;README.md
 0x5455a0	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-vftable-master-index.md
-0x5455b0	6	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-vftable-master-index.md;README.md
+0x5455b0	7	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-vftable-master-index.md;README.md
 0x5455d6	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x5455f0	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x545606	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
@@ -2836,12 +2841,12 @@ ea	count	docs
 0x545ee0	1	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md
 0x545fbc	1	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md
 0x545fcd	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
-0x545ff0	4	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-vftable-master-index.md;README.md
-0x5460d0	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md;2025-10-20-world-tick-state-evasion-stub.md
+0x545ff0	5	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-vftable-master-index.md;README.md
+0x5460d0	4	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-vftable-master-index.md;2025-10-20-world-tick-state-evasion-stub.md
 0x546140	4	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session34-world-host-chain-map-load-slot.md
 0x5461ee	1	2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md
 0x546250	1	2025-10-20-world-packstate-registries.md
-0x546690	6	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-vftable-master-index.md;README.md
+0x546690	7	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-vftable-master-index.md;README.md
 0x5467ee	1	2025-10-20-session18-weapon-layout-final-giwp.md
 0x5467fc	2	2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md
 0x546806	1	2025-10-20-session18-weapon-layout-final-giwp.md
@@ -2853,7 +2858,7 @@ ea	count	docs
 0x54684e	1	2025-10-20-session18-weapon-layout-final-giwp.md
 0x546870	2	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-session12-serverupdate-ondeath-flip.md
 0x546998	1	2025-10-20-session12-serverupdate-ondeath-flip.md
-0x546b50	6	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-tohit-apply-tail.md;2025-10-20-vftable-master-index.md;2025-10-20-world-tick-state-evasion-stub.md;RESPONSES-from-reimpl-agent.md
+0x546b50	7	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-tohit-apply-tail.md;2025-10-20-vftable-master-index.md;2025-10-20-world-tick-state-evasion-stub.md;RESPONSES-from-reimpl-agent.md
 0x546b5b	2	2025-10-20-T010a-behind-test-is-wrap-not-threshold.md;2025-10-20-c23-answer-worldsim-seconds-not-pointer.md
 0x546c35	1	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md
 0x546c46	1	2025-10-20-settings-surface-map.md
@@ -2888,7 +2893,7 @@ ea	count	docs
 0x548b7c	1	2025-10-20-jeworld-layout-interface-views.md
 0x548cbd	1	2025-10-20-gameworld-interfaces-effects-classid.md
 0x548ccf	2	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session34-world-host-chain-map-load-slot.md
-0x548cf0	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md
+0x548cf0	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-vftable-master-index.md
 0x548d10	1	2025-10-20-ge94-speed-door-anittimer-gentsave.md
 0x548d3a	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x548d4a	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
@@ -3021,7 +3026,8 @@ ea	count	docs
 0x54e93b	1	2025-10-20-entity-ctor-anatomy-and-global-list.md
 0x54e944	1	2025-10-20-serverupdate-pump-unpackstate-state-census.md
 0x54e95a	1	2025-10-20-serverupdate-pump-unpackstate-state-census.md
-0x54ea00	2	2025-10-20-serverupdate-pump-unpackstate-state-census.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md
+0x54ea00	3	2025-10-20-d2-stress-measured.md;2025-10-20-serverupdate-pump-unpackstate-state-census.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md
+0x54ea54	2	2025-10-20-d2-stress-measured.md;README.md
 0x54ea80	1	2025-10-20-attach-register-entity-vfx-maps.md
 0x54eb40	1	2025-10-20-anim-event-scheduling-pipeline.md
 0x54ef30	5	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-door-rebase-correction-changestate-machine.md;2025-10-20-serverupdate-pump-unpackstate-state-census.md;2025-10-20-session8-entity-lifecycle-state-die.md;README.md
@@ -3056,9 +3062,10 @@ ea	count	docs
 0x550301	1	2025-10-20-entity-update-updater-maps.md
 0x550325	1	2025-10-20-entity-update-updater-maps.md
 0x5505f0	5	2025-10-20-anim-event-scheduling-pipeline.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-gobj-gdor-gcon-door-geometry-inventory-additem.md;HANDOFF-2025-10-20.md;RESPONSES-from-reimpl-agent.md
+0x550617	1	2025-10-20-d2-stress-measured.md
 0x5506c0	8	2025-10-20-aoe-reaction-flags-ac-ad-answer.md;2025-10-20-attack-state-machine-damage-formula.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-session15-effect-clone-callers-damage-path.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;HANDOFF-2025-10-20.md;RESPONSES-from-reimpl-agent.md
 0x550713	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
-0x550720	17	2025-10-20-command-record-to-packet-issuers.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-party-close-transfer-teleport.md;2025-10-20-projectile-fire-pipeline-type-tokens-container-correction.md;2025-10-20-server-packet-dispatcher-player-origin.md;2025-10-20-server-receive-handler-semantics.md;2025-10-20-serverupdate-pump-unpackstate-state-census.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-t014-record-mark-19-writer.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-tohit-apply-tail.md;README.md;RESPONSES-from-reimpl-agent.md
+0x550720	18	2025-10-20-command-record-to-packet-issuers.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-d2-stress-measured.md;2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-party-close-transfer-teleport.md;2025-10-20-projectile-fire-pipeline-type-tokens-container-correction.md;2025-10-20-server-packet-dispatcher-player-origin.md;2025-10-20-server-receive-handler-semantics.md;2025-10-20-serverupdate-pump-unpackstate-state-census.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-t014-record-mark-19-writer.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-tohit-apply-tail.md;README.md;RESPONSES-from-reimpl-agent.md
 0x550737	1	2025-10-20-t034-attempt-stub-contention-preresolved.md
 0x55073c	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x550750	7	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-door-rebase-correction-changestate-machine.md;2025-10-20-entity-class-family-layout.md;2025-10-20-full-class-geometry-vbtables.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-vftable-master-index.md
@@ -3196,7 +3203,7 @@ ea	count	docs
 0x552a20	6	2025-10-20-attach-register-entity-vfx-maps.md;2025-10-20-een2-eeov-eent-engine-entity-blocks.md;2025-10-20-eeov-attach-trio-eme2-flag-is-pumpenable.md;2025-10-20-map-chunk-table-eme2-spawn-handler.md;2025-10-20-type-tokens-capability-lists-gobj-verdicts.md;README.md
 0x552a60	1	2025-10-20-vftable-master-index.md
 0x552ac0	1	2025-10-20-vftable-master-index.md
-0x552b60	4	2025-10-20-session14-frame-pump-chain.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-vftable-master-index.md;README.md
+0x552b60	5	2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-vftable-master-index.md;README.md
 0x552b99	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552b9e	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552ba4	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
@@ -3205,7 +3212,7 @@ ea	count	docs
 0x552bad	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552bb2	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552bb3	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
-0x552bb5	3	2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;README.md
+0x552bb5	4	2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;README.md
 0x552c70	1	2025-10-20-vftable-master-index.md
 0x552ca0	1	2025-10-20-vftable-master-index.md
 0x552d40	1	2025-10-20-session6-classid-readers-weapon-ammo-combat.md
@@ -3810,7 +3817,7 @@ ea	count	docs
 0x5a9280	1	2025-10-20-vftable-master-index.md
 0x5a92f0	1	2025-10-20-vftable-master-index.md
 0x5a9310	1	2025-10-20-vftable-master-index.md
-0x5a9320	3	2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-vftable-master-index.md
+0x5a9320	4	2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-vftable-master-index.md
 0x5a9330	6	2025-10-20-10e-turn-flags-dormant.md;2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md;2025-10-20-session14-frame-pump-chain.md;README.md
 0x5a936e	1	2025-10-20-10e-turn-flags-dormant.md
 0x5a9371	1	2025-10-20-10e-turn-flags-dormant.md
@@ -4985,7 +4992,7 @@ ea	count	docs
 0x691740	1	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md
 0x6919c0	2	2025-10-20-jeworld-layout-interface-views.md;RESPONSES-from-reimpl-agent.md
 0x6919e4	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
-0x691a1c	5	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
+0x691a1c	6	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
 0x691a8c	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md
 0x691a94	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;RESPONSES-from-implementer-B.md
 0x691fd4	1	2025-10-20-entity-script-binding-onupdate-pump.md
@@ -4998,7 +5005,7 @@ ea	count	docs
 0x692e84	1	2025-10-20-vftable-master-index.md
 0x693c8c	2	2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-vftable-master-index.md
 0x6940e4	3	2025-10-20-rleconvexquad-collision-grid-actionmoveto.md;2025-10-20-vftable-master-index.md;README.md
-0x6945cc	1	2025-10-20-vftable-master-index.md
+0x6945cc	2	2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-vftable-master-index.md
 0x6949f4	1	2025-10-20-vftable-master-index.md
 0x694e2c	1	2025-10-20-vftable-master-index.md
 0x695264	1	2025-10-20-vftable-master-index.md
@@ -5252,7 +5259,7 @@ ea	count	docs
 0x707e48	7	2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-session28-client-receivers-77-78-gameid-map.md;HANDOFF-2025-10-20.md;README.md
 0x707f00	4	2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-gui-root-cls-0x4b28a0-map.md;HANDOFF-2025-10-20.md;README.md
 0x70bd90	14	2025-10-20-command-record-to-packet-issuers.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameclient-layout-command-surface.md;2025-10-20-gameclient-vft-demand-ui-factories.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session23-combat-join-leave-state5.md;2025-10-20-session25-mode-flag-connected-client-retraction.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;EXPERIMENTS-for-reimpl.md;HANDOFF-2025-10-20.md;README.md
-0x70bd98	20	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-world-packstate-registries.md;EXPERIMENTS-for-reimpl.md;README.md;RESPONSES-from-implementer-B.md;RESPONSES-from-reimpl-agent.md
+0x70bd98	21	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-world-packstate-registries.md;EXPERIMENTS-for-reimpl.md;README.md;RESPONSES-from-implementer-B.md;RESPONSES-from-reimpl-agent.md
 0x70bde8	2	2025-10-20-cutscene-controller-world-subsystem-roster.md;README.md
 0x70be08	4	2025-10-20-entity-ctor-anatomy-and-global-list.md;2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-world-packstate-registries.md
 0x70be0c	8	2025-10-20-canonical-fact-sheet.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-entity-ctor-anatomy-and-global-list.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-world-packstate-registries.md;2025-10-20-world-tick-state-evasion-stub.md;README.md;RESPONSES-from-reimpl-agent.md
