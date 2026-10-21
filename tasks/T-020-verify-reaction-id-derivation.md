@@ -14,6 +14,11 @@ Implementer-C derived, from raw bytes in `GameEffectDamage::Apply`, that the sta
 That contradicts both the coordinator's original `{37,38}`/`{38,39}` tables and NiceWolf's own §5b
 interim `{37,38,39,40}` — one of the three readings is wrong in a way nobody has checked twice.
 
+## BLIND GUARD (coordinator, 2026-10-21)
+The section below LEAKS the expected encodings and the deciding addresses. A third source that
+reads it first is not independent. Cold reader: disassemble `0x45C30C..0x45C358` yourself, derive
+the reachable id set, record it, and only THEN open the pointer section to compare.
+
 ## Pointer from the author (one line, so the check is cheap)
 The deciding encodings are at **0x45C349** and **0x45C355**: `f6 d8` (`neg al`), `1b c0` (`sbb eax,eax` -> 0 or -1), `83 e0 03` (`and eax,3`), then `83 c0 25` / `83 c0 26` (add 37/38). So after `sbb` the `and 3` is a **boolean mask yielding 0 or 3**, not a value AND - if your cold read agrees with that reading of those eight bytes, the derivation is confirmed and no further work is needed.
 
