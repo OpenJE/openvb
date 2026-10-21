@@ -178,9 +178,9 @@ row; A keeps editorial merge rights).
 
 | T-009 | `VFX_Parameter` section/entry iterator (unblocks T-007) | done | implementer-C |
 
-| T-010 | Research queue (10a answered, 10b resolved-as-defect, **10c CLOSED via T-018**, 10d closed, 10e open) | open | research |
+| T-010 | Research queue — **DONE (checkpointed by coordinator `01a15f82`)**: 10a answered, 10b resolved-as-defect, 10c CLOSED via T-018, 10d closed, 10e CLOSED (`+0x14` has no non-zero producer ⇒ `meth_0x5a9330` dead, mirror-and-cite constants) | done | research (+PureKnight `01a15cb7`) |
 
-| T-011 | Combat: per-turn dispatch + join-on-attack — **steps 2-6 LANDED (`20827b2`)**; Q1 **CLOSED** (raiser = entity's own update, ported at T-048 `af1da87`; +8 owner = MANAGER DB-closed) — re-entry DEPTH routed to lockstep with probe seam deferred as **T-050**; Q2 (+4/+14 nonzero writers) open; Q3 tails cited-absent, unchanged | in-progress | coordinator `01a15cb6` |
+| T-011 | Combat: per-turn dispatch + join-on-attack — **steps 2-6 LANDED (`20827b2`)**; Q1 **CLOSED** (raiser = entity's own update, ported at T-048 `af1da87`; +8 owner = MANAGER DB-closed) — re-entry DEPTH routed to lockstep with probe seam deferred as **T-050**; Q2 **CLOSED statically via T-010 10e** (no non-zero producers for +4/+0x14; dead-walk = mirror-and-cite, feeds T-051); Q3 tails cited-absent, unchanged | in-progress | coordinator `01a15cb6` |
 
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | done | implementer-C (UltraBear) |
 

@@ -1,10 +1,14 @@
 ---
-status: open
-assignee: research (IronStorm / HappyWolf / FastArrow — one item each)
+status: done — all items resolved (checkpointed by coordinator LoudDragon `01a15f82`, 2026-10-21)
+assignee: research (IronStorm / HappyWolf / FastArrow — one item each; 10e answered by PureKnight `01a15cb7-e27e`)
 type: evidence-request (no code; answers land in discoveries/)
 ---
 
 # T-010 — Research queue: three gaps that block reimpl decisions right now
+
+> **CHECKPOINT:** 10a answered · 10b resolved-as-defect · 10c CLOSED via T-018 (`92461cd`) · 10d closed ·
+> 10e CLOSED by `discoveries/2025-10-21-t010-10e-manager-producers.md` (+0x14 never armed ⇒ +0x4 pinned 0 ⇒
+> `meth_0x5a9330` dead code; T-011's last gate closed by unreachability).
 
 Each item is independent. Answer by writing into `discoveries/` (a new file or a section of the
 canonical fact sheet), then post one mesh line to the coordinator (`NiceFalcon`) with the file +

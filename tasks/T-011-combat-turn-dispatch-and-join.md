@@ -92,9 +92,16 @@ Read from the original and ported line by line; the durable write-up is **`docs/
    docs/f3/CombatTurnDispatch.md §"+0x319 raiser". What REMAINS open is the second half — whether
    `meth_0x5a94a0` is re-entered from inside a dispatch (lockstep observation, not more statics) — and
    the port-side gap: our `OnServerUpdate` never sets the latch, filed as **T-048**.
-2. **Who sets manager+0x04 nonzero, and who sets +14 nonzero.** The DB has no nonzero writer for either,
-   and the only xref'd caller of `meth_0x5a9330` passes 0. Until that is read, the round-walk branch is
-   reachable only from tests that call `SetRoundMode()` and say so.
+2. **Who sets manager+0x04 nonzero, and who sets +14 nonzero.** **CLOSED statically (T-010 10e pass,
+   PureKnight `01a15cb7-e27e` — `discoveries/2025-10-21-t010-10e-manager-producers.md`):** `+0x14` has NO
+   non-zero producer anywhere in the shipped image (every writer stores 0: ctor `0x5a962e`, reset
+   `0x5a9603`, `meth_0x5a9330`'s own exits `0x5a9371/0x5a93b0`; self-tested byte/dword/lea scans), and
+   `meth_0x5a9330` — the only non-zero-capable writer of `+0x4` — is reached solely from `0x5a957f` behind
+   the never-armed `+0x14` gate and is not virtual (vft `0x6a684c` slot 3 = `ret 4` stub) ⇒ dead code.
+   `+0x4` is pinned to 0 on every reachable path; the dispatch loop is the mode==0 path at `0x5a9525`
+   always. Port models mode/rearm as mirror-and-cite constants; NO arming path may be invented.
+   Consequence for **T-051**: its dead-walk pin (tests must `SetRoundMode` explicitly, zero new arming
+   callers) is the canonically correct shape.
 3. **`meth_0x401dd0(manager+0x18, 1)` at 0x5a9868 and the `vft+27 → meth_0x54ef30 / meth_0x54bf00` tail
    of ChangeState (0x55094b-0x550960)**: the deferred GUI/net refresh. Cited and absent, same rule the
    enqueue seam follows — a flag nobody reads would be a false model of a subsystem not reconstructed.
