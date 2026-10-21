@@ -761,3 +761,27 @@ Rules that came out of it:
 
 Item 30's shape again: the measurement was real, the thing measured was the wrong artifact — this
 time not the payload but the *process config generation*.
+
+
+## 35. A scan that returns EMPTY for a pattern that provably exists is a tool failure until proven otherwise
+
+Pass-4 of T-017 (PureKnight, `discoveries/2025-10-21-t017-pass4-blk-allocation-handlers.md`) re-enacted
+the T-041/T-043 lesson a third time, this time on the coordinator-visible record:
+- pass-3's disp32-band scan and its window were **both right and both incomplete** — the one store that
+  matters (`0x58f1f5`, blk install into `client+0xA0`) sits OUTSIDE the scanned band, so pass-3's
+  "no install store exists" was a bounded-search result reported as a census.
+- The session's own full-`.text` `89/C7` rescan **returned empty** — against an EA whose bytes pass-3 had
+  already verified individually. A whole-code-section scan cannot legitimately return zero for a known
+  pattern. The lane noticed, quoted NOTHING from it, and rebuilt every store claim from per-address
+  `objdump` verification. That is the correct handling and it is why this result cost one pass instead of
+  poisoning a doc.
+
+Standing rules:
+1. **Empty + known-present = the scan is broken.** Self-test every scanner against at least one
+   pattern whose location is independently known BEFORE any "none exists" conclusion. A refusal that
+   fires is evidence; a silence that could be either is not (T-029's fixture principle, applied to scans).
+2. **A bounded scan reports its bound.** "No store in band X" is a census only with the band printed;
+   otherwise it silently reads as "no store".
+3. Same family as items 27/31: `f3_member_index` reader-bias, comment-vs-writer, and now scan-window
+   truncation — three ways the *evidence channel* lies while the bytes stay innocent. The fix is one
+   each: usage closure, read the writer, self-test with a known-positive.
