@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: KeenStorm (dispatched by LoudDragon `01a15f82`, 2026-10-21)
 type: research + test-harness (no ad-hoc digest edits — findings queue to the writer/product lane)
 depends: T-056/T-067/T-068/T-070/T-071/T-074/T-080 (all the shipped-side facts this row audits the port's assumptions against)
