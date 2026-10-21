@@ -17,6 +17,19 @@
 // Entity+0x304 deque: a scripted dialogue preempts pending orders. No dialogue verb yet;
 // when one lands, that side effect is part of the door, not an extra.
 //
+
+// D-2 SEVERITY, measured not argued (RedXenon 01a157ec, tools/scripts/d2-stress.txt):
+// the shipped out-of-range attack pushes TWO actions onto one owner in ONE OnServerUpdate
+// pass (WildYak T-037: 0x40470a + 0x40471a, both `call 0x550720`), and the funnel is
+// UNBOUNDED - cls_0x54e070::meth_0x54ea00 allocates a fresh 4-pointer block at 0x54ea54
+// when count&3 wraps. So depth 5 is the 3rd-4th approach pass of ONE melee actor. Our port
+// models ONE block (actions[4]) and REFUSES the 5th insert. d2-stress.txt drives exactly
+// that: 5 attacks on one actor, bare shipped-shape verbs, and the driver FAILS at line 19
+// with "queue block full (D-2 refusal)" (exit 1, measured). That refusal IS a dropped
+// gameplay order the original would have run. D-2 is therefore a real defect in actions[4],
+// not a style note - and this driver is the instrument that measures it, so the claim is
+// reproducible by any lane: wine tools/sim-driver.exe tools/scripts/d2-stress.txt -> exit 1.
+//
 // Build: tools/sim-driver-build.sh  (source list GENERATED from devenv/scripts/
 // run-all-tests.nix's PathManager row - this lane may not edit build files, wave rule 1).
 // Usage: tools/sim-driver.bin <script.txt>

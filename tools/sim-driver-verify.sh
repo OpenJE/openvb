@@ -53,6 +53,13 @@ grep -c 'draws=0' /tmp/sd-a.digest | { read n; check "draws=0 absent (NA is the 
 grep -q 'draws=NA' /tmp/sd-a.digest
 check "draws=NA present" "$?" "0"
 
+# 6b) D-3 lifecycle boundary PRINTED, not claimed as coverage: target is a raw pointer in
+# our port; the shipped record stores a ref KEY re-resolved every use (0x54BE10), so
+# "target despawned mid-attack" is UNREPRESENTABLE here, not merely untested.
+"$WINE" tools/sim-driver.exe /tmp/sd-a.txt 2>&1 >/dev/null | grep -q "GameStateLoop"
+d3=$(grep -c "unrepresentable\|ref-key\|despawn" tools/sim-driver.cpp)
+[ "$d3" -ge 1 ] && echo "D-3 boundary documented in driver source" || echo "D-3 MISSING"
+
 # 7) reach the round pump: some frame shows victim hp below max (a single-shive melee lands once)
 grep -Eq 'hp=[0-9]+/30' /tmp/sd-a.digest || true
 hit=$(awk '{ if (match($0,/victim,pos=[^ ]+,yaw=[^ ]+,hp=[0-9]+\/30/)) { s=substr($0,RSTART,RLENGTH); if (s ~ /hp=(2[0-9]|1[0-9]|0|[1-9])\//) { print "yes"; exit } } }' /tmp/sd-a.digest)
