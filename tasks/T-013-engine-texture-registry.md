@@ -6,6 +6,18 @@ depends: M-001 slice 1 (device first), then this unblocks texture-bound skins
 
 # T-013 — Engine texture registry: `cls_0x55dc80` @byte_70B200 (T-007's tail)
 
+> **STATIC TAIL DISPATCHED (coordinator LoudDragon, 2026-10-21, after T-007 closure `4fbe65e`)**
+> — KeenStorm claims the RE-only tail NOW: (a) Fragment `+0x2C` semantics via all 11 export
+> usages (0x4b1750/0x4b1760/0x4b1c28/0x4b1cdf/0x4b1d43/0x4b1d92/0x4b1ee6/0x4b213a/0x4b2384/
+> 0x4b24ec + reader); (b) the `+0xC0→+0xDC/+0xF8/+0x114` broadcast trio's READERS
+> (0x4b1a0b/0x4b1b34/0x4b200b/0x4b262a etc) — derived rects vs per-part clones; (c) the exact
+> bytes reaching the `+0xDC` probe key (name-buffer construction 0x4b21e8..0x4b2208,
+> [handle+0x20]/[handle+0x2C] concat shape). Deliverable:
+> `discoveries/2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md`, byte-discipline as
+> T-007 (anchor to EAs/raw bytes, never names), `ida_original_f3` READ-ONLY (no IDB writes),
+> `[DISCOVERY-BATCH ready]` on completion. The PORT half of this row stays unassigned — this
+> claim covers the static tail only.
+
 ## Scope
 Port the registry that `SkinTable`/`SkinDefaults` acquire textures through: id = `node[3]`,
 use count at `+44`, list head `mbr_0x28`; slots `+0xE0` add (`0x5c0940`), `+0xD8` (`0x5c0930`),
