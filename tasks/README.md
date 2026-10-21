@@ -143,7 +143,7 @@ row; A keeps editorial merge rights).
 
 | T-032 | EA→document index — **DONE (6bde789)**: 137 docs / 5,258 EAs / 7,778 mentions, 0 silent misses in a 720k-pair recall audit, refusals counted by category | done | SwiftRaven |
 | T-033 | Class-identity batch queue — decisions audited; **apply re-granted to RedXenon** (QuickQuartz absent); route-A delta blocked by T-040 | in-progress | RedXenon |
-| T-034 | Lockstep reads — **UNBLOCKED on an alternate port (31437)**; ImHex left alone, IDB writes via shared MCP | open | RedXenon |
+| T-034 | Lockstep reads — **PARKED: needs a clean wineprefix reset (harness action)**; R0/R4 still live-only, D-2 severity now measured independently | blocked | RedXenon (tool handed over) |
 
 
 | T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |

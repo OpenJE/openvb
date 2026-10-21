@@ -36,6 +36,16 @@ without it, T-026 digests can only be produced from hand-built state, never from
 corroborates the recon finding that the `client+0x1F0` FIFO carries no verbs. The two doors we still lack: the
 script natives and the server packet path.
 
+**D-2 SEVERITY UPGRADED — measured, not argued (`8b6c982`, RedXenon).** `tools/scripts/d2-stress.txt` drives five bare
+shipped-shape `attack` verbs at one actor and asserts on `EnqueueEntityAction`'s **return value** rather than on damage,
+producing `SIM-DRIVER FAIL line 19: entity brute queue block full (D-2 refusal)`. Wedged against WildYak's statics — two
+pushes per approach pass on one owner (`0160a9c`), the funnel's own growth unbounded at `0x54ea54`, a retarget as a third
+push — the verdict is: **`actions[4]` drops a real gameplay order; this is a functional defect, not a style deviation.**
+Boundary, stated by the lane and kept here: **this proves OUR refusal under port-side stress; it is NOT a live 5-deep
+shipped trace** — that remains R3 in T-034. The ledger wording in `docs/DEFERRED-NOTES.md` still says "refusal is the
+honest failure mode" and must be revised the moment that file is not dirty under another lane (it was mid-edit by a
+second lane when this was written, so the change waits rather than sweeping their work).
+
 **Container answer (scope 1):** `Entity+0x304` is a **block-growing deque of pointers**
 (`cls_0x54e070::meth_0x54ea00`: 4 pointers per 0x10-byte node, slot = count & 3, block = count >> 2, grows
 unbounded). Our `actions[4]` is therefore its **first block, not the list** — a fifth insert is *refused*, not

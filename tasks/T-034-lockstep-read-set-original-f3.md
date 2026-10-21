@@ -57,6 +57,20 @@ Note the IDB is served by shared MCP processes (`.idalib-mcp-wrapper` on **8745*
 "IDB writer" is whoever is issuing writes through that one session — single-writer discipline applies to the MCP, not to
 a person's local file.
 
+## PARKED as a harness action (2026-10-21) — three honest attach failures, no reads claimed
+
+RedXenon reported the attempt straight: port-corrected tool (`COUNT@+0x314`, `HEAD@+0x310`), override used
+(`OPENVB_ORIG_GDB_PORT=31437`), fresh stubs started three times — first caught a running-free inferior and died
+breaking while running (fix landed: interrupt-tolerant arming), second timed out connecting, third stub did not survive
+to the attach. **Zero reads claimed; nothing sampled.** Diagnosis: the listener-dies-with-gdb lifecycle plus a demo
+prefix that has cycled ~4 stub sessions today needs **a clean wineprefix reset**, not another lane guessing.
+
+Reframing that lowers this row's priority — **its blocking value is gone.** D-2's severity is now measured
+(`8b6c982` + `0160a9c`), so the live depth sample is confirmation rather than the only route. What genuinely remains
+live-only: **R0** (World vftable slot 6, a hole in every reading — `x/1wx $ebx+0x18` at `0x552bb5`) and **R4's
+asymmetry** (zero = non-event; defined non-zero = a second owner-writer, evidence against T-037's own row). So the row
+stays open but no lane burns context on flaky attaches until the prefix is reset.
+
 ## Environment status (2026-10-21) — two independent bugs found, one still needs the user
 
 NiceHawk's handover (`b77625e`) diagnosed more than a port collision. Both parts are now fixed in the tree:
