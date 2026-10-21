@@ -202,3 +202,13 @@ writes `+0x4`/`+0x14`, and whether `+0x14` means "another event is queued" or "t
 multiple queue entries". T-011's dispatch loop is otherwise fully specified, so this is the last
 gate on it. Low-value tail segments from the Apply dig are explicitly NOT wanted — if a dig stops
 gating a lane, stop it and say so.
+
+> **CLOSED by T-010 10e pass (PureKnight 01a15cb7-e27e, 2025-10-21)** —
+> `discoveries/2025-10-21-t010-10e-manager-producers.md`. Summary: **`+0x14` has NO non-zero producer anywhere
+> in the shipped image** (all writers store 0: ctor `0x5a962e`, reset `0x5a9603`, `meth_0x5a9330`'s own exits
+> `0x5a9371/0x5a93b0`; byte/dword/lea-form scans, self-tested) ⇒ `+0x4` is pinned to 0 on every reachable path
+> (its only non-zero-capable writer, `meth_0x5a9330`, is reached solely from `0x5a957f` behind the never-armed
+> `+0x14` gate; the method is not virtual — vft `0x6a684c` slot 3 is a `ret 4` stub ⇒ dead code, mirror-and-cite
+> with mode=0/rearm=0 constants). The queued-vs-multiple-entries question is moot: no producer exists; code
+> shape shows a one-shot rescan/rearm latch that no shipped door arms. T-011's LAST gate is closed by
+> unreachability, not by new machinery — dispatch loop = the mode==0 path at `0x5a9525` always.

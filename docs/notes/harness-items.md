@@ -785,3 +785,26 @@ Standing rules:
 3. Same family as items 27/31: `f3_member_index` reader-bias, comment-vs-writer, and now scan-window
    truncation — three ways the *evidence channel* lies while the bytes stay innocent. The fix is one
    each: usage closure, read the writer, self-test with a known-positive.
+
+
+## 36. The last gate on a mechanism can be its UNREACHABILITY — and that is worth a full instrumented hunt
+
+T-010 10e (PureKnight, `discoveries/2025-10-21-t010-10e-manager-producers.md`): both residual combat
+manager fields (`+0x4` mode, `+0x14` rearm latch) are **provably constant-zero on every reachable path**
+in the shipped image — `meth_0x5a9330` (the only +4 writer) is called exactly once in the whole `.text`
+(`0x5a957f`), gated by `[this+14]!=0`, and `+14` has no nonzero producer anywhere (byte-store,
+dword-store, `lea [reg+d32]` — three encoding families, 515 sites). The round-walk branch of T-011's
+`meth_0x5a94a0` is therefore DEAD CODE in the shipped demo; the whole rearm sweep (join/leave helpers
+over the entity list) is equally dead, xref-verified.
+
+Rules banked from the pass:
+1. **Negatives require self-tests.** Every scan that concluded "none" had to first recover its known
+   positive (call site 0x5a957f; store 0x5a9371) — the item-35 method applied to *all* encodings, not
+   just the first. Two of the session's own bounded scans failed empty on known positives and the lane
+   DISCLOSED them, drawing conclusions only from forms that passed.
+2. **Constant ⇒ no arming row.** When a field is proven constant-zero, the port mirrors the constant
+   and the *branch* is filed cited-and-absent — do NOT invent an arming path. T-047 ("the driver could
+   arm the walk") is retired by this finding: no shipped door arms it either.
+3. **Dead-code discovery is a full-value deliverable.** "The mechanism exists and nothing runs it" is
+   the answer a gated row was waiting for; it retires the question instead of forwarding it. (Item 31's
+   family: the writer hunt is the instrument; here it produced the strongest possible negative.)
