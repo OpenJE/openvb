@@ -104,3 +104,45 @@ What T-007's title still owes is now **T-013** (registry `cls_0x55dc80` @`byte_7
 slice 1 by the coordinator. Acceptance evidence for the binding is already in place: `TextureMisses`
 shows which names the registry must reject (areamap's 54, quickslot's 3), so T-013 has a test to hit
 rather than a blank slate.
+
+## Status note (NiceHawk, `01a15bd1` — step 4 landed; the row's remaining tail is T-013's)
+
+Steps 1–3 were already landed and asserted when this row moved to me, so I did not redo them. What
+the title still owed was **"so a widget can actually resolve a picture"**, and that turned out to be
+one function in the binary: `Window::virt_meth_0x4b06c0`. It is now decoded (from objdump — the
+decompiler fails on it), ported, and driven by shipped data. Full write-up:
+`docs/f3/GUILoadingRecon.md` §8. Code: `JE/GUI/SkinTable.{hpp,cpp}`
+(`Find`, `ApplySkinRecord`, `ApplySkinGroup`, `SkinSet`), openje `fa4363c`.
+
+Three things worth the row's verdict rather than a changelog line:
+
+- **Slot order no longer rests on data agreement.** The nine suffixes are a shipped pointer table at
+  `0x6faf2c`, bounded by `cmp $0x6faf50` with step 4 — nine *by construction*, each carrying its own
+  leading dot, middle row `.left/.middle/.right`. `SKIN_SLOT_SUFFIX` is now the single source for
+  both the apply's `group ++ suffix` key and the ini-suffix matcher.
+- **The two "reserved, always zero" fields are explained.** The `.int` writes six dwords at
+  `+0x1C/+0x20/+0x24/+0x28/+0x2C/+0x30` (`lea` operands `0x4b20d8`…`0x4b215a`); `+0x28` is `rate`,
+  which is authored in the skin ini and never in the interface file — that is the *reason* for the
+  14364 zeros, not a guess at a meaning. `+0x2C` has no writer on either path and is still
+  uninterpreted. The recon's "second u32 at +8" was wrong: it is `+0xC0` (@0x4b2250).
+- **The `.int` really carries the binding's key.** Measured in the suite: `MainmenuWin`'s `+0x40` is
+  literally `'zzmainmenu.ini'`, and all 9 widgets in `Mainmenu.INT` name one of the five shipped
+  skins (cross-checked against `skinlist`, an unrelated resource). The **group** is caller-supplied
+  (`'label'` @0x66d428), so `ApplySkinGroup` is exercised per shipped group across all five inis, not
+  per widget — both facts print as KNOWN-ISSUE lines instead of being smoothed over.
+
+Gate: `gate-integrity.sh` rc=0 → `run-all-tests` **10 pass / 0 fail**, GATE STAMP
+`2026-10-21T03:49:29Z`, HEAD `ef85492` / openje `9567e6e` (my files dirty at measurement), payload
+`x95aqfk70mrsq…`, table hash `2945679485`; GUILoading **150 asserts** (was 116), cppcheck 0 findings.
+The floor was **not** raised: that needs `devenv/scripts/run-all-tests.nix`, which is build-affecting
+and two-lane capped. `msvc-build` was **not** run — no header in `src/F3`, no new TU, and every file
+touched is already on the GUILoading row's source list, so the host suites do compile the changed
+headers. If a reviewer wants the MSVC link proof anyway, say so and I'll run it.
+
+Left for **T-013**, deliberately not faked here: the texture registry behind the acquire seam
+(`cls_0x55dc80` @`byte_70B200`), and the one lockstep observation of the key string form. The seam is
+ready — `SkinAcquireFn` takes `{resolved, index, gate, dimW, dimH}` and the port treats dims strictly
+as inputs, with no-acquire meaning *defer and count* rather than store a name where an id belongs.
+T-013 plugs in by supplying that one function. New fact that narrows its scope: `Gfx_Engine vft+0xD8`
+returns the **object** (the binding dereferences `[obj+0x24]` for extents and tests `[obj+0x28]` as a
+gate) while `+0xDC` returns the **id** — two slots, two shapes.

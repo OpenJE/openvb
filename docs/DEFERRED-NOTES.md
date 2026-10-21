@@ -438,6 +438,21 @@ original is a different game, and the divergence reads as our bug.
 3. **Four console commands register to return-stubs.** `AttackModeSelect`, `CharacterRecordWindow`,
    `SneakToggle`, `WeaponLinkToggle` — stealth/mode UI shipped unimplemented. Parity is
    register-and-stub; omitting them diverges from the shipped console surface. (HappyWolf B38.)
+4. **Skin apply divides by a record dimension with no zero test.**
+   `Window::virt_meth_0x4b06c0` @0x4b0775..@0x4b07c4 computes a tile/repeat count by dividing the
+   texture's own extent by the **record's** width or height — `xor edx,edx / div %ebp` (height, the
+   `flags&1` branch @0x4b079d..@0x4b07a1) or `div %ebx` (width, @0x4b07bd..@0x4b07bf) — and **neither
+   divisor is tested for 0 anywhere on the path**. A 0 dimension is reachable from the shipped
+   parser: `Skin::LoadDefault_0x523490` defaults `width`/`height` to **0, not 8**, when the section
+   names a texture, omits the key, and has no parent (@0x523912, @0x523a08 — the `8` is only the
+   no-texture default @0x523926). So `[g.slot]` with `texture=` and no `width=`/`height=` faults the
+   demo at the moment a widget's skin is applied. **Not reachable by the five shipped skin inis** —
+   every textured record carries dimensions, which is why the gate's group sweep over all of them
+   never trips it — so this is "reachable by authored data", not a claim that the demo is broken.
+   Mirror: the port neither faults nor invents a clamp. It leaves the fragment's tile field at its
+   authored value and counts the case (`SkinApplyReport::tilesDivideByZero`, asserted in
+   `tests/je/GUILoading`); a lane that ever "fixes" it by defaulting the divisor to 1 is silently
+   changing what a malformed skin does. (NiceHawk T-007 §8d-5, `docs/f3/GUILoadingRecon.md`.)
 4. **A loud consistency check, not a silent defect: `FatalError("A weapon can't be both consumed
    and thrown.")`.** Fired by `GameWeapon::ReadAttackModeData` when the v5 flag pair is both set
    (FastArrow B9). It is the first ledger entry the shipped binary *diagnoses itself*, and the

@@ -336,3 +336,139 @@ So "accept 3 components too" is not a robustness fix: it silently retints the en
 first skin that parses. Same for the unmasked component 0 (@0x523806..0x523832) — reproduced as a
 quirk, with an assertion, on purpose. Any lane touching `JE/GUI/SkinDefaults` should keep both rules
 and keep the tests that pin them.
+
+## 8. The binding decoded — T-007 step 4 (NiceHawk `01a15bd1`, `JE/GUI/SkinTable.{hpp,cpp}`)
+
+§6b established the chain exists; this section is what the loop **does**. Every line below is
+`objdump -d` over `$OPENVB_F3DEMO_ROOT/F3.exe` (`pei-i386`, `.text` vma `0x401000` = file offset
+`0x1000`, image base `0x400000`, no ASLR), because the decompiler fails on the enclosing function —
+same constraint as §1. No IDB edits, no debugger session (see
+`discoveries/2025-10-20-t034-handover-orig-gdb-port-collision.md` for why the original's gdb stub
+is currently unreachable).
+
+### 8a. Signature and shape
+
+`JE::GUI::Window::virt_meth_0x4b06c0( arg1 /*skin name*/, arg2 /*group*/ )`, `this` in `ecx`
+(`mov %ecx,%ebp` @0x4b06cd), two stack args (`ret $0x8` @0x4b080c), and the arg identification is
+arithmetic, not guesswork: after `sub $0x10 / push ebx / push ebp / push esi`,
+`mov 0x20(%esp),%esi` (@0x4b06c6) reads `[E+0x4]` = **arg1**; inside the loop, after the fourth
+push, `mov 0x28(%esp),%edx` (@0x4b0712) reads `[E+0x8]` = **arg2**.
+
+- arg1 is assigned into **`this+0x40`** (@0x4b06cf..0x4b06d9, `lea 0x40(%ebp),%ecx` + `0x401b20`) and
+  is then handed to the registry (@0x4b06de `push esi`, @0x4b06df `mov $0x707e48,%ecx`,
+  @0x4b06e4 `call 0x4b5c30`) — so **the registry key is the same string the window stores at +0x40**,
+  and that is the field `Window::ReadFrom_0x4b10f0` reads out of the `.int` (§2).
+- arg2 is the group prefix, concatenated with each slot suffix below.
+- The function is a **widget virtual**: 10 vftables carry `0x4b06c0` (`0x655824`, `0x65d224`,
+  `0x66ca84`, `0x66d504`, `0x66e59c`, `0x670d74`, `0x697f14`, `0x69dd8c`, `0x69ec94`, `0x69ef6c`)
+  and there are exactly **three direct calls**: `0x4a7137`, `0x4a8b64`, `0x4aaa20`. The caller at
+  `0x4a8b42` pushes the literal **`'label'` @0x66d428** as arg2 — i.e. the group name comes from
+  **code**, not from the file. `0x4aaa20` is a template-copy path: it reads a source fragment's
+  colour through `0x4b1530`, calls the binding, then re-applies `0x4b1470`/`0x4b14a0`/`vft[+0x10]`
+  to `esi` — the same five writers, from the other direction.
+- `cls_0x4b5c30::meth_0x4b5c30`'s **only** call site is @0x4b06e4, and `0x522530` (the record finder)
+  has exactly one call site, @0x4b072e. Both live inside this loop, which is why the whole skin
+  system funnels through one place. (DB cross-check: `f3_address_lookup 0x522530` returns zero rows,
+  so the single-caller fact is an image observation, not a database one — stated so nobody reads it
+  as verified twice.)
+
+### 8b. The nine slot names are a shipped table: `0x6faf2c`
+
+The loop walks a pointer table with `add $0x4,%ebx` (@0x4b07e8) and terminates on
+`cmp $0x6faf50,%ebx` / `jl` (@0x4b07f1/0x4b07fb): `(0x6faf50-0x6faf2c)/4` = **nine entries by
+construction**. The entries, read out of the image:
+
+| slot | ptr | string | slot | ptr | string | slot | ptr | string |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 0x66e4bc | `.upperleft` | 3 | 0x66e498 | `.left` | 6 | 0x66e47c | `.lowerleft` |
+| 1 | 0x66e4ac | `.uppermiddle` | 4 | 0x66e490 | `.middle` | 7 | 0x66e46c | `.lowermiddle` |
+| 2 | 0x66e4a0 | `.upperright` | 5 | 0x66e488 | `.right` | 8 | 0x66e460 | `.lowerright` |
+
+Three things this settles that the corpus could not: (i) the UL/UM/UR/ML/C/MR/LL/LM/LR order in
+`JE/GUI/SkinFragments.hpp` was resting on *name-suffix agreement across 14364 records*; it is now
+resting on an address. (ii) The middle row is `.left/.middle/.right` — **there is no `.middleleft`**.
+(iii) Every entry **carries its own leading dot**, because @0x4b071f..0x4b0722 builds the lookup name
+as `group ++ suffix` via `sub_434600`; that is *why* the ini sections are `window.upperleft` and
+`button.up.upperleft`, and it is the port's `SkinTable::Find()` key.
+
+### 8c. Fragment field map — and a correction to §2's "one at +8"
+
+`Fragment::ReadFrom_0x4b20a0` reads six u32 straight into the object; the `lea` operands are
+unambiguous (@0x4b20d8 `+0x1C`, @0x4b20ec `+0x20`, @0x4b210c `+0x24`, @0x4b2126 `+0x28`,
+@0x4b213a `+0x2C`, @0x4b215a `+0x30`). After the string, the next u32 goes to **`+0xC0`**
+(@0x4b2250 `lea 0xc0(%esi),%edi`), not `+8`; `+0x154` is the last dword (@0x4b2283). The binding's
+writes, therefore, land on fields the `.int` already filled:
+
+| frag offset | our `SkinFragment` field | written by the .int | overwritten by the binding |
+|---|---|---|---|
+| `+0x18` | *(not modelled)* | `movb $1` @0x4b22a8 | @0x4b1480, @0x4b14ac, @0x4b1464 |
+| `+0x1C` | `d28` (mode) | @0x4b20d8 | `0x4b14a0` @0x4b14a9, **only if `<= 7`** (`cmp $0x7/ja` @0x4b14a4..0x4b14a7) |
+| `+0x20` | `d2C` (width) | @0x4b20ec | `vft[+0x10]`=0x4b1450 → `Base::virt_meth_0x4b2790(w,h)` @0x4b145f, plus `0x4ab6c0` @0x4b0765 |
+| `+0x24` | `d30` (height) | @0x4b210c | same call, second arg |
+| `+0x28` | `d34` (rate) | @0x4b2126 | `0x4b1540` @0x4b1544 ← `record+0x14` |
+| `+0x2C` | `d38` | @0x4b213a | *(never written — still uninterpreted)* |
+| `+0x30` | `d8a` (tiles) | @0x4b215a | `0x4b1570` @0x4b1574 ← texture extent / record dimension |
+| `[+0x128]+0x130` | `textureIndex` | @0x4b2244 | `0x4b1470` @0x4b147a ← `record+0x04` |
+| `+0x154` | `d154` (colour) | @0x4b228a | `0x4b14c0` @0x4b14fb/0x4b151e ← widget alpha \| record RGB |
+
+So the two fields §2 left as "reserved, zero everywhere" are explained: **`+0x28` is `rate`**, and a
+rate is authored in the skin ini, never in the interface file — which is precisely why 14364/14364
+`.int` records carry 0 there. `+0x2C` keeps no writer on either path and stays uninterpreted. And
+`+0x18` is a one-byte "style was written" flag with **four** independent writers, which is why
+nothing in the data distinguishes it.
+
+### 8d. Per-slot writes, in shipped order (@0x4b073d..@0x4b07db)
+
+1. `0x4b1470(record+0x04)` @0x4b0743 — store the record's resolved texture **index** into
+   `[frag+0x128]+0x130`, the same slot the `.int` reader fills, and set `+0x18` (@0x4b1480).
+   Called **unconditionally**: a textureless record stores 0. `record+0x04` is therefore an index,
+   not a name — §1's "record+0x04 (string)" is the parse-time value; what the record *keeps* is the
+   resolved id.
+2. `0x4b14a0(record+0x00)` @0x4b074d — mode, with the `<= 7` guard above. A rejected mode stores
+   **nothing**, not even the style byte, while the other writes still happen. Reproduced.
+3. `frag->vft[+0x10](record+0x0C, record+0x10)` @0x4b075e + `0x4ab6c0(frag, w, h)` @0x4b0765 — size.
+4. `0x4b1540(record+0x14)` @0x4b0770 — rate → `frag+0x28`.
+5. **The tile count** @0x4b0775..@0x4b07c4 → `0x4b1570` writes `frag+0x30`:
+   `if (!record->texture) skip` (@0x4b0775); `obj = Gfx_Engine->vft[+0xD8](record->texture)`
+   (@0x4b0785, global `0x707CE4`); `if (!obj) skip` (@0x4b078b); then **bit 0 of the record's flags**
+   picks the axis (@0x4b078f `testb $0x1,(%edi)`):
+   - set → extent `[[obj+0x24]+0x20]` over the record **height** (`div %ebp` @0x4b079f)
+   - clear → extent `[[obj+0x24]+0x1C]` over the record **width** (`div %ebx` @0x4b07bf)
+   and `[obj+0x28]` is a **gate**, not a dimension: when it is not `> 0` the shipped code sets the
+   *numerator* to 0 (@0x4b079b, @0x4b07b3) and **still divides**. The quotient is the repeat count
+   along the stretching axis — the nine-slice model from §2, now with its arithmetic.
+6. **Colour** @0x4b06f0 + @0x4b07c9..@0x4b07db: the window contributes **only its top byte**
+   (`mov 0x5c(%ebp),%eax / and $0xff000000`), the record contributes the low 24, ORed
+   (@0x4b07d0 `and $0xffffff; or %ecx,%edx`). `0x4b14c0` then stores at `+0x154` and calls the
+   notify `0x4abdd0` **iff the "top byte == 0xFF" state changes** (@0x4b14e0..@0x4b14f2 when the old
+   top was `0xFF`, @0x4b1507..@0x4b1515 when it was not). That is preserved-alpha with a
+   conditional invalidate, not a setter — re-applying a skin does not dirty the draw state.
+
+### 8e. `vft+0xD8` is a *different* acquire shape than `+0xDC` (extends §7 / feeds T-013)
+
+§7 lists `+0xD8`(216)=`0x5c0930` with no behaviour attached and `+0xDC`(220)=`0x5c0970` as
+acquire-**by-name** returning an **id**. The binding uses `+0xD8` (@0x4b0785) and then dereferences
+the result (`[obj+0x24]`, `+0x1C`/`+0x20`, `+0x28`), so **`+0xD8` returns the texture OBJECT** while
+`+0xDC` returns its id — and the `.int` reader calls `+0xDC` first (@0x4b21bb), falls through to
+`Demand_0x49b750` (@0x4b21dd) on a miss, converts via `+0xC4` (@0x4b221d), releases
+(@0x4b2232) and stores the id (@0x4b2244). Two slots, two shapes, both now evidenced. T-013's
+question "which string does `+0xDC` get" is unchanged; the new fact is that `+0xD8` is keyed on
+whatever `record+0x04` holds, i.e. on the **resolved id**, so the string form only ever reaches
+`+0xDC`.
+
+### 8f. Ported, and what the port does not have
+
+`JE::GUI::ApplySkinRecord` / `ApplySkinGroup` / `SkinTable::Find` / `SkinSet` (the `cls_0x4b5c30`
+mirror) in `modules/openje/src/JE/GUI/SkinTable.{hpp,cpp}`, asserted in `tests/je/GUILoading`
+(the suite went **116 → 150** source checks). Two deliberate, labelled non-claims:
+
+- **`SkinAcquireFn` is the seam T-013 plugs into.** The port takes
+  `SkinTextureInfo{resolved,index,gate,dimW,dimH}` from a caller-supplied function pointer, so the
+  dims are inputs and never invented. With no acquire at all, the index write is **deferred and
+  counted** (`indicesDeferred`) rather than filled with a name where an id belongs.
+- The `.int` really does carry the skin name end to end: **`MainmenuWin`'s `+0x40` is literally
+  `'zzmainmenu.ini'`, and all 9 widgets in `Mainmenu.INT` carry a skin name, all 9 naming one of the
+  five shipped skins** (cross-checked against the `skinlist` resource, an unrelated shipped file).
+  The group is still caller-supplied — `'label'` @0x66d428 is the evidence — so `ApplySkinGroup` is
+  exercised per shipped group over all five inis, not per widget. Registered as KNOWN-ISSUE in the
+  suite output.
