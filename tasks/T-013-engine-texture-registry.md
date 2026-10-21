@@ -44,7 +44,7 @@ inventory/pipboy/options use plain client-slot exclusivity.
 - **TWO KEY POLICIES — DO NOT UNIFY (via T-062, committed)**: the texture registry probe case-SENSITIVELY
   memcmp's node names (repz cmps 0x41e4b0, stem-keyed inserts), while GameCursorManager::SetCursor
   (0x437ab0, vft 0x6550B4 slot5) idempotence-gates with STRICMP on name + stored dims — case-INSENSITIVE.
-  Port must implement both policies separately; unifying them is a behavioral divergence.
+  Port must implement both policies separately; unifying them is a behavioral divergence. BOUNDARY CONFIRMED (T-062 trio addendum): the Gfx_Engine slot-manager RB-tree at +0x18 keys on an UNSIGNED 32-BIT INTEGER (setb compare @0x492ae0) — NOT a third string policy; the two-policy set is complete as evidenced.
 - REMAINING from the old scope — static tail (a/b) CLOSED (`70c86f3`): **`Fragment+0x2C` = animated FRAME INDEX** (slot15 0x4b1720 tick math `frame=(frame+elapsed/(1000/rate)) mod +0x30`, dirty+repaint; slot16 turns frame×piece-width into UV origin with mode branches on +0x1C, modes 1/2 read frame AND frame+1; +0x2C participates in SaveTo/re-LOAD — the RELOAD LANE (0x4b1ee6 -> same probe/demand/clamp/release/store chain) is IN SCOPE for this row's port). **+0xC0/+0xDC/+0xF8/+0x114 = ONE QUAD'S FOUR 0x1C-STRIDE VERTEX BLOCKS** (ctor init with (u,v) corners (0,0)(1,0)(0,1)(1,1); reader "broadcast" writes the wire dword into CORNER FIELD 0 of all four; slot14 fills derived-rect tails gated on mode bit2, window scale via 0x707E48). Still open, render-side lockstep (T-056+ observations list): what the corner-field-0 int INDEXES into; mode-1/2 frame-pair interpolation quality. Plus the standing `TextureMisses 0/0/3/54/0` reproduction once the real registry ports.
 
 ## Acceptance

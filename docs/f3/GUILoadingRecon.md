@@ -481,3 +481,15 @@ mirror) in `modules/openje/src/JE/GUI/SkinTable.{hpp,cpp}`, asserted in `tests/j
   The group is still caller-supplied — `'label'` @0x66d428 is the evidence — so `ApplySkinGroup` is
   exercised per shipped group over all five inis, not per widget. Registered as KNOWN-ISSUE in the
   suite output.
+
+## COORDINATOR CORRECTION (2026-10-21, via KeenStorm's T-062 trio addendum, banked `discoveries/2025-10-21-t062-addendum-manager-trio-0x50b790-owner.md`)
+§5's "epoch byte 0x707CE8" dead-end is now POSITIVELY IDENTIFIED: `0x707CE8` is written by
+`cls_0x50b560`'s ctor (0x50B6B0, sole caller 0x5c0040 inside `Gfx_Engine::ctor_0x5bfe10`) — it is
+**Gfx_Engine's slot manager** (a 32-byte engine member, RB-tree at +0x18 keyed by UNSIGNED 32-bit
+slot pointer, `setb` compare @0x492ae0), NOT a GUI stream/session epoch. The 0x50B790/7F0/880 "trio"
+has no class owner at all — file-scope string codecs of the 0x50b560..0x50b8ff TU band:
+0x50B880 reads JE::String from the .int stream (own `[0x707DA8]` + FileStreamRead) and is the exact
+primitive our InterfaceFile ReadString mirrors; 0x50B790/7F0 are the save/load-archive string twins.
+Stream global 0x707DA8 has exactly ONE writer: `a3` @0x59c190 = the cls_0x49c610 ResourceSystem
+session our port already labels. Cursor-sound chain closed end-to-end: .int -> 0x50B880 ->
+Button+0xD24/+0xD40/+0xD5C (three strings, sites 0x4a6bc6/da/ee) -> keyed-by-+0xD40 consumers.
