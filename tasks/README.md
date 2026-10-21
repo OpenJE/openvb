@@ -157,6 +157,7 @@ row; A keeps editorial merge rights).
 | T-048 | **DONE**: `PumpEntity` raises `actedLatch0x319` on processed-and-not-dropped (0x54c833 analog); 0x54c864 filed UNEXPRESSIBLE with cited EAs, no budget invented; drop never clears, TurnPrep keeps the clear; +11 asserts incl. executed-mutant falsification (store killed => 5 named reds) and stable-head-with-store pin; gate 10/0 + msvc-build 0 (stamp 05:31:54Z) | done | UltraMoon `01a15cb7` (dispatched by ZenNova) |
 | T-046 | **DONE (live-proof)**: `docker-rootless` readiness pinned to this uid’s socket with distinct no-socket/no-daemon failures, watch/`wait` replaces the bare `tail` (exits nonzero on dockerd death, demonstrated live), one-shot run-path probe; `msvc-build` pull-else-cached prints the source **and cached image sha256**, negative control exits 1 naming the missing image; final gate 10/0 + msvc-build exit 0 fresh payload. Boundary: process config activates at next session re-up (`devenv processes restart` reuses loaded config) | done | UltraMoon `01a15cb7` (build lane, dispatched by coordinator) |
 | T-049 | Port the pull-else-cached path to `msvc-build-debug`/`msvc-build-tracing` (still unconditional pull, out of T-046's grant); acceptance requires the bogus-registry proof + negative control + a grep gate over devenv/scripts/*.nix | open — spawned by T-046 | unassigned (build lane, grant required) |
+| T-050 | Skip-advance seam probe: make `0x5a955d -> 0x5a9572` constructible in tests — but ONLY in the shape the lockstep observation dictates (T-048 established the advance is unconstructible without re-entrancy: maintenance-clear-before-test, `endIter_`+14 no nonzero writer, chicken-and-egg on the only window). If the observation does NOT show re-entrancy, this row converts to a writer-study reopen — build no probe in that case | open — GATED: do not start before T-034/R-batch reports re-entrancy either way | owner: after T-034/R-batch reports (filed by UltraMoon `01a15cb7` at ZenNova's T-048 ruling) |
 
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **DONE (01554a2/a023a62)**: Year has a consumer but `totalSeconds=0` makes it inert — `clock` stays compared, no `year` field; spawned T-042 | done | WildYak |
@@ -175,7 +176,7 @@ row; A keeps editorial merge rights).
 
 | T-009 | `VFX_Parameter` section/entry iterator (unblocks T-007) | done | implementer-C |
 
-| T-010 | Research queue (10a answered, 10b resolved-as-defect, 10c one data read, 10d closed, 10e open) | open | research |
+| T-010 | Research queue (10a answered, 10b resolved-as-defect, **10c CLOSED via T-018**, 10d closed, 10e open) | open | research |
 
 | T-011 | Combat: per-turn dispatch + join-on-attack — **steps 2-6 LANDED (`20827b2`)**; question 1 **CLOSED statically** this wave: the +0x319 raiser is `Entity::virt_meth_0x54c570`'s own-update "more work pending" (stores 0x54c833/0x54c864, full analysis docs/f3/CombatTurnDispatch.md) — port-side gap filed as **T-048**, re-entrancy half still routed to lockstep; +4/+14 and 0x5a9868 tails unchanged | in-progress — two questions left | PureKnight `01a15cb7` + coordinator |
 
@@ -190,7 +191,7 @@ row; A keeps editorial merge rights).
 | T-015 | GWAM record map — B9 pre-map + B11 slots part 1 (22-read order confirmed, frame captured); remainder = slot table part 2 + creature-twin parity | in-progress | FastArrow (research) |
 | T-016 | Runtime batch — **read 3 CLOSED statically** (INI is plaintext inside `Engine.grp`; existence-gate = no `none.map` safety net) | done | RedXenon (01a157ec) |
 | T-017 | F3 UI surface: Command* -> GameInterfaces slot / root-Open mapping | in-progress | HappyWolf (research) |
-| T-018 | Data read: shipped helmet record's `GameItem+0xA8` required-slot vector | in-progress | IronStorm (research) |
+| T-018 | **DONE (92461cd)**: helmet `GameItem+0xA8` required-slot vector = **(1)** — STORED by the GITM parser `sub_410b80` (count `0x410beb`, values `0x410c19`), consumer `Equip_46be40` -> B8 pair table; head-family naming stands, T-010c closes; side finding: gitm.csv `equip`/`eqslot` = req-count/reqvec[0] mislabels (verdicts unaffected) | done | PureKnight `01a15cb7` |
 | T-021 | Retire the anatomy wording 10c disproved (rename + comments, no link needed) | done | implementer-C (UltraBear) |
 | T-020 | **DONE — three-source CONFIRMS {33,34,37,38,40,41}, 39 unreachable** (Implementer-C derivation + PureKnight cold byte re-read + coordinator dd/objdump re-check); §5b pair wording and the 40/41-death-boundary premise both falsified and corrected in the T-010a doc; port tables were already right | done | PureKnight `01a15cb7` |
 | T-019 | Consumed+thrown FatalError on shipped data — **answered: 0/57, never fires** (B11) | done | FastArrow (research) |
