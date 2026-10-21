@@ -62,6 +62,13 @@ tree. If a lockstep comparison ever pins clock, start there. ⚠ I did not verif
 > the stamp fixes FUTURE runs but cannot rescue captures taken before it: **an old capture is not a
 > neutral baseline.** Anyone reusing pre-fix digests (mine included) as reference must treat every
 > deadline-derived field as offset, not sampled.
+> **SCOPE GUARD (7428495 correction, quoted at my sentence's request):** the "every frame" claim is
+> true for the ABSOLUTE consumers — `turnDeadline0x29C` (`CombatManager.cpp:188`, no base subtraction
+> at `0x5a95ce`) — and FALSE for the digest's compared field: `clockDelta` takes base at frame 0
+> (`src/F3.cpp:842`) and prints `clockSec − base` (`SimDigest.hpp:166`), so the pre-base fold
+> CANCELS. The uncomfortable half: the oracle's own field is structurally blind to this bug — a green
+> `clockDelta` proves the delta steady, never the accumulator clean; only absolute-`clock` CONTEXT
+> pairing or deadline checks can see it. Do not quote the generalization at `clockDelta`.
 > (b)-confirmation needs no attach either: the single writer telescopes — `[0x70C2B8] =
 > now_k − now_0` by construction (`0x56afd2` keeps last=now), so uptime-equality is excluded by the
 > algebra; and a hit-and-hold sample would corrupt the quantity (stopped time counts), so the
