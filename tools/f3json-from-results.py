@@ -29,6 +29,7 @@ Exit: 0 = every claimed field reproduced; 1 = drift; 2 = inputs missing.
 """
 import argparse
 import collections
+import hashlib
 import json
 import os
 import re
@@ -42,6 +43,16 @@ RESULTS_CANDIDATES = [
     os.path.join(REPO, "artifacts", "F3-results.pl"),
 ]
 FACTS_CANDIDATES = [p.replace("results", "facts") for p in RESULTS_CANDIDATES]
+EXPECTED_JSON_VERSION = "2.2.0"   # pinned by IDA/plugins/OOAnalyzer.py:21 (T-040 provenance)
+FROZEN_MD5 = "e8827f12560f1b5a0c7d369eb22d836b"   # 2024-04-04 OOAnalyzer run (md5 committed in T-040)
+
+
+def file_md5(path):
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 JSON_RE = re.compile(r"^([a-zA-Z]+)\((.*)\)\.\s*$")
 
 
@@ -148,6 +159,18 @@ def derive(preds):
 def verify(path_results, path_json):
     preds, unparsed = load_results(path_results)
     ref = json.load(open(path_json))
+    # Provenance assertions. The T-040 verdict rests on exactly these two fields, so the guard has to
+    # ENFORCE them, not just describe them: before this, editing "version" reported a clean result.
+    prov = []
+    if ref.get("version") != EXPECTED_JSON_VERSION:
+        prov.append("export version is %r, expected OOAnalyzer schema %r"
+                    % (ref.get("version"), EXPECTED_JSON_VERSION))
+    exe = os.environ.get("OPENVB_ORIG_EXE")
+    if exe and os.path.exists(exe):
+        got_md5 = file_md5(exe).upper()
+        if got_md5 != str(ref.get("filemd5", "")).upper():
+            prov.append("export filemd5 %s != $OPENVB_ORIG_EXE md5 %s -- the export describes a different binary"
+                        % (ref.get("filemd5"), got_md5))
     s = ref["structures"]
     got, cov = derive(preds)
     r = {"results_unparsed_lines": unparsed, "ref_structures": len(s), "derived_structures": len(got)}
@@ -187,6 +210,8 @@ def verify(path_results, path_json):
     r["derived_members_total"] = sum(len(v["members"]) for v in got.values())
     r["synthesized_member_kinds_unverified"] = (
         r["ref_members_total"] - r["derived_members_total"])
+    r["provenance_faults"] = len(prov)
+    r["_prov"] = prov
     return r
 
 
@@ -217,9 +242,12 @@ def main():
     for k, v in r.items():
         print("  %-36s %s" % (k, v))
     drift = (not r["keys_exact"]) or r["size_mismatches"] or r["member_size_mismatches"] \
-        or r["member_usage_mismatches"] or r["classes_method_set_mismatch"] or r["member_missing_in_ref"]
+        or r["member_usage_mismatches"] or r["classes_method_set_mismatch"] or r["member_missing_in_ref"] \
+        or bool(r["_prov"])
     print()
     reasons = []
+    for p in r["_prov"]:
+        reasons.append("PROVENANCE: " + p)
     if not r["keys_exact"]:
         reasons.append("structure key set differs (a class appeared or vanished: check the key rule)")
     if r["size_mismatches"]:
@@ -245,6 +273,22 @@ def main():
     print("NOT covered by this rebuild: %d synthesized (base/vftptr/struc) member entries, and stage 2 inference --"
           % r["synthesized_member_kinds_unverified"])
     print("so an IDB rename cannot be flowed into F3.json here. See discoveries/2025-10-20-t040-f3json-provenance.md")
+
+    if drift:
+        # Put the safe next move where someone staring at a RED check will actually read it, not only in a
+        # closed task row. Under a red gate the tempting edit is the one that makes the gate quiet.
+        print("\nIF THIS IS RED AND YOU DID NOT CHANGE THE CODE:")
+        print("  The likely cause is that a REAL exporter was restored. A live OOAnalyzer emits actual")
+        print("  base/struc/vftptr member values, which this rebuild marks UNVERIFIED -- so a correct")
+        print("  generator reads as drift here. That is the guard WORKING, not breaking.")
+        print("  DO: finish the rebuild of the synthesized member kinds AND re-pin the golden expectations")
+        print("     in the SAME change, with the reason stated in the commit message.")
+        print("  DO NOT: soften, skip, or threshold this check to get back to green; DO NOT hand-edit")
+        print("     artifacts/F3.json. Either converts a tooling gap into a false measurement (T-040).")
+        print("  CHECK FIRST: the export is byte-frozen at md5 %s (2024-04-04 run)." % FROZEN_MD5)
+        print("     measured now: %s  ->  %s" % (file_md5(a.json),
+              "unchanged, so a code path changed" if file_md5(a.json) == FROZEN_MD5
+              else "CHANGED -- something wrote artifacts/F3.json; investigate that BEFORE touching the check"))
     if a.write:
         preds, _ = load_results(rp)
         got, _ = derive(preds)
