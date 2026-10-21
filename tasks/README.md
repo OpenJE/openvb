@@ -138,7 +138,7 @@ row; A keeps editorial merge rights).
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
 | T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
-| T-031 | Parity oracle — grammar landed (`d43033b`); synthetic `orig-digest.sh` next, real values gated on T-034 | open | HappyKnight (secondary) |
+| T-031 | Parity oracle — **synthetic shipped side DELIVERED (`40b215a`)**: `tools/orig-digest.sh` + 47-check verify, PROVENANCE required, MIXED-PROVENANCE refused, invariants violated on purpose. **VALUES still gated on T-034** (R1/R3/R4b) | in-progress | HappyKnight (secondary) |
 
 
 | T-032 | EA→document index — **DONE (6bde789)**: 137 docs / 5,258 EAs / 7,778 mentions, 0 silent misses in a 720k-pair recall audit, refusals counted by category | done | SwiftRaven |
