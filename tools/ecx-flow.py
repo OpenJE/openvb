@@ -980,6 +980,20 @@ class Model(object):
             return self.ea2cls[owner_start][0]
         return "sub_%X" % owner_start
 
+    def head_hint(self, E):
+        """Offline head-ness evidence for a locator: 'call-head' (directly called
+        somewhere -> near-certain function entry), 'pad-chunk' (only pad/jmp
+        reached, likely a secondary chunk of an earlier head in the live IDB --
+        writer MUST read back the containing function), with the nearest
+        call-head below as the containment candidate. Never claim IDB head-
+        status offline; this is evidence, the IDB is authority (item 43)."""
+        import bisect
+        if E in self.call_targets:
+            return "call-head", E
+        ct = sorted(self.call_targets)
+        i = bisect.bisect_left(ct, E) - 1
+        return "non-call-head (writer read-back required)", (ct[i] if i >= 0 else None)
+
     def enclosing_fn(self, va):
         """Largest non-pad function head strictly below va (the scope a pad/EH
         handler is compiled inside)."""
@@ -1206,11 +1220,14 @@ class Model(object):
                         if via_pad:
                             for p, adj in via_pad[:3]:
                                 inst = self.pad_installs.get(p, [])
+                                hh, alt = self.head_hint(E)
                                 P("        [Q1-padthunk] evidence=dataref@%s "
-                                  "pad 0x%X (%s%s) -> entry; push-installs=%s%s"
+                                  "pad 0x%X (%s%s) -> entry; entry-headness=%s%s; "
+                                  "push-installs=%s%s"
                                   % (
                                       [hex(x) for x in self.data_code_refs.get(p, [])][:2],
                                       p, self.pads[p][2], ",adj" if adj else "",
+                                      hh, (" (containment candidate 0x%X)" % alt) if alt and alt != E else "",
                                       [hex(x) for x in inst[:4]] or "none",
                                       "installed-by is the candidate host" if inst else ""))
                         else:
