@@ -53,6 +53,21 @@ tree. If a lockstep comparison ever pins clock, start there. ⚠ I did not verif
 > forbade; (3) three pages still assert 'tick == uptime' (`SimDigest.md:173-180`,
 > `ParityOracleDesign.md:47`, `OrigCapture.md:63`) — WildYak flagged, not mine to edit; (4) T-011:
 > suspect this bug before believing any first-frame-anchored round-timing difference.
+>
+> **Generalized (WildYak be3f31d, banked here by the T-011-adjacent lane):** the fold is NOT a
+> frame-0 event. It enters at `0x544aab`, rides `Gregorian::AddSeconds` in step 6 of
+> `ServerUpdate_0x545d60`, and `CombatManager` derives `accMs` from `totalSeconds` (`0x5a95aa`) ⇒
+> `turnDeadline0x29C = accMs/1000` carries it **for the rest of the run**. So any shipped-vs-our
+> deadline comparison is offset ~29242 s at EVERY frame, not noisy only on the first — and seeding
+> the stamp fixes FUTURE runs but cannot rescue captures taken before it: **an old capture is not a
+> neutral baseline.** Anyone reusing pre-fix digests (mine included) as reference must treat every
+> deadline-derived field as offset, not sampled.
+> (b)-confirmation needs no attach either: the single writer telescopes — `[0x70C2B8] =
+> now_k − now_0` by construction (`0x56afd2` keeps last=now), so uptime-equality is excluded by the
+> algebra; and a hit-and-hold sample would corrupt the quantity (stopped time counts), so the
+> two-read experiment is weaker than the proof and not worth a wineserver collision (item 30).
+> Verdict closed without the sample; the safe live form is recorded in WorldTickPump.md if anyone
+> ever wants it anyway.
 
 ## 4. Boundaries
 - "plaintext inside Engine.grp" = the demo payload's uncompressed archive content at these
