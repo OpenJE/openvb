@@ -80,10 +80,32 @@ field rename can't desynchronise them because the contract line is in both files
 row's: one command prints `first divergence at line N, frame=M` against the original, and the tool is
 demonstrated to fail by corrupting one operand on our side and watching the diff name it.
 
+## 4b. `ak` — DECIDED (it was mine to decide, not to escalate)
+
+I framed this as a two-option question and routed it to the coordinator. Their answer was better than
+either option and it exposes the flaw in my framing: **the choice was not between "map it" and "exclude
+it", it was between "make the measurement possible" and "invent a mapping to make the comparison
+possible"** — and I had let the second become a TODO. Rule now recorded as harness item 23:
+*when a field cannot be compared, decide whether the goal is a comparison now or a measurement later —
+and do not invent a mapping to make it comparable.*
+
+Decision, and it is buildable now and promotable later without re-running any debugger session:
+
+1. **Exclude `ak` from the comparison by default** and print the exclusion IN the file
+   (`# EXCLUDE=ak:our kind tags vs their action-object pointers, no verified mapping`), with the reason
+   in the artifact rather than only in this document.
+2. **Capture the action's vftptr in a separate, non-hashed column.** `eN.ak` disappears from the digest
+   line; `eN.vft` appears as `CONTEXT` (like `tickMs`). So if R1–R4 or a later RE pass produces a verified
+   kind↔vftptr table, promoting the column to a comparison field is a one-line change in the comparator —
+   no second session, no re-read of the original. Excluding the field while capturing its datum is what
+   keeps "the action queue is unverified on the shipped side" temporary instead of permanent.
+3. If a vftptr→class table ever IS verified, it must come from the shipped vftables (the F3 DB / IDA), not
+   from our kind numbering — otherwise the "mapping" is just our invention wearing a hex address.
+
 ## 5. Open question I am not deciding silently
 
-`tickMs` and `clock` are printed by both sides but only one of them is comparable. The options are (i)
-exclude `tickMs` from the hash and print it as context, or (ii) keep it in the hash and require both sides
-to be driven by a pinned virtual clock. (i) is cheaper and honest; (ii) is what T-028's driver would need
-anyway. I will implement (i) and mark the line `# tickMs=CONTEXT (not hashed)` so the choice is visible in
-the artifact rather than in this document only.
+`tickMs` and `clock` are printed by both sides but only one of them is comparable: (i) hash `clock`,
+print `tickMs` as `CONTEXT` (not hashed), or (ii) keep `tickMs` hashed and require both sides to be driven
+by a pinned virtual clock. (i) is honest and cheaper; (ii) is what T-028's driver needs anyway, so the
+CONTEXT convention is shared with `eN.vft` (§4b) deliberately: one grammar for "printed, captured, not
+yet compared". Implemented as (i), with the mark visible in the artifact.

@@ -63,9 +63,17 @@ prove nothing. Divergence is a **question with a location**, not a verdict on th
   our cap is a dropped order rather than a stylistic deviation — **R4 the enqueued action's `+0x14`**,
   which must equal the entity pointer, confirming the seam fires on the *script-native* path we do not
   reach yet.
-- Two fields the oracle must handle explicitly: `ak` (our kind tags vs their action-object pointers —
-  map via the vftable or exclude and say so) and `tickMs` (uptime, incomparable across processes; plan is
-  print-but-don't-hash, marked `# tickMs=CONTEXT (not hashed)`).
+- Two fields the oracle must handle explicitly: `ak` and `tickMs`.
+  **`ak` is DECIDED** (docs/f3/ParityOracleDesign.md §4b): exclude it from the comparison by default AND
+  print the exclusion in the file, while capturing the action's **vftptr in a separate non-hashed CONTEXT
+  column** — so a verified kind<->vftptr table obtained later (from the shipped vftables, not from our kind
+  numbering) promotes the column to a comparison field WITHOUT re-running any debugger session. I had
+  framed this as map-or-exclude and escalated it; the coordinator sent it back with the rule that became
+  harness item 23: *when a field cannot be compared, decide whether the goal is a comparison now or a
+  measurement later — and do not invent a mapping to make it comparable.* My two options would have made
+  the action queue permanently unverified on the shipped side (exclude) or fabricated a mapping (map);
+  exclude-and-capture makes it temporary AND honest.
+  `tickMs` uses the same CONTEXT convention (uptime is incomparable across processes).
 
 ## Also landed while here: the render-device probe (`tools/render-device-probe.sh`)
 
