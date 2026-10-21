@@ -6,7 +6,10 @@
 # Hard-won invocation rules (2026-10-21 sitting, see the attempt report):
 #   * winedbg stubs are SINGLE-CLIENT: never TCP-probe before gdb — the probe eats the slot.
 #   * RSP has no 'run': the first command to start a --no-start inferior is 'continue'.
-#   * 31337 may be held by another debugger (ImHex/IDA); pick a free port and pass it here.
+#   * The managed original stub listens on $OPENVB_ORIG_GDB_PORT = **31437** (it moved off 31337,
+#     which ImHex's Network Interface hardcodes and will always squat - harness item 39). A manual
+#     `winedbg --gdb --port N` stub may still be on another number; pass the port as argv.
+#   * Never TCP-probe the stub before gdb: it is single-client and the probe eats the slot.
 import gdb, time, sys
 
 PORT = int(sys.argv[-1]) if len(sys.argv) > 1 and sys.argv[-1].isdigit() else 31441

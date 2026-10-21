@@ -16,21 +16,31 @@ in {
     OPENVB_IDADIR = resolvedIdaDir;
     OPENVB_ORIG_EXE = "${localPackages.f3demo}/share/f3demo/F3.exe";
     OPENVB_ORIG_IDB = "./artifacts/F3.exe.i64";
-    OPENVB_ORIG_GDB_PORT = "31337";
+    # 2026-10-21, measured: the ORIGINAL stub moves, not ImHex. The T-034 fix assumed ImHex's
+    # Network Interface port was configurable and put it on 31347; it is not - ImHex 1.38.1 (and the
+    # dfdgsdfg/imhexMCP fork built here) binds a hardcoded 31337 and exposes only an on/off setting
+    # (hex.builtin.setting.general.network_interface). Verified two ways: `ss` shows the ImHex pid on
+    # 31337 while ~/.config/imhex/settings.json says port 31347, and no IMHEX_* env/CLI knob exists in
+    # the binary (strings: only IMHEX_SKIP_SPLASH_SCREEN / IMHEX_MEH / IMHEX_FORCE_OOBE).
+    # Consequences, both of which were live bugs:
+    #   * run-imhex-mcp waited on 31347 forever, timed out at 120 s, killed ImHex, and process-compose
+    #     restarted it -> infinite start/kill loop (devenv processes list: restart_count climbing).
+    #   * winedbg still lost 31337 to ImHex, so ida-orig-gdb still exited. Port 31337 is ImHex's by
+    #     fact; the fully env-parameterized consumer (winedbg --gdb --port) is the one that can move.
+    # 31437 is the port the T-034/T-052 lanes already attached with successfully (5/5 cycles).
+    OPENVB_ORIG_GDB_PORT = "31437";
     OPENVB_REIMPL_EXE = "./build/F3.exe";
     OPENVB_REIMPL_IDB = "./build/F3.exe.i64";
     OPENVB_REIMPL_TRACE_EXE = "./build/F3-trace.exe";
     OPENVB_REIMPL_GDB_PORT = "31338";
     OPENVB_IDA_ORIG_MCP_PORT = "8745";
     OPENVB_IDA_REIMPL_MCP_PORT = "8746";
-    # WAS "31337" - the SAME value as OPENVB_ORIG_GDB_PORT above. That collision is what blocked
-    # T-034: the managed headless ImHex binds 31337, so winedbg's single-client stub for the
-    # original could never be attached (ss -ltnp showed the listener owned by the ImHex pid).
-    # ImHex is the non-game consumer, so it moves; the number is no longer duplicated anywhere -
-    # both the process definition and the MCP config now read THIS variable (see
-    # devenv/processes/imhex-headless.nix and devenv/opencode/mcp/imhex.nix), which is the actual
-    # root cause: one port literal written in three places.
-    OPENVB_IMHEX_MCP_PORT = "31347";
+    # MUST stay 31337: that is ImHex's hardcoded listen port, not a choice (see the note above).
+    # Renaming the contract to some other number is what broke both the process and the MCP client.
+    # Also note OPENVB_IMHEX_MCP_PORT/IMHEX_PORT are IGNORED by imhex-mcp-server itself - it only reads
+    # --host/--port CLI flags (default localhost:31337, and "localhost" resolves to ::1 first, which
+    # ImHex never binds -> IPv4-only listener looks "refused"). Clients must pass --host 127.0.0.1.
+    OPENVB_IMHEX_MCP_PORT = "31337";
 
     # Engram memory (agent memory server). NOTE: deliberately NO ENGRAM_DATA_DIR here.
     # The pi extension compares the running server's instance-id against

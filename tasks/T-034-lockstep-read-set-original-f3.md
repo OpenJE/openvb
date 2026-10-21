@@ -72,6 +72,15 @@ stays open but no lane burns context on flaky attaches until the prefix is reset
 
 ## Environment status (2026-10-21) — two independent bugs found, one still needs the user
 
+> **CORRECTION, same day (see harness item 39):** item 1 below was **wrong** — ImHex cannot be moved. Its
+> Network Interface port is hardcoded to 31337 in the binary; `ss` showed the ImHex pid on 31337 while the
+> config said 31347, and the settings file's `port` key is never read. So the "ImHex → 31347" edit did not
+> free 31337 for this stub: it only made `run-imhex-mcp` wait on a port that can never open, time out at
+> 120 s, kill a healthy ImHex, and restart-loop (`devenv processes list`: `imhex restart_count 5`), while
+> `ida-orig-gdb` still exited on the collision. Fixed properly now: **the original's stub moves to 31437**
+> and `OPENVB_IMHEX_MCP_PORT` returns to the true 31337. Item 2's owner-verified probe is kept and extended
+> to ImHex (`ready.exec` was `coreutils true`, i.e. always green).
+
 NiceHawk's handover (`b77625e`) diagnosed more than a port collision. Both parts are now fixed in the tree:
 
 1. **Port collision** — ImHex and the original's gdb stub were both configured for 31337. Fixed: ImHex → 31347 and
@@ -95,6 +104,10 @@ NiceHawk's handover (`b77625e`) diagnosed more than a port collision. Both parts
 - **Port collision fixed in the tree** (`devenv/environment/openvb.nix` + both consumers now read the variable): ImHex
   moved 31337 → **31347**, so `31337` is uniquely the original's gdb port. Verified by evaluating the consumer:
   `devenv print-dev-env` exits 0 and exports `OPENVB_IMHEX_MCP_PORT='31347'`.
+  - **SUPERSEDED (harness item 39):** the measurement above only proved the *variable* changed, not that the
+    *socket* moved — ImHex binds 31337 regardless. The resolution is `OPENVB_ORIG_GDB_PORT='31437'` /
+    `OPENVB_IMHEX_MCP_PORT='31337'`, and the original stub and ImHex now coexist. Anyone attaching to the
+    **original** in IDA: remote gdb port is **31437** now, not 31337. Reimpl stays **31338**.
 - **Still blocked on one manual step:** the *running* ImHex listener owns `127.0.0.1:31337` until it is restarted with
   the new config. That is a user/harness action, not a lane action — nobody should evict a session they don't own.
 - Fresh stubs in this session's state proved unreliable (one `run`-over-RSP failure, one RSP timeout, one silent exit

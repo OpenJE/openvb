@@ -826,3 +826,49 @@ edit only against mingw has NOT built the product. One line, per ZenNova's reque
 **edit a src/F3 header or a cross-TU table ⇒ msvc-build before quoting any green.** Same family as item
 35: a tool that accepts too much is an evidence channel lying quietly — the negative proof (MSVC rc0)
 belongs in the report, not the positive one (mingw ok).
+
+## 39. An "unmovable port" is only unmovable if you MEASURED it — my first fix moved the knob, not the socket
+
+(item 38 is reserved for T-034's kill-ownership rule; this is the other half of the same incident.)
+
+T-034's port-collision fix (fd6a578, 2025-10-20) said: ImHex is the non-game consumer, so ImHex moves.
+It set `OPENVB_IMHEX_MCP_PORT = "31347"` and pointed both the wait loop and the MCP client at the
+variable. Single source of truth, clean diff, **and completely fictional**: 24 h later `devenv processes
+list` showed `imhex restart_count 5` in a start/kill loop and `ida-orig-gdb` still exited.
+
+Measured today (ImHex 1.38.1 + the dfdgsdfg/imhexMCP fork built by `devenv/packages/openvb.nix`):
+
+- `ss -ltnp` shows the ImHex pid on **127.0.0.1:31337** while `~/.config/imhex/settings.json` said
+  `{"network":{"enabled":true,"port":31347}}` — the file's `port` key is not read. Reproduced twice.
+- The only network knob in the binary is a **bool**: `hex.builtin.setting.general.network_interface`
+  (strings of `builtin.hexplug`). No IMHEX_\* port env, no CLI flag (only `IMHEX_SKIP_SPLASH_SCREEN`,
+  `IMHEX_MEH`, `IMHEX_FORCE_OOBE`). So 31337 is ImHex's by build, not by agreement.
+- `imhex-mcp-server` ignores `IMHEX_HOST`/`IMHEX_PORT` **entirely**: `server.py` builds its config from
+  argparse (`--host` default `"localhost"`, `--port` default 31337). With ImHex bound IPv4-only,
+  `localhost` resolves `::1` first → "Connection refused" → the server exits during initialize →
+  pi reports `imhex: failed: MCP connection closed`. Proof both ways: no-arg run refused while 31337 was
+  OPEN and answering; `--host 127.0.0.1 --port 31337` returned 29 tools and live `imhex_get_capabilities`.
+- The wait loop then converts fiction into a **crash loop**: it polled 31347 for 120 s, `exit 1`, and its
+  own `trap cleanup EXIT` killed the healthy ImHex. process-compose restarted it. `ready.exec = true`
+  called every stage of that "ready". Net effect: ImHex was killed and reborn every ~2 min and the
+  original's stub still never got 31337.
+
+Rules:
+
+1. **Before moving a port to resolve a collision, prove the mover can move.** A config value I control
+   is not the same thing as the socket a third-party binary opens. One `ss -ltnp` + one
+   `strings | grep -i <setting>` is the whole test, and it costs less than the incident it prevents.
+2. Therefore: **the movable side moves.** `winedbg --gdb --port "$OPENVB_ORIG_GDB_PORT"` is fully
+   parameterized and every consumer already reads the env var, so the original's stub is now **31437**
+   (the port T-034/T-052 already attached with, 5/5 cycles) and `OPENVB_IMHEX_MCP_PORT` went back to the
+   honest 31337. The earlier "docs and muscle memory quote 31337" argument bought a fictional contract.
+3. **A `ready.exec` of `coreutils true` is a bug report waiting, not a probe.** Every managed process that
+   owns a socket gets an *identity* probe (here: `ss -H -ltnp sport = :N | grep -Eq "ImHex|imhex"`),
+   matching item 25(a). Grep the OWNER, never just the port; and keep the `wineserver|winedbg` lesson in
+   mind — the owner name is whatever `ss` actually prints, verified against a live process, both directions.
+4. **A readiness wait that kills its own subject on timeout is a loop generator.** Fail loudly with the
+   port owner dumped (`ss -ltnp "sport = :N"`) — which is what this file's loop lacked for a day.
+5. **Env-var MCP config is a lie for servers that only read argv.** For a stdio MCP server, verify which
+   channel it actually reads (`grep -n "add_argument\|getenv" server.py`) before writing `env:` into
+   `.pi/mcp.json`; here the fix is `--host 127.0.0.1 --port <port>` in `args`, and `localhost` is the
+   wrong default whenever the peer binds IPv4-only.

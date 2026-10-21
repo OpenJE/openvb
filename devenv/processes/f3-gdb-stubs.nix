@@ -12,6 +12,11 @@ let
   # port. ImHex's Network Interface was configured to the same 31337 as the original's gdb stub, so
   # winedbg lost the bind and exited, while devenv reported "ida-orig-gdb: ready" - a green that
   # manufactured a whole investigation of "cannot attach" (NiceHawk, T-034 handover b77625e).
+  #
+  # 2026-10-21: the original stub is the side that could actually move (OPENVB_ORIG_GDB_PORT is now
+  # 31437). ImHex's listen port is hardcoded to 31337 in the binary, so "move ImHex to 31347" - the
+  # first fix - only broke the imhex process; it kept squatting 31337 and starved this stub anyway.
+  # See devenv/environment/openvb.nix for the measurement.
   # A readiness probe that cannot tell "someone is listening" from "the thing I started is
   # listening" is worse than no probe.
   # BOUNDARY, measured: this proves the port is held by a WINE process rather than a squatter.
