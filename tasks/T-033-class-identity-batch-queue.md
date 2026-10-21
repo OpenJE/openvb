@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: none (batch 5 DONE 2025-10-21 by GoldYak `01a15f83` — see Results-batch-5; batch 6 unowned). Prior grant note retained: apply grant follows whoever can reach the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path).
+status: in-progress
+assignee: GoldYak `01a15f83` (batch 6 AUTHORIZED by LoudDragon after b5 checkpoint `851acf7`; scope narrowed by KeenStorm T-007 G2 doc `06ac911`. Batches 4+5 DONE — see Results blocks. Grant rule unchanged: apply follows whoever reaches the shared IDB MCP session on 8745. Caveat: T-040 — route-B deltas unmeasurable (no export path)).
 depends: T-029 (the census that produced this queue)
 ---
 
