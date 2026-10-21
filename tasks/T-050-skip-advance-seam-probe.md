@@ -40,6 +40,13 @@ rotation-without-reentry fails loudly (falsification executed, `af1da87`).
 T-034's routed observation (or the T-031 parity digest showing rotation in the original) must
 answer: is `meth_0x5a94a0` re-entered from inside a dispatch, and how deep?
 
+**Gate update (T-010 10e, `045a7ec`): Branch 2 is now the STRONG PRIOR.** `meth_0x5a9330` has one
+call site in `.text`, gated by a latch with no nonzero producer — the walk branch is dead code in
+the shipped demo, so on the original side re-entry CANNOT rotate anything through the dormant path.
+If T-034 nevertheless observes a live nested `meth_0x5a94a0` entry, that observation overrides this
+prior and opens Branch 1; absent that observation, convert this row to the writer-study closure
+(and land T-051's pins) rather than building a probe for a dead branch.
+
 ## Boundary
 Hard: the seam must be inert in production — any urge to make it also SET/CLEAR `maintaining_`
 outside the nested-call experiment is a behavior edit and belongs to a different row. If re-entry

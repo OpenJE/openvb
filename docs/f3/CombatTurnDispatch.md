@@ -119,6 +119,19 @@ So the port's `maintaining_` models the shipped field, and T-048 must NOT invent
 reentry byte. The mechanism story is unchanged: the nested `meth_0x5a94a0` skips maintenance,
 sees the latch the entity's own update raised, and advances.
 
+**FINAL GATE RESULT (T-010 10e, `045a7ec`): the walk branch is DEAD CODE in the shipped demo.**
+`meth_0x5a9330` — the only writer of `+0x4` — is called exactly once in `.text` (`0x5a957f`), and that
+call is gated by `[this+14]!=0`, which has NO nonzero producer anywhere (three encoding families of
+byte/dword stores + lea producers, each self-tested against known positives). `+4` is therefore
+permanently 0 on every reachable path: the consumer test at `0x5a951d` always takes the free-run
+queue loop, the skip/advance machinery (0x5a955d/0x5a9567/0x5a9572) and the entity-list rearm sweep
+(join/leave helpers `cls_0x548ee0`/`cls_0x548f30`, otherwise uncalled) never execute. Rotation is
+thus not "unobserved" — it is UNREACHABLE in the shipping configuration. The mechanism analysis
+above stays valid as the description of the dormant branch (it is still what a live arming door
+would do, and what our tests exercise through explicit `SetRoundMode`); the digest/parity question
+collapses to: does the ORIGINAL ever print a second `meth_0x5a94a0` entry at all — and if it
+rotates anyway, this finding is falsified and gets retracted from the evidence, not argued.
+
 **Process note for the next reader of this page (and for the base-claim rule, harness item 31's
 third instance):** my "confirmed two ways" was ONE way plus a guess. The DB evidence
 (class registration + member usage closure) is decisive; the second "confirmation" I cited —
