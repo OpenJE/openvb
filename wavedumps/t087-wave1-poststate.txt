@@ -1,0 +1,57 @@
+MGR 0x4b28a0 JE::GUI::Manager::meth_0x4b28a0_4b28a0 | cmt: 
+MGR 0x4b28c0 JE::GUI::Manager::meth_0x4b28c0_4b28c0 | cmt: 
+MGR 0x4b28e0 JE::GUI::Manager::meth_0x4b28e0_4b28e0 | cmt: 
+MGR 0x4b2ab0 JE::GUI::Manager::Set_mbr_0x4_to_1_4b2ab0 | cmt: 
+MGR 0x4b2ad0 JE::GUI::Manager::meth_0x4b2ad0_4b2ad0 | cmt: 
+MGR 0x4b2c10 JE::GUI::Manager::meth_0x4b2c10_4b2c10 | cmt: 
+MGR 0x4b2c20 JE::GUI::Manager::meth_0x4b2c20_4b2c20 | cmt: 
+MGR 0x4b2d40 JE::GUI::Manager::meth_0x4b2d40_4b2d40 | cmt: 
+MGR 0x4b2f30 JE::GUI::Manager::meth_0x4b2f30_4b2f30 | cmt: 
+MGR 0x4b2f80 JE::GUI::Manager::meth_0x4b2f80_4b2f80 | cmt: 
+MGR 0x4b2fe0 JE::GUI::Manager::meth_0x4b2fe0_4b2fe0 | cmt: 
+MGR 0x4b3000 JE::GUI::Manager::meth_0x4b3000_4b3000 | cmt: 
+MGR 0x4b3040 JE::GUI::Manager::meth_0x4b3040_4b3040 | cmt: 
+MGR 0x4b3430 JE::GUI::Manager::meth_0x4b3430_4b3430 | cmt: 
+MGR 0x4b34b0 JE::GUI::Manager::meth_0x4b34b0_4b34b0 | cmt: 
+MGR 0x4b3500 JE::GUI::Manager::meth_0x4b3500_4b3500 | cmt: 
+MGR 0x4b3570 JE::GUI::Manager::meth_0x4b3570_4b3570 | cmt: 
+MGR 0x4b35f0 JE::GUI::Manager::meth_0x4b35f0_4b35f0 | cmt: 
+MGR 0x4b3780 JE::GUI::Manager::meth_0x4b3780_4b3780 | cmt: 
+MGR 0x4b37f0 JE::GUI::Manager::meth_0x4b37f0_4b37f0 | cmt: 
+MGR 0x4b3920 JE::GUI::Manager::meth_0x4b3920_4b3920 | cmt: 
+MGR 0x4b40a0 JE::GUI::Manager::meth_0x4b40a0_4b40a0 | cmt: 
+MGR 0x4b40f0 JE::GUI::Manager::meth_0x4b40f0_4b40f0 | cmt: 
+MGR 0x4b4dd0 JE::GUI::Manager::meth_0x4b4dd0_4b4dd0 | cmt: 
+MGR 0x4b4e60 JE::GUI::Manager::meth_0x4b4e60_4b4e60 | cmt: 
+MGR 0x4b4f00 JE::GUI::Manager::meth_0x4b4f00_4b4f00 | cmt: 
+MGR 0x4b58d0 JE::GUI::Manager::meth_0x4b58d0_4b58d0 | cmt: 
+MGR 0x4b5280 JE::GUI::Manager::dtor_0x4b5280 | cmt: FIXED (T-075/T-087): was mislabeled JE::StringTree::dtor. Th
+MGR 0x4b5640 JE::GUI::Manager::ctor_0x4b5640 | cmt: T-075 identity (applied wave-1): complete-object ctor of GUI
+MGR 0x4b58b0 JE::GUI::Manager::virt_meth_0x4b58b0_4b58b0 | cmt: 
+MGR 0x619b38 cls_0x4b28a0::meth_0x619b38_619b38 | cmt: EXCLUDED from GUI::Manager merge (T-075 sec8): body = call 0
+RM 0x490150 JE::Gfx_RenderManager::meth_0x490150_490150 | cmt: 
+RM 0x490510 JE::Gfx_RenderManager::meth_0x490510_490510 | cmt: 
+RM 0x4911b0 JE::Gfx_RenderManager::meth_0x4911b0_4911b0 | cmt: 
+RM 0x4913e0 JE::Gfx_RenderManager::meth_0x4913e0_4913e0 | cmt: 
+RM 0x491b10 JE::Gfx_RenderManager::meth_0x491b10_491b10 | cmt: 
+RM 0x491fc0 JE::Gfx_RenderManager::meth_0x491fc0_491fc0 | cmt: 
+RM 0x4931e0 JE::Gfx_RenderManager::meth_0x4931e0_4931e0 | cmt: 
+RM 0x494b40 JE::Gfx_RenderManager::meth_0x494b40_494b40 | cmt: 
+RM 0x494ca0 JE::Gfx_RenderManager::meth_0x494ca0_494ca0 | cmt: 
+RM 0x4950d0 JE::Gfx_RenderManager::ctor_0x4950d0 | cmt: T-073[A2] via T-087 wave-1: sole ctor of JE::Gfx_RenderManag
+RM 0x4903e0 JE::Gfx_RenderManager::meth_0x4903e0_4903e0 | cmt: 
+RM 0x491f90 JE::Gfx_RenderManager::meth_0x491f90_491f90 | cmt: 
+RM 0x4901d0 JE::Gfx_RenderManager::meth_0x4901d0_4901d0 | cmt: 
+RM 0x490330 JE::Gfx_RenderManager::meth_0x490330_490330 | cmt: 
+RM 0x493430 JE::Gfx_RenderManager::meth_0x493430_493430 | cmt: 
+RM 0x493cd0 JE::Gfx_RenderManager::meth_0x493cd0_493cd0 | cmt: 
+RM 0x4915e0 JE::Gfx_RenderManager::RenderShadowVolumes2_4915e0 | cmt: 
+ANN 0x4fb0b0 cls_0x4fc0e0::meth_0x4fb0b0_4fb0b0 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fbb60 cls_0x4fc0e0::meth_0x4fbb60_4fbb60 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fc0e0 cls_0x4fc0e0::ctor_0x4fc0e0 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fc340 cls_0x4fc0e0::meth_0x4fc340_4fc340 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fc6c0 cls_0x4fc0e0::ctor_0x4fc6c0 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fcac0 cls_0x4fc0e0::meth_0x4fcac0_4fcac0 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fcba0 cls_0x4fc0e0::meth_0x4fcba0_4fcba0 | cmt: T-073[B] via T-087: std::vector<VFX_ParameterInfo> instantia
+ANN 0x4fb560 cls_0x4fc0e0::meth_0x4fb560_4fb560 | cmt: T-073[B] via T-087: clear-loop dtor of the std::vector<VFX_P
+ANN 0x4fd780 cls_0x4fd780::dtor_0x4fd780 | cmt: T-073[B] via T-087: VFX_FormatManager::load/parse (stores vf

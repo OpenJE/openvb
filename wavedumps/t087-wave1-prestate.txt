@@ -1,0 +1,58 @@
+T-087 WAVE-1 PRE-STATE SNAPSHOT (TrueCastle 01a16096, claim c62b663)
+EXE md5: a68c22f3dd1c256ec9539a70e87cb434 | IDB mtime at claim: 2026-10-21 16:45 UTC
+Live census at pre-flight: total_fns=10173 cls_fns=2030 (board-stated start 2,000; measured 2,030)
+
+-- MANAGER band live names at wave time (all fn-heads verified) --
+0x4b28a0 cls_0x4b28a0::meth_0x4b28a0_4b28a0
+0x4b28c0 cls_0x4b28a0::meth_0x4b28c0_4b28c0
+0x4b28e0 cls_0x4b28a0::meth_0x4b28e0_4b28e0
+0x4b2ab0 cls_0x4b28a0::Set_mbr_0x4_to_1_4b2ab0
+0x4b2ad0 cls_0x4b28a0::meth_0x4b2ad0_4b2ad0
+0x4b2c10 cls_0x4b28a0::meth_0x4b2c10_4b2c10
+0x4b2c20 cls_0x4b28a0::meth_0x4b2c20_4b2c20
+0x4b2d40 cls_0x4b28a0::meth_0x4b2d40_4b2d40
+0x4b2f30 cls_0x4b28a0::meth_0x4b2f30_4b2f30
+0x4b2f80 cls_0x4b28a0::meth_0x4b2f80_4b2f80
+0x4b2fe0 cls_0x4b28a0::meth_0x4b2fe0_4b2fe0
+0x4b3000 cls_0x4b28a0::meth_0x4b3000_4b3000
+0x4b3040 cls_0x4b28a0::meth_0x4b3040_4b3040
+0x4b3430 cls_0x4b28a0::meth_0x4b3430_4b3430
+0x4b34b0 cls_0x4b28a0::meth_0x4b34b0_4b34b0
+0x4b3500 cls_0x4b28a0::meth_0x4b3500_4b3500
+0x4b3570 cls_0x4b28a0::meth_0x4b3570_4b3570
+0x4b35f0 cls_0x4b28a0::meth_0x4b35f0_4b35f0
+0x4b3780 cls_0x4b28a0::meth_0x4b3780_4b3780
+0x4b37f0 cls_0x4b28a0::meth_0x4b37f0_4b37f0
+0x4b3920 cls_0x4b28a0::meth_0x4b3920_4b3920
+0x4b40a0 cls_0x4b28a0::meth_0x4b40a0_4b40a0
+0x4b40f0 cls_0x4b28a0::meth_0x4b40f0_4b40f0
+0x4b4dd0 cls_0x4b28a0::meth_0x4b4dd0_4b4dd0
+0x4b4e60 cls_0x4b28a0::meth_0x4b4e60_4b4e60
+0x4b4f00 cls_0x4b28a0::meth_0x4b4f00_4b4f00
+0x4b58d0 cls_0x4b28a0::meth_0x4b58d0_4b58d0
+0x4b5280 JE::StringTree::dtor_0x4b5280 (FIX target)
+0x619b38 cls_0x4b28a0::meth_0x619b38_619b38 (EXCLUDED from merge; gets annotation only)
+
+-- RENDERMANAGER band live names at wave time --
+0x490150 cls_0x490150::meth_0x490150_490150
+0x490510 cls_0x490150::meth_0x490510_490510
+0x4911b0 cls_0x490150::meth_0x4911b0_4911b0
+0x4913e0 cls_0x490150::meth_0x4913e0_4913e0
+0x491b10 cls_0x490150::meth_0x491b10_491b10
+0x491fc0 cls_0x490150::meth_0x491fc0_491fc0
+0x4931e0 cls_0x490150::meth_0x4931e0_4931e0
+0x494b40 cls_0x490150::meth_0x494b40_494b40
+0x494ca0 cls_0x490150::meth_0x494ca0_494ca0
+0x4950d0 cls_0x4950d0::ctor_0x4950d0 (A2)
+0x4903e0 cls_0x4903e0::meth_0x4903e0_4903e0 (A2)
+0x491f90 cls_0x4903e0::meth_0x491f90_491f90 (A2)
+0x4901d0 sub_4901D0 (merge T3->T1)
+0x490330 sub_490330 (merge)
+0x493430 sub_493430 (merge)
+0x493cd0 sub_493CD0 (merge, body-not-re-read: cite shape only)
+0x4915e0 JE::Gfx_RenderManager::RenderShadowVolumes2_4915e0 (EXCLUSION verified live-named already)
+
+-- ANNOTATION targets (heads all verified) --
+0x4fb0b0 0x4fbb60 0x4fc0e0 0x4fc340 0x4fc6c0 0x4fcac0 0x4fcba0 0x4fb560 (cls_0x4fc0e0 family, [B] x8, T2 delta 0)
+0x4fd780 cls_0x4fd780::dtor_0x4fd780 (VFM load/parse comment)
+0x6350a0..0x63511b pad cluster — SKIPPED (writer-discretion row, recorded label-and-skipped)
