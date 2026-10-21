@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: EpicRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21)
 type: offline analysis (tools/ecx-flow.py scale-out vs md5-pinned cache; NO IDB writes; queue to coordinator)
 depends: T-063 (named the residue: '1,351 long-tail members of known-shaped classes — a workload number, not an ignorance number'). This row PAYS OFF that workload number.
