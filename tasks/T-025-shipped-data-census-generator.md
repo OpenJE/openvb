@@ -1,7 +1,7 @@
 ---
 status: open
-assignee: UNCLAIMED (01a157ef departed 2026-10-21; deliberately NOT re-assigned by chat offer —
-# a row moves only by a coordinator edit + dispatch, or it is not attributable)
+assignee: RedXenon / 01a157ec (formally dispatched 2026-10-21 after a written request; the row moved by
+# coordinator edit + dispatch, never by chat offer - the process this lane itself insisted on)
 depends: nothing
 ---
 
@@ -21,6 +21,15 @@ the method so "does shipped data ever do X" stops needing a debugger and stops n
 3. Output goes to `artifacts/census/` and is **committed**, so lanes cite a snapshot rather than
    re-deriving it and disagreeing about the walk.
 4. Every table records the file, size, and a hash of the parsed region so a re-run is comparable.
+
+## Second correctness constraint (2026-10-21, from SwiftRaven's in-flight T-036 result)
+
+**Attribution counts are join-route-dependent, so the generator must print the route and not just the number.** T-036's
+trace: the IDA-name route yields **2,340** attributed functions, the DB-method route **2,473** (2,425 inside the game
+region), and the "1,475 nameable + 998 helper-theft noise" split **reproduces under neither** — it came from mixing the
+two routes. A generated table emitting a bare total would re-commit that exact error with more authority than a chat
+message carries. Requirements: every count names its **join route** and its **region filter**; where the routes disagree,
+print **both** rather than reconciling silently.
 
 ## Baseline caveat (RedXenon, 01a157ec) — do not re-derive a claim and call it data
 
