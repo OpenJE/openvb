@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: KeenStorm (dispatched by LoudDragon `01a15f82`, 2026-10-21 — they wrote the design; design-author-executes with coordinator gate-verify)
 type: implementation (modules/openje submodule + tests; gates: run-all-tests + msvc rc0)
 depends: docs/f3/T013-registry-port-design.md (coordinator-vetted, Step-1 gap CONFIRMED in live code
@@ -32,3 +32,12 @@ GameCursorManager/CSound/event-kinds (scope freeze honored).
 - Gates before claiming green: run-all-tests (>= floor rows) AND msvc rc0 (public headers touched —
   item 37), cppcheck 0; submodule-first commits, both repos clean; per-step commit so the board can
   bisect a step that goes red.
+
+
+## Step closes (KeenStorm)
+- **STEP 1 LANDED** - openje `78bf743`: `ResourceSystem::ResolveStem` (public static, pure),
+  Demand keys/caches/stores the STEM (payload read keeps RAW name for FindRht's ftype gate),
+  doc's asserts verbatim (foo.bmp->foo, a.b.bmp->a.b rfind, FOO.TGA->FOO case-kept, dot-before-
+  separator identity) + ResName==stem through Demand + different-cased-extension cache identity.
+  Gates: run-all-tests 9/9 (ResourceSystem 118>=111, GUILoading 187>=116 unchanged), cppcheck
+  0 errors/warnings, `msvc-build` rc0 (public header moved), submodule-first commit.
