@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: SwiftMoon (dispatched by LoudDragon `01a15f82`, 2026-10-21 — onboarding row: corpus-wide re-read with net effect of catching stale claims)
+status: in-progress
+assignee: SwiftMoon `01a16092` (dispatched by LoudDragon `01a15f82`, 2026-10-21 — onboarding row: corpus-wide re-read with net effect of catching stale claims)
 type: research (docs-only; READ-ONLY everywhere; deliverable = an errata LIST, changes nothing)
 depends: the 2026-10-21 finding wave (T-007/T-013/T-033/T-055..T-070 discoveries — the yardstick)
 ---
