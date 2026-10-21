@@ -44,8 +44,14 @@ claim. A census that prints how it knows, applied to names.
   the stale route rather than averaging.
 
 ## Apply handoff (QuickQuartz, rename-only scope)
-Mintable strings + keywords above; two PRE-CHECKS gate the mints: (1) byte-identical test on the
-0x4cb300/0x4d4650 method pairs before naming twice; (2) alias-merge test on 0x40a220/0x4cb0a0.
+R36-e embedder audit, run 2026-10-21 against this DB and recorded: CEngineInterface 5 embedders
+(corrected above); G3D_Transform 2 (under the rule, but the twins stay pre-gated); HotKeyWindowFormat /
+Gfx_Camera / G3D_Mesh / strstreambuf 1 each; VFX_Parameter and G3D_Water 1 each — and both land on
+cls_0x50db20 alone, which is the composite shape the refutation claimed. ALL surviving mints pass >=3.
+Mintable strings + keywords above; two PRE-CHECKS gate the mints: (1) near-identity test on the
+0x4cb300/0x4d4650 method pairs (93.3-93.7% identity, DISTINCT entry points is the corrected SwiftRaven
+form — byte-identical was the falsified draft, do not expect exact bytes); (2) alias-merge test on
+0x40a220/0x4cb0a0.
 `struct` keyword for all (all embeds are `U`-mangled base/member records — MSVC-2002 trap per row §3).
 Re-run T-029 census AFTER applies and print BOTH route counts (name-route and DB-method-route) per the
 inherited constraint; compare against this doc's ≤1.3pt band, not batch 1's voided one.
