@@ -16,6 +16,22 @@
       # BOUNDARY: proves class keys, class sizes, method sets, member sizes and member usages. It does
       # NOT verify the 4,059 synthesized base/struc/vftptr member entries or the vcalls map, and it says
       # so. It never writes artifacts/F3.json.
+      #
+      # IT ALSO ENFORCES ITS OWN HEADLINE CLAIM (added 1a8d101, after the coordinator's "what if this
+      # goes red" note exposed that it printed a md5 it never checked). The guard asserts, not just
+      # describes:
+      #   export "version" == "2.2.0"  (the schema pin in IDA/plugins/OOAnalyzer.py:21)
+      #   export "filemd5" == md5($OPENVB_ORIG_EXE), when that variable points at a real file
+      # so a tampered export can no longer report clean. Verified: version -> "9.9.9" now exits 1 with
+      # "DRIFT REASON: PROVENANCE: ...". The md5 shown on the red path is MEASURED at run time, not a
+      # baked-in constant, because a stale hash in an error message misleads the person it is for.
+      #
+      # IF IT GOES RED AND YOU DID NOT CHANGE THE CODE: the likely cause is that a real exporter was
+      # restored -- a live OOAnalyzer emits actual base/struc/vftptr values, which this rebuild marks
+      # UNVERIFIED, so a correct generator reads as drift. That is the guard WORKING. Finish the
+      # synthesized-member rebuild AND re-pin the golden expectations in the same change; do not soften,
+      # skip or threshold this check, and never hand-edit artifacts/F3.json (T-040 acceptance rule).
+      # Comment-only change; the 0/1/2/4 exit contract below is unchanged.
       if [ "''${1:-}" = "--provenance" ]; then
         json="artifacts/F3.json"
         [ -f "$json" ] || { echo "f3-json-check: missing $json"; exit 4; }
