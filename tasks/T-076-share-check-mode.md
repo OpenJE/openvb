@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: EpicRaven (T-076 filed by LoudDragon `01a15f82` in bab1146/69a5792, dispatched on return 2026-10-21)
 type: tooling (offline; tools/ecx-flow.py extension; NO IDB writes; README table untouched per coordinator-only law)
 depends: T-054 (the tool), harness item 44 (rule-1 source), T-064 [B] falsification (the test-case origin)
@@ -63,3 +63,14 @@ SHARING. Fix: field-level distinctness — resolve chains to terminal (anchor, o
 before counting; ctor-single-call-site fact becomes a printed column, not the arbiter.
 T5 extends with the counterexample pair: cls_0x490150 family must read PASS after the fix,
 0x434250 must STILL read SHARING.
+
+### REFINEMENT EVIDENCE (fb3d03f fix, same day)
+- `_holder_field_key`: holder counting is terminal-FIELD keyed — ("g", absolute-slot)
+  for global-anchored reads, ("o", terminal-offset) for object-relative fields; all
+  in-ecx / chained-load / untraced-root variants of one offset collapse to ONE field,
+  prefix sites printed under it ("field ('o',0x164) read via 6 paths at 0x5c1a13…").
+- ctor-single-call-site demoted to printed column (`ctor-sites=N`), never arbiter.
+- Regression pair LIVE in T5: `share-check --cls cls_0x490150` VERDICT PASS rc=0 with
+  0x494B40 collapsing to one holder-field f(o:+0x164)(6); `[B]` pair 0x434250+0x434120
+  still rc=1 (two view constants / three holder offsets — distinct FIELDS, unchanged).
+  `cases` re-run 6/6; whole selftest 6/6 with the counterexample baked.

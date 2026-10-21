@@ -1075,6 +1075,39 @@ class Model(object):
                     out[E] = ("ISO", {})
         return out
 
+    def _holder_field_key(self, ce):
+        """Field-level terminal identity (fb3d03f refinement): key by the TERMINAL
+        field a path reads, not by the prefix chain that located its base.
+          ('contents', G)                  -> ("g", G)       absolute slot
+          ('deref', ('addr', G), d)        -> ("g", G + d)   absolute slot
+          ('deref', <computed base>, d)    -> ("o", d)       object-relative terminal
+                                                 field: in-ecx-rooted, chained-load-
+                                                 rooted and untraced-rooted variants
+                                                 of the same slot collapse to ONE
+                                                 field (prefix sites stay visible;
+                                                 proving the bases IDENTIC remains the
+                                                 wave's read-back job -- the offset is
+                                                 the honest common denominator).
+          plus-on-computed-base            -> ("o", disp)    member ADDRESS of a
+                                                 loaded object at that offset.
+        """
+        if not ce:
+            return ("?", 0)
+        k = ce[0]
+        if k == "contents":
+            return ("g", ce[1])
+        if k == "deref":
+            b = ce[1]
+            if b and b[0] == "addr":
+                return ("g", (b[1] + ce[2]) & 0xFFFFFFFF)
+            return ("o", ce[2])
+        if k == "plus":
+            b = flatten(ce[1]) if ce[1] else None
+            if b and b[0] in ("deref", "contents", "stk"):
+                return ("o", ce[2])
+            return ("?", ce[2])
+        return ("?", 0)
+
     def share_check(self, cand_eas):
         """Harness item 44, rule 1 -- the executable pre-queue gate.
         Input: candidate EAs a wave intends to MINT as members of a host.
@@ -1097,6 +1130,7 @@ class Model(object):
             vcons = collections.defaultdict(list)
             holders = collections.defaultdict(list)
             plain = heaps = 0
+            ctor_fns = set()
             for e in self.edges:
                 if e["kind"].startswith("alloc") or e["target"] not in targets:
                     continue
@@ -1118,15 +1152,16 @@ class Model(object):
                         vcons["&0x%X%s0x%X" % (b[1], "+" if ce[2] >= 0 else "-",
                                                abs(ce[2]))].append(e["site"])
                     else:
-                        holders[efmt(flatten(ce))].append(e["site"])
+                        holders[self._holder_field_key(flatten(ce))].append(e["site"])
                 elif k == "contents":
-                    holders["*[0x%X]" % ce[1]].append(e["site"])
+                    holders[self._holder_field_key(ce)].append(e["site"])
                 elif k == "deref":
-                    holders[efmt(ce)].append(e["site"])
+                    holders[self._holder_field_key(ce)].append(e["site"])
                 elif k == "inecx":
                     plain += 1
                 elif k in ("heap", "ctorret"):
                     heaps += 1
+                    ctor_fns.add(o)
                 else:
                     plain += 1
             if len(vcons) >= 2 or len(holders) >= 2:
@@ -1142,7 +1177,7 @@ class Model(object):
                     if o not in cand_r and o is not None:
                         own[self.owner_name(o).split("::")[0]] += 1
             details.append((E, verdict, dict(vcons), dict(holders), plain, heaps,
-                            own.most_common(3)))
+                            own.most_common(3), len(ctor_fns)))
         if any(d[1] == "SHARING" for d in details):
             overall = "SHARING"
         elif not any_edge_global:
@@ -1155,13 +1190,24 @@ class Model(object):
         overall, det = self.share_check(cand_eas)
         L = []
         P = L.append
-        P("== share-check %s: item-44 rule-1 pre-queue gate ==" % label)
-        for (E, v, vc, ho, pl, hp, own) in det:
-            P("  0x%-7X %-13s view-constants=%s holders=%s plain-this=%d heap=%d suggested-owners=%s"
-              % (E, v,
-                 ", ".join("%s(%d@%s)" % (k, len(s), hex(s[0])) for k, s in sorted(vc.items())) or "-",
-                 ", ".join("%s(%d)" % (k, len(s)) for k, s in sorted(ho.items())) or "-",
-                 pl, hp, own))
+        P("== share-check %s: item-44 rule-1 pre-queue gate (terminal-FIELD keying per "
+          "fb3d03f; prefix chains listed under the field they read) ==" % label)
+        for (E, v, vc, ho, pl, hp, own, csites) in det:
+            P("  0x%-7X %-13s view-constants=%s holder-fields=%s plain-this=%d heap=%d "
+              "ctor-sites=%d suggested-owners=%s" % (
+                  E, v,
+                  ", ".join("%s(%d@%s)" % (k, len(s), hex(s[0]))
+                            for k, s in sorted(vc.items())) or "-",
+                  ", ".join("f%s:%s(%d)" % (a, hex(d) if a == "g" else "+0x%X" % d, len(ps))
+                            for (a, d), ps in sorted(ho.items(), key=lambda kv: str(kv[0]))) or "-",
+                  pl, hp, csites, own))
+            byfield = collections.defaultdict(list)
+            for kk, ss in ho.items():
+                byfield[kk] += ss
+            for kk, ss in sorted(byfield.items(), key=lambda kv: str(kv[0])):
+                if len(ss) > 1:
+                    P("        field %s read via %d paths at sites %s" % (
+                        kk, len(ss), ", ".join(hex(x) for x in ss[:6])))
         P("VERDICT: %s  (exit %d -- SHARING/NO-EVIDENCE are queue-blocking)" % (
             overall, 0 if overall == "PASS" else 1))
         return "\n".join(L)
@@ -1604,11 +1650,16 @@ def selftest(m):
                        0x446080, 0x4461D0]
     v3, _ = m.share_check(hot)
     v4, _ = m.share_check([0x507810])
-    check("T5 share-check gate reproduces the banked item-44 rulings",
-          v1 == "SHARING" and v2 == "SHARING" and v3 == "PASS" and v4 == "PASS",
+    fam = resolve_cls_eas(m, "cls_0x490150") or []
+    v5, _ = m.share_check(fam)
+    check("T5 share-check gate reproduces the banked item-44 rulings "
+          "(incl. fb3d03f field-keying counterexample)",
+          v1 == "SHARING" and v2 == "SHARING" and v3 == "PASS" and v4 == "PASS"
+          and v5 == "PASS",
           "0x434250=%s 0x434120=%s cls_0x445350-band=%s 0x507810=%s "
-          "(expected SHARING/SHARING/PASS/PASS per T-064 outcome + T-054 mints)"
-          % (v1, v2, v3, v4))
+          "cls_0x490150-family=%s (expected SHARING/SHARING/PASS/PASS/PASS per "
+          "T-064 outcome + T-054 mints + fb3d03f Gfx_RenderManager "
+          "single-terminal-field truth)" % (v1, v2, v3, v4, v5))
 
     # T4: T-057 21-row PAD snapshot + 0-orphan invariant, via the executable
     # bucket rule (PAD requires the pad's data-ref evidence; tail-jmp-only -> DELEG)
