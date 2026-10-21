@@ -76,7 +76,23 @@ in {
       # Remove stale reimpl IDB so IDA regenerates from fresh EXE
       rm -f "$OPENVB_REIMPL_IDB"
 
-      "$docker" pull "${msvcImage}" >/dev/null
+      # T-046 (harness item 33) pattern, ported to this variant by T-049: the unconditional
+      # `docker pull` made the gate require registry reachability - during the 2026-10-21
+      # 04:36Z dockerd outage a fully-cached toolchain read as a build failure. Pull when we
+      # can, fall back to the local cache when we cannot, and PRINT which happened. Neither
+      # path available is still a real error, exit nonzero.
+      if pull_out="$("$docker" pull "${msvcImage}" 2>&1)"; then
+        printf 'msvc-build-tracing: toolchain refreshed from registry (%s): %s\n' "${msvcImage}" "$(printf '%s' "$pull_out" | tail -n 1)"
+      elif "$docker" image inspect "${msvcImage}" >/dev/null 2>&1; then
+        printf 'msvc-build-tracing: toolchain from local cache (%s) [%s]; registry path failed: %s\n' \
+          "${msvcImage}" \
+          "$("$docker" image inspect "${msvcImage}" --format '{{.Id}} size={{.Size}}' 2>/dev/null)" \
+          "$(printf '%s' "$pull_out" | tail -n 1)"
+      else
+        printf 'msvc-build-tracing: cannot pull %s and it is not cached: %s\n' \
+          "${msvcImage}" "$(printf '%s' "$pull_out" | tail -n 1)" >&2
+        exit 1
+      fi
 
       chown_cmd=""
       if [ "$rootless_docker" != true ]; then
