@@ -1,6 +1,7 @@
 ---
 status: open
-assignee: NiceHawk (01a15b?? — small code row, fits alongside T-007; no IDB, no debugger)
+assignee: NiceHawk (sessionId to be recorded on first report) — small code row, fits alongside T-007;
+# no IDB, no debugger
 depends: T-038 (which found it)
 ---
 
