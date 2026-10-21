@@ -736,3 +736,28 @@ edited (harness file, needs its own row): the fix is pull-if-absent or pull-with
 state which was done, so the output distinguishes "toolchain refreshed" from "toolchain used as
 cached". Recorded so a lane seeing `BUILD-FAIL` with a resolver error checks the daemon before
 blaming the code.
+
+
+## 34. `devenv processes restart` restarts the process, not the LOADED CONFIG
+
+Found the hard way during T-046 verification (UltraMoon 01a15cb7, live-tested): after
+editing `processes.<name>.exec`/`ready.exec`, `devenv processes restart <name>` reuses the config the
+running session already loaded — verified by comparing the leader's store path before/after:
+unchanged, still the pre-edit derivation. A restarted process therefore runs the OLD script and
+reports `ready` truthfully, which looks exactly like "my fix didn't work" or, worse, like "there
+was nothing to fix". The new process definition lands only at a FULL session re-up (a human action
+while `devenv up` owns the session).
+
+Rules that came out of it:
+1. **Verify a process-config change by rendering the committed body** (evaluate the nix, run the
+   rendered `exec`/`ready` in a live shell, kill the real daemon, watch it exit nonzero) — that is
+   a proof of the LOGIC. State it as such; do not claim the running generation adopted it.
+2. **A green `ready` after `restart` is not evidence your edit is live.** Check the loaded config
+   (leader path / derivation hash) or say the activation boundary in every report.
+3. When a tool from the shell is stale-but-present, re-source in the SAME shell as the call —
+   sourcing in a different shell (or judging through a pipe) keeps the old PATH and the old baked
+   payload, and the tool you invoke is the pre-edit copy. T-046 caught its own first fallback run
+   this way (missing bracket proved it ran the pre-digest payload) and re-ran correctly.
+
+Item 30's shape again: the measurement was real, the thing measured was the wrong artifact — this
+time not the payload but the *process config generation*.
