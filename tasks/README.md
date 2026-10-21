@@ -155,7 +155,7 @@ row; A keeps editorial merge rights).
 
 | T-006 | GUI/SS: `Format_0x56be30` `<tag>` markup + Label text | done | implementer-B |
 
-| T-007 | GUI: skin sub-records (Window+0x90 x9) + texture binding | in-progress | implementer-B |
+| T-007 | GUI skin sub-records (Window+0x90 x9) + texture bindings | in-progress | **NiceHawk** (moved from the departed implementer-B) |
 
 | T-008 | Onboarding: mesh + build + full gate green | done | implementer-C (UltraBear) |
 

@@ -1,7 +1,8 @@
 # T-007 — GUI: skin sub-records (Window+0x90 x9, stride 86) + texture binding
 
 status: in-progress
-assignee: implementer-B
+assignee: NiceHawk — re-dispatched 2026-10-21 (prior holder's lane identity rotated out; T-034 moved off
+# them so they have a row they can finish without a debugger)
 
 > Claim note (B): starting with the RE-only half (steps 1-2, gaps G1/G2). Implementation of
 > steps 3-4 waits on A's review of this task (proposed in chat/from-B.md C-22) so I do not land
