@@ -85,3 +85,14 @@ says so.
 - `discoveries/2025-10-20-b9-gwam-record-map-for-ledger-4.md`, `...b11-gwam-slots-part1-...md`
 - `discoveries/2025-10-20-session35-helmet-slot-data-closes-10c.md`
 - `docs/DEFERRED-NOTES.md` entries 2 and 6 (the ones a census can settle or widen)
+
+## Post-close schema note (coordinator, 2026-10-21, from T-018 `c8e1d3f`)
+
+`gitm.csv`'s `equip`/`eqslot` columns are **req-count / reqvec[0]**, not the `+20/+24` scalar fields
+their names imply: `GameItem+0xA8` is a STORED required-slot VECTOR parsed by `sub_410b80`
+(`0x410beb` count, `0x410c19` value loop), and the `+24` "eqslot" read is `reqvec[0]`. Consumers that
+used it as reqvec[0] — session 35's helmet-slot close above (`gitm_eqslot_armor_values = [0,1]`) — are
+UNAFFECTED and their verdicts stand; only the label is wrong. The CSV was NOT re-run (no silent
+regression of a closed query). Fix belongs in the next schema change: rename the columns to
+`req_count`/`req_vec0` and cite `0x410beb/0x410c19`. Canonical write-up:
+`docs/f3/GITMItemRecordLayout.md`.

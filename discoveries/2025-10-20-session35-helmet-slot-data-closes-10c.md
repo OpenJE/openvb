@@ -57,3 +57,12 @@ required slot contains 1) **CONFIRMED** — with stronger form: it IS the slot (
   still open.
 - `EyeAuthorities` at 0x807 sits in a record with equip=1/eqslot=0 → glasses attach to a
   BODY record (vanity layered gear) — don't read Eye sockets as head-slot evidence.
+
+---
+
+**Label correction (coordinator, 2026-10-21, via T-018 `c8e1d3f`):** this session's "eqslot" (+24) is
+`reqvec[0]` of a STORED required-slot vector at `GameItem+0xA8` (parser `sub_410b80`, count `0x410beb`,
+values `0x410c19`); "equip" (+20) is the vector's COUNT. Session 35's CONCLUSIONS are unaffected —
+the helmet datum it read is exactly what the field materializes as, and the vector length for the
+head-worn record is 1 — but the scalar-slot framing of the names is retired. See
+`docs/f3/GITMItemRecordLayout.md`.
