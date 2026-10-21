@@ -68,6 +68,27 @@ vendoring and a `LoadLibrary` shim. It is **not absent**: it lives at
    in the coordinator's lane, not a licensing or vendoring decision. The escalation overstated it and
    the correction stands in its place.
 
+### CLOSED by measurement: `tools/render-device-probe.sh` — a visible frame is not obtainable on this host
+
+ZenRaven automated the three cases (commit `16a3c8a`), verdict on this machine:
+
+| case | result |
+|---|---|
+| no `DISPLAY` | **exit 1** — `nodrv_CreateWindow` |
+| `Xvfb` + render device OFF | **124 alive**, trace written |
+| `Xvfb` + render device ON | **exit 1** — `Failed to find a suitable pixel format` / `Failed to get a GL context` |
+
+So the `LIBGL_ALWAYS_SOFTWARE=1` hope is dead *and* the virtual-display route is dead: **even on a virtual X
+server with software GL explicitly requested, wined3d cannot obtain a context here.** Slice 1's *visual*
+acceptance is therefore a **harness limit, not our code** — which is the sentence I asked for and now have,
+mechanically re-checkable on any host by running the script. Design note worth copying: the probe prints
+**`UNKNOWN` rather than `FAIL`** when the exe lacks the `OPENVB_RENDER` opt-in, because "not built here" and
+"broken" are different answers.
+
+Remaining honest scoping for slice 1: acceptance needs a host where wined3d gets a context (real driver, or a
+GLES/other wine build). On *this* host the verifiable part of slice 1 is "device-creation path runs and its
+failure is a logged no-device state, not a crash" — which the probe already demonstrates.
+
 ### The finding that really gates slice 1: no GPU driver in this harness
 
 Measured and bisected in a clean worktree with B's file as the only variable: `Direct3DCreate8`

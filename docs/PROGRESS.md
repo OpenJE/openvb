@@ -48,10 +48,12 @@ Frame control flow and combat math are ported and asserted, not sketched:
 **Simulation** = everything that decides game state independent of whether anything is drawn. Operational test:
 a headless run must produce identical state to a run with a window.
 
-- **Presentation is unverified, not unported-by-choice.** `Direct3DCreate8`/`GetAdapterDisplayMode` succeed;
-  `CreateDevice` fails on this host (wined3d wants a GL context; software GL reached llvmpipe then failed pixel
-  format with an XIO error on `:0`). `xvfb`/`xvfb-run` are now shell packages, so the virtual-display probe is the
-  next cheap fact. `d3d8.lib` was never missing — `vcvars32.bat` omits the two `prerelease` dirs, appended by
+- **Presentation is unverified, and a visible frame is measurably impossible on this host.**
+  `tools/render-device-probe.sh` (three cases + boundary in its own output): no `DISPLAY` → exit 1
+  (`nodrv_CreateWindow`); `Xvfb` + device off → 124 alive; `Xvfb` + device **on** → exit 1 with
+  `Failed to find a suitable pixel format` / `Failed to get a GL context`. Software GL and a virtual X server were
+  both tried and neither helps, so **slice 1's visual acceptance is a harness limit, not our code**. The verifiable
+  part here is that the device-creation path fails as a logged no-device state instead of crashing. `d3d8.lib` was never missing — `vcvars32.bat` omits the two `prerelease` dirs, appended by
   `msvc-sdk-prerelease.bat`.
 - **No parity oracle yet** (T-031): every check we own proves self-consistency. This is the highest-leverage row on
   the board and it also settles the time-base question (`ms` passed into `World::Update_0x544a90`, which has no
