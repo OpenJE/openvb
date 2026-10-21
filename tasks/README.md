@@ -173,7 +173,7 @@ row; A keeps editorial merge rights).
 
 | T-010 | Research queue (10a answered, 10b resolved-as-defect, 10c one data read, 10d closed, 10e open) | open | research |
 
-| T-011 | Combat: per-turn dispatch + join-on-attack — **the day's first feature row, dispatched as code**; step 3's gate operand is now SETTLED by T-039 (queue count, not busy) | in-progress | **HappyKnight** |
+| T-011 | Combat: per-turn dispatch + join-on-attack — **steps 2-6 LANDED (`20827b2`)**: join/flush/round-walk cited line by line; three questions POSTED not coded (rotation needs the +0x319 writer; +4/+14 have no nonzero writer; the 0x5a9868/0x55094b refresh tail is cited-absent) | in-progress — held on routed questions | **HappyKnight** |
 
 | T-012 | **P1** Combat: replace the falsified from-behind rule (3π/4 is proven wrong) | done | implementer-C (UltraBear) |
 

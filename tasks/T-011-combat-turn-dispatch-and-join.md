@@ -1,7 +1,11 @@
 ---
-status: in-progress
-assignee: HappyKnight — dispatched 2026-10-21 as PRIMARY feature work (sequenced ahead of T-031)
-depends: T-010a (behind-sector constants, for the reaction anim side of a landed hit)
+status: in-progress — steps 2-6 DELIVERED (`20827b2` / openje `9567e6e`); HELD OPEN on the three routed
+# questions at the end of "Landed". The first decides whether combat can take a SECOND turn, and its
+# answer is a statics/xref question (who raises Entity+0x319 on the combat path, and is 0x5a94a0
+# re-entered from a node's own ServerUpdate), not a debugger read. I am not closing this row on a
+# guessed round-robin: a rotation that cites no store changes WHO acts, which is the fact turnOrder= compares.
+assignee: HappyKnight (01a15be7) — dispatched 2026-10-21 as PRIMARY feature work (sequenced ahead of T-031)
+depends: T-010a (behind-sector constants, for the reaction anim side of a landed hit); T-039 (+0x314 gate operand — DONE); T-041 (+0x1E4 meaning — OPEN, and it does NOT block this row)
 ---
 
 # T-011 — Combat: wire the turn queue's per-turn dispatch (and join-on-attack)
