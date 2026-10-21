@@ -346,6 +346,8 @@ namespace F3 {
 				}
 			}
 			int acted = 0;
+			int actedSlot = -1;   // T-048: the slot the FIFO took; its state AFTER the branch
+			                      // decides whether the +0x319 raiser fires (see store site below)
 			// Lifecycle gate (session 11/12 pump switch on Entity+0x1E0):
 			//  - byte +0x3A0 off => never pump (0x549157 pre-switch check)
 			//  - state 0 INVALID => original THROWS; we log+skip (deviation)
@@ -404,6 +406,7 @@ namespace F3 {
 					continue;
 				}
 				acted = 1;
+				actedSlot = s;
 				if ( a.kind == 1 ) {
 					JE::ActionMoveTo* mv = static_cast<JE::ActionMoveTo*>( a.action );
 					mv->Update_0x55b600( (unsigned)ms, 0 );
@@ -445,6 +448,33 @@ namespace F3 {
 						a.kind = 0; a.action = 0;   // static pool: no delete
 					}
 				}
+			}
+			// T-048: the +0x319 RAISER, mirroring shipped `Entity::virt_meth_0x54c570`, whose
+			// complete writer set is closed (docs/f3/CombatTurnDispatch.md "+0x319 raiser"):
+			//   0x54c833 - an animated-event item was processed this tick and did NOT finish
+			//     (remaining time fell below `event+0xC`). Port analog per the row: the FIFO slot
+			//     taken above is STILL OCCUPIED after its branch ran - mv->finished false,
+			//     at->Update != 1, w->Expired false, die->Update != 1. "Processed, not done"
+			//     is exactly "more work pending".
+			//   0x54c864 - the event list was EXHAUSTED while the dt budget at Entity+0x179 was
+			//     still nonzero ("the pump stopped early"). UNEXPRESSIBLE IN THE PORT, cited and
+			//     absent per honest scope: we have no +0x179 dt-budget field at all (the region is
+			//     a zeroed gap byte array in JE::Mover, read by nothing) and our pump consumes no
+			//     per-tick budget - it runs exactly ONE action slot per entity per tick, so the
+			//     "list drained with budget left" state has no analog to construct. Do NOT invent
+			//     a budget counter to hang a second store on; that would be the same class of
+			//     invention this whole row exists to remove (T-042's 2253 lesson).
+			// The slot-DROP path above deliberately does NOT clear: shipped leaves the latch as
+			// the EARLIER branch decided; the only zeros anywhere near it are TurnPrep 0x549094
+			// (ported at CombatManager.cpp:113, state-5 nodes only) and the ctor 0x5515ff. The
+			// sibling byte stores at 0x54c85d/0x54c86d (`+0x2E0+0x34`) belong to the unmodeled
+			// animated-event deque and are NOT replicated. With the store live the manager's
+			// skip-advance (0x5a955d -> 0x5a9572) becomes reachable exactly as shipped - through
+			// RE-ENTRANCY, which the port does not model (row boundary; lockstep question routed
+			// by T-011). No rotation is invented here: the PathManager T-048 block pins BOTH
+			// the raise and the stable head.
+			if ( acted && actedSlot >= 0 && e->actions[ actedSlot ].kind != 0 ) {
+				e->actedLatch0x319 = 1;
 			}
 		}
 	} // PumpEntity

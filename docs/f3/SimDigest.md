@@ -144,7 +144,14 @@ as a fact. So:
 - the field is now **`q=`**, printed as a count, inside the same comma-chained `eN` token (so
   `tools/diff-digest.sh` names a divergence as `e0.q`, not `e0.st`);
 - `st=` is three values (`entityState,moving,acted`) — a fourth means the old byte crept back, and the
-  PathManager suite asserts the exact substring `,st=5,0,0,q=4,` to keep that true;
+  PathManager suite asserts the exact substring `,st=5,0,0,q=4,` to keep that true. **Since T-048 the
+  third value is no longer decoration: the entity pump now raises the +0x319 latch exactly where the
+  shipped `Entity::virt_meth_0x54c570` does (`0x54c833` — an action processed this tick that did not
+  finish; the `0x54c864` budget-exhaustion store is unexpressible in the port and cited-and-absent in
+  `MapEntitySpawn.cpp`). So `st=…,1` now APPEARS in runs where something defers, and stays `…,0` where
+  nothing does — which is the shipped shape; a digest diff against the original must compare that byte
+  as live data, not noise. The PathManager T-048 block pins the raise, the no-clear-on-drop, and the
+  `,st=4,0,1` line.**
 - the port **derives** it from `actions[]` (`SpawnedEntity::QueuedActionCount()`) instead of storing a
   second number that must be updated at every push and at each of the five auto-clear sites in
   `MapEntitySpawn.cpp` — a derived count cannot disagree with the queue it describes;
