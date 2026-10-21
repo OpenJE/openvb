@@ -133,7 +133,7 @@ row; A keeps editorial merge rights).
 | T-022 | Assert every "verbatim shipped" string is byte-identical in F3.exe | done | implementer-C (UltraBear) |
 | T-023 | Cross-TU compile probe as a command (verify a rename with no linker) | done | implementer-C (UltraBear) |
 | T-024 | Gate integrity: revision/payload stamp + per-suite minimum assertion counts | open — **done** || done ||
-| T-025 | Shipped-data census generator — must print **which operand mapping** and **which join route** | open | **RedXenon (01a157ec)** — dispatched by row edit |
+| T-025 | Shipped-data census generator — **stage 1 DONE (`a16a31d`)**: adopted FastArrow's seed, route+mapping printed in the artifact, 25 GB accounting bug caught | in-progress | RedXenon (01a157ec) |
 | T-026 | Per-frame simulation digest (parity as a diff, no renderer needed) | open — **done** || done ||
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
@@ -143,7 +143,7 @@ row; A keeps editorial merge rights).
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
 | T-033 | **Class-identity batch queue** — order corrected to contiguity-ratio x fns; IDB = rename-only scope, single writer 01a157f6 | in-progress | QuickQuartz (applies) + **unassigned: batch-2 decisions (was MintEagle, departed)** |
-| T-034 | **Lockstep read set on the original `F3.exe`** (6 reads, no code) — decides D-2's severity | open | **NiceHawk** (re-dispatched; IronLion left before first read) |
+| T-034 | Lockstep reads on the original (6) — **decides D-2 severity**; re-dispatched after a silent lane | open | **RedXenon (01a157ec)** |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
 | T-036 | **Where did the 998 helper-theft functions come from?** 40% of tier-2 attribution is noise | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven |

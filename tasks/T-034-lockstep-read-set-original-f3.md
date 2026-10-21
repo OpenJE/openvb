@@ -1,6 +1,7 @@
 ---
 status: open
-assignee: NiceHawk (0 tool calls at dispatch; IronLion departed before any read)
+assignee: RedXenon (01a157ec) — moved 2026-10-21: NiceHawk has produced no read report while TWO decisions
+# (D-2 severity, R0 vs WorldTickPump) wait on it. NiceHawk keeps any partial findings and should hand them over.
 depends: nothing; required by T-031 (parity oracle) and by D-2's severity call
 ---
 
