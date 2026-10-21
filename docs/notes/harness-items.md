@@ -872,3 +872,24 @@ Rules:
    channel it actually reads (`grep -n "add_argument\|getenv" server.py`) before writing `env:` into
    `.pi/mcp.json`; here the fix is `--host 127.0.0.1 --port <port>` in `args`, and `localhost` is the
    wrong default whenever the peer binds IPv4-only.
+
+## 40. A harness argument-corruption failure is NOT the target refusing you — prove the server, then route around
+
+GoldYak's batch-4 wave (T-033), 2026-10-21. The pi harness's `set_comments` tool delivered `items` as a
+STRING where the tool schema demands array/object, rejecting every payload shape (b3 lost 13 comments this
+way and correctly banked them in the ledger instead of dropping them). The SAME server, on the same port,
+in the same serialized single-writer session, accepted the IDENTICAL payload over direct JSON-RPC
+(`POST /mcp tools/call`) — 13/13 issued verbatim, `get_cmt` readback SET at all 13 addresses. `rename`
+never showed the bug: the coercion failure is tool-specific, not transport-wide.
+
+Rules:
+
+1. **Localize the failure before honoring it.** When a tool call fails validation, the question is *which
+   layer broke*: harness (schema/serialization), transport, or target. One direct-JSON-RPC probe with the
+   same payload answers it cheaply and changes the verdict from "path blocked, bank for later" to "banked
+   AND re-issued this wave".
+2. **Preserve-then-reissue beats re-derive-later.** b3's decision to keep the full comment text in the
+   ledger (refused writes never dropped) is exactly what made the reissue mechanical. Any rejected write
+   batch goes to the ledger verbatim, not the trash.
+3. File the harness bug **pi-side** (here: `set_comments` items coercion — `rename` accepts the shape the
+   tool rejects); do not let a harness limitation masquerade as a target constraint in a task row.
