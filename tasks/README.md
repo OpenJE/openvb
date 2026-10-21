@@ -142,7 +142,7 @@ row; A keeps editorial merge rights).
 
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **in progress** — T-036 closed, starting this | SwiftRaven |
-| T-033 | Class-identity batch queue — batch-2 **decisions re-dispatched to RedXenon**; IDB writer QuickQuartz away (re-confirm). **Ranking input changed by T-036: do not rank on contiguity (it is vacuous for 464 of 647 "nameable" classes); `cls_0x49c610` is `JE::ResourceSystem` — retire, mint belongs to this row** | in-progress | RedXenon (decide) + QuickQuartz (apply) |
+| T-033 | Class-identity batch queue — batch-2 **decisions done + R36-e audited across the whole mint set (`c10a3eb`/`1084535`/`00b09b7`)**; apply pending QuickQuartz + F3.json re-export | in-progress | RedXenon (decided) + QuickQuartz (apply, re-confirm) |
 | T-034 | Lockstep reads — targets pre-resolved; port fix landed and verified, **waiting on an ImHex restart to free 31337** | open | RedXenon |
 
 

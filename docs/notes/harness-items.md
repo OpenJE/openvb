@@ -536,3 +536,24 @@ Rules: stage and commit in **one** step (`git commit -o -- <paths> -F msgfile` o
 invocation that cannot half-fail); put long messages in a file with `-F`, not `-m`; and if a commit errors,
 **check `git status` and `git diff --cached` before walking away** — a dirty index is a shared resource in a
 six-lane tree.
+
+
+## 26. A corrected verdict with a stale index row still spreads the wrong claim
+
+RedXenon's batch-2 self-correction (`c10a3eb`) fixed the decision table's verdict cell, and the **README index line kept
+selling the falsified claim** (`00b09b7` found it by grepping its own corpus). The index is how most readers arrive, so
+the stale row **outranked** the correction: someone skimming `discoveries/README.md` would have carried the wrong
+headline away from a document that says the right thing.
+
+Why this happens structurally: a summary line is written at the moment a result is *surprising*, and the correction
+happens at the moment the result is *examined*. Those are different times, in different files, and the earlier one is
+usually the one people read. Any doc with a generated or hand-maintained index has this exposure.
+
+Rules:
+- **Correcting a claim means grepping every place you made it**, not just the place it is now known to be wrong:
+  `grep -rn "<claim phrase>" discoveries/ tasks/ docs/` is the closing step of a retraction, not an optional extra.
+- Commit messages for corrections should say what they are: RedXenon's was *"no new claims, only the old ones made
+  true."* That framing is more honest than a diffstat suggests, because a correction commit looks like progress.
+- Same exposure on my side: `docs/PROGRESS.md` and `tasks/README.md` both restate lane findings in summary form. When a
+  finding is re-anchored (route-dependence, withdrawn numbers), the summaries are part of the change set — I propagated
+  the "byte-identical clones" phrase through exactly this mechanism (`cfa83a8` -> corrected in `d89f9ad`).
