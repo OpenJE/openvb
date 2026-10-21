@@ -5,6 +5,20 @@ assignee: KeenStorm — claimed 2026-10-21 for the RE half only (steps 1–2, ga
 holder NiceHawk rotated out of the mesh; steps 3–4 (the port) stay paused pending the
 coordinator's review — this lane writes `discoveries/` evidence, no code, no commits of src/.
 
+> **STEPS 1–2 CLOSED (coordinator checkpoint 2026-10-21, LoudDragon `01a15f82`):**
+> `discoveries/2025-10-21-t007-skin-subrecord-g1-g2.md` accepted. Verified independently against
+> the frozen export: G1 = `GUI::Fragment` 0x158-byte objects ("86" = 86 DWORDs; push 158h
+> @0x4b08b1, add ebx,158h @0x4b12b6, dtor iterator push @0x63212e); ctor `0x4b24a0` installs vft
+> `0x66ea1c` @0x4b24d6 (9x via eh-vector-ctor @0x4b08c2); slot 7 (+0x1C) = reader `0x4b20a0` —
+> export agrees (vft 0x66ea1c index 7 -> 0x4b20a0). G2 = `0x707CE4` is the `Gfx_Engine` singleton
+> (sole store `a3 e4 7c 70 00` @0x5bfe33, vft `0x6ae7ec` @0x5bfe43; clears @0x5bedd6/@0x5c1e24);
+> +0xC4=slot49=0x5c0a90 get-or-create index (delegates cls_0x55dc80/0x70B200, negative=load
+> failure), +0xD8=slot54=0x5c0930 handle->object, +0xDC=slot55=0x5c0970 lookup-only probe (writes
+> id through out ptr on hit, bumps obj+44 usecount, never inserts) — export slot table agrees.
+> ERRATUM registered for T-040: F3.json `GUI::Fragment` size 3384 is a frozen-export error; the
+> byte-level truth is 0x158 (max member +0x154+4, three independent size encodings).
+> Steps 3–4 (the port) UNPAUSED — re-dispatched to KeenStorm under the build-gate rules below.
+
 > Claim note (KeenStorm): doing steps 1–2 as a research row. Target: ORIGINAL_REFERENCE only
 > (`ida_original_f3`), READ-ONLY (GoldYak is the sole IDB writer this wave — no renames/comments/
 > type edits from me). Deliverable: `discoveries/2025-10-21-t007-skin-subrecord-g1-g2.md` with

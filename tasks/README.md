@@ -147,7 +147,7 @@ row; A keeps editorial merge rights).
 
 
 | T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |
-| T-040 | **`artifacts/F3.json` provenance — DONE: it is a frozen 2024-04-04 OOAnalyzer v2.2.0 export; producer identified from the IDB's own `_PyOOAnalyzer__` strings, sibling inputs byte-identical (md5 e8827f12…), `ooprolog` stage-2 inference verifiably absent so the current IDB cannot regenerate it. Stage 3 rebuilt + proven (1,101/1,101 keys, sizes, method sets, member sizes/usages; 4,059 synthesized entries declared UNVERIFIED). `f3-json-check` added. `cls_0x…` = "no RTTI-named vftable in 2024", not "unidentified"** | done | SwiftRaven |
+| T-040 | **`artifacts/F3.json` provenance — DONE: it is a frozen 2024-04-04 OOAnalyzer v2.2.0 export; producer identified from the IDB's own `_PyOOAnalyzer__` strings, sibling inputs byte-identical (md5 e8827f12…), `ooprolog` stage-2 inference verifiably absent so the current IDB cannot regenerate it. Stage 3 rebuilt + proven (1,101/1,101 keys, sizes, method sets, member sizes/usages; 4,059 synthesized entries declared UNVERIFIED). `f3-json-check` added. `cls_0x…` = "no RTTI-named vftable in 2024", not "unidentified". ERRATUM (via T-007 G1, committed): the export's `GUI::Fragment` size 3384 contradicts byte-truth 0x158 — export SIZES are not authoritative** | done | SwiftRaven |
 | T-041 | **DONE**: `Entity+0x1E4` is the **map-membership flag** `inMap0x1E4` — sole runtime writer `Entity::SetInMap_0x551ba0` (store 0x551c4b), doors = ENGINE_ID_ENTITY_ADDTOMAP/REMOVEFROMMAP packets (client case 14 `0x58c90c`; server `meth_0x555750` `0x555775`); record 3rd int after the `+0x1E0` valid-marker; no `+0x32C`-alias writer; port rename landed | done | PureKnight `01a15cb7` |
 | T-042 | **DONE (openje 77c18d8 + this parent commit)**: ctor aligned to shipped `0,1,1` first, then the `?: 2253/10/18` ternaries deleted; absent-key fallback now the ctor's `0,1,1,0,0,0` (`0x548af6..0x548b08`), authored `Year=0` reachable again; StringSystem 20→27 asserts; gate 10/0 + msvc-build exit 0 | done | NiceHawk `01a15bd1` (half-landed) → UltraMoon `01a15cb7` (gated+committed) |
 | T-043 | **What is `Entity+0x1DC`?** — **done**: a runtime-allocated reference handle (allocated in `Entity::Create` `0x55190c`, serialized by `PackState`, matched against the raw AMX cell by `meth_0x54be10`); not a form id, not a pointer; `netId` is not a substitute, so D-3 stands | done | WildYak `01a15802` |
@@ -172,7 +172,7 @@ row; A keeps editorial merge rights).
 
 | T-006 | GUI/SS: `Format_0x56be30` `<tag>` markup + Label text | done | implementer-B |
 
-| T-007 | GUI skin sub-records + **texture binding** (`Window::virt_meth_0x4b06c0`, 9-slot apply) — in progress, statics landed | in-progress | NiceHawk `01a15bd1` |
+| T-007 | GUI skin sub-records + **texture binding** — **steps 1–2 CLOSED + checkpointed (coordinator)**: G1 = `GUI::Fragment` 0x158 ("86"=86 DWORDs), vft `0x66ea1c` @0x4b24d6, slot 7 = reader `0x4b20a0`, full wire→field layout; G2 = `0x707CE4` `Gfx_Engine` singleton (sole writer `0x5bfe33`), +0xC4=slot49 `0x5c0a90` get-or-create index, +0xD8=slot54 `0x5c0930` handle→object, +0xDC=slot55 `0x5c0970` lookup-probe (hit writes id through out ptr + bumps obj+44 usecount; never inserts) — byte-verified, export cross-checked, decompiler ABI artifact documented. Steps 3–4 (port) UNPAUSED, dispatched to KeenStorm | in-progress (steps 3–4) | KeenStorm `01a15f83-3b1a` |
 
 | T-008 | Onboarding: mesh + build + full gate green | done | implementer-C (UltraBear) |
 
@@ -186,7 +186,7 @@ row; A keeps editorial merge rights).
 
 | M-001 | D3D8 slice 1 — **PROBE ANSWERED: headers compile, `d3d8.lib` ABSENT** → blocked on a human decision | blocked | implementer-B |
 
-| T-013 | Engine texture registry (`cls_0x55dc80` @byte_70B200) = T-007 tail | open | implementer-B (after M-001 slice 1) |
+| T-013 | Engine texture registry (`cls_0x55dc80` @byte_70B200) = T-007 tail — **NARROWED by T-007 G2 §d (committed)**: id=node+0x0C, name string node+0x10, usecount obj+44, intrusive list head mbr_0x28, id→object map manager+0x24/0x28; REMAINING: runtime key string form (stem vs name.tga — lockstep), Fragment+0x2C dword meaning, +0xDC/+0xF8/+0x114 broadcast targets | open (partially answered) | implementer-B (after M-001 slice 1) |
 
 | T-014 | Who sets the sub-attack record's +0x19 "marked" byte (volley-batch loose end) | done | FastArrow (research) |
 
