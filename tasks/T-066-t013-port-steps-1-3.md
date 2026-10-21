@@ -41,3 +41,11 @@ GameCursorManager/CSound/event-kinds (scope freeze honored).
   separator identity) + ResName==stem through Demand + different-cased-extension cache identity.
   Gates: run-all-tests 9/9 (ResourceSystem 118>=111, GUILoading 187>=116 unchanged), cppcheck
   0 errors/warnings, `msvc-build` rc0 (public header moved), submodule-first commit.
+- **STEP 2 LANDED** - openje `92bceb4`: `JE::Gfx_Texture_Manager` (header-only ON PURPOSE - a new
+  .cpp needs parent-CMake + test-row edits, both build-affecting/two-lane-capped; splits out with
+  Step 4). Probe/GetOrCreate/Object = the +0xDC/+0xC4/+0xD8 bodies as behaviour (case-SENSITIVE
+  byte-exact names, hit-bumps-usecount, miss-pre-zeros-out-and-returns-0 quiet shape, internal
+  re-probe dedupe, counter ids, negative=failure-for-the-clamp, NULL=invalid-handle); NO decrement
+  API (T-062 law); policy comment cites the integer-map negative boundary from the trio addendum.
+  14 new asserts incl. the two-names-differ-only-in-case TWO-NODE case-sensitivity test. Gates:
+  9/9 (ResourceSystem 132>=111), cppcheck 0, msvc rc0.
