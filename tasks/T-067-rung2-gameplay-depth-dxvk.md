@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done (wall BROKEN — DXVK stack found; depth data harvested; live-Attack/count>4 routed to input-injection)
 assignee: HappyEagle (dispatched by LoudDragon off T-056 acceptance, 2026-10-21 — board line `tasks/README.md:172`)
 depends: T-056 (six-row table + hybrid-stack recipe + the named bink wall = this row's opening premise), T-050 (re-entrancy observation is this row's payload), T-062 (bonus watches), T-068/T-069 (downstream consumers)
 ---
@@ -47,3 +47,20 @@ Private prefix only (`/tmp/t056-wineprefix` or fresh clone); recorded-pids + `/p
 WINEPREFIX gates for every kill (`pgrep -f` in compound commands = banned after two self-SIGTERMs);
 managed 31437/31338 + ImHex 31337 NEVER touched; user-scoped installs only, zero `devenv/**` edits;
 scratch ports 31440+ only; IDA original MCP read-only.
+
+## VERDICT 2026-10-21 (HappyEagle) — WALL BROKEN; DXVK RUNS THE ENGINE 12 MIN CLEAN
+Full evidence: `discoveries/2026-10-21-t067-dxvk-rung2-depth-harvest.md`. Two keys: (1) DXVK d3d8 IMPORTS
+Direct3DCreate9 from d3d9.dll — d3d9 must ALSO be native (d3d8 alone = NULL-d3d9 vtable AV at d3d8+0x1305a);
+(2) wine-11 IGNORES WINEDLLOVERRIDES for d3d9 (`get_load_order got hardcoded default`) — the
+HKCU\Software\Wine\DllOverrides REGISTRY values (d3d8=n, d3d9=n) take effect. With that + :96 kept + 32-bit
+nvidia Vulkan ICD (and the softpipe env REMOVED — it caused a 32-bit LLVM OOM once wined3d stopped owning GL):
+engine alive 712s CPU (~12 min wall), ZERO crashes — **the bink wall was wined3d-11's cs-thread bug, not shipped**.
+Depth datum: R0 0x544A90 confirmed 4th time (cross-runtime invariant); R2 frame-0 leap 0→1s REPRODUCED under
+DXVK; funnel counts grew 1→2→3 (max 3 at 12 min — **>4 needs interactive input, not a better GL stack**);
+bp5 live Attack 0 hits (same — confirms T-056 deviation as input-limit, not crash-truncation);
+**T-050 seam: entry leg 0x5a94a0 fired 25× on one receiver (0x0A1F0440, args advancing) — the advance leg
+0x5a955d NEVER fired in a clean full boot.** Observation gate UNBLOCKED; interpretation with T-050 static
+semantics is the coordinator's pass. Divergence ruling: engine-memory values pair CROSS-stack (proven
+identical semantics both runtimes), but HEAP ADDRESSES differ between stacks — T-031/T-068 must pair on
+same-env addresses, cross-env constants. Next cheap step (routed, not built): input injection for live
+Attack/count>4 + bonus cursor watches on this now-endless window.
