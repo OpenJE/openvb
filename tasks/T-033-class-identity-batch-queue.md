@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: PureKnight `01a15cb7-e27e` (apply GRANTED via coordinator after all prior holders departed; rule in force: the grant follows whoever can reach the shared IDB MCP session on 8745). Caveat: T-040 — route-B deltas unmeasurable (no export path). Batch 3 UNOWNED while no writer lane is online.
+status: in-progress
+assignee: GoldYak (batch 4, dispatched by LoudDragon `01a15f82` 2025-10-21). Prior grant note retained: PureKnight `01a15cb7-e27e` (apply GRANTED via coordinator after all prior holders departed; rule in force: the grant follows whoever can reach the shared IDB MCP session on 8745). Caveat: T-040 — route-B deltas unmeasurable (no export path). Batch 3 APPLIED (`783fb3e`).
 depends: T-029 (the census that produced this queue)
 ---
 
