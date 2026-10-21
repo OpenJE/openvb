@@ -174,3 +174,25 @@ take the command shape, `push` takes the native shape. The +0x319 raiser is NOT 
 resident (the shipped raiser at 0x54c833 belongs to the anim-event deque; arming it from an idle
 action-head would freeze the combat manager's skip-advance consumer in a state shipped never
 reaches). D-2's capacity re-expresses as **3 orders + resident** filling the first block.
+
+### Pre-rebase window and the port's edge-timing approximation (T-077 exchange, 2026-10-21)
+
+Idle is presented ONLY at rebase sites - `Entity::SetInMap_0x551ba0` (membership ADDTOMAP, from
+`Server::meth_0x555750` / `Client::virt_meth_0x58c660`) and the packet-pump cases 0x1A/0x3B. Between
+ctor and the first rebase the deque is genuinely all-zero (`Entity::ctor_0x5513a0` zeroes the count
+at 0x5515e6): an entity in that window has NO head at all, and a native order enqueued there takes
+slot 0 and fires IMMEDIATELY - no HOL, because there is nothing to block on. T-056's
+0x79B3600 first-insert observed exactly that pre-state (`x/5wx 0,0,0,0,0` before count 1), and the
+first insert being GameActionIdle is the rebase itself winning the race; 12/12 idle-first means
+every observed entity reached SetInMap before any native order.
+
+The port rebases at the SPAWN/creation edge (map-load + harness spawn), while shipped rebases at
+the MEMBERSHIP edge that follows creation over the net. In a headless harness the two edges
+coincide (spawn == join == AddToMap, no transport in between), so this is a TIMING approximation,
+not a semantic gap: no order-advances-past-idle state is reachable in either model, and the
+differences are only observable pre-rebase, where both models agree the order simply fires.
+Recorded per the stated-rather-than-hidden rule.
+
+Fourth nail (unstaffed, testable in archives or any boot): dump a spawn-to-first-order timeline.
+Any entity whose FIRST funnel insert is a REAL order instead of Idle proves the native beat the
+rebase in the pre-join window - completing the presentation-sites census from the other side.
