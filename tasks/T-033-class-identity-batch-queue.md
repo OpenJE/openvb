@@ -1,6 +1,6 @@
 ---
 status: open
-assignee: two lanes as mainline (proposed: IronStorm + HappyWolf)
+assignee: QuickQuartz (01a157f6 — IDB writer, rename-only scope GRANTED) + MintEagle (batch-2 decisions)
 depends: T-029 (the census that produced this queue)
 ---
 
@@ -30,7 +30,24 @@ neither is allowed to be reported as progress.
 Also adopted: **single-writer split** — HappyWolf proposes identity decisions, IronStorm applies them to the
 IDB/`F3.json` and runs the census. Two lanes writing one database is how attribution gets lost.
 
-## Scope (one batch = 20 classes, ordered by function count)
+## Scope (one batch = 20 classes, ordered by **contiguity-ratio × functions**)
+
+**Ordering corrected by batch 1's adjudication (01a157f6, `discoveries/2025-10-20-session38-t033-batch1-adjudication.md`).**
+Ranking by raw function count put the wrong classes first: every headline top-6 class is **low-density
+(0.02–0.37)** — their function counts are inflated by helper-theft, not class mass — while the honest stubs sit
+mid-list: `0x6bb908` (ratio 1.00 / 40 fns), `0x6bc9d8` (0.97 / 30), `0x5d2c8c` (0.96 / 26), `0x4b28a0` (0.93 / 28),
+`0x41a2b0` (0.71 / 28). Tier 2 restated: **2,473 attributed = 1,475 nameable + 998 helper-theft noise.** HappyWolf's
+pre-registered inflation prediction is therefore *partly confirmed* — the "cheapest win" was substantially an
+attribution artifact, which is exactly what a pre-registered number is for.
+
+**Do-not-mint list (batch 2 must inherit this, not the old queue):**
+- **`cls_0x50db20` → `JE::String` is REFUTED.** Its own DB member table embeds `.?AVG3D_Water@@` (180 B) and
+  `.?AVVFX_Parameter@@`; the "SSO sites" dissolve via census address-join into `F3::RegisterCommand` and another class.
+  Minting this name would poison every later decompile.
+- **`cls_0x4d8d70` → `JE::StringTree` CONFIRMED**, mechanism: STL `_Tree` template family (11 copy-ctors = 11
+  instantiations). Its low contiguity is **legitimate** — proof that scatter counts alone mislead.
+- **RTTI is a dead end in this PE**: 216 `.?AV` strings, **zero xrefs**. No shortcut exists for the remaining fog;
+  embedded-member-type joins (13 classes that self-name) are the real cheap wins.
 1. Take the next N anonymous classes by member count. For each, read **only** what the database already
    holds: member offsets/sizes, vftable slots, method names, and which shipped data blobs reference it.
 2. Decide identity from **data before debugger** (harness item 13): a `.gam`/`.msg`/`.veg` section layout,

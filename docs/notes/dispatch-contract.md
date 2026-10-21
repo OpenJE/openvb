@@ -42,3 +42,31 @@ uncoordinated `find_package(OpenGL)` addition once made the whole tree unbuildab
 Gate/review/dispatch/checkpoints, `devenv/**`, closing rows, and the ledger. I do not take feature
 implementation; when I do, it gets reviewed like anyone else's — see `T-024`, where the falsification test
 I demanded of lanes found a bug in my own guard.
+
+
+## Identity is the sessionId, not the display name
+
+Display names rotate when sessions restart. **01a157f6 was shown as `IronStorm` and is now `QuickQuartz`**, and **01a157ec was shown as `HappyWolf` and is now `RedXenon`** — same
+lane, same body of work (10b/10c, the T-029 census, sessions 32–38). The board listing both names as different
+workers is the rotation artifact, not two lanes. Rules that follow:
+
+1. **Rows record the sessionId** as the durable owner; display names are convenience and may be re-stated.
+2. **Do not infer authorship or duplication from a name.** Check `pi_messenger`'s roster against sessionIds before
+   telling a lane they duplicated someone.
+3. **Untracked files from a renamed lane are still that lane's work** — the coordinator checkpoints the index row
+   (mine), not the content (theirs). Three discovery docs were dangling from exactly this cause on 2026-10-20,
+   including the census that three rows cite.
+4. **Message failures are expected during rotation** (a send to a departed display name returns `not found`); retry
+   by sessionId or route through a row.
+
+## Scopes beyond the two-lane build cap
+
+`devenv/**`, `cmake.toml`, `CMakeLists.txt`, `src/F3.cpp` are build-affecting and capped at two lanes. The IDB and
+`artifacts/F3.json` are a **different** shared resource with the same single-writer need, so the scope vocabulary is
+now three levels:
+
+| scope | covers | who |
+|---|---|---|
+| `code` (build-affecting) | cmake/devenv/`src/F3.cpp` | 2 lanes max, coordinator owns changefiles |
+| `rename-only` | class **keys** in the IDB/`F3.json` export; methods excluded | one lane at a time, granted by row, audit trail = the decision doc |
+| read-only | everything else | default |

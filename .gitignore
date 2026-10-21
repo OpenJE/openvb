@@ -47,3 +47,6 @@ dependencies
 # chunks are memory payloads that would be permanent once committed.
 .engram/chunks/
 .engram/manifest.json
+
+# host-built driver/probe binaries (tools/*.sh generate these; not artifacts)
+tools/*.exe

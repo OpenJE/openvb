@@ -13,7 +13,7 @@ Re-measure: `run-all-tests` (stamp first), `tools/gate-integrity.sh` (payload fr
 |---|---|---|---|
 | **Shipped function census** | **8,876 game functions** of 10,173 total | all code behind the link-tail boundary `0x5FD000` | T-029 (`list_funcs` 7 pages, integrity-checked; F3.json join) |
 | — semantically named | 46.7% | functions whose name says what they do | T-029 |
-| — typed-stub | 26.4% | 2,340 fns under ~300 anonymous `cls_0xADDR` types → **T-033 queue** | T-029 |
+| — typed-stub | 26.4% (restated) | 2,473 attributed = **1,475 nameable + 998 helper-theft noise** — raw counts overstate class mass; order by contiguity-ratio × fns | T-029 census + T-033 batch-1 adjudication (01a157f6) |
 | — unnamed | 26.9% | 2,177 `sub_` in 1,971 owner neighbourhoods | T-029 |
 | **Dispatch tables** | 2,156 vftable slots, **97.9% resolved** | virtual-call structure | T-029 |
 | **DB vs IDA agreement** | 97.4% | 171 declared methods are tail/mid-function vcall targets, not lost code | T-029 (artifact class recorded) |
