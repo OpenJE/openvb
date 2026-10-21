@@ -98,13 +98,12 @@ Mechanism, read from our own code: `World::Update_0x544a90(ms)` computes
 entire uptime into `mbr_0x44`, and the step-6 carry (`World.cpp:99-106`) adds ~29,000 world seconds in
 one frame. The value then sticks (only deltas accumulate), so the sim runs with an 8-hour-old clock.
 
-Checked on the shipped side before blaming our code: `JE::World::ctor_0x548a80` zeroes the dword range
-covering `+0x44`/`+0x48` (stores 0x548b1d..0x548b43) and `World::PackState_545930` **persists `+0x48`**
-(usage 0x545958). So the original has the same zero-initialised stamp and restores it on load - the
-first-`Update` jump is structurally available there too. What decides faithfulness is what the original's
-pump passes as `ms`: absolute `JE_TickMilliseconds_0x56af50` (uptime, as ours does) or a session-relative
-delta. `Update_0x544a90` has **no direct caller** (only the vftable data xrefs 0x668584 and 0x6919fc), so
-it is a virtual call from the game pump - that call site, or one lockstep read of `World+0x48` plus the
-clock across a first `Update`, settles it. Not fixed in this row: the mirror rule forbids silently
-improving the original, and a tooling row is the wrong place to change the world's time base. Until it is
-settled, every digest comparison carries this as a shared constant rather than a bug in the comparison.
+**SETTLED without a debugger** — see `docs/f3/WorldTickPump.md`. The pump is
+`JE::Server::virt_meth_0x552b60`, which calls World **vftable slot +24** with
+`JE_TickMilliseconds_0x56af50()` straight into the argument (0x552bad → 0x552bb5): `ms` is absolute
+machine uptime, just like our `Host::TickMilliseconds()`. And `JE::World::virt_meth_0x546690` (the
+world-entry path) zeroes `+0x48` at 0x5466b5 while seeding `+0x4C` (0x5466bd) and `+0x54` (0x5466c8) with
+the tick. So the original computes the same `uptime - 0` on its first `Update` and leaps the same distance.
+**Our behaviour is faithful — mirror it, do not "fix" the stamp.** For the parity oracle this is good news:
+`clock` is a valid comparison field, because both sides start from the identical leap, so a `clock`
+divergence reads as elapsed sim time rather than an epoch mismatch.

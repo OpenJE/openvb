@@ -468,7 +468,7 @@ Also-standing-but-mundane: the `0x6FF650` socket name table is a model-attachmen
 the called-shot index space — a live trap for anyone re-deriving part naming, and the reason 10c's
 `socketIdx = id+1` bridge was retracted.
 
-## Candidate defect (ours, surfaced by the T-026 digest — routed, not fixed)
+## RESOLVED by statics (was: candidate defect surfaced by the T-026 digest) — it is SHIPPED behaviour, mirror it
 
 **World clock starts ~8 hours old.** `JE::World::Update_0x544a90(ms)` (
 `modules/openje/src/JE/World.cpp:119`) computes `delta = ms - mbr_0x48`; `mbr_0x48` initialises to
@@ -485,14 +485,23 @@ So the shipped engine has the same zero-initialised stamp, and it recovers the s
 the first-`Update` jump is structurally available in the original too, and would be *worse* on a long-
 uptime machine. NOT fixed here for that reason plus the mirror rule (never silently improve).
 
-What still decides whether we are faithful: what the original's pump passes as `ms` — absolute
-`JE_TickMilliseconds_0x56af50` (uptime, like ours) or a session-relative delta — and `Update_0x544a90`
-is reached only through vftables (0x668584, 0x6919fc are data xrefs, no direct caller), so it is a
-virtual call from the game pump. Reads that settle it: (a) find the pump's `call [vft+N]` site and what
-register feeds it, or (b) one lockstep read of `World+0x48` and `Gregorian::totalSeconds` across the
-first `Update` of a new game. Until then every digest comparison carries this as a shared constant, not
-as a bug in the comparison.
-See `docs/f3/SimDigest.md`.
+**SETTLED, no debugger spent** (`docs/f3/WorldTickPump.md`). Two shipped sites answer it:
+1. `JE::Server::virt_meth_0x552b60` calls World **vftable slot +24** with the value of
+   `JE_TickMilliseconds_0x56af50()` (0x552bad loads it, 0x552bb5 calls `*(vft+24)`) — so `ms` is
+   **absolute machine uptime**, exactly what our `Host::TickMilliseconds()` supplies.
+2. `JE::World::virt_meth_0x546690` (the world-entry path that reads `globals.ini`) stores **0 into
+   `+0x48`** at 0x5466b5, while seeding `+0x4C` (0x5466bd) and `+0x54` (0x5466c8) with the tick.
+
+So the original computes the same `uptime - 0` on its first `Update` and takes the same leap. **Our
+behaviour is faithful here, and the mirror rule binds: do NOT 'initialise the stamp to the first tick' —
+that would silently improve the original.** Consequence for T-031: `clock` IS a valid comparison field,
+because both sides start from the same leap, so a `clock` divergence means elapsed sim time, not an
+epoch mismatch.
+
+Open remainder — a question with a location, not a defect: why is only `+0x48` left unseeded when `+0x4C`
+and `+0x54` get the tick, and what do those two seeded stamps mean for the consumers that read them
+(`+0x54` is the field our `Update` subtracts as pause credit).
+See `docs/f3/SimDigest.md` and `docs/f3/WorldTickPump.md`.
 
 ## Port deviations (deliberate, registered — T-027)
 

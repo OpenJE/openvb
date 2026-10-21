@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: unassigned (needs a lane with IDA + wine; propose implementer-B or IronStorm)
+status: in progress
+assignee: implementer-B (YoungStorm, 01a15802)
 depends: T-026 (digest format exists), T-027 (seeded stream exists)
 ---
 
@@ -41,3 +41,46 @@ fields our digest prints, then diff. No GPU is required — state lives in memor
 A memory read sees what the shipped code *stored*, not what it *intended*: fields written for a
 presentation layer we do not have will differ harmlessly, and identical values on a path we never reach
 prove nothing. Divergence is a **question with a location**, not a verdict on the port.
+
+## Design decided before code (docs/f3/ParityOracleDesign.md)
+
+- **Seeding = capture-and-replay (read once, pin from the captured state), not forced reseed.** One read
+  instead of two writes plus proof the writes landed; `byte_707C64` gates re-seeding, so writing only the
+  state dword can be clobbered by the lazy `time32` path at 0x48ccb. The pinned value is then a measured
+  constant, reproducible by later sessions with no debugger at all.
+  **Boundary to print in the output: this proves SAME-STATE parity, not same-seed-from-clock parity.**
+  "Identical under a pinned state, divergent in real time" is the honest claim.
+- **Acceptance part 3 (the time-base question) is CLOSED by statics, no debugger spent** —
+  `docs/f3/WorldTickPump.md`: the pump is `JE::Server::virt_meth_0x552b60`, which loads
+  `JE_TickMilliseconds_0x56af50()` (0x552bad) and calls World **vftable +24** with it (0x552bb5), so `ms`
+  is absolute machine uptime; and `JE::World::virt_meth_0x546690` zeroes `+0x48` (0x5466b5) while seeding
+  `+0x4C`/`+0x54` (0x5466bd/0x5466c8). The original takes the same frame-0 leap our port takes ⇒ **mirror
+  it, do not "fix" it**, and `clock` is therefore a valid comparison field.
+- **Reads still owed (R1–R4)**, written as address/value/when in the design doc, for one clean session:
+  R1 the LCG state at the first draw, R2 `Gregorian::totalSeconds` at the same instant and at frame 1,
+  **R3 the live entity's `+0x304` deque (block ptr / capacity / element index) mid-combat-round** — the
+  only check of the `actions[4]` "first block" assumption against real play, and if the index exceeds 4
+  our cap is a dropped order rather than a stylistic deviation — **R4 the enqueued action's `+0x14`**,
+  which must equal the entity pointer, confirming the seam fires on the *script-native* path we do not
+  reach yet.
+- Two fields the oracle must handle explicitly: `ak` (our kind tags vs their action-object pointers —
+  map via the vftable or exclude and say so) and `tickMs` (uptime, incomparable across processes; plan is
+  print-but-don't-hash, marked `# tickMs=CONTEXT (not hashed)`).
+
+## Also landed while here: the render-device probe (`tools/render-device-probe.sh`)
+
+Takes the M-001 verifiability question off prose. Three cases (no DISPLAY / Xvfb+device off / Xvfb+device
+on), prints wine exit codes, the device trace line when present, and the wined3d diagnostics, with the
+boundary in its own output. Current verdict on this host:
+
+```
+case 1 no-DISPLAY:    exit=1    diag: nodrv_CreateWindow
+case 2 xvfb, OFF:     exit=124  trace: RenderDevice: device path off ...
+case 3 xvfb, ON:      exit=1    diag: Failed to find a suitable pixel format
+                                  diag: Failed to get a GL context
+```
+
+So **even on a virtual X server with software GL asked for explicitly, wined3d cannot obtain a GL context
+here** ⇒ M-001 slice 1's *visual* acceptance is a harness limit, not our code, and case 3 needs an exe
+built with the render device (currently the scratch worktree only) — the tool reports UNKNOWN rather than
+FAIL when the opt-in is absent, which is why that distinction is in the script and not just here.
