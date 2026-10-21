@@ -45,3 +45,20 @@ Hard: the seam must be inert in production — any urge to make it also SET/CLEA
 outside the nested-call experiment is a behavior edit and belongs to a different row. If re-entry
 never happens, the stable-head test remains the canonical shape forever, and a later "rotation
 fix" is the failure mode this row exists to keep honest.
+
+## Acceptance (once unblocked — the nuance my original filing carried and the merge dropped)
+- The observation that unblocks the row is CITED by filename (discoveries/ or the T-034 report in
+  docs/f3/), and for Branch 1 with the EA of the nested caller of `meth_0x5a94a0` — the gate owes
+  not just "re-entry happens" but WHERE it happens, because the seam must mirror that shape;
+- the seam is proven inert, not asserted: a grep for production callers of the seam returns zero
+  non-test hits, printed in the row's run;
+- Branch 1 mechanics asserts, each cited: iterator advances the head exactly once per nested call
+  (`0x5a9572`), the skipped entity's deadline is zeroed (`0x5a9567`), the accumulator stays ZERO
+  through the skip (`v9` quirk — `0x5a95ac` writes it back unconditionally; skipping an entity that
+  already acted RESETS the round clock), the successor dispatches on the next outer call, and
+  `turnOrder=`/`st=` digest fields move exactly as the asserts predict and nothing else;
+- the existing T-048 stable-head block stays green (the seam must not change non-reentrant
+  behavior — if it does, the seam IS a behavior edit);
+- `run-all-tests` quoted from the row's run; `msvc-build` too whenever any header is touched
+  (friend declarations/accessors land in `CombatManager.hpp` — that is a header touch by
+  construction, so expect the MSVC gate every time).
