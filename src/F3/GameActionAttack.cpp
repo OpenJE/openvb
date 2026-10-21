@@ -5,6 +5,7 @@
 #include "F3/GameActionAttack.hpp"
 #include "F3/MapEntitySpawn.hpp"
 #include "JE/Scripting.hpp"
+#include "JE.hpp"   // JE::LogDebugString - the "no manager" report in Start
 
 namespace F3 {
 	RandFn GameActionAttack::s_rand = 0;   // NULL -> std rand inside CombatDice
@@ -111,6 +112,37 @@ namespace F3 {
 		subAttackPending = false;
 		seriesRemaining = mode.attackCount;
 		ammoDeducted = false;
+
+		// 0x401229 JoinCombat(actor), inside OnCreate - the ONLY gameplay path that puts an entity
+		// into rounds (sub_5490B0 has exactly three callers in the DB: here and 0x4033d4/0x40359b,
+		// both in GameActionAttack::meth_0x403320). Join is done here, in Start, not in the ctor:
+		// the shipped ctor does not join, and OnCreate is the analogue of Start.
+		//
+		// The shipped guard at 0x4011da throws FatalError("GameActionAttack::OnCreate() - No target
+		// was specified for the attack.") when no target was set. The port does not replicate that
+		// here because Start() has already handled a null actor/target by marking the action
+		// finished above - a can't-happen input in this port, per the note at the top of the file.
+		//
+		// The join is attempted even when the actor is DEAD: 0x4011f4 gates on
+		// `actor && !actor->vft+80()` and 0x549030 shows vft+80 is `state == 7`, and the whole
+		// second term is a TARGET-side dead/alive test, not a reason for the actor to skip joining.
+		// So: actor present and not DEAD(7) => ask the manager to add it. 0x5a9810 dedupes inside
+		// JoinCombat, so a second attack neither duplicates the node nor re-stores the state, and
+		// an actor ALREADY in rounds (state 5) is refused by ChangeEntityState (5->{4,6,2} only) -
+		// which is the shipped throw reproduced as a refusal plus a log line, not as a silent pass.
+		if ( actor && actor->entityState != kStateDead ) {
+			if ( !F3::JoinCombatThroughSeam( actor ) ) {
+				// No manager installed => this entity did NOT enter rounds. Reported rather than
+				// passed over: an editor/client context is a real configuration, and a silent skip
+				// is how "it joined" gets believed about an entity that never did.
+				static bool warnedNoManager = false;
+				if ( !warnedNoManager ) {
+					warnedNoManager = true;
+					JE::LogDebugString( NULL,
+					    "GameActionAttack::Start: no combat manager - actor did not enter rounds\r\n" );
+				}
+			}
+		}
 	}
 
 	int GameActionAttack::Update( unsigned gameMs ) {

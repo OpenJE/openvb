@@ -70,6 +70,11 @@ namespace {
 	JE::PathManager*   g_pm = 0;      // no map loaded -> NA:path-manager-in-this-context
 
 	unsigned long g_clockMs  = 0;     // the harness owns simulated time (SimDigest header)
+	// T-011 step 4: CombatManager::Tick's second argument is the ROUND quantum - shipped reads
+	// world+0x40, the [World] "Seconds Per Round" config (default 6 at 0x546b5b). It is NOT the
+	// elapsed clock, and passing g_clockMs/1000 there (what this driver did) would have made the
+	// accumulator grow with wall time, which is the retired C-23 placeholder in a new costume.
+	int g_secondsPerRound = 6;
 	FILE*         g_digest   = 0;
 	unsigned      g_frame    = 0;
 
@@ -99,7 +104,7 @@ namespace {
 		for ( int i = 0; i < frames; ++i ) {
 			g_clockMs += (unsigned long)stepMs;
 			F3::TickWorldEntities( (int)g_clockMs );
-			g_cm.Tick( stepMs, (unsigned)( g_clockMs / 1000u ) );
+			g_cm.Tick( stepMs, (unsigned)( g_secondsPerRound > 0 ? g_secondsPerRound : 0 ) );
 			if ( g_digest ) {
 				F3::Sim::WriteFrame( g_digest, src, g_frame, (unsigned)g_clockMs,
 				                     (unsigned)( g_clockMs / 1000u ), 0, 0 );

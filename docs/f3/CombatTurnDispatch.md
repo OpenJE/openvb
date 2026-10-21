@@ -1,0 +1,114 @@
+# Combat turn dispatch and join (0x5A94A0 / 0x5490B0 / 0x5A9810 / 0x5A9440)
+
+Durable notes for `F3::CombatManager` (JE `cls_0x5a9330`, world+0x8C, DB size 36). Landed by T-011
+(2026-10-21, sessionId 01a15be7). Every line below cites the EA it was read from; the two things the
+port does NOT do are called out as absences rather than filled in.
+
+## Layout, from the DB (not inferred)
+
+`mbr_0x4` (size 4) · `mbr_0x8` (1) · `mbr_0xc` (4) · `mbr_0x10` (4) · `mbr_0x14` (1) · `mbr_0x1c` (4)
+· `mbr_0x20` (4). Node = 3 dwords, entity at node+8 (read as `v4[2]` / `*(node+8)` at 0x5a94c2/0x5a955a).
+
+## Manager+0x04 is a MODE, not a pause — the polarity is the opposite of the old label
+
+0x5a951d `if (!this->mbr_0x4)`:
+
+* **+4 == 0 → free-run.** Walk the whole list and give EVERY node a plain
+  `F3::ServerUpdate(entity, dt)` (0x5a9525-0x5a954f), then clear +8 and return. Nothing is paused;
+  everybody acts every frame. This is the branch the app runs in today.
+* **+4 != 0 → the round walk.** AT MOST ONE entity per call: latch-skip → quantum → gate → dispatch.
+
+So a field named "paused" reads backwards, which is why it is `mode0x4_` in the port. **Who raises
++4 to nonzero is NOT established** — the DB records writes only at 0x5a936e (`= 1`, inside
+`meth_0x5a9330`'s `param_1 == 1` path) and 0x5a93ad (`= param_1`), and the only caller of
+`meth_0x5a9330` found by xref is 0x5a957f, which passes **0**. The port therefore starts in
+free-run mode and nothing in it raises the mode on its own. `+14` likewise has two zero-stores
+(0x5a9371/0x5a93b0) and one read (0x5a9575) — no nonzero writer at all. Inventing a round timer, an
+initiative order or an AP spend to make those fields do something is out of scope by the row's own
+rule; they are open questions, not TODOs with a shape I guessed.
+
+`meth_0x5a9330(mode)` also walks the GLOBAL entity list `byte_70BE0C` calling each entity's
+`meth_0x548ee0` / `meth_0x548f30` behind a per-entity flag (0x5a9354 / 0x5a9393). Those hooks are
+**not ported**, so `SetRoundMode()` stores +4 and clears +14 and nothing more.
+
+## The round walk, line by line (0x5a9514-0x5a95de)
+
+| EA | what it does | port |
+|---|---|---|
+| 0x5a94a3-0x5a9511 | maintenance runs only when +8 == 0; state-5 nodes get TurnPrep `vft+96` (0x549090: `+0x300 = dt`, **clears +0x319** at 0x549094), any other state UNLINKS its node; then the iterator is refreshed | already ported, unchanged |
+| 0x5a9517 | `v9 = 0` initialised BEFORE the branch | matters — see the reset below |
+| 0x5a955d | `if (*(entity + 793))` — the +0x319 acted latch | `e->actedLatch0x319` |
+| 0x5a9567 | latch set ⇒ **`*(entity + 668) = 0`**: the +0x29C deadline is cleared | the explicit-time domain: the round clock is not consulted for a skipped event |
+| 0x5a9572 | advance the iterator | the ONLY iterator advance in the function |
+| 0x5a9575-0x5a957f | `if (+14)` ⇒ `SetRoundMode(0)` and return — and this is the one return that does **not** clear +8 | so the world's step-5 loop stays suppressed after a mode switch |
+| 0x5a95aa | `v9 = 1000 * (world server read) + this->mbr_0x10` — the quantum | `Tick(dtMs, secondsPerRound)`, added **once per dispatched event** |
+| 0x5a95ac | `this->mbr_0x10 = v9` — unconditional after the branch | **the skipped-actor path therefore writes accMs = 0**: skipping an actor that already acted RESETS the round clock. Mirrored, not "fixed" |
+| 0x5a95c1 | gate `*(entity+484) == 0 \|\| (v = *(entity+788)) != 0` — +0x1E4 and **T-039's +0x314 count** | `flag0x1E4 == 0 \|\| QueuedActionCount() != 0` |
+| 0x5a95ce | `*(entity+668) = accMs / 1000` | deadline armed in SECONDS from the round accumulator |
+| 0x5a95de | `F3::ServerUpdate(entity, dt + accMs)` | `F3::TickEntityServerUpdate(e, dtMs + accMs)` — the one place the two clock domains meet |
+
+The consequence for a port that reads +0x314 as "busy" (it is not — see
+`docs/f3/EntityActionQueueSeam.md`): a queued order **forces** the turn even when +0x1E4 says
+otherwise. That is a dispatch-behaviour difference, not a naming nicety.
+
+## Why the walk does not rotate in the port yet, and why that is not "unfinished"
+
+The iterator advances only at 0x5a9572, behind a +0x319 that has to survive this call — but the same
+call's maintenance pass clears +0x319 at 0x549094 *before* 0x5a955d tests it. So inside one
+non-re-entrant call the head actor is always dispatched, never skipped. The advance is therefore a
+property of **re-entrancy**: +8 is the re-entry latch (that is what 0x5a94a3 tests), and the pump
+raises +0x319 for an entity whose action deferred (`0x54c833`/`0x54c864` in
+`Entity::virt_meth_0x54c570`). A second `meth_0x5a94a0` entered from inside a dispatch skips
+maintenance, sees the latch, and moves on.
+
+Our port's action pump does not raise +0x319 (nothing in `src/F3` writes it), so the walk is stable
+at the head. **I did not add a round-robin to make it move**: a rotation that cites no store changes
+WHO acts, which is precisely the fact `turnOrder=` in the digest exists to compare. The test in the
+PathManager suite asserts the stable head so that if someone adds a rotation without the store, it
+fails loudly instead of looking like progress. Open question, routed: which shipped writer raises
++0x319 on the combat path, and is the re-entrant `meth_0x5a94a0` reachable from a node's own
+ServerUpdate (the +8 test says the authors expected it).
+
+## Join, flush, and the order that makes them safe
+
+* `Entity::JoinCombat` **0x5490b0**: throws `"Invalid attempt to retrieve world server instance."`
+  (0x5490d7) unless the AreaMapIcon guard bit is set; resolves the manager at 0x5490f4
+  (`(*(world[1].vft + 32))(world+1)`), then `AddToList`. Xrefs: **only** 0x401229
+  (`GameActionAttack::OnCreate`) and 0x4033d4/0x40359b (`GameActionAttack::meth_0x403320`) — join is
+  an attack property, not a phase. Ported into `GameActionAttack::Start`, not the ctor.
+* `Combat::AddToList` **0x5a9810**: walks the list first and **returns on a match** — no insert AND
+  no state store — so a second attack can neither duplicate a node nor re-state its actor. On a miss
+  it inserts, calls `cls_0x401b00::meth_0x401dd0(manager+0x18, 1)` (the deferred GUI refresh,
+  **cited and absent** in the port like the enqueue seam's `meth_0x54ef30`), then
+  `meth_0x5507f0(entity, 5)` = ChangeState(5) at 0x5a987b.
+* `Combat::Flush` **0x5a9440**: per node — unlink, free, `--count`, then ChangeState(**4**) at
+  0x5a9485. Reached from 0x5a95f0 and the destructor 0x5a9a10, so the port's `~CombatManager()`
+  flushes too, and additionally unregisters itself: a stack manager going out of scope must not be
+  the pointer the join seam resolves to.
+* `Entity::ChangeState` **0x5507f0**: legal exits `0→{1,3}`, `1,3→4`, `2→8`, `4→{5,6,2}`,
+  `5→{4,6,2}`, `6→{7,2}`, `7→2`; an illegal pair THROWS
+  `"Invalid state change in Entity::ChangeState."` (seven sites, 0x550820…0x550934). The port logs
+  the same string and stores nothing, and `JoinCombat` **removes the node it just inserted** when the
+  store is refused — a node in the list behind an entity that never entered rounds is the half-join
+  the atomicity exists to prevent. After a legal store the original calls `vft[+27]` then
+  `meth_0x54ef30`/`meth_0x54bf00` (cited and absent, as above).
+
+## Port-only seam, because of a link fact
+
+`GameActionAttack.cpp` is compiled into the ActionMoveTo and SpawnMove suites, whose source lists do
+**not** include `CombatManager.cpp`. A direct `manager->JoinCombat( e )` there is an
+`undefined reference` in two unrelated suites — measured, both went red. So the join is reached
+through a function pointer stored in `MapEntitySpawn.cpp` (the one game-layer TU in every such
+suite), installed by `CombatManager`'s constructor, and `JoinCombatThroughSeam()` returns 0 when no
+manager exists. A null seam is **logged** at the call site
+(`"GameActionAttack::Start: no combat manager - actor did not enter rounds"`), never reported as a
+join. That is harness item 22's rule paying rent inside a build graph.
+
+## Double-tick
+
+The world's step-5 loop skips state-5 entities at 0x545e8e, which is the mechanism that keeps a
+combatant from being pumped twice; `CombatMidTurn()` (+8) already mirrors the outer gate at
+0x545e23. The port therefore did NOT bypass the interlock — `PumpEntity( e, ms, combatantDispatch )`
+is one body with one flag, because a second copy of the pump would drift, and the drift would read
+as combat behaviour. `TickWorldForEntity` keeps its old state-5 skip, so the suites that were written
+against it are unchanged.

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "F3/MapEntitySpawn.hpp"
+#include "F3/CombatManager.hpp"   // the world-server stand-in for JoinCombat (see GetActiveCombatManager)
 #include "F3/GameActionAttack.hpp"
 #include "JE/ActionMoveTo.hpp"   // kind 1: mover lives at the shipped +0x11, not +0x14
 #include "JE/Map.hpp"
@@ -303,9 +304,22 @@ namespace F3 {
 		return 0;   // our actions[4] is the deque's FIRST BLOCK; the original appends blocks
 	}
 
-	static void TickOneEntity( SpawnedEntity* e, int ms );
+	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch );
+
+	static void TickOneEntity( SpawnedEntity* e, int ms ) {
+		PumpEntity( e, ms, 0 );   // the world loop's own step-5 pump (0x545e71-0x545ebd)
+	}
 
 	void TickWorldForEntity( SpawnedEntity* e, int ms ) { TickOneEntity( e, ms ); }
+
+	// F3::ServerUpdate at 0x5a953b / 0x5a95de - what CombatManager dispatches to for a
+	// combatant. This is the SAME body as the world-loop pump with ONE difference: the state-5
+	// gate at 0x545e8e is inverted, because the world loop skips state 5 precisely so that the
+	// combat manager owns it. Two copies of this function would drift, and the drift would read
+	// as combat behaviour, so there is one body and a flag.
+	void TickEntityServerUpdate( SpawnedEntity* e, int ms ) {
+		if ( e ) { PumpEntity( e, ms, 1 ); }
+	}
 
 	void TickWorldEntities( int ms ) {
 		tracing::instrument( tracing::LOCATION, "ms=%d", ms );
@@ -318,7 +332,7 @@ namespace F3 {
 		}
 	}
 
-	static void TickOneEntity( SpawnedEntity* e, int ms ) {
+	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch ) {
 		{
 			RegisterOccupancy( e, GetActiveMap() );
 			// engine-anim countdown (E+0x94 semantics): elapsed accumulates toward 0; on
@@ -370,8 +384,14 @@ namespace F3 {
 				case kStateRemoved:
 					return;   // 0x550ad0 deep tail unmodeled
 				case kStateSpawned:
-					return;     // 0x545d60 head gate: state==5 entities are NOT pumped
-				              // until the add-to-world activation flips them to ACTIVE
+					// 0x545e8e: `if (*(entity + 480) != 5)` - the WORLD loop skips state 5, because a
+					// state-5 entity belongs to the combat manager (it joined through 0x5490b0, and
+					// 0x5a953b/0x5a95de dispatch its ServerUpdate). CombatManager has already proven
+					// the entity is a state-5 node before it calls, so only that caller pumps here.
+					if ( !combatantDispatch ) {
+						return;
+					}
+					break;      // dispatched as a combatant: pump it
 				default:
 					break;      // ACTIVE
 			}
@@ -427,7 +447,62 @@ namespace F3 {
 				}
 			}
 		}
-	} // TickOneEntity
+	} // PumpEntity
+
+	// The join seam's storage. Declared in MapEntitySpawn.hpp; kept in THIS file because it is the
+	// one game-layer TU present in every suite that compiles GameActionAttack.cpp.
+	static CombatJoinFn g_combatJoinSeam = 0;
+	void SetCombatJoinSeam( CombatJoinFn fn ) { g_combatJoinSeam = fn; }
+	int JoinCombatThroughSeam( SpawnedEntity* e ) {
+		if ( !g_combatJoinSeam || !e ) {
+			return 0;   // no manager: the caller reports it, it does not pretend to have joined
+		}
+		g_combatJoinSeam( e );
+		return 1;
+	}
+
+	// The world-server stand-in (CombatManager.hpp explains why the seam is defined HERE rather
+	// than by calling F3::GetWorldServerInstance() from the action: GameActionAttack.cpp is
+	// compiled into suites that link neither the world nor src/F3.cpp).
+	static CombatManager* g_activeCombatManager = 0;
+	CombatManager* GetActiveCombatManager() { return g_activeCombatManager; }
+	void SetActiveCombatManager( CombatManager* cm ) { g_activeCombatManager = cm; }
+
+	// Entity::meth_0x5507f0 ChangeState. Legality read from 0x55080c-0x550920:
+	//   0->{1,3}  1->{4}  3->{4}  2->{8}  4->{5,6,2}  5->{4,6,2}  6->{7,2}  7->{2}
+	// An illegal pair THROWS "Invalid state change in Entity::ChangeState." in the original
+	// (the string is at 0x550820 .. 0x550934, one site per state). The port has no exception
+	// plumbing on this path, so it logs the SAME string and does not store: silently accepting
+	// an illegal pair is what would let the manager's list and the entity's state disagree.
+	// The shipped tail (vft[+27] at 0x55094b, then meth_0x54ef30 / meth_0x54bf00) is the
+	// deferred GUI/net refresh pair - CITED AND ABSENT, the same call the enqueue seam already
+	// refuses to fake (docs/f3/EntityActionQueueSeam.md).
+	int ChangeEntityState( SpawnedEntity* e, int next ) {
+		tracing::instrument( tracing::LOCATION, "next=%d", next );
+		if ( !e ) {
+			return 0;
+		}
+		int legal = 0;
+		switch ( e->entityState ) {
+			case kStateInvalid:    legal = ( next == kStateCreated || next == kStateCreatedAlt ); break;  // 0x55080c
+			case kStateCreated:    legal = ( next == kStateActive ); break;                                // 0x55083a
+			case kStateCreatedAlt: legal = ( next == kStateActive ); break;                                // 0x55083a
+			case kStateDestroy:    legal = ( next == kStateRemoved ); break;                               // 0x550863
+			case kStateActive:     legal = ( next == kStateSpawned || next == kStateDying
+			                               || next == kStateDestroy ); break;                              // 0x550896
+			case kStateSpawned:    legal = ( next == kStateActive || next == kStateDying
+			                               || next == kStateDestroy ); break;                              // 0x5508c9
+			case kStateDying:      legal = ( next == kStateDead || next == kStateDestroy ); break;         // 0x5508f7
+			case kStateDead:       legal = ( next == kStateDestroy ); break;                               // 0x550920
+			default:               legal = 0; break;   // REMOVED(8) has no legal exit in the table
+		}
+		if ( !legal ) {
+			JE::LogDebugString( NULL, "Invalid state change in Entity::ChangeState.\r\n" );
+			return 0;
+		}
+		e->entityState = next;   // 0x550945 stores Entity+0x1E0
+		return 1;
+	}
 
 	int ParseGentBlock( const unsigned char* data, unsigned len, int f[8] ) {
 		tracing::instrument( tracing::LOCATION, "" );

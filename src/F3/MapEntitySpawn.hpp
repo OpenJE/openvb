@@ -230,6 +230,38 @@ namespace F3 {
 	// the seam rather than by each caller remembering to.
 	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action );
 
+	// The combat manager's per-turn dispatch target - the port's analogue of
+	// `F3::ServerUpdate(entity, ms)` at 0x5a953b (free-run walk) and 0x5a95de (turn walk).
+	// It is the SAME pump the world loop reaches for non-state-5 entities, minus the state-5
+	// gate at 0x545e8e: the shipped world loop SKIPS state-5 entities precisely because the
+	// combat manager drives them, so a combatant must be pumpable from here or joining would
+	// freeze it. Occupancy and the engine-anim countdown still run, because the world loop is
+	// NOT running them for this entity (0x545e8e skips the whole entity, not just the FIFO).
+	void TickEntityServerUpdate( SpawnedEntity* e, int ms );
+
+	// Combat's join, reached through a FUNCTION POINTER instead of a call. The reason is measured,
+	// not stylistic: the run-all-tests rows for ActionMoveTo and SpawnMove link
+	// GameActionAttack.cpp but NOT CombatManager.cpp, so a direct `manager->JoinCombat( e )` in
+	// that file is an `undefined reference` in two suites that have nothing to do with combat -
+	// both went red on exactly that this evening (harness item 22: run the suites you are not
+	// editing). The seam is INSTALLED by CombatManager's ctor, so a TU that never constructs a
+	// manager sees a null seam and skips the join, which is the honest result.
+	typedef void (*CombatJoinFn)( SpawnedEntity* e );
+	void SetCombatJoinSeam( CombatJoinFn fn );
+	// Returns 1 when a manager was installed and the join was attempted, 0 when there was NO
+	// manager. Never a silent 1: an entity that did not enter rounds must not read as if it did.
+	int  JoinCombatThroughSeam( SpawnedEntity* e );
+
+	// Entity::meth_0x5507f0 (ChangeState) with the shipped legality table at
+	// 0x55080c-0x550920: 0->{1,3}  1,3->{4}  2->{8}  4->{5,6,2}  5->{4,6,2}  6->{7,2}  7->{2}.
+	// The original THROWS "Invalid state change in Entity::ChangeState." on an illegal pair; the
+	// port has no exception plumbing on this path, so it LOGS the same string and leaves the
+	// state UNCHANGED (deviation, cited). Returns 1 when the state was written.
+	// After a legal store the original calls vft[+27] and then either meth_0x54ef30 or
+	// meth_0x54bf00 (the deferred GUI/net refresh pair). NEITHER is ported - see
+	// docs/f3/EntityActionQueueSeam.md on 0x54ef30 - so this function does not fake them.
+	int ChangeEntityState( SpawnedEntity* e, int next );
+
 	// OperateDoor action (kind 3 in the list): the 0x406485 shape minus script/anim (toggles
 	// the door byte, completes next tick). Fields: door ptr + start ms.
 	struct GameActionOperateDoor {

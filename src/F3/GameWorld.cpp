@@ -51,12 +51,16 @@ namespace F3 {
     }
 
     // Combat seam: turn manager tick ahead of job processing (0x545E03 -> 0x545E18 order).
-    // Clock source = Gregorian totalSeconds per the C-23-documented reimpl choice.
+    // T-011 step 4 CHANGED THE OPERAND and this is why the line is not what it looks like:
+    // the shipped consumer at 0x5a95aa reads world+0x40, which is the IMMUTABLE config
+    // [World] "Seconds Per Round" (default 6 at 0x546b5b, atol'd to +0x40 at 0x546c8f; the
+    // writer census was closed by T-010d) - NOT the world clock. Feeding TotalSeconds() here
+    // (the old C-23 placeholder) made accMs advance with wall time, which is exactly what the
+    // round-quantum rule forbids. So: secondsPerRound in, per DISPATCHED queue event.
     void GameWorld::CombatTick( int dtMs, int ms ) {
         (void)ms;
         if ( m_combat ) {
-            const unsigned secs = m_clock ? m_clock->TotalSeconds() : 0u;
-            m_combat->Tick( dtMs, secs );
+            m_combat->Tick( dtMs, (unsigned)( m_secondsPerRound > 0 ? m_secondsPerRound : 0 ) );
         }
     } // CombatTick
 
@@ -82,6 +86,10 @@ namespace F3 {
         // cls_0x5a42b0 is unmodeled (map-load request bookkeeping); store NULL for now.
         m_mapRequestMgr = NULL;
         m_combat = new CombatManager();   // world+0x8C (JE cls_0x5a9330 family)
+        // Register the manager as the one attacks join through (0x5490f4 resolves it from the
+        // world-server singleton; the seam is in MapEntitySpawn.cpp because GameActionAttack.cpp
+        // is compiled into suites that link neither this file nor src/F3.cpp).
+        SetActiveCombatManager( m_combat );
 
         // World clock (original: GameWorld vb idx4 factory 0x46fda0 -> sub_544D90 ->
         // new Gregorian seeded from the calendar block; ApplyWorldClockParams ran during

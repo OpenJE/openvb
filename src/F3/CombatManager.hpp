@@ -11,8 +11,9 @@ namespace F3 {
 	// F3::CombatManager - port of the combat/initiative manager (JE cls_0x5a9330,
 	// world+0x8C). Structure + turn protocol from discoveries
 	// session6-classid-readers / session12 / session14 and the raw 0x5A94A0 decompile:
-	//   {+4 paused, +8 re-entry/list-maintaining, +C iterator, +10 accMs,
-	//    +14 end-iter flag, +1C turn-list head, +20 count}
+	//   {+4 ROUND-MODE switch (NOT "paused" - see the mode note), +8 re-entry /
+	//    list-maintaining, +C iterator, +10 accMs, +14 end-iter flag, +1C turn-list
+	//    head, +20 count}
 	// Per world frame (ServerUpdate step 3, BEFORE PathManager::ProcessJobs at 0x545E18):
 	//   1. guarded list maintenance: nodes whose entity is state-5 get TurnPrep
 	//      (vft+0x60 = 0x549090: writes e+0x300=dt, clears the +0x319 latch); any other
@@ -40,16 +41,81 @@ namespace F3 {
 	// Combat-mode gate: while the +8 maintaining flag pattern implies activity, the
 	// shipped World::ServerUpdate_0x545d60 step-5 entity loop runs ONLY when
 	// *(mbr_0x8c+8)==0 (0x545E23) - mirrored via IsActive() gating the F3 pump hook.
+	//
+	// MODE, manager+0x04 (T-011, read at 0x5a951d and written at 0x5a936e/0x5a93ad). The old
+	// label "paused" was wrong and is retired: `if (!mbr_0x4)` is the branch that pumps EVERY
+	// listed entity with a plain ServerUpdate(dt) each frame (0x5a951d-0x5a954f), and a NON-ZERO
+	// mode is what selects the one-entity-per-event round walk (latch-skip -> quantum -> gate ->
+	// dispatch). 0 is therefore "free-run", not "stopped". The switch is meth_0x5a9330(this,mode),
+	// which first walks the GLOBAL entity list (byte_70BE0C) calling each entity's round hook
+	// (0x548ee0 / 0x548f30 - NOT ported) before storing +4 and clearing +14. So SetRoundMode()
+	// below stores and clears only, and says so.
+	//
+	// WHO RAISES +4 IN THE ORIGINAL IS NOT ESTABLISHED. The DB records no nonzero writer of +4
+	// and only two zero-stores of +14 (0x5a9371/0x5a93b0) plus one read (0x5a9575). The port
+	// therefore STARTS in free-run mode and never raises the mode by itself: that is a routed
+	// question (T-011 open item), not licence to invent a round timer, an initiative order or an
+	// AP spend. Tests that want the round-walk branch call SetRoundMode() explicitly and say why.
 	class CombatManager {
 	public:
-		CombatManager() : paused_(false), maintaining_(false), accMs_(0),
-		                  count_(0), head_(0), iter_(0) {}
+		// Defined in CombatManager.cpp: it registers this manager as the one attacks join through
+		// AND installs the join seam. MapEntitySpawn.hpp explains why the join is a POINTER and not
+		// a call - GameActionAttack.cpp is compiled into suites that do not link CombatManager.cpp,
+		// and a direct call there is a link error in someone else's suite. The last manager
+		// constructed owns both; the app has exactly one (world+0x8C), and a test that stacks
+		// managers must say so out loud.
+		CombatManager();
+
+		// The shipped destructor is 0x5a9a10, and Flush's other xref (0x5a95f0) is how teardown
+		// reaches the list. Freeing the nodes on teardown is therefore what the original does, and
+		// this port additionally UNREGISTERS itself: a stack manager going out of scope in a test is
+		// exactly how the join seam could resolve to freed memory, and a dangling seam would be a
+		// crash that reads like a combat bug.
+		~CombatManager();
+
+		// The seam's target. A free function taking only the entity, because the pointer type cannot
+		// carry a `this`; it resolves the active manager, so no manager means no join happens.
+		static void JoinCombatThunk( SpawnedEntity* e );
 
 		bool IsActive() const { return count_ > 0; }
 
-		// Structure-level port of 0x5A94A0 step 1 (list maintenance + TurnPrep).
-		// Turn DISPATCH (step 2) stays structural until the cadence source is settled.
-		void Tick(int dtMs, unsigned clockSeconds);
+		// 0x5490b0 Entity::JoinCombat + 0x5a9810 Combat::AddToList as ONE operation. The shipped
+		// pair is atomic for a reason: AddToList inserts the node and THEN stores state 5
+		// (meth_0x5507f0 at 0x5a987b), while the world loop skips state-5 entities at 0x545e8e -
+		// so a half-join either double-pumps a listed entity or leaves a state-5 entity that
+		// NOTHING pumps. AddToList also dedupes BEFORE inserting (0x5a9826-0x5a9841: walk the list,
+		// and if a node's entity matches, return - no insert AND no state store), which is why a
+		// second attack on the same actor can neither duplicate nor re-state it.
+		// The shipped guard at 0x5490c3 THROWS "Invalid attempt to retrieve world server instance."
+		// with no server context; this port logs once and refuses - no exception plumbing here, and
+		// a silent skip would hide the very condition the throw exists to report.
+		void JoinCombat( class SpawnedEntity* e );
+
+		// 0x5a9440 Combat::Flush: unlink and free EVERY node, --count per node, and store state 4
+		// (meth_0x5507f0 at 0x5a9485) for each entity as it goes. Leaving rounds is a list
+		// operation with a state side effect - never a bare state store.
+		void Flush();
+
+		// 0x5a9330 Combat::SetMode: stores +4, clears +14, and (UNPORTED) the per-entity round
+		// hooks over the global entity list. See the MODE note above for who may call this.
+		void SetRoundMode( unsigned mode );
+		unsigned RoundMode() const { return mode0x4_; }
+
+		// The entity the round walk last dispatched (0x5a95de). PORT-SIDE bookkeeping: the original
+		// hands that entity back as its return value, and there is no shipped field for it. Tests
+		// and the digest read it so "who was acted on" is a fact from the manager, not an inference
+		// from an hp change.
+		class SpawnedEntity* LastDispatched() const { return dispatched_; }
+
+		// 0x5A94A0, the whole of it: list maintenance (step 1) plus the dispatch walk (step 2).
+		// `secondsPerRound` is the operand at 0x5a95aa: the shipped line is
+		// `1000 * (world+0x40) + accMs`, and world+0x40 is the IMMUTABLE config
+		// "Seconds Per Round" (default 6 at 0x546b5b, atol'd from [World] at 0x546c8f; writer
+		// census closed by T-010d). So it is added ONCE PER DISPATCHED QUEUE EVENT - a round-based
+		// virtual clock, never wall-ms and never a per-frame accumulation. The previous
+		// `accMs_ += clockSeconds * 1000` line was the C-23 placeholder and is retired here
+		// (discoveries/2025-10-20-canonical-fact-sheet.md §13).
+		void Tick(int dtMs, unsigned secondsPerRound);
 
 		void AddToTurns(  class SpawnedEntity* e );
 		void RemoveFromTurns( class SpawnedEntity* e );
@@ -71,14 +137,22 @@ namespace F3 {
 			class SpawnedEntity* entity;
 		};
 
-		bool      paused_;       // +4
+		unsigned  mode0x4_;      // +4 0 = free-run every listed entity; != 0 = the round walk
 		bool      maintaining_;  // +8 re-entry/list-maintaining (gates step-5 pump too)
-		unsigned  accMs_;        // +10
-		bool      endIter_;      // +14
+		unsigned  accMs_;        // +10 round-clock ms
+		bool      endIter_;      // +14 end-of-walk flag (read 0x5a9575; no nonzero writer found)
+		class SpawnedEntity* dispatched_;   // port-side only, see LastDispatched()
 		int       count_;        // +20
 		Node*     head_;         // +1C (circular sentinel)
 		Node*     iter_;         // +C
 	};
+	// The manager the action layer joins through. Shipped resolves it through the world-server
+	// singleton (0x5490f4: (*(world[1].vft + 32))(world+1)); the port stores it in
+	// MapEntitySpawn.cpp for the same link reason as the seam above, and CombatManager's ctor
+	// registers it. A null manager is REPORTED at the call site, never silently skipped.
+	CombatManager* GetActiveCombatManager();
+	void SetActiveCombatManager( CombatManager* cm );
+
 } // namespace F3
 
 #endif // F3_COMBATMANAGER_HPP_

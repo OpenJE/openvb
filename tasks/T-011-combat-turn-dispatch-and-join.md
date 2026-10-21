@@ -45,6 +45,53 @@ than invented. This task closes that, plus the join path, using only raw-verifie
 - Gate interlock is live: `World::CombatTick` runs before `ProcessJobs` (0x545E0D/0x545E18) and the
   step-5 entity loop is skipped when `CombatMidTurn()` (0x545E23).
 
+## Landed (2026-10-21, HappyKnight 01a15be7) — steps 2-6, with two things NOT done on purpose
+
+Read from the original and ported line by line; the durable write-up is **`docs/f3/CombatTurnDispatch.md`**.
+
+* **Join** is in `GameActionAttack::Start` (the `OnCreate_0x4011d0` @0x401229 analogue, not the ctor) and
+  goes through `CombatManager::JoinCombat` = 0x5490b0 → 0x5a9810: dedupe-walk (0x5a9826-0x5a9841, which is
+  what makes a second attack neither duplicate NOR re-state), insert, then `ChangeState(5)` (0x5a987b).
+  If the state store is refused the node is REMOVED again — a listed entity that never entered rounds is
+  the half-join the atomicity exists to prevent. `Flush()` mirrors 0x5a9440 (unlink, `--count`,
+  ChangeState(4) at 0x5a9485) and the dtor calls it, per 0x5a9a10.
+* **Dispatch** is the whole of 0x5A94A0, including the two things that read like bugs and are not:
+  the skipped-actor path writes **accMs = 0** (0x5a9517 + 0x5a95ac), and the `SetRoundMode(0)` return at
+  0x5a957f is the ONLY exit that leaves +8 set. Quantum is `1000 * secondsPerRound` **per dispatched
+  event** (0x5a95aa); the old `accMs += TotalSeconds()*1000` per frame is retired, and `GameWorld::CombatTick`
+  now feeds `m_secondsPerRound` (world+0x40) instead of the clock. `sim-driver` was corrected the same way —
+  passing elapsed seconds there was the retired C-23 placeholder wearing new clothes.
+* **Gate** mirrors 0x5a95c1 as `flag0x1E4 == 0 || QueuedActionCount() != 0`, i.e. **a queued order forces
+  the turn** (T-039). `+0x1E4`'s MEANING is not adopted — it is named for its offset, and the question is
+  T-041's.
+* **Interlock** extended, not bypassed: one `PumpEntity(e, ms, combatantDispatch)` body, because the
+  state-5 skip at 0x545e8e belongs to the WORLD loop and the combat dispatch must be able to pump the
+  same entity. A second copy of that function would drift and the drift would read as combat behaviour.
+* **Tests** (PathManager, 103 asserts, floor 74): the six the row asked for, plus the ones that only make
+  sense after reading the lines — clear-then-check order (0x5a94fd before 0x5a955d), "1 ms and 999 ms
+  frames give the SAME round clock", and **non-combat entities byte-identical with an empty list AND with a
+  list holding someone else** (the second control is the one that can actually catch a leak).
+
+### NOT done, and why — three routed questions, no invented code
+
+1. **The walk does not rotate in the port.** The only iterator advance is 0x5a9572, behind a +0x319 that
+   this call's own TurnPrep cleared at 0x549094 — so rotation is a property of RE-ENTRANCY (+8 is the
+   re-entry latch, 0x5a94a3) plus the pump raising +0x319 (0x54c833/0x54c864). Nothing in `src/F3`
+   writes `actedLatch0x319`. Adding a round-robin would change WHO acts — the one fact `turnOrder=` exists
+   to compare — so a test pins the stable head and fails loudly if a rotation appears without the store.
+   Question: which shipped writer raises +0x319 on the combat path, and is `meth_0x5a94a0` re-entered
+   from a node's own ServerUpdate?
+2. **Who sets manager+0x04 nonzero, and who sets +14 nonzero.** The DB has no nonzero writer for either,
+   and the only xref'd caller of `meth_0x5a9330` passes 0. Until that is read, the round-walk branch is
+   reachable only from tests that call `SetRoundMode()` and say so.
+3. **`meth_0x401dd0(manager+0x18, 1)` at 0x5a9868 and the `vft+27 → meth_0x54ef30 / meth_0x54bf00` tail
+   of ChangeState (0x55094b-0x550960)**: the deferred GUI/net refresh. Cited and absent, same rule the
+   enqueue seam follows — a flag nobody reads would be a false model of a subsystem not reconstructed.
+
+One link fact recorded because it cost two red suites first: `GameActionAttack.cpp` is compiled into the
+ActionMoveTo and SpawnMove rows WITHOUT `CombatManager.cpp`, so the join is reached through a function
+pointer stored in `MapEntitySpawn.cpp` (harness item 22 — run the suites you are not editing).
+
 ## Steps
 
 1. Reserve only what you touch: `src/F3/CombatManager.{hpp,cpp}`,
