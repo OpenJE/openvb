@@ -618,5 +618,15 @@ Rules, now the standing form for any checker shipped from this repo:
 2. **Never read `$?` through a negation or a pipe** (see item 17). Capture the command's own status, then branch on it.
 3. **Every failure mode prints a reason** — `f3-json-check` emits an explicit `DRIFT REASON:` line, so a red can be read
    rather than re-derived.
-4. **A silent fallback is a lie with extra steps.** A bad explicit `--results` path used to quietly pick up another copy
+4. **A silent fallback is a lie with extra steps.**
+
+**Cross-reference, so item 29 is not read as a single-tool story.** The same lesson in the *indexing* half is T-032
+(`tools/ea-index.py`, follow-up `2fca7d7`): the lane's own refusal **counters** disagreed with its reported total
+(756 vs my 759), and I found it by summing categories the tool already printed. So the rule generalises past mutation
+tests: **a checker's arithmetic about itself must be printed by the checker, not reconstructed by the reader.** Any tool
+with refusal/skip/fallback counts should emit its own total, because a reader who adds up categories and gets a different
+number has learned both that the tool disagrees with itself and — worse — may not notice. My own first measurement of
+that disagreement was wrong in the same way (reading `$?` after a pipeline), which is item 17 and item 29 arriving at the
+same place from two directions.
+ A bad explicit `--results` path used to quietly pick up another copy
    elsewhere on the machine and verify an export against unrelated facts while reporting clean; it exits 2 now.

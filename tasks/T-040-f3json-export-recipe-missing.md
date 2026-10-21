@@ -57,6 +57,14 @@ here" and the repo should stop treating it as a live index — that verdict is w
 must be reported rather than papered over by hand-editing JSON.
 
 
+## Known future behaviour, stated now so it is not read as a regression (SwiftRaven)
+
+**`f3-json-check` will start failing the moment anyone restores `ooprolog`.** That is the guard working, not breaking:
+expect the first failures on the **4,059 synthesized `base`/`struc`/`vftptr` entries** it currently declares UNVERIFIED,
+because a live exporter would emit real values for them. The correct response then is to **finish the rebuild and re-pin
+the golden expectations in the same change** — never to revert or soften the check. Recorded here because the failure will
+otherwise look like the tool got flaky on the day the toolchain improved.
+
 ## Verdict (SwiftRaven, closed)
 
 Full record: [`discoveries/2025-10-20-t040-f3json-provenance.md`](../discoveries/2025-10-20-t040-f3json-provenance.md).
