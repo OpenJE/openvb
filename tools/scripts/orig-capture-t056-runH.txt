@@ -1,0 +1,60 @@
+# T-068 - FIRST REAL CAPTURE (not a fixture): shipped values as read by T-056 run H
+# (canonical capture, 2026-10-21 17:0x EDT, private prefix, Xorg-dummy :96, gdb:fifo-winedbg
+# :31440, cs=none). Session id + read table below per docs/f3/OrigCapture.md "earned label".
+# Source of EVERY value: discoveries/2025-10-21-t056-xorg-dummy-six-rows.md (row H). No value here
+# is invented; where the capture grammar demands something T-056 did not read, it is NOT faked -
+# see COVERAGE NOTES at the bottom (that is the pairing's first finding, not my shortcut).
+
+# PROVENANCE IS PASSED ON THE CLI (the grammar's provenance record takes ONE token and the
+# read-names belong to the claim, not the data):
+#   tools/orig-digest.sh --capture tools/scripts/orig-capture-t056-runH.txt \
+#     --provenance "lockstep r1,r3,r4b session=t056-runH exe=a68c22f3dd1c256ec9539a70e87cb434" \
+#     --out /tmp/t068-orig.digest
+# (r0/r2/r4/r1draw/r2b/r3b/r4b2 are honest EXTRA reads kept as data; the label above names only
+#  the reads the renderer can cross-check once entity/frame rows exist.)
+
+# R0 - World vftable slot-6 (+0x18) target at the first pump of a new game (bp 0x552bb5, fired 5x,
+# stable across boots B/C/H; equals T-045's static virt_meth_0x544a90 - documented assumption live-confirmed)
+record=read read=r0 address=[0x668584] value=0x544A90 when=first-pump-of-new-game breakpoint=0x552bb5
+
+# R1 - F3::start_time LCG: state dword + returned draw at the FIRST return of sub_48CCC0
+# (gate byte [0x707C64]=0x01). Boot-varying BY DESIGN (seeded from wall clock): the comparable
+# datum is the state at the instant - the draw/state pair is the same-state parity pin.
+record=read read=r1 address=[0x707C60] value=0x65AD8170 when=first-return-of-0x48CCC0 breakpoint=0x48ccf6
+record=read read=r1draw address=$eax value=0x2D81 when=first-return-of-0x48CCC0 breakpoint=0x48ccf6
+
+# R2 - Gregorian::totalSeconds behind [[0x70BD98]+0x3C] (greg object addr 0x079CD8D8, stable):
+# frame-0 pump = 0s, pump #3 = 1s (the frame-0 LEAP is shipped behavior, every boot), 21s at the
+# R1 instant (same wall-clock-offset character as run C's 0x13).
+record=read read=r2 address=[[0x70BD98]+0x3C]->0x34 value=0 when=frame-0-pump breakpoint=0x48ccf6
+record=read read=r2b address=[[0x70BD98]+0x3C]->0x34 value=1 when=pump-3 breakpoint=0x48ccf6
+
+# R3 - Entity+0x314 deque LIVE COUNT (+0x314 per RedXenon/HappyKnight, kept). First-insert sample:
+# entity 0x79B3600 x/5wx 0,0,0,0,0 -> head 0 count 1; deepest 0x7E958A8 count 1->2->3 (never >4
+# in the 2.5-4min pre-crash window - NO dropped-order datum either way).
+record=read read=r3 address=0x79B3600+0x314 value=1 when=first-insert-of-scripted-round breakpoint=0x550720
+record=read read=r3b address=0x7E958A8+0x314 value=3 when=deepest-observed-pre-crash breakpoint=0x550720
+
+# R4 - owner back-link pre/post the funnel store: pre = 0 (12/12), post = owner entity ptr
+# (35/35 stores bitwise identical runs C/H).
+record=read read=r4 address=0x080F1BE0+0x14 value=0x079B3600 when=post-insert breakpoint=0x550741
+
+# R4b - action class vftptrs per deque slot: first-insert class GameActionIdle on ALL 12 sampled
+# entities; 2nd/3rd inserts on 0x7E958A8 ActionAnim; zero UNKNOWN_VT (both resolve in F3.json).
+record=read read=r4b address=[0x79B3600-deque-slot0-action]+0x00 value=0x6497C4 when=post-insert breakpoint=0x550720
+record=read read=r4b2 address=[0x7E958A8-deque-action]+0x00 value=0x6A6414 when=third-insert breakpoint=0x550720
+
+# COVERAGE NOTES (honest absences - the pairing's real output, NOT omissions to smooth over):
+# (1) NO record=entity rows: the grammar requires name/pos/yaw/hpcur/hpmax/state/moving/acted per
+#     entity; T-056 read q (R3) and vt (R4b) but NOT the entity state tuple (never in the six-row
+#     schema). An entity row here would be 6 invented fields carrying 2 real ones. Required follow-up
+#     read set "R5": full state tuple for ONE named entity at the R3 instant (run H's 0x79B3600).
+# (2) NO record=frame rows: the grammar demands tickms (timeGetTime uptime) at every frame; T-056
+#     recorded clocksec values (R2 above) but not uptime pairs. Faking tickms would poison a CONTEXT
+#     field the tool treats as excluded-but-required. Required follow-up "R6": two [tickms, clocksec]
+#     pairs 3+ pumps apart (frames 0..4 of a fresh boot).
+# (3) r4b2/r2b/r1draw/r3b are EXTRA reads beyond the grammar's minimum set (r3, r4b required); they
+#     are kept as comments' records because nothing in the frame set can cross-check them yet (the
+#     cross-check is frame-embedded, see notes 1-2). The provenance line names them; if that makes
+#     the label unverifiable that is correct - the file IS incomplete for entity rendering, and the
+#     tool saying so, refusing, and naming the missing reads is the T-068 finding, not a failure.
