@@ -138,7 +138,8 @@ row; A keeps editorial merge rights).
 | T-027 | Deterministic RNG seam for damage draws (documented deviation) | open — **done** || done ||
 | T-028 | Scripted input driver — **DONE both halves**: `tools/sim-driver.cpp` reaches a combat round through the ported seam, verify suite 9/9 | done | RedXenon (01a157ec, was HappyWolf) |
 | T-030 | Entity action-queue seam — **done: `0x550720` is the single gameplay-order funnel (40+ xrefs)**; D-2 registered | done | implementer-B (YoungStorm) |
-| T-031 | Parity oracle — grammar landed (`d43033b`), shipped side **STALLED: blocked on T-034 reads**, owner away | blocked | ZenRaven (+ T-034 = NiceHawk) |
+| T-031 | Parity oracle — grammar landed (`d43033b`); **building `orig-digest.sh` against SYNTHETIC data now**, real values still gated on T-034 | in-progress | ZenRaven (back) |
+
 
 | T-032 | EA→document index: make ~130 docs / ~5,100 EAs addressable | **dispatched, unconfirmed** (0 tool calls) | SwiftRaven (after T-036) |
 | T-033 | **Class-identity batch queue** — order corrected to contiguity-ratio x fns; IDB = rename-only scope, single writer 01a157f6 | in-progress | QuickQuartz (applies) + **unassigned: batch-2 decisions (was MintEagle, departed)** |

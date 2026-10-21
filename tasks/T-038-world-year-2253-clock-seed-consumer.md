@@ -20,6 +20,19 @@ That is a parity question with a cost: `clock` is currently listed as a valid co
 sides take the identical leap". If the shipped side adds a date seed and ours adds nothing, **`clock` diverges by years,
 not frames** — and the oracle's first divergence would be in a field we chose to compare.
 
+## Decision-maker's advance position (ZenRaven, 2026-10-21) — so the answer can be scheduled, not argued later
+
+ZenRaven owns the digest format and has stated both branches **before** the finding lands, which removes the incentive
+to fit the answer to the format:
+
+- **If `Year` has NO consumer:** that confirms the absolute clock is calendar-inert — which is exactly why `clock` is
+  already CONTEXT and `clockDelta` is the hashed axis. He would **not** add a `year` field: a field nothing reads belongs
+  in `docs/f3/WorldTickPump.md`, not in state. Verdict: row closes, no format change.
+- **If a consumer IS found:** that changes what `clockDelta` means, and he wants **the EA before** touching the format.
+  Verdict: findings doc + cited EA first, digest change second.
+
+Either way the digest edit is small and the finding is the valuable part.
+
 ## Scope (statics first — item 24 applies, grep inside the archives)
 1. Find the consumer of `[World] Year`: which function reads that key, and what it writes — candidate fields are the
    `+0x4C` / `+0x54` stamps `virt_meth_0x546690` seeds from the tick, and anything `JE::Gregorian` initialises from a
