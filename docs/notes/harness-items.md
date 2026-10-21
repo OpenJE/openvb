@@ -597,3 +597,26 @@ ledger was two rows long — harmless then, actively misleading once D-3 meant s
 which found exactly that one hit (everything else already cited D-2 correctly). General form: **when a numbered
 registry changes, the change is not done until every citation of the old numbers has been re-pointed** — same principle
 as item 26, one level down.
+
+
+## 29. A negative test is only a measurement if you can show the perturbation arrived
+
+SwiftRaven nearly shipped a falsification suite that was inert twice over, and found both only by going looking for
+why the checker seemed weak (T-040, `c204c51`):
+
+- a `sed` pattern that **never matched** the fixture, so the "drifted" file was byte-identical to the original and the
+  checker correctly printed EXACTLY — a red that could not turn red;
+- `rc=$?` captured **after `if ! cmd`**, so it read the *negation's* status and printed the astonishing
+  `FAILED (exit 0)`.
+
+Both are this project's signature failure — **a check that reports without measuring** — and both were caught by the same
+reflex: don't ask "did the test fail?", ask **"did my perturbation reach the thing under test?"**
+
+Rules, now the standing form for any checker shipped from this repo:
+1. **Prove the edit landed** before believing the result: `diff` the mutated fixture against the original and show it
+   differs (or show the byte that changed).
+2. **Never read `$?` through a negation or a pipe** (see item 17). Capture the command's own status, then branch on it.
+3. **Every failure mode prints a reason** — `f3-json-check` emits an explicit `DRIFT REASON:` line, so a red can be read
+   rather than re-derived.
+4. **A silent fallback is a lie with extra steps.** A bad explicit `--results` path used to quietly pick up another copy
+   elsewhere on the machine and verify an export against unrelated facts while reporting clean; it exits 2 now.

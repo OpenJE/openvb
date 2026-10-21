@@ -84,7 +84,13 @@ member sizes and usages — **1,101/1,101 keys, 7,736/7,737 member sizes, 0 usag
 file, and declares the 4,059 synthesized base/struc/vftptr entries **UNVERIFIED** rather than passing them. Two rules it
 pins, both of which would have wrecked a guessed exporter: method EAs come from `finalClass`'s 6th argument (not
 `finalMethodProperty`, which covers only 3,384 of 6,624), and member size is `max()` over candidates (first-element gave
-143 wrong). **Measure against the live IDB; quote the export as the 2024 snapshot it is.**
+143 wrong). **But do not overshoot that finding.** RTTI absence explains *why a key looks anonymous*; it does **not** mean
+"no class here is nameable." 43 of them (`cls_0x49c610`) were named in the IDB all along and are nameable right now on
+route A. The honest reading is: **some** of the 698 may have no RTTI to name them from, and identity must come from
+evidence — embedded member types, vftable shape, shipped data — never from a key format. If the coverage table starts
+reading as "lower the bar," it is wrong.
+
+**Measure against the live IDB; quote the export as the 2024 snapshot it is.**
 
 ## Corrections to my own propagated claims (2026-10-21)
 
