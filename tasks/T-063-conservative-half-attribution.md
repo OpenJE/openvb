@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: EpicRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21)
 type: offline analysis (tools/ecx-flow.py vs the md5-pinned cache; NO IDB writes; queue to coordinator)
 depends: T-054/T-057 (the tool + families mode); T-057 covered the 273 *escalation* fns — THIS is the other bucket
