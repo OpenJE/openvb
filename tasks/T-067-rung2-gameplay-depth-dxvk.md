@@ -106,10 +106,15 @@ Injection is only the trigger; the PAYLOAD is one shape read at the first funnel
     (predicate 0x404b60, cancel 0x404b70, queued-getter 0x4010d0, done-update 0x5a9070, on-finished
     0x404bb0); only dtor + start differ (0x405620 vs 0x5a9080). Frozen F3.json is LOSSY on shared stubs —
     cite RAW TABLE DWORDS in any re-audit (F2 flattened-ten-table family).
-  * VERIFICATION FOOTNOTE (HappyEagle): find_bytes pattern-search returned 0 matches for the raw-dword
-    adjacencies in the vft region — the tool's search range evidently excludes .rdata; adjacency remains
-    LIVE-PROBE territory. Sitting opens with the dword read: [idle+0]+0x14 ?= 0x5a9070. Pre-answer per KS
-    raw dump: YES. Disagreement = model breach escalation, not verdict.
+  * VERIFICATION SETTLED PRE-SITTING (HappyEagle, raw-file od per LoudDragon's pointer — find_bytes
+    empties were the KNOWN T-041/T-044 defect, not a finding): PE section math (.rdata va 0x247000 ->
+    raw 0x647000.. wait: rva) over $OPENVB_F3DEMO_ROOT/F3.exe dumps BOTH tables verbatim:
+      Idle 0x6497c4 = [405690, 404b60, 404b70, 4010d0, 405620, 5a9070, 404bb0]
+      Msg  0x6a5f34 = [405350, 404b60, 404b70, 4010d0, 5a9080, 5a9070, 404bb0]
+    IDLE idx5 == 0x5a9070 CONFIRMED ON FILE BYTES (KS dump matches to the last dword; T-080 overlap
+    consistent). The statics-side chain is closed; the opening live dword read ([action+0]+0x14 on a
+    fresh idle at bp4) is now the THIRD corroboration = pure formality against runtime aliasing, and a
+    disagreement would be the breach itself.
   * BP map otherwise unchanged: bp9/bp10 raiser legs, L1-L4 resident reads, R5/R6, BONUS-3/4/5, T-050
     reopen condition (bp10 hit) — all waiting on input keys at :96.
 - Banked by KeenStorm as independent R4b confirm (third boot, second runtime, third entity pointer):
