@@ -933,3 +933,7 @@ Rules:
 3. When a writer overrides a verdict-proposer's LABEL (not the verdict), the ledger must carry both
    namings + the deciding datum — here the mint stands, the chain stays cited, and the proposer
    arbitrates bytes, not face.
+- Tool citation (item 41): `python3 tools/ecx-flow.py pads` is the standing pad/cleanup-owner
+  census; PAD-vs-DELEG is decided BY THE TOOL with a printed `evidence=dataref@0x…` bit (pad VA
+  dword-referenced in .rdata/.data). Band censuses quote the mode instead of re-deriving the
+  taxonomy; a pad bucket dispute now has machine-readable proof, not prose. (Added T-059, 2026-10-21.)
