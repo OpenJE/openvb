@@ -3,7 +3,7 @@
 #   Superseded docs stay in the index; judge them by the reader (see canonical-fact-sheet).
 #   Scope: discoveries/*.md only (not tasks/, not src/, not docs/f3/, not the IDB).
 #   Keys are literal addresses; 0x45c140 and 0x45c141 are unrelated keys here.
-# corpus_docs=140 indexed_eas=5265 mentions=7810 refused_tokens=763 {'vftable slot offset (relative to an unresolved table)': 565, 'bare all-digit hex: could be a decimal count, not indexed': 14, 'outside image span 0x400000-0x715800': 113, 'ambiguous +0x hex: struct offset vs global address': 5, 'masked/pattern EA (N significant digits, not an address)': 64, 'range outside image': 2}
+# corpus_docs=140 indexed_eas=5270 mentions=7828 refused_tokens=765 {'vftable slot offset (relative to an unresolved table)': 565, 'bare all-digit hex: could be a decimal count, not indexed': 14, 'outside image span 0x400000-0x715800': 115, 'ambiguous +0x hex: struct offset vs global address': 5, 'masked/pattern EA (N significant digits, not an address)': 64, 'range outside image': 2}
 # 51 keys are backed ONLY by inference from compressed prose (slash lists like @0x45c251/261/271,
 #   zero-padded or after-offset suffixes). They are real but not literally written: list with --inferred.
 #   Every other key appears literally as 0x.../sub_.../name_0x... in at least one document.
@@ -1765,7 +1765,7 @@ ea	count	docs
 0x46f140	1	2025-10-20-action-factory-client-recv-table.md
 0x46f160	1	2025-10-20-vftable-master-index.md
 0x46f190	1	2025-10-20-effect-node-wrapper-worldserver-interfaces.md
-0x46f250	4	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md
+0x46f250	5	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
 0x46f260	6	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md
 0x46f264	2	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md
 0x46f270	4	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md
@@ -2792,6 +2792,7 @@ ea	count	docs
 0x544a70	5	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-session8-entity-lifecycle-state-die.md
 0x544a90	10	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-view-arithmetic-correction.md;2025-10-20-world-tick-state-evasion-stub.md;README.md
 0x544aa1	1	2025-10-20-view-arithmetic-correction.md
+0x544aab	1	2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
 0x544b0f	1	2025-10-20-view-arithmetic-correction.md
 0x544b30	4	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;README.md
 0x544b32	1	2025-10-20-world-tick-state-evasion-stub.md
@@ -2833,7 +2834,7 @@ ea	count	docs
 0x54596e	1	2025-10-20-gameworld-interfaces-effects-classid.md
 0x54597a	1	2025-10-20-gameworld-interfaces-effects-classid.md
 0x545aa0	3	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md
-0x545d60	9	2025-10-20-10e-turn-flags-dormant.md;2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session25-mode-flag-connected-client-retraction.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-vftable-master-index.md;README.md
+0x545d60	10	2025-10-20-10e-turn-flags-dormant.md;2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session25-mode-flag-connected-client-retraction.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md;2025-10-20-vftable-master-index.md;README.md
 0x545da5	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x545e0c	1	2025-10-20-10e-turn-flags-dormant.md
 0x545e18	1	2025-10-20-session14-frame-pump-chain.md
@@ -2847,6 +2848,8 @@ ea	count	docs
 0x5461ee	1	2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md
 0x546250	1	2025-10-20-world-packstate-registries.md
 0x546690	7	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-vftable-master-index.md;README.md
+0x5466b8	1	2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
+0x5466bd	1	2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
 0x5467ee	1	2025-10-20-session18-weapon-layout-final-giwp.md
 0x5467fc	2	2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md
 0x546806	1	2025-10-20-session18-weapon-layout-final-giwp.md
@@ -2879,7 +2882,7 @@ ea	count	docs
 0x5480e1	1	2025-10-20-world-tick-state-evasion-stub.md
 0x5483a0	1	2025-10-20-world-packstate-registries.md
 0x548840	3	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md
-0x548a80	6	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6b-effect-node-dispatch.md;RESPONSES-from-reimpl-agent.md
+0x548a80	7	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6b-effect-node-dispatch.md;RESPONSES-from-reimpl-agent.md
 0x548ac8	1	2025-10-20-session34-world-host-chain-map-load-slot.md
 0x548ad2	1	2025-10-20-session34-world-host-chain-map-load-slot.md
 0x548ae0	1	2025-10-20-world-tick-state-evasion-stub.md
@@ -3206,9 +3209,9 @@ ea	count	docs
 0x552b60	5	2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-vftable-master-index.md;README.md
 0x552b99	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552b9e	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
-0x552ba4	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
+0x552ba4	2	2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552ba9	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
-0x552bab	2	2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md
+0x552bab	3	2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552bad	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552bb2	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
 0x552bb3	1	2025-10-20-t034-handover-orig-gdb-port-collision.md
@@ -3380,11 +3383,13 @@ ea	count	docs
 0x56a3af	1	2025-10-20-session13-teams-ondeath-armor-dr.md
 0x56ae70	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-world-packstate-registries.md
 0x56af40	10	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-clip-naming-cues.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-settings-surface-map.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md;2025-10-20-tohit-apply-tail.md;2025-10-20-world-tick-state-evasion-stub.md;README.md;RESPONSES-from-reimpl-agent.md
-0x56af50	6	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-rleconvexquad-collision-grid-actionmoveto.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;HANDOFF-2025-10-20.md;README.md
+0x56af50	7	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-rleconvexquad-collision-grid-actionmoveto.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;HANDOFF-2025-10-20.md;README.md
 0x56af6b	1	2025-10-20-session12-serverupdate-ondeath-flip.md
 0x56af7c	1	2025-10-20-session12-serverupdate-ondeath-flip.md
+0x56afd2	1	2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
 0x56b654	1	2025-10-20-settings-surface-map.md
 0x56b750	1	2025-10-20-script-binding-machinery.md
+0x56b8aa	1	2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
 0x56bca0	1	2025-10-20-vftable-master-index.md
 0x56be30	1	RESPONSES-from-implementer-B.md
 0x56bf27	1	RESPONSES-from-implementer-B.md
@@ -3847,9 +3852,9 @@ ea	count	docs
 0x5a9575	1	2025-10-20-10e-turn-flags-dormant.md
 0x5a957f	1	2025-10-20-10e-turn-flags-dormant.md
 0x5a95a1	1	2025-10-20-10e-turn-flags-dormant.md
-0x5a95aa	2	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;README.md
+0x5a95aa	3	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md;README.md
 0x5a95ac	2	2025-10-20-T010a-behind-test-is-wrap-not-threshold.md;2025-10-20-canonical-fact-sheet.md
-0x5a95ce	3	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md;README.md
+0x5a95ce	4	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md;README.md
 0x5a95de	1	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md
 0x5a9610	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x5a9650	2	2025-10-20-ge94-speed-door-anittimer-gentsave.md;2025-10-20-vftable-master-index.md
@@ -4836,7 +4841,7 @@ ea	count	docs
 0x6684fc	1	2025-10-20-scripting-abi-native-tables.md
 0x668508	1	2025-10-20-scripting-abi-native-tables.md
 0x668548	9	2025-10-20-canonical-fact-sheet.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
-0x66856c	25	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-script-binding-machinery.md;2025-10-20-scripting-abi-native-tables.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session23-combat-join-leave-state5.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-t032-ea-document-index.md;2025-10-20-tohit-apply-tail.md;2025-10-20-vftable-master-index.md;2025-10-20-view-arithmetic-correction.md;README.md;RESPONSES-from-reimpl-agent.md
+0x66856c	26	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-map-packstate-and-server-vft-slots.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-script-binding-machinery.md;2025-10-20-scripting-abi-native-tables.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session23-combat-join-leave-state5.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-t032-ea-document-index.md;2025-10-20-tohit-apply-tail.md;2025-10-20-vftable-master-index.md;2025-10-20-view-arithmetic-correction.md;README.md;RESPONSES-from-reimpl-agent.md
 0x668574	1	2025-10-20-session7-effect-pipeline-and-damage-apply.md
 0x668598	1	2025-10-20-map-packstate-and-server-vft-slots.md
 0x6685a4	14	2025-10-20-canonical-fact-sheet.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-tohit-apply-tail.md;2025-10-20-vftable-master-index.md;HANDOFF-2025-10-20.md;README.md;RESPONSES-from-reimpl-agent.md
@@ -4990,8 +4995,8 @@ ea	count	docs
 0x69118c	1	2025-10-20-vftable-master-index.md
 0x69166c	4	2025-10-20-canonical-fact-sheet.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
 0x691740	1	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md
-0x6919c0	2	2025-10-20-jeworld-layout-interface-views.md;RESPONSES-from-reimpl-agent.md
-0x6919e4	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
+0x6919c0	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;RESPONSES-from-reimpl-agent.md
+0x6919e4	4	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
 0x691a1c	6	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-vftable-master-index.md;RESPONSES-from-reimpl-agent.md
 0x691a8c	2	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md
 0x691a94	3	2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session34-world-host-chain-map-load-slot.md;RESPONSES-from-implementer-B.md
@@ -5266,8 +5271,8 @@ ea	count	docs
 0x70be10	1	2025-10-20-cutscene-controller-world-subsystem-roster.md
 0x70be24	3	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-session14-frame-pump-chain.md;README.md
 0x70be60	1	2025-10-20-eeov-attach-trio-eme2-flag-is-pumpenable.md
-0x70c2b8	4	2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;HANDOFF-2025-10-20.md;README.md
-0x70c2bc	1	2025-10-20-session12-serverupdate-ondeath-flip.md
+0x70c2b8	5	2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md;HANDOFF-2025-10-20.md;README.md
+0x70c2bc	2	2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-t016-mainmenu-mapname-shipped-ini-answer.md
 0x70c668	2	2025-10-20-input-path-architecture-command-fifo-actions.md;2025-10-20-t032-ea-document-index.md
 0x70c6c0	1	2025-10-20-session25-mode-flag-connected-client-retraction.md
 0x70c724	1	2025-10-20-scripting-abi-native-tables.md
