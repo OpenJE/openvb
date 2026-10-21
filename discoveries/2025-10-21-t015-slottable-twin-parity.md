@@ -83,7 +83,8 @@ Raw objdump identity of the two bodies (normalized, address-stripped): **89.7%**
 being register-allocation (`cmp [b],bl` vs `mov cl;test`) and prologue ordering — i.e. the T-036 `R36-d`
 clone family (two inlined copies of one source function). Grammar verdict:
 
-- **Identical**: 22-read stream (21 `push 4/1` read sites vs 21, same gates `cmp [v],1/2/3/4/5`), same
+- **Identical**: 22-read stream (21 integer/u8 `MemStreamRead` push-4/1 sites in both + 1 shared string read
+  `0x49c8d0`; same gates `cmp [v],1/2/3/4/5`), same
   #16/#17 trip guard against the SAME string operand `0x64d860` (`0x40de62..0x40de73`), same 34-case style→clip
   switch with identical constants (0x35,0x38,0x3b…0x68) into its own jump table `0x40e0f4`, same string-read
   (`0x49c8d0`) and same `sub_40C970` node-append epilogue.
@@ -105,4 +106,4 @@ observationally behaves like for consumers (mirror-and-cite; do not invent a cre
   reads #16/#17 at wire +54/+55, both written by the parser.
 - B11 §3 (0/57, conditional): **promoted to final** on the corrected mapping (this §2).
 - B11 §4 open items (string-vs-slot overlap, creature twin): closed by §1/§4 here.
-- B9 prose "21 fields": canon = B11 §1 table (22 reads), re-affirmed.
+- B9 prose "21 fields": canon = B11 §1 table (22 stream reads = 21 numeric/u8 + 1 string), re-affirmed.

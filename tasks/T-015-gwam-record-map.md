@@ -21,7 +21,8 @@ All three remainder items CLOSED in `discoveries/2025-10-21-t015-slottable-twin-
 (1) **slot table** reconstituted instruction-by-instruction (frame 0x14..0x75 ↔ wire #1..#21 with gates;
 B11's open string-overlap question answered: string block starts 0x58, #18/#19 live 0x50/0x54, no overlap);
 (2) **creature-twin parity**: `ReadAttackModeData_0x40dba0` is a byte-grammar-identical clone (89.7% raw,
-remainder = register allocation; same 22 reads, same trip guard against the same string `0x64d860`, same
+remainder = register allocation; same 22 stream reads (21 integer/u8 MemStreamRead sites + 1 string read
+via 0x49c8d0; 21 push-4/1 sites per twin), same trip guard against the same string `0x64d860`, same
 34-case clip constants, same node-append) with two REAL deltas: no caliber→mode derivation ever (mode slot
 address-taken but never stored ⇒ pure stack residue on every creature path) and list base `GameCreature+0x6F8`
 vs `GameWeapon+0x40C`; `sub_40C970` proven intrusive node-append (multi-mode lists, not dwords).
