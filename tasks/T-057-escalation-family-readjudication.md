@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: EpicRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21 — their own offer, pre-loaded data)
 type: offline analysis (tools/ecx-flow.py against the md5-pinned cache; NO IDB writes ever from this lane)
 depends: T-054 (the tool), T-055 in flight (any MINT-READY verdicts queue BEHIND CalmRaven's wave — writer slot is theirs)
