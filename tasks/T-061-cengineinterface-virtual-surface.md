@@ -1,5 +1,5 @@
 ---
-status: open
+status: in-progress
 assignee: KeenStorm (dispatched by LoudDragon `01a15f82`, 2026-10-21 — accepted offer of row (ii))
 type: research (read-only on ida_original_f3; discoveries/ left DIRTY until coordinator checkpoint)
 depends: T-057/T-059 (the composition proof + embed census that made this class central)
