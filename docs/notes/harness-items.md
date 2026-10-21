@@ -915,3 +915,21 @@ Rules for any future "no owner / owner-unresolved" note:
 3. The corrected predicate for vft-owner claims (CalmRaven's T-055 finding): ctor = sole OBJECT-SIDE
    storer; a factory slot-install may hold the only other xref — that is EXPECTED, not a rival;
    rival-class ctors = zero. Naive one-xref-equality fails 14/14 on legitimate classes.
+
+## 42. Verify RTTI SIZES before naming a delegate-host band — the embedded VIEW's name is not the owner's
+
+CalmRaven's T-055 wave (naming-deviation ruling), 2026-10-21. cls_0x445350's owner chain was
+adjudicated correctly by EpicRaven (delegating host + adjusted thunk + constant -0x198) and proposed
+under the interface name; the writer applying it found `.?AVCOptionsHotKeysInterface@@` RTTI is
+**size 0** — i.e., the RTTI names the +0x198 VIEW SUBOBJECT, not the object whose methods take
+`this = table-base`. The outer owner (live-IDB `JE::HotKeyWindowFormatTable`) is the correct mint.
+Both agents ran the same discipline on different data; the routing went by evidence, not by authorship.
+
+Rules:
+1. Before minting any band reached through a delegate-host or adjusted thunk, CHECK the candidate
+   RTTI record's SIZE: a size-0 / view-shaped RTTI descriptor names a subobject view, not the owner.
+2. Delegate-host containment → the band belongs to the OUTER owner (whose ctor installs the view's
+   vft at +delta and whose methods call in with the constant this-offset), not to the view's type name.
+3. When a writer overrides a verdict-proposer's LABEL (not the verdict), the ledger must carry both
+   namings + the deciding datum — here the mint stands, the chain stays cited, and the proposer
+   arbitrates bytes, not face.
