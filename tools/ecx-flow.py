@@ -45,6 +45,10 @@ BOUNDARIES (read before quoting any negative):
   * ANY EMPTY result is only evidence after `selftest` is GREEN in the same
     code build (harness item 35). Band mode refuses verdicts on a red gate
     unless --allow-red is passed.
+  * Item 43 (locator rule): pad TARGETS are usually chunks; the head is the
+    containing function. head_hint() grades call-head vs pad-chunk with a
+    containment candidate, but the LIVE IDB read-back is the sole headness
+    authority -- buckets are flow facts, headness is a locator fact.
 
 Usage:
   tools/ecx-flow.py selftest
@@ -1077,6 +1081,10 @@ class Model(object):
         P("== pads census: %d registered pad thunks (rule: ebp->ecx producer "
           "[+disp adjust] then jmp|call T AND pad VA dword-referenced in "
           ".rdata/.data) ==" % len(self.pads))
+        P("RULE (item 43): pad TARGETS are usually chunks; the head is the containing")
+        P("function. Grade every locator with head_hint() before queueing; the live IDB")
+        P("read-back is the sole authority on headness (buckets are flow facts, headness")
+        P("is a locator fact).")
         P("kinds: %s" % dict(kinds))
         P("")
         seh = sorted(p for p, v in self.pads.items() if v[2] == "call")
