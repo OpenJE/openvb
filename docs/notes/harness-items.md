@@ -1006,3 +1006,20 @@ Rules:
    is the proof a doc-only change is honest.
 3. Related consequence (now in CombatTurnDispatch.md): the walk stays head-stable FOR THE
    RE-ENTRANCY REASON, not for lack of a live store - T-050's gate wording must never drift back.
+
+## 47. A digest is gradeable only after its provenance is proven: mtime post-dates the run, AND the command actually ran
+
+KeenStorm's T-068 near-miss, 2026-10-21. An Oct-20 stale /tmp digest nearly entered the first real
+pairing table because the fresh-run command SILENTLY NO-OPPED: `wine` is not on that agent's bare PATH,
+rc=127 ('command not found') was read as success by the pipeline, and the old artifact survived. Caught
+by inspection; the table quotes only fresh-run lines after stale-file deletion + mtime verification.
+
+Rules:
+1. Prove the PRODUCER ran: check the exit code MEANING (127 != failure-of-target, it is absence-of-command;
+   grade rc, don't just branch on non-zero-of-nothing) and that PATH/env assumptions were met BEFORE
+   trusting the artifact it failed to produce.
+2. Prove the ARTIFACT is fresh: mtime must post-date the run's start; delete stale candidates first so a
+   silent no-op cannot fall through to an old file. A comparator's REFUSAL (T-031's unrecorded-vs-synthetic)
+   is the backstop that made this a near-miss instead of a wrong-table.
+3. Same family as item 35 (empty results until proven) and T-047's stale-digest-behind-wineserver flake:
+   freshness is part of correctness, not housekeeping.
