@@ -15,6 +15,11 @@ cannot say a scripted order is the same order AMX would issue — and AMX is a l
 
 ## What
 For each native, from statics (no debugger unless a field is genuinely unreachable):
+
+**Entry-point correction (WildYak, 2026-10-21): the offline class DB cannot answer for these natives.** They are free
+functions (`F3::Attack`, `F3::JustAttack`, `F3::StartDialogue`, `F3::ReloadWeapon_45a380`), not class methods, so
+`f3_address_lookup 0x459f5d` returns **0 matches** — my original hint told the next reader to start with a tool that
+cannot work. Use `docs/f3/EntityActionQueueSeam.md`'s xref list, or the read-only IDB.
 1. The action record it allocates (`GameActionAttack` is 0xC8 — confirm size per native) and **which offsets it writes
    before the `call 0x550720`**, with the argument index each value came from.
 2. Which fields it leaves **untouched** — those are the ones our driver is currently inventing.
