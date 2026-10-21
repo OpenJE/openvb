@@ -1,6 +1,6 @@
 ---
-status: open
-assignee: unassigned (build lane; small, two files)
+status: in-progress
+assignee: GoldYak `01a15f83` (T-049 dispatched by LoudDragon after T-033 chain close; coordinator grant given in dispatch, reservations: tasks file + both scripts. Build-lane only, no IDB entry.)
 depends: T-046 (pattern established at 46f8c87)
 ---
 
