@@ -21,9 +21,21 @@ record: **address, value, the instant, the breakpoint**. Spec source: ZenRaven's
 | **R0** | `[World vftptr + 24]` → target EA | break `0x552bb5` | first pump of a new game | `docs/f3/WorldTickPump.md` declares this its only assumption. DB check: `World` vftable `0x691a1c`, length 20, slots listed 0,1,2,4,5,7–17 — **3 and 6 are holes**, so statics cannot confirm the tick target is `virt_meth_0x544a90` |
 | **R1** | `F3::start_time` dword | advanced `0x48ccde`, stored `0x48cce9` | first return of `sub_48CCC0` (break `0x48ccf6`) | the oracle's **pinned state**; design is capture-and-replay, so this becomes a measured constant |
 | **R2** | `world+0x3C` → `Gregorian::totalSeconds` | | same instant as R1, then frame 1 | confirms the frame-0 clock leap is shipped behaviour, not ours |
-| **R3** | live entity `Entity+0x304` deque: `mbr_0x4` block-array ptr / `mbr_0x8` capacity / `mbr_0x10` element index | | **mid combat round**, after a script-native `F3::Attack` (`0x459f5d` → `call 0x550720`) | **If the index exceeds 4, deviation D-2 (`actions[4]` = first block) is a dropped order, not a stylistic choice.** Decides whether T-030 needs a real fix |
+| **R3** *(field list CORRECTED by HappyKnight, 633744d — old labels are wrong, do not use them)* | deque at `Entity+0x304`, five consecutive size-4 members: `+0x304` anchor / `+0x308` block-array ptr / `+0x30C` block capacity / `+0x310` head index / `+0x314` **LIVE COUNT** | mid combat round, after a script-native `F3::Attack` (`0x459f5d` → `call 0x550720`) | **D-2’s number is the COUNT at +0x314, not the head index.** Sampling +0x314 as an offset reports a depth as a position and gets the D-2 call wrong. shipped count>4 beside our 4 = a dropped order |
 | **R4** *(reframed by WildYak's statics)* | enqueued action object `+0x14` **before** and **after** the funnel call | | immediately after R3's insert | must equal the entity pointer — proves the owner back-store fires on the **script-native path**, which our port reaches only from re-queue sites |
 | **R4b** | `[action + 0x00]` = object **vftptr**, per deque slot | | same instant as R4 | lets the digest compare **class names** via `artifacts/F3.json` (97.9% of slots resolved) instead of pointers/kind tags. Print `UNKNOWN_VT=<ea>` for unresolved slots |
+
+## R3 field list corrected (HappyKnight, T-039 at 633744d) — read this before attaching
+
+My earlier table called `Entity+0x314` the element index. **It is the live COUNT.** Verified against the database:
+`Entity` carries five consecutive size-4 members at `0x304/0x308/0x30C/0x310/0x314`, initialised **contiguously** in the
+ctor (`0x5515d4`, `0x5515da`, `0x5515e0`, `0x5515e6`) — a 20-byte block deque embedded by value. Mapping: `+0x304`
+anchor, `+0x308` block-array pointer, `+0x30C` block capacity, `+0x310` head element index, `+0x314` count. Readers
+corroborate: `Entity::virt_meth_0x4084c0` is exactly `return Entity+0x314 == 0` (is my queue empty), and the pump bounds
+its loop at `0x54c447`/`0x54c788` by `head != head + count`.
+
+**Sample both halves**: count at `+0x314` (the D-2 quantity) and head at `+0x310`. R3 is now a *confirming* sample —
+statics settled the semantics; a live value still settles depth (capacity 4 at this instant vs capacity 4).
 
 ## WildYak's statics change this read (01a15802, T-037)
 

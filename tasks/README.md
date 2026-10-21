@@ -146,8 +146,9 @@ row; A keeps editorial merge rights).
 | T-034 | Lockstep reads — **UNBLOCKED on an alternate port (31437)**; ImHex left alone, IDB writes via shared MCP | open | RedXenon |
 
 
-| T-039 | **SETTLED BY STATICS: `Entity+0x314` is the action deque's ELEMENT COUNT** (`++` 0x54ea71 / `--` 0x54b637,0x54b672 / zero 0x5515e6; `0x4084c0` returns `==0`). Gate term reads "has queued actions". Port: byte removed, count derived, digest prints `q=`. `+0x1E4` resized to 4 but its MEANING is still open | done | HappyKnight (01a15be7) |
+| T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |
 | T-040 | **`artifacts/F3.json` has no regeneration path** — four docs require an export re-run nobody can perform; blocks T-033 acceptance | open | SwiftRaven (after T-032) |
+| T-041 | What is `Entity+0x1E4` (size 4, unpacked from the record, readers gate map membership) — name demoted, semantics open | open | unassigned |
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **`[World] Year = 2253`** — shipped clock may be date-seeded; find the consumer before trusting `clock` as a parity field | open | **WildYak** (statics; ZenRaven owns the digest decision it feeds) |
 | T-036 | Helper-theft taxonomy — **DONE (38118cb)**: the 998 was two-route arithmetic; artifact floor 221 (8.9%); T-029 denominator understates | done | SwiftRaven |

@@ -93,6 +93,47 @@ at 0x5a95c1, but must not rename it after a guess.
 - `docs/f3/EntityActionQueueSeam.md` (the verdict + the container map), `docs/f3/SimDigest.md`,
   `src/F3/CombatManager.hpp` (the gate comment now cites the WRITER EAs, per scope item 4).
 
+## Verdict (HappyKnight, parent `633744d` / openje `09f6e84`) — **(A) COUNT. (B) is dead.**
+
+**The writers were invisible to the search I told them to run.** I pointed at `0x54ab30`/`0x54ab80`; both sit *inside
+gate predicates* (`virt_meth_0x54ab00` / `virt_meth_0x54ab50`) and only test the field. Cause: Entity+0x314 **is
+`mbr_0x10` of the container at `Entity+0x304`**, so the DB attributes stores to the **container type**, not to `Entity`
+— the owner-scoped usage set is therefore readers plus init, and a writer hunt inside the owner struct can only ever
+find predicates. Following the container exposes the writer immediately:
+
+| site | function | store |
+|---|---|---|
+| **`0x54ea71`** | `cls_0x54e070::meth_0x54ea00` | `++this->mbr_0x10` — the push_back the funnel performs at `0x55072e` |
+| `0x54b637` / `0x54b672` | `cls_0x54b5c0::meth_0x54b5c0` | `--count` — erase/rotate |
+| `0x5515e6` | `Entity::ctor_0x5513a0` | `= 0` |
+
+No `mov reg, 0/1` writer exists anywhere in the usage set. Coordinator cross-check from the DB: five consecutive size-4
+members at `0x304–0x314` initialised contiguously in the ctor, `Entity::virt_meth_0x4084c0` being literally
+`return Entity+0x314 == 0`, and the pump bounded by `head != head + count`. **That is a count.**
+
+## What changed in the port (three fixes, one of them out of scope)
+1. **The byte was deleted, not widened.** `busy0x314` is gone; the count is **derived**
+   (`SpawnedEntity::QueuedActionCount()` over `actions[]`). A stored counter would need updating at every push and at
+   five auto-clear sites in `MapEntitySpawn.cpp`, so it could only drift from the slots it claims to count. With D-2
+   capping at 4 the value is identical today; only the drift risk differs.
+2. **The digest was mislabelled, not merely thin.** `st=` carried a count as a boolean; it moves OUT into its own hashed
+   field `,q=N` (`st=` is now `entityState,moving,acted`). **Payoff: D-2 becomes visible in a parity diff** — our derived
+   `q` cannot exceed 4 while the shipped count grows past one block, so shipped `q>4` beside our `q=4` **is** a dropped
+   order. R3 and the digest now measure one quantity under one name.
+3. **T-011 step 3's reading is restated correctly.** `+0x1E4 == 0 || +0x314 != 0` at `0x5a95c1` dispatches when the
+   entity **HAS ACTIONS QUEUED** — a pending order **forces** the turn even when the first term is false. Not coded;
+   `CombatManager.hpp` carries the writer EAs so step 3 cannot be written against the old busy idea.
+
+**Bonus structure:** `0x54ab30` tests `mbr_0x2f0 || mbr_0x314` — the counts of **two** same-shape deques
+(`Entity+0x2E0` and `Entity+0x304`), so that predicate means anything queued in either list.
+
+## Opened as a result (T-041)
+`mbr_0x1e4` is also size 4 where our port had a byte, ctor-zeroed at `0x55147b` and unpacked from the entity record at
+`0x54e739`, with readers gating **map membership** (`0x54bc3a` guards `--*(oldMap+280)` / `++*(newMap+280)`;
+`0x54947e` bails out of a movement update when it is 0). The name `noTurn0x1E4` asserted a meaning the evidence does not
+support — demoted to `flag0x1E4`, meaning left open. Mirroring the predicate is still correct; semantics are not a
+blocker for step 3.
+
 ## Acceptance
 - A cited verdict: writer form (increment vs constant store) with the EA, plus the DB size/usage evidence above.
 - Our field's declared type matches the shipped size (4), with the rename and digest-label correction if it is a count.

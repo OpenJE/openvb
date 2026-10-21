@@ -557,3 +557,22 @@ Rules:
 - Same exposure on my side: `docs/PROGRESS.md` and `tasks/README.md` both restate lane findings in summary form. When a
   finding is re-anchored (route-dependence, withdrawn numbers), the summaries are part of the change set — I propagated
   the "byte-identical clones" phrase through exactly this mechanism (`cfa83a8` -> corrected in `d89f9ad`).
+
+
+## 27. A writer search scoped to the owning struct can only find readers
+
+I told a lane to decide whether `Entity+0x314` was a count or a flag by reading its writers at
+`0x54ab30`/`0x54ab80`. **Both sites are gate predicates that merely test the field**, and they were the only
+usages listed — because the field is `mbr_0x10` of a container embedded at `Entity+0x304`, so the database attributes
+the stores to the **container type**, not to `Entity`. The real writer (`++mbr_0x10` at `0x54ea71`, the push_back
+performed by the order funnel itself) appeared the moment the container was followed.
+
+Method consequences:
+- **`usages` on an owner struct is not a writer list.** For embedded substructures it is readers plus the owner's own
+  initialisation. Follow the container's methods before concluding a field has no writers — and start from the
+  **unpack/store site** and walk outward when a field is persisted.
+- **Layout names the field for you.** `0x304/0x308/0x30C/0x310/0x314` — five consecutive size-4 members initialised
+  contiguously in the ctor (`0x5515d4…0x5515e6`) — is a container; and reading the loop bound as
+  `head != head + count` identifies the last two fields with no guessing. Check structure before trusting a comment.
+- **My steer was wrong and is recorded as mine.** The finding came from the lane; the dead end was mine. A dispatched
+  hint is a hypothesis, and lanes should follow evidence past it — which is what happened here.
