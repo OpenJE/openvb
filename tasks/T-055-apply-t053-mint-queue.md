@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: CalmRaven (dispatched by LoudDragon `01a15f82`, 2026-10-21 — queue author promoted to writer; GoldYak left the mesh at the T-055 ping)
 type: writer wave (sole WRITER on ida_original_f3; T-033 rules apply verbatim)
 depends: T-053 queue (commit `5d48e35`, accepted by coordinator)
@@ -45,6 +45,24 @@ for 1-2-fn ctor families.
 
 - T-033 ledgers b4/b5/b6 (hierarchy + escalation rules), T-053 queue (scope), harness items 35/40/43
 - `.pi/skills/openvb-ida-mcp/SKILL.md` (save discipline)
+
+## Acceptance evidence (delivered 2025-10-21)
+
+- **Ledger** `discoveries/2025-10-21-t055-mint-queue-apply-ledger.md` (commit `13d3536`): per-fn table
+  (string EA / ctor EA / vft EA / sole-storer recheck / verdict / rename), accepted-vs-skipped by family,
+  T2 delta itemized THREE ways. HEADER = canonical sole-storer predicate (item 41 rule 3).
+- **Renamed 41 fns (T2 −34, T3 −7):** T-053 queue −23 (headline CDebugInterface **7 NOT 12**, 5 @0x434xxx
+  helper-theft rejected; 14 window-interface ctor own-vft joins incl CNAS **verified not waived**; 2 _Tree
+  single-fn joins, band intact) + T-054 ext −11 (8 HotKeyWindowFormatTable band fns via `-0x198` containment,
+  4 Gfx_BufferManager VB/IB) + 6 merges T3→T1 (Map reconciled to **member** with cited bytes) + 1 dtor.
+- **Annotation-only:** `cls_0x4b28a0` — 142/142 external `this==&0x707E48` verified, vacuous membership,
+  comment set @0x4B28A0, **no rename** (28-fn band retained). T2 delta 0.
+- **Census:** T2 2,046→**2,012 = 22.67%**, game denom 8,876; cumulative vs pre-b2 2,340→2,012 = **−328 exact**.
+- **Save discipline:** checkpoint 15:11:11 + end-of-wave `save_database` 15:31:28; fresh-dump re-read confirms
+  every name + comment persisted → **disk==live proven**. Dumps `discoveries/wavedumps/t055-{pre,post}dump.json`.
+- **Residuals correct:** `cls_0x558740::`=5 (helper-theft), `cls_0x445350::`/`cls_0x507810::`/`cls_0x5067c0::`=0,
+  `cls_0x4b28a0::`=28 (annotation-only), `cls_0x50dbb0::` band intact (only 2 single-fn joins out).
+- IDB: **8745 held; end-of-wave save 15:31:28; full devenv re-up HELD on coordinator until wave close reported**.
 
 ## EXTENSION (coordinator, same wave, post-checkpoint): apply the T-054 adjudications
 After the T-053 queue lands and you checkpoint-save, fold EpicRaven's wave-queue into the same wave
