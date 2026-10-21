@@ -188,7 +188,7 @@ row; A keeps editorial merge rights).
 
 | M-001 | D3D8 slice 1 — **PROBE ANSWERED: headers compile, `d3d8.lib` ABSENT** → blocked on a human decision | blocked | implementer-B |
 
-| T-013 | Engine texture registry (`cls_0x55dc80` @byte_70B200) = T-007 tail — **NARROWED by T-007 G2 §d (committed)**: id=node+0x0C, name string node+0x10, usecount obj+44, intrusive list head mbr_0x28, id→object map manager+0x24/0x28; REMAINING: runtime key string form (stem vs name.tga — lockstep), Fragment+0x2C dword meaning, +0xDC/+0xF8/+0x114 broadcast targets | open (partially answered) | implementer-B (after M-001 slice 1) |
+| T-013 | Engine texture registry (`JE::Gfx_Texture_Manager` @0x70B200) = T-007 tail — **NARROWED by T-007 G2 §d + b6 mint (committed)**: registry internals static-confirmed; behavior seam ALREADY PORTED (openje a166dfa); demand-side resolver strips extension, so key question = REGISTRY PROBE KEY only. **SPLIT: (a) RE STATIC TAIL claimed 43cd194 by KeenStorm `01a15f83-3b1a` read-only — +0x2C across 10 non-reader usages, +0xC0 broadcast trio readers (derived-rects vs per-part-clone), +0xDC probe-key byte shape 0x4b21e8..0x4b2208 → discoveries/2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md; (b) REAL-REGISTRY PORT stays gated on M-001 slice 1 (human call on d3d8.lib outstanding)** | in-progress (RE tail) / port blocked on M-001 | KeenStorm (tail) + implementer-B (port) |
 
 | T-014 | Who sets the sub-attack record's +0x19 "marked" byte (volley-batch loose end) | done | FastArrow (research) |
 
