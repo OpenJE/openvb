@@ -113,3 +113,21 @@ Two reasons the details matter: merging stderr into the capture corrupts the `ex
 old PATH** (so you measure the stale payload and think you reloaded), and the script itself is part of the payload being
 replaced — it cannot fix its own absence. Corrected instruction: *"capture the env and source it"* is the primitive;
 `devenv-reload` is a convenience that only works where devenv scripts are on PATH.
+
+
+## Reproducing a clean-tree gate run needs *three* things, not one
+
+A worktree of HEAD is the right way to measure a commit without stepping on lanes' in-flight files, and getting it to
+run took three failures before it worked (coordinator, `6df6f53`):
+
+1. **The submodule commit must be reachable.** A fresh worktree clone failed outright: openje `09f6e84` was not on the
+   remote, so `submodule update --init` could not fetch it. Copy the checked-out submodule in, or push first.
+2. **Every module the suites compile must exist.** The first "successful" run produced eight BUILD-FAILs on
+   `tracing.hpp` because `modules/tracing` had not been copied — **a measurement of my replication gap, not of the
+   tree.** Had I stopped at the summary line I would have reported a regression that did not exist.
+3. **State paths must be pointed at the real ones** — `OPENVB_TEST_WINEPREFIX` / `OPENVB_TEST_DATA_DIR` — or the gate
+   refuses at the prefix check.
+
+Report honestly what such a run covers: it produced **9 pass / 0 fail** with `app-boot` *excluded* because the worktree
+has no linked build output. Nine rows verified plus one quoted is a different claim from "10/10 verified", and the
+second version is what a stale payload taught us to stop saying.

@@ -24,6 +24,20 @@ absent — a stripped INI, a compressed-region read that fails, or a save from a
 port reports a **plausible** date where the original reports a **structurally invalid but defined** one. Plausible-wrong
 is worse than obviously-wrong: it will not look like a bug in a digest.
 
+## Execution order is load-bearing (found by WildYak correcting their own doc, `489b240`)
+
+**Two halves, and the wrong order produces a different bug.** My row originally read as "pass `m_calendar*` through
+unchanged and delete the literals". WildYak checked their own summary against this row and found their "one-line fix"
+asserted that `JE::World.hpp:13` was *already* initialised to `0/1/1` — **it is not: `World()` zeroes year, month and
+day.** Therefore:
+
+1. **First** align the ctor to shipped's `0,1,1` (`0x548af6` / `0x548af9` / `0x548afc`).
+2. **Then** delete the `?:` literals in `GameWorld.cpp:90-92`.
+
+Delete-only leaves `0/0/0` on an absent key — wrong in a *different* direction, and invisible on the shipping payload,
+which is exactly the class of defect this row exists to remove. The absent-key test in Acceptance is what makes the
+ordering visible rather than a matter of luck.
+
 ## Fix
 Mirror, don't improve: fall back to the shipped ctor values (`0,1,1,0,0,0`), citing `0x548af6..0x548b08`, and align
 `JE::World.hpp:13` to the same. Remove the comment that states sys.ini contents as if they were defaults.

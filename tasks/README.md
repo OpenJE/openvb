@@ -150,6 +150,8 @@ row; A keeps editorial merge rights).
 | T-040 | **`artifacts/F3.json` has no regeneration path** — four docs require an export re-run nobody can perform; blocks T-033 acceptance | open | SwiftRaven (after T-032) |
 | T-041 | What is `Entity+0x1E4` (size 4, unpacked from the record, readers gate map membership) — name demoted, semantics open | open | unassigned |
 | T-042 | Port **invents shipped data as defaults** (`GameWorld.cpp:90-92` 2253/10/18 vs shipped ctor `0,1,1,0,0,0`) | open | NiceHawk `01a15bd1` (after T-007) |
+| T-043 | **What is `Entity+0x1DC`?** The ref key D-3 hinges on — persisted vs recomputed decides a day or a subsystem | open | WildYak `01a15802` |
+| T-044 | Can any door attack a **location**? Callers of `meth_0x401100` | open | unassigned |
 
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **DONE (01554a2/a023a62)**: Year has a consumer but `totalSeconds=0` makes it inert — `clock` stays compared, no `year` field; spawned T-042 | done | WildYak |
