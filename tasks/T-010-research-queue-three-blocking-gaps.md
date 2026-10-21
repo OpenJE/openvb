@@ -132,6 +132,12 @@ the table numerically and never name parts, which is the standing policy in §12
 > Remaining gap, assign to whoever is warm on shipped item records: **one GRP read of a helmet
 > record's `+0xA8` required-slot vector** (prediction: contains 1). Static work is finished here.
 >
+> **GAP FILLED, prediction confirmed (T-018, PureKnight 01a15cb7, `92461cd`):** head-worn record
+> `0x7c4` in `_ARM.grp` parses N=1, vec=(1) through `sub_410b80` (count `0x410beb`, values
+> `0x410c19`) into the container anchored at `+0xA8` — STORED, not computed. Session 35's scalar
+> "eqslot" was this vector's element 0 (label correction: `docs/f3/GITMItemRecordLayout.md`).
+> 10c's data leg is now closed on the exact question B8 left open.
+>
 > **CLOSED by T-018 (IronStorm, session35) — from data, not the debugger.** `build/data/_ARM.grp`
 > swept: every head-worn piece (PowerArmorHelmet, HeaMotorcycle) has `GITM.eqslot = 1`, every suit
 > (PowerArmor/Vault/Leather) has `0`. `eqslot` is the slot, as a single value rather than a vector -

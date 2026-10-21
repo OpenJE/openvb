@@ -37,3 +37,24 @@ any future `data_census.py` re-run must rename/re-document those two columns.
 
 `sub_410b80` has no owner in the frozen `F3.json` (`f3_method_index 0x410b80` → 0 results) — found by
 xref from the magic-string immediate. "Not attributed in the 2024 DB" ≠ "not a function".
+## GWAM side from T-015 (same parser family, `sub_4148A0` weapon / twin `sub_40dba0` creature)
+
+PureKnight's remainder pass (`discoveries/2025-10-21-t015-slottable-twin-parity.md`) settled the
+weapon/creature record family; durable facts:
+
+- **Attack-mode records are LISTS, not dwords** — `sub_40C970` is an intrusive node-append
+  (`0x40c979` link dance): weapon list base `GameWeapon+0x40C`, creature base `GameCreature+0x6F8`.
+  Port guidance in the doc; any earlier single-record assumption is dead.
+- Trip guard for the `0x64d860` FatalError: `bool(#16) && bool(#17)` = payload bytes **+54/+55 as
+  independent u8s** (B11's "bytes 2/3 of #10" mapping refuted; both ARE written, `0x414b42/0x414b61`).
+  Corrected census: **(0,0) on 57/57 shipped GWAM chunks → 0 trips, unconditionally**; rule for
+  custom records: trip iff payload[54]!=0 && payload[55]!=0. T-019 FINAL.
+- **Creature-twin real deltas:** grammar-identical clone (89.7% normalized identity; diffs = register
+  allocation) with two exceptions — (1) NO caliber→mode derivation on the creature path: the mode
+  slot is address-taken at `0x40e0ad` but never stored ⇒ **mode = stack residue on every creature
+  path** (shipped defect, same family as Apply's `var_B1` and the attack-record heap residue); (2)
+  list base offset differs (+0x6F8 vs +0x40C).
+- Weapon caliber→style map (bytes at `0x414e54` = `00 00 00 00 00 01 01 01 02 02`, verified from the
+  PE): `[this+0x3B0] in 1..5 -> mode 1`, `6..8 -> 0`, `9..10 -> 3`; `#17 -> 2` override; `0` or
+  out-of-range falls through to the **uninitialized mode lane** (hazard flagged). Names of {0,3}
+  stay numeric — semantic naming needs the comparators over the `+0x40C` list nodes (next hop).

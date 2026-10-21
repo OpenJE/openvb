@@ -188,10 +188,10 @@ row; A keeps editorial merge rights).
 
 | T-014 | Who sets the sub-attack record's +0x19 "marked" byte (volley-batch loose end) | done | FastArrow (research) |
 
-| T-015 | GWAM record map — B9 pre-map + B11 slots part 1 (22-read order confirmed, frame captured); remainder = slot table part 2 + creature-twin parity | in-progress | FastArrow (research) |
+| T-015 | GWAM record map — **DONE (`92461cd`-wave, full remainder closed)**: 22-wire-read slot table (string does NOT clobber #18/#19), creature twin grammar-identical with 2 real deltas (mode slot NEVER stored ⇒ stack residue on creature paths; list base +0x6F8 vs +0x40C), **attack-mode records are LISTS** (0x40c979 intrusive append), style map 1..5→1/6..8→0/9..10→3 + #17→2 override with uninitialized-mode hazard flagged; T-019 FINAL on corrected pair | done | PureKnight `01a15cb7` |
 | T-016 | Runtime batch — **read 3 CLOSED statically** (INI is plaintext inside `Engine.grp`; existence-gate = no `none.map` safety net) | done | RedXenon (01a157ec) |
 | T-017 | F3 UI surface: Command* -> GameInterfaces slot / root-Open mapping | in-progress | HappyWolf (research) |
 | T-018 | **DONE (92461cd)**: helmet `GameItem+0xA8` required-slot vector = **(1)** — STORED by the GITM parser `sub_410b80` (count `0x410beb`, values `0x410c19`), consumer `Equip_46be40` -> B8 pair table; head-family naming stands, T-010c closes; side finding: gitm.csv `equip`/`eqslot` = req-count/reqvec[0] mislabels (verdicts unaffected) | done | PureKnight `01a15cb7` |
 | T-021 | Retire the anatomy wording 10c disproved (rename + comments, no link needed) | done | implementer-C (UltraBear) |
 | T-020 | **DONE — three-source CONFIRMS {33,34,37,38,40,41}, 39 unreachable** (Implementer-C derivation + PureKnight cold byte re-read + coordinator dd/objdump re-check); §5b pair wording and the 40/41-death-boundary premise both falsified and corrected in the T-010a doc; port tables were already right | done | PureKnight `01a15cb7` |
-| T-019 | Consumed+thrown FatalError on shipped data — **answered: 0/57, never fires** (B11) | done | FastArrow (research) |
+| T-019 | Consumed+thrown FatalError on shipped data — **FINAL (T-015 pass)**: guard = independent u8s at payload +54/+55 (B11 §2 mapping refuted); **0/57 trips unconditionally**; custom-record rule byte-exact: trip iff p54!=0 && p55!=0 | done | PureKnight `01a15cb7` (was FastArrow) |

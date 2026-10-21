@@ -68,3 +68,12 @@ creature-twin parity remain open; that is separate work, not this verdict.
 Chosen for you because you are already warm on exactly these bytes and nobody else can answer it
 without re-deriving the grammar. It is deliberately small; do not let it turn into an audit of the
 whole item table.
+
+## Finalization (PureKnight 01a15cb7-e27e, T-015 remainder pass, 2025-10-21)
+
+The 0/57 verdict is now **unconditional** and its mapping **corrected**: the guard operands are wire fields
+**#16 (payload+54)** and **#17 (payload+55)** — independent u8 reads, bool-normalized at `0x414b42`/`0x414b61`
+(weapon) and `0x40ddf`-block (twin); trip iff both != 0. B11 §2's “bytes 2/3 of the #10 dword / 0x4a never
+written” reading is refuted by the instruction stream. Corrected census over the same 57 committed chunks:
+**(#16,#17) = (0,0) on 57/57 → 0 trips** (the {(0,0)×54,(0,1)×3} histogram was the mis-mapped pair).
+The port rule for custom/modded records is now byte-exact. Details: `discoveries/2025-10-21-t015-slottable-twin-parity.md` §2.
