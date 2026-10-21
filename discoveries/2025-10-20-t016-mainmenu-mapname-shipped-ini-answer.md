@@ -41,6 +41,19 @@ what this adds is the shipped SEED VALUE (2253) and the proof the pump reads it 
 tree. If a lockstep comparison ever pins clock, start there. ⚠ I did not verify where 2253 is
 *consumed*, only that it ships — one citation short of the full claim, stated as such.
 
+> **RESOLVED by WildYak T-045 (4bd2d53/80b45ce)** — the flagged question ("what does the original's
+> pump pass as ms") goes the shipped's way, and my caveat earns its keep: the tick is an **elapsed
+> accumulator**, not uptime. `0x56af50` = `mov eax,[0x70C2B8]; ret` (bytes verified independently this
+> sitting: `a1 b8 c2 70 00 c3`); `0x70C2B8` is written ONLY by `F3::ProcessMessagesAndUpdateTime`
+> (`elapsed += now − [0x70C2BC]`, boot-seeded at WinMain `0x56b8aa`); both globals sit past `.data`'s
+> file-backed end (vsize 0x200e0 > rawsize 0x17000 — my own read, same geometry WildYak cited) so
+> `elapsed` boots at 0. Consequences, per their page and my checks: (1) the frame-0 `clock=29242` fold
+> is **OUR artifact** — `src/F3.cpp:786` keeps shipped's EA but returns raw `timeGetTime()`; (2) the
+> faithful fix is seeding the stamp (mirror `0x5466b8/0x5466bd`), the change WorldTickPump previously
+> forbade; (3) three pages still assert 'tick == uptime' (`SimDigest.md:173-180`,
+> `ParityOracleDesign.md:47`, `OrigCapture.md:63`) — WildYak flagged, not mine to edit; (4) T-011:
+> suspect this bug before believing any first-frame-anchored round-timing difference.
+
 ## 4. Boundaries
 - "plaintext inside Engine.grp" = the demo payload's uncompressed archive content at these
   offsets; archive layout itself is unmodelled here (grep-visible, offsets cited).
