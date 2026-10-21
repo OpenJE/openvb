@@ -20,6 +20,21 @@ the F3 DB as a `World` virtual method (`virt_meth_0x544a90`), and slot +24 is th
 vftable dump leaves unlisted — the tick-consuming single-int updater. (If slot 6 ever resolves to a
 different EA, this page is wrong; that is the only assumption in it.)
 
+## ASSUMPTION FALSIFIED (2026-10-21): slot +24 is NOT `Update_0x544a90`
+
+This page declared one assumption — "if slot 6 ever resolves to a different EA, this page is wrong." **It resolved to a
+different EA.** Reading the shipped image directly (no debugger; base `0x400000`, no ASLR, vftable at raw `0x291a1c`)
+gives **slot 3 and slot 6 = `0x404b70`**, a stub the DB attributes to `DialogueManager` (whose vftable `0x6945cc` slots
+0 and 1 are the same address), and slots 18/19 = `0x5a9320`. Fourteen other slots matched the database exactly, which is
+what makes the four new values trustworthy. So `JE::Server::virt_meth_0x552b60` calling `[vft+24]` with
+`timeGetTime()` at `0x552bb5` does **not** hand the tick to `World::Update_0x544a90` via that vcall. Data, validation and
+boundary: `discoveries/2025-10-20-r0-world-vftable-slot6-read-from-image.md`; re-derivation is **T-045**.
+
+**What survives unchanged:** the frame-0 leap. `virt_meth_0x546690` zeroing `+0x48` while seeding `+0x4C`/`+0x54`, and
+`Update_0x544a90` computing `delta = ms - [this+0x48]`, are both still established — so *mirroring the leap* and
+`clock`'s comparability are untouched. Only the identity of the tick consumer moves. The old ledger note calling
+`vft[5]` the no-op `0x404b70` was half right: that address **is** in this table, at slots 3 and 6, not 5.
+
 ## The init zeroes `+0x48` and seeds the OTHER stamps
 
 `JE::World::virt_meth_0x546690` (vftable slot 1; reads `globals.ini`, i.e. the world-entry path), with

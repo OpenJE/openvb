@@ -143,7 +143,7 @@ row; A keeps editorial merge rights).
 
 | T-032 | EA→document index — **DONE (6bde789)**: 137 docs / 5,258 EAs / 7,778 mentions, 0 silent misses in a 720k-pair recall audit, refusals counted by category | done | SwiftRaven |
 | T-033 | Class-identity batch queue — decisions audited; **apply re-granted to RedXenon** (QuickQuartz absent); route-A delta blocked by T-040 | in-progress | RedXenon |
-| T-034 | Lockstep reads — **PARKED: needs a clean wineprefix reset (harness action)**; R0/R4 still live-only, D-2 severity now measured independently | blocked | RedXenon (tool handed over) |
+| T-034 | Lockstep reads — **R0 answered from the image** (slot 6 = `0x404b70`; assumption falsified); R3/R4 reduced to plain reads | partially-done | RedXenon (tool handed over) |
 
 
 | T-039 | **DONE (633744d)**: `Entity+0x314` is the deque's **LIVE COUNT** (writer `++` at `0x54ea71`); byte deleted → derived `q=` digest field; **D-2 now diff-visible** | done | HappyKnight |
@@ -152,6 +152,7 @@ row; A keeps editorial merge rights).
 | T-042 | Port **invents shipped data as defaults** (`GameWorld.cpp:90-92` 2253/10/18 vs shipped ctor `0,1,1,0,0,0`) | open | NiceHawk `01a15bd1` (after T-007) |
 | T-043 | **What is `Entity+0x1DC`?** The ref key D-3 hinges on — persisted vs recomputed decides a day or a subsystem | open | WildYak `01a15802` |
 | T-044 | Can any door attack a **location**? Callers of `meth_0x401100` | open | unassigned |
+| T-045 | Slot +24 is a shared stub, not `Update` — re-derive who consumes the per-frame tick (load-bearing for T-011/T-026/T-031) | open | WildYak |
 
 | T-035 | ODR collisions — **done: `GameActionWait` (RedXenon) + sibling `GameActionDie` (coordinator); 5 others checked, false alarms** | done | RedXenon + Coordinator |
 | T-038 | **DONE (01554a2/a023a62)**: Year has a consumer but `totalSeconds=0` makes it inert — `clock` stays compared, no `year` field; spawned T-042 | done | WildYak |
