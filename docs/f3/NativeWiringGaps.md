@@ -81,7 +81,15 @@ witness shows a second shape the typedef conversation keeps collapsing into the 
 | **(b) script entrypoint** | `vft(slot)(name, argc, cells[, &out])` on a script object fetched per entity | `call [edx+0x14]` @0x54b044 - slot 5, args `(name, 4, block, out)` forwarded verbatim |
 
 Three call sites, **one object shape, live from both sides of the engine**:
-- net-dispatch case 0x51: predicate `[script+16]`, invoke-with-out `[script+24]` (JadeBear's id-map)
+- net-dispatch case 0x51: predicate `[script_vft+0x10]` @`0x46e299` (`ff 52 10`, followed by
+  `3c 01` = `cmp al,1`) and invoke-with-out `[script_vft+0x18]` @`0x46e2ae` (`ff 50 18`, args `(name, &out)`)
+  - hex-corrected by NiceTiger from a byte re-read; the id-map's "+16/+24" were DECIMAL, and 16/24 as hex
+  would name slots 4 and 6 correctly only by accident. JadeBear's semantics were right; the notation was
+  unresolvable, which is the exact failure mode the law twelve lines below now names.
+
+  So the script vft's interface is **three adjacent slots, each cited at a call site**: `+0x10` exists(name)
+  -> `al==1` @0x46e299 / `+0x14` invoke(name, argc, cells, out) with UNUSED return @0x54b044 / `+0x18`
+  invoke(name, &out) @0x46e2ae. One object shape, three entries, live from net-dispatch AND combat.
 - combat apply: `[script_vft+0x14]` @0x54b044, **no predicate at all**, and its return is **unconsumed** -
   verified as an absence with a bound: apply's next instruction is `8b 46 48` `mov eax,[esi+0x48]` @0x45c57a,
   a full reload, and nothing reads `eax` between the call and the return. **Fire-and-forget is structural,

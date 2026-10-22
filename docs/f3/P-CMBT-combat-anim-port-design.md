@@ -58,7 +58,9 @@ stays empty); (b) skip-past: enqueue A(pending) then B(done) → B fires same wa
 (c) erase+fire+free ordering assert (fire before erase-visible state); (d) refusal at 5th with
 D-2-style assert; (e) drain-at-reset assert (the port's entity-reset analog flushes and FIRES —
 0x54c390's apply-not-cancel difference vs the action drain's cancel-first is asserted, NOT unified).
-**Risk named:** v1 fires-never-cancels (no `[vft+8]` analog exists for effects; T-074 §4b says so
+**Risk named:** v1 fires-never-cancels (no **slot 8** / `[vft+0x20]` analog exists for effects —
+the bare `[vft+8]` this line once carried was the notation trap: 8 is a SLOT number, and the
+slot's byte displacement is +0x20, whose body is the probe at `0x45c100`); T-074 §4b says so
 explicitly) — do not invent a cancel pass.
 
 ## Step 2 — route damage through the inbox (the deferral that makes it a combat-era doc)
