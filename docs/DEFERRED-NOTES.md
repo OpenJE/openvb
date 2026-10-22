@@ -690,3 +690,16 @@ since T-045); the port's frame-0 value must show the SMALL shipped-shaped carry,
 T-051's dead-walk pins are unaffected (this is the world-clock path, not the round-walk branch).
 Superseded wordings left in place above per the annotate-never-rewrite rule; this appendix is the single
 read-the-rest statement. Refs: docs/f3/WorldTickPump*, discoveries/2025-10-21-t045*, -t056-*, -t067-*.
+
+## COORDINATOR CORRECTION BLOCK (T-072 sweep items D2/D4/D5 + wave-era updates, applied 2026-10-21; T-079 batch 1)
+- **D2 'VFT TOPOLOGY CORRECTION: 0x691A20 is the World...' — WRONG, phantom table**: 0x691A20 is
+  PRIMARY+4, not a table head; raw ctor installs 0x691a1c (primary), 0x6919e4 (+4), 0x6919c0 (+C). Cite the sweep doc §D2.
+- **D4 'IWorldServer slot0 getter 0x46F250' — slot NUMBER wrong**: 0x46F250 is slot 1; slot 0 =
+  0x436240 ([this+3C] on the +4 view = GW+0x40, per C-23 + T-082 re-read). 'double worldSimSeconds' semantics stand.
+- **D5 'vft[5] @0x5466B0 is a no-op 0x404b70' — byte-false**: primary slot 5 = 0x546b50 (calendar
+  seeder); 0x404b70 occupies slots 3 AND 6 (shared-stub pattern, R-VFM §6 family).
+- **'CombatManager port NOT started' — DEAD**: T-011 landed (20827b2 et al.), P-REV transient arm in product.
+- **'set_comments broken' — SUPERSEDED** by item 40 + T-058/60 (43+55 comments applied with readbacks).
+- **'server-only 6->7 flip' — SUPERSEDED** by session-25 retraction (already noted there).
+Frame-0-leap reconciliation already lives at the end of this file (appendix, earlier this batch); inheritance-
+relabel batch for docs/f3/* follows as T-079 batch 2. All items sourced to discoveries/2025-10-21-t072-doc-errata-sweep.md.
