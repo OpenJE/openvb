@@ -940,3 +940,58 @@ sink-object deferral NAMED not faked per the EchoConsole precedent), port these 
 `src/F3/ScriptNatives.cpp` (BUILD-AFFECTING: hand-edit cmake.toml AND CMakeLists.txt, cmkr guard INACTIVE
 per item 60/62 — verify generation), register them, and add a suite asserting arity-mismatch, unresolvable
 entity, non-creature cast, the five field reads, and the INACTIVE-entity warns-but-returns-1 behavior.
+
+## Slice-B2 (WildKnight 01a1639b, 2026-10-22 ~10:5x) — the trio + five getters LIVE, and the suite caught a layout lie that a green build would have shipped
+
+Landed: `src/F3/ScriptNatives.{hpp,cpp}` + `modules/openje/tests/je/ScriptNatives/ScriptNatives.cpp`
+(26 asserts) + the `ScriptNatives` row in run-all-tests + cmake.toml AND CMakeLists.txt (dual edit,
+**generation verified by running cmkr 0.2.46 host-native: `diff` of generated vs hand-edited CMakeLists =
+0 lines**, so the item-60/62 hand-sync rule was satisfied by proof rather than by care).
+
+Shipped bytes → port, per body: arity `0x59af40` (params[0]>>2 cells; BOTH misspelled messages
+"paramters"/"recieved" verbatim), resolve `0x59aef0` (store-then-test ordering, the `arg_C` **byte**
+active flag, and 0x59af2e `mov al,1`: warns but returns 1), reporter `0x59ad20` (`!Run-time error in
+script %s, file %s%s, line %d: ` with the line read at amx+0x2C, into JE::LogDebugString because
+byte_70C65C's sink object is unported — the two sub_5CCCC0 name/file lookups are NAMED-DEFERRED, so the
+shipped INITIAL values "<Unknown>"/"<unknown>" are what print, which is what the engine itself shows when
+those lookups miss). The natives REPORT AND CONTINUE; no FatalError anywhere in this slice.
+
+THE FINDING THAT MATTERS (harness item 69, filed same commit): the first draft read the fields by
+shipped displacement — `(char*)creature + 0xBC` — exactly as B1's byte-verified table says, and the
+MSVC-equivalent compile said nothing. **10 of 26 asserts went red.** Reason: the generated `src/F3/*.hpp`
+structs are name-SORTED excerpts, so the hex in a member NAME cites the ORIGINAL layout and is NOT a
+position in the port. Measured on this toolchain: `offsetof(GameCreature, mbr_0xbc) = 1212 (0x4B4)` and
+`sizeof(GameCreature) = 1252`, while the shipped object is 3036 bytes with that field at 0xBC. So
+`obj->mbr_0xbc` and `(char*)obj + 0xBC` name two DIFFERENT fields, and any port code that does raw
+displacement arithmetic against these structs is silently wrong — the class is pre-existing, not new.
+Cure in this slice: the five bodies use NAMED members and cite the shipped instruction per line
+(`// shipped: mov eax,[eax+0xBCh] at 0x45ac5f`); a comment block in the file states the trap so the next
+hand doesn't rediscover it.
+
+Suite coverage that would otherwise be folklore: unresolvable handle => 0; arity 0/2/3 cells => 0 while
+1 cell reads the field; handle is params[1] ALONE (decoy in params[2]); non-creature => 0; **inactive
+entity (mbr_0x3a0 == 0) still resolves and still returns the field** — the anti-obvious law asserted, so a
+future "fix" that makes it block goes red on purpose; five DISTINCT full-width sentinels
+(0x11111111..0x55555555) across 0xBC/C8/D0/D4/D8 proving dword width AND per-field mapping, with the
+byte-trap refutation asserted directly (`!= 0x5A`); failed resolve STORES 0 into the out param before
+returning (0x59af03 ordering); re-publish under a new handle; unregister => unresolvable; table shape
+(5 entries, EA order, expected cells, and the table's fn pointer being the SAME body).
+
+Registration stays NAMED-ABSENT on purpose: the shipped `{name,fn}` arrays are consumed by the amx_Register
+era (0x5CCDE0, per-entry 0x5CCD60, miss err 19 @0x5CCE2E) and the port has no amx module table, so this
+slice exposes the table (`ScriptNativeGameCreatureTable`) and does NOT fake a VM hookup — wiring into a VM
+that does not exist yet would be inventing the thing being reversed. Same for the entity list: the byte_70BE0C
+walk runs against a documented 64-entry port-side stand-in (unbounded shipped list vs fixed table = named
+deviation), which MapEntitySpawn can adopt when the real container lands.
+
+GATES: run-all-tests **13 pass / 0 fail** (new `ScriptNatives=OK [26>=26]`, app-boot 124, port-annot GATE
+PASS after the four port-side helpers got their citations — stock 0/413), `msvc-build` rc=0 with
+`Building CXX object .../src/F3/ScriptNatives.cpp.obj` in the log and `[100%] Built target F3` (MSVC 2002
+is the product toolchain; mingw-green alone would not have proved the TU), cppcheck-openvb clean,
+cppcheck-openje nothing-changed-under-JE (test lives under openje/tests).
+
+NEXT (B3): the remaining getter families — health trio (GetCurrentHP 0x45b1b0 / GetMaxHP 0x45b110 /
+AddHP 0x45b390 / SetHP 0x45b2e0: same shape, offsets unknown until read), the skill pair (GetBaseSkill
+0x45ad90 / GetTotalSkill 0x45ae20 / GetPerkRank 0x45ab50 — expect INDEXED reads, so params[2] matters and
+the arity gate's expected cells will differ), then the action verbs (EquipItem/UnequipItem/IsItemEquipped)
+which are the first rows that WRITE.

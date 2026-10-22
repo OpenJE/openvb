@@ -1430,3 +1430,35 @@ result; (7) run the tool against a scratch object before shipping it, including 
 (8) when a peer's catch arrives, reproduce the symptom AND the mechanism separately - agreeing with a wrong
 root cause is how a fix lands on the wrong layer; (9) a claim about WHY files were in a directory is a
 hypothesis about the past: check what a pristine one looks like before accusing a previous session.
+
+
+## 69. A member name's hex is a CITATION, not a position: the generated src/F3/*.hpp structs are name-sorted excerpts, so `(char*)obj + 0xBC` and `obj->mbr_0xbc` are two different fields
+
+Caught by a suite, not by a review, and only because the suite used distinct full-width sentinels.
+Slice B2's first draft read the five GameCreature getter fields by their SHIPPED displacements - 0xBC/C8/D0/D4/D8,
+byte-verified against `mov eax,[eax+0BCh]` in the previous slice, so the offsets were RIGHT and the code was
+still wrong: 10 of 26 asserts went red. Reason, measured on this toolchain:
+
+    offsetof(F3::GameCreature, mbr_0xbc) = 1212 (0x4B4)      sizeof(F3::GameCreature) = 1252
+    shipped: field at 0x2F-cell? no - 0xBC, and the shipped object is 3036 bytes
+
+The generated headers declare members in NAME order, so the hex inside a name records where the field lived in
+THE ORIGINAL and says nothing about where it sits in the port. Consequence, and it is a class rather than an
+incident: any port code doing raw displacement arithmetic against these structs (`(char*)this + 0x1DC`, a
+`+476` from IDA's print, a hand-built field offset) silently reads a neighbour - it compiles, links, and the
+only symptom is a wrong number. The compiler will never mention it.
+
+Corollaries for the lane: (1) named member access is the only safe read of these structs - cite the shipped
+displacement in the comment (`// shipped: mov eax,[eax+0xBCh] at 0x45ac5f`) instead of using it as an index;
+(2) the IDA pseudocode's numeric offsets need the SAME double-check from the other direction - it renders CELL
+indices on pointers it labels `char *` (item 68's trap: `*(v3+52)` == [eax+0D0h]), so a pseudocode number is
+neither a byte nor a port offset until the instruction text confirms it; (3) a suite that asserts DISTINCT
+WIDE values per field catches both directions at once, which is why this row exists while a per-field "returns
+the right thing" test with 1s and 2s would have passed - the layout bug was only visible because 0x11111111 vs
+0x33333333 cannot alias; (4) if a port struct must be addressed by raw offset for a shipped-ABI reason, the
+port needs a LAYOUT ASSERTION against the shipped size (3036), not a comment saying it is fine.
+
+Rules: (1) treat every hex in a generated member name as provenance, never as position; (2) prefer named
+access + per-line citation; (3) give field-mapping suites full-width distinct sentinels and a neighbour that
+must NOT be read; (4) when a green compile meets a red suite on a field access, the suite is describing the
+struct - go measure offsetof before you "fix" the test.

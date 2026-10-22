@@ -128,6 +128,7 @@ set(F3_SOURCES
 	"src/F3/GameWorld.cpp"
 	"src/F3/MapEntitySpawn.cpp"
 	"src/F3/RenderD3D8.cpp"
+	"src/F3/ScriptNatives.cpp"
 	"src/main.cpp"
 )
 
