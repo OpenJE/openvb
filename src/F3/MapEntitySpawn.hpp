@@ -35,10 +35,18 @@ namespace F3 {
 		              entityState(kStateSpawned), pumpEnabled(1), worldLinked(1),
 		              queuedAnimEvent(0), lastHitVeg(0),
 		              frameDt0x300(0), actedLatch0x319(0), turnDeadline0x29C(0),
+		              effectsFired(0), effectsFreed(0), lastFireKind(0), lastFireDmg(0),
+		              lastFireSource(0),
 		              inMap0x1E4(0),
 		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
 		name[0] = 0;
 		for ( int i = 0; i < 4; ++i ) { actions[i].kind = 0; actions[i].action = 0; }
+		// Effect-inbox zeroing: the mirror of shipped Entity::ctor_0x5513a0 @0x55159e-0x5515b0,
+		// which zeroes +0x2E4..+0x2F0 (ptr / offset-base / cursor / count) contiguously. mbr_0x0
+		// (+0x2E0) is only ever the target of a `lea` and is never loaded or stored (T-074 §1c).
+		inbox.fxCount = 0;
+		for ( int i = 0; i < 4; ++i ) { inbox.fx[i] = PendingEffect(); }
+		inboxTrace[0] = inboxTrace[1] = inboxTrace[2] = 0;
 		actionStartMs0x184 = 0;
 		gentF[0]=gentF[1]=gentF[2]=gentF[3]=gentF[5]=0;
 		gentF[4]=4;   // GameEntity mbr_0x18 ctor default (discovery session 1 §2)
@@ -227,6 +235,57 @@ namespace F3 {
 			unsigned char stampOnce0x20;     // ctor 0x405605 sets 1; gates the +0x184 stamp
 		};
 		IdleResident idleResident;
+
+		// ---- P-CMBT Step 1: the effect inbox (shipped Entity+0x2E0..+0x2F4) ----------------
+		// T-074 pinned +0x2E0 as a deque of EFFECT-TREE ROOT POINTERS, not an action queue and
+		// not the animated-event deque (+0x1A8; the errata list in
+		// docs/f3/P-CMBT-combat-anim-port-design.md retires that older labeling). Shipped
+		// container anatomy (T-074 §1a): mbr_0x4 = block-array ptr, mbr_0x8 = block-offset base,
+		// mbr_0xc = start cursor (+0x2EC), mbr_0x10 = live count (+0x2F0). Our block is FIXED at
+		// 4 slots: shipped APPENDS blocks on overflow (`new(0x10)` @0x54ea49 inside the push_back
+		// funnel, `++count` @0x54ea71) and we refuse instead - the same D-2 law the action deque
+		// already lives under (docs/f3/EntityActionQueueSeam.md), cited not hidden.
+		struct PendingEffect {
+			PendingEffect() : kind(0), source(0), dmg(0), damageType(0),
+			                  pending0xA(0), done0xB(0) {}
+			int kind;                 // port-side effect class (0 = empty slot; 1 = kEffectDamage)
+			SpawnedEntity* source;    // the actor that raised it (shipped carries the effect's
+			                          // +0x44 = &Entity+0x1DC handle stamp instead - 0x55a3a9,
+			                          // T-074 §3; the port has no handle field to stamp, D-3)
+			int dmg;                  // payload, unused by Step 1 (Step 2 routes damage here)
+			int damageType;           // payload, unused by Step 1
+			unsigned char pending0xA; // shipped Effect byte +0xA: 0x55a4f0 fires [vft+0x2C] ONLY
+			                          // when it is set, then clears it, so a re-finish is silent
+			unsigned char done0xB;    // THE done-predicate, shipped byte +0xB read by
+			                          // [vft+0] = 0x45c090 (`8b 41 0b c3` = mov eax,[ecx+0Bh]... 
+			                          // raw-verified this write: `mov al,[ecx+0xB]; ret`)
+		};
+		struct EffectInbox {
+			PendingEffect fx[4];
+			int fxCount;              // mirror of +0x2F0, DERIVED like QueuedActionCount() below:
+			                          // a second stored number can only drift from the slots it
+			                          // counts (the port's own reasoning at the +0x314 note)
+		};
+		EffectInbox inbox;
+
+		// Observability for Step 1's acceptance asserts. The generic finish path meth_0x55a4f0 calls
+		// [vft+0x2C] @0x55a501 - but for GameEffectDamage that slot is 0x404b70, a BARE RETN, so the
+		// generic path applies nothing for damage; damage's apply runs push-side through slot 10
+		// (0x45c6b0 -> tail-jmp 0x45c140). See the FirePendingEffect header in the .cpp for the byte
+		// evidence. Step 1 DELIBERATELY WRITES NO HP: damage routing is Step 2, and inventing it here
+		// would be porting a behavior the inbox walk has not been shown to need. This counter records
+		// that the generic fire site was REACHED, so the walk's ORDER (erase -> fire -> free) and the
+		// skip-past behavior are testable.
+		int effectsFired;           // count of generic fire sites reached (@0x55a501; a NO-OP for
+		                            // damage, whose apply runs push-side - see above)
+		int effectsFreed;           // count of dispose(1) sites reached (0x55a570 -> [vft+0x0C](,1))
+		int lastFireKind;
+		int lastFireDmg;
+		SpawnedEntity* lastFireSource;
+		// The trace of the LAST erase/fire/free triple, in the order the shipped walk performs it
+		// (erase @0x54c61d, then finish @0x54c62c which fires @0x55a501 then frees). Slot 0 is the
+		// first event of the most recent completion; 1 = fire, 2 = free.
+		int inboxTrace[3];
 		// Entity+0x184 (stamp target of 0x548f90, store at 0x548fa2/0x548fb8 = current world
 		// ms from the world-sub vft[0]) - armed by the idle arm's activation on its single
 		// tick; read by nothing in the port yet, kept observable for the R5 live-confirm +
@@ -238,6 +297,17 @@ namespace F3 {
 		unsigned int QueuedActionCount() const {
 			unsigned int n = 0;
 			for ( int i = 0; i < 4; ++i ) { if ( actions[ i ].kind != 0 ) { ++n; } }
+			return n;
+		}
+
+		// Mirror of shipped Entity+0x2F0, the inbox's live count. DERIVED for the same reason the
+		// +0x314 note above gives, and it is the field the shipped busy predicate reads: virt_meth_
+		// 0x54ab00 treats `+0x2F0 != 0` as busy (T-074 §4e), so an entity with a pending inbox and an
+		// empty action deque stays registered. Step 3 of the design consumes it for that; Step 1 only
+		// exposes it.
+		unsigned int InboxCount() const {
+			unsigned int n = 0;
+			for ( int i = 0; i < 4; ++i ) { if ( inbox.fx[ i ].kind != 0 ) { ++n; } }
 			return n;
 		}
 	};
@@ -349,6 +419,21 @@ namespace F3 {
 	// MAILBOX (+0x37C) discard = meth_0x54b3f0 (single pop, NO loop, @0x54b3f3; caller
 	// @0x5501b0, T-080). The action drain applies nothing.
 	void ClearActionQueue( SpawnedEntity* e );
+
+	// P-CMBT Step 1: the effect-inbox primitives (shipped +0x2E0 deque, T-074).
+	// EnqueueEffect mirrors meth_0x5506c0's order: stamp/propagate, THEN test the done predicate,
+	// and if already done FIRE INLINE and never enter the deque (0x5506ef-0x5506fe). Returns
+	// 1 = appended, 0 = inline-fired, -1 = refused at the 4-slot capacity (shipped would allocate a
+	// second block @0x54ea49 - the declared D-2 divergence, cited not hidden).
+	int EnqueueEffect( SpawnedEntity* target, const SpawnedEntity::PendingEffect& in );
+
+	// Full drain, mirror of meth_0x54c390 - the ONLY caller in shipped is entity reset/destroy
+	// (meth_0x54fff0 @0x5501a2). It FIRES pending effects (erase @0x54c3fa then finish @0x54c409);
+	// it has NO cancel pass, which is exactly what separates it from ClearActionQueue (the action
+	// drain meth_0x54c440 gives the head its [vft+8] cancel hook @0x54c49a BEFORE walking). Do NOT
+	// unify the two: T-074 §4b records that the [vft+8] analog does not exist for effects, so the
+	// port's effect path is fires-never-cancels by evidence, not by omission.
+	void DrainEffectInbox( SpawnedEntity* e );
 
 	// P-REV: drain-then-feed-idle, the port mirror of Entity::SetInMap_0x551ba0's rebase
 	// chain (drain @0x551bbe -> CreateGameAction(1) @0x551bde -> funnel enqueue @0x551be4)

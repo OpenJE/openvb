@@ -373,6 +373,176 @@ namespace F3 {
 		// IdleResident block); rebase is the insert-window's start, not a permanent occupant.
 	}
 
+	// ---------------------------------------------------------------------------
+	// P-CMBT Step 1 - the effect inbox (shipped Entity+0x2E0 deque, T-074).
+	// ---------------------------------------------------------------------------
+
+	// Fire site. Two DIFFERENT slots, and conflating them is the error this comment exists to
+	// prevent (evidence: NiceTiger c1fdb7a + TrueRaven ea53985, re-verified here against the pinned
+	// exe by reading GameEffectDamage's vft 0x66073c as raw dwords):
+	//   slot 11 / byte +0x2C = 0x404b70 = `c3`, a BARE RETN. This is what the generic finish path
+	//     meth_0x55a4f0 calls (`ff 50 2c` @0x55a501), so for GameEffectDamage the generic finish
+	//     path applies NOTHING - the slot is a no-op.
+	//   slot 10 / byte +0x28 = 0x45c6b0 = the real wrapper: it sets ready (`c6 46 0b 01` @0x45c6b3,
+	//     mov byte [esi+0Bh],1) BEFORE its gate call (`e8 64 5f 00 00` @0x45c6b7 -> 0x462620), then
+	//     tail-jmps `e9 76 fa ff ff` @0x45c6c5 to 0x45c140, the apply body. 0x45c140 appears in NO
+	//     vft cell anywhere - it is reachable only through that wrapper.
+	// CONSEQUENCE: damage HP is applied on the PUSH side (inside the enqueue call, via slot 10),
+	// which is why a damage effect never sits in the deque. Step 1's port-side fire is therefore an
+	// OBSERVABILITY seam for the walk's order; it must NOT be read as "where shipped writes HP".
+	// The pending gate itself is real either way: 0x55a4f0 tests +0xA (`test al,al` @0x55a4f6,
+	// `je` @0x55a4f8), clears it, then makes the call - so the fire is one-shot.
+	static void FirePendingEffect( SpawnedEntity* e, SpawnedEntity::PendingEffect* pe ) {
+		if ( !pe->pending0xA ) {
+			return;                       // 0x55a4f8: not pending, no [vft+0x2C] call
+		}
+		pe->pending0xA = 0;               // cleared before the call, as 0x55a4f0 does
+		e->effectsFired++;
+		e->lastFireKind = pe->kind;
+		e->lastFireDmg = pe->dmg;
+		e->lastFireSource = pe->source;
+	}
+
+	// The public enqueue API, mirror of JE::Entity::meth_0x5506c0 (0x5506c0-0x55071a).
+	// ORDER MATTERS and is byte-pinned: the preamble stamps/propagates (0x55a3a0 owner stamp
+	// @0x5506d1, 0x55a460 @0x5506d8, 0x55a4b0 @0x5506df, 0x55ae10 propagate @0x5506e6), THEN the
+	// done-predicate is tested (`call DWORD PTR [edx]` @0x5506ef, `test al,al` @0x5506f1) and if
+	// ALREADY DONE the object is handled INLINE via meth_0x55a570 @0x5506f7 and `ret 4` @0x5506fe -
+	// it NEVER ENTERS THE DEQUE. Only the not-done branch reaches `lea ecx,[edi+0x2e0]` @0x550706 +
+	// push_back @0x55070c. T-074 §3: an effect whose ready gate is already satisfied fires
+	// synchronously. Our v1 effects are always ready-on-arrive, so the inline branch is the one
+	// that runs, and it is placed FIRST to keep shipped's order.
+	//
+	// Returns 1 = appended, 0 = inline-fired (never queued), -1 = REFUSED at capacity.
+	// Shipped grows unbounded (push_back allocates a new 0x10 block @0x54ea49 when
+	// `((count+start)&3)==0 && base <= (count+4)>>2`); our block is fixed at 4 and refuses - the
+	// same declared D-2 divergence the action queue carries, cited rather than hidden.
+	int EnqueueEffect( SpawnedEntity* target, const SpawnedEntity::PendingEffect& in ) {
+		tracing::instrument( tracing::LOCATION, "kind=%d", in.kind );
+		if ( !target ) {
+			return -1;
+		}
+		SpawnedEntity::PendingEffect pe = in;   // the preamble operates on the object, then it is
+		                                        // either fired-inline or stored
+		// NO pending0xA STAMP HERE. The shipped preamble calls meth_0x55a460 @0x5506d8 and
+		// meth_0x55a4b0 @0x5506df before the predicate test, and T-074 §3 does not name what either
+		// writes. Forcing +0xA=1 would be inventing a stamp to make a test pass AND it would defeat
+		// the one-shot rule at 0x55a4f0 (a re-finish would re-fire). So +0xA arrives as the CALLER
+		// built the effect - the caller owns the object's bytes, exactly as shipped's constructors
+		// do - and Step 2's damage factory is where the stamp legitimately belongs.
+
+		// 0x5506ef-0x5506fe: done already -> fire + dispose, do NOT enqueue.
+		// For GameEffectDamage this is not a branch that happens to be taken, it is the ONLY one:
+		// its wrapper sets +0xB unconditionally @0x45c6b3 BEFORE the gate @0x45c6b7, so the
+		// predicate always reads ready and the enqueue at 0x550701 is UNREACHABLE FOR DAMAGE.
+		// The deque is still live - but the traffic that fills it is not damage: the apply body
+		// enqueues GameActionDie through the named action funnel 0x550720 @0x45c626 (verified:
+		// `e8 f5 40 0f 00`), i.e. onto the +0x304 ACTION deque. Recorded so nobody concludes from
+		// the damage evidence alone that this container is dead code - and so Step 2 is drafted as
+		// SYNCHRONOUS PUSH-SIDE application, not as queueing damage.
+		if ( pe.done0xB ) {
+			FirePendingEffect( target, &pe );
+			target->effectsFreed++;            // 0x55a570's [vft+0x0C](obj,1) deleting-dtor
+			target->inboxTrace[0] = 1;         // fire
+			target->inboxTrace[1] = 2;         // free; no erase - it was never queued
+			target->inboxTrace[2] = 0;
+			return 0;
+		}
+
+		// 0x550706-0x55070c: append into the deque.
+		for ( int i = 0; i < 4; ++i ) {
+			if ( target->inbox.fx[ i ].kind == 0 ) {
+				target->inbox.fx[ i ] = pe;
+				target->inbox.fxCount = (int)target->InboxCount();
+				return 1;
+			}
+		}
+		return -1;   // CAPACITY: shipped would allocate a second block here (0x54ea49)
+	}
+
+	// Pump walk #1: the FIRST thing the entity pump does (T-074 §4a; the world-clock fetch
+	// vft+0x98 @0x54c591 precedes it, then this loop @0x54c597-0x54c640, then the OnMessage pop
+	// @0x54c643 and only then walk #2, the +0x304 action deque, @0x54c77c).
+	//
+	// The semantics that make this NOT the action walk: no entry is ever blocked on. Raw per entry:
+	//   tick            `call 0x55afb0`      @0x54c5f8
+	//   done-predicate  `call [edx]` / test  @0x54c601 / 0x54c603
+	//   done  -> erase `call 0x54b5c0` @0x54c61d, then finish `call 0x55a570` @0x54c62c,
+	//            then `mov BYTE [ebp+0x171],1` @0x54c631, then `jmp` @0x54c638 WITHOUT advancing
+	//            the cursor (the next entry slides into the freed slot - erase closes the ring);
+	//   not done -> `inc esi` @0x54c63d and `jmp` back @0x54c63e: SKIP PAST, whole deque visited.
+	// Contrast walk #2's `BREAK` @0x54c7f6, which is the head-of-line behavior T-070 found.
+	//
+	// NOTE ON PROSE: the design doc's acceptance (c) reads "fire before erase-visible state". The
+	// BYTES order it as erase (@0x54c61d) THEN finish/fire (@0x54c62c). This walk follows the bytes
+	// and the trace pins erase->fire->free; the doc wording is flagged back to its author rather
+	// than silently implemented either way.
+	static void RunInboxWalk( SpawnedEntity* e ) {
+		int i = 0;                       // the +0x2EC start cursor
+		while ( i < 4 ) {
+			SpawnedEntity::PendingEffect pe = e->inbox.fx[ i ];   // COPY, not a reference: the erase
+			                                                   // below shifts the NEXT entry into this
+			                                                   // slot, and shipped finishes the object it
+			                                                   // erased (@0x54c62c uses the entry pulled
+			                                                   // before the @0x54c61d erase), not whatever
+			                                                   // slid into the hole
+			if ( pe.kind == 0 ) {
+				++i;                    // empty slot: nothing to tick (defensive; our block is
+					                      // head-packed by the erase below)
+				continue;
+			}
+			// tick: shipped meth_0x55afb0 recurses the child tree at +0x1C. v1 effects are FLAT
+			// (design §"honest gaps" 4), so the tick has nothing to do yet - named, not invented.
+			if ( !pe.done0xB ) {
+				++i;                    // 0x54c63d: skip past, keep scanning - no head-of-line
+				continue;
+			}
+			// 0x54c61d erase first...
+			for ( int j = i; j < 3; ++j ) { e->inbox.fx[ j ] = e->inbox.fx[ j + 1 ]; }
+			e->inbox.fx[ 3 ] = SpawnedEntity::PendingEffect();
+			e->inboxTrace[0] = 3;         // erase
+			// ...then 0x54c62c finish: fire [vft+0x2C] and dispose. `pe` is the COPY saved above.
+			// CAUTION: for GameEffectDamage that +0x2C slot is 0x404b70, a bare retn - see the
+			// FirePendingEffect header. The generic path's call is real; what it APPLIES depends on
+			// which class fills the slot, and damage's apply runs push-side through slot 10 instead.
+			FirePendingEffect( e, &pe );
+			e->inboxTrace[1] = 1;         // fire
+			e->effectsFreed++;
+			e->inboxTrace[2] = 2;         // free (0x55a570 -> [vft+0x0C](obj,1) + j__free)
+			e->inbox.fxCount = (int)e->InboxCount();
+			// DO NOT advance i: the erase slid the next entry into this slot (@0x54c638).
+		}
+		// 0x54c631 sets [ent+0x171] on every fire; Step 3 owns that mark, so it is NOT stored here.
+	}
+
+	// Full drain, mirror of meth_0x54c390 (0x54c390-0x54c42e) - reached ONLY from entity
+	// reset/destroy (its sole caller is meth_0x54fff0 @0x5501a2; T-074 §4b found no combat-round,
+	// idle-feeder or net-ingest caller). It erases every entry (@0x54c3fa) and finishes each with
+	// meth_0x55a570 (@0x54c409), so pending effects FIRE on the drain.
+	//
+	// THIS IS NOT ClearActionQueue and the difference is asserted, not unified: the action drain
+	// meth_0x54c440 gives the head its [vft+8] CANCEL hook BEFORE walking (@0x54c49a, T-071) while
+	// the effect drain has NO cancel pass at all - T-074 §4b says the [vft+8] analog does not exist
+	// for effects, so v1 is fires-never-cancels and no cancel is invented here.
+	void DrainEffectInbox( SpawnedEntity* e ) {
+		if ( !e ) {
+			return;
+		}
+		while ( e->InboxCount() != 0u ) {
+			SpawnedEntity::PendingEffect pe = e->inbox.fx[ 0 ];   // COPY, same reason as walk #1
+			for ( int j = 0; j < 3; ++j ) { e->inbox.fx[ j ] = e->inbox.fx[ j + 1 ]; }
+			e->inbox.fx[ 3 ] = SpawnedEntity::PendingEffect();
+			e->inboxTrace[0] = 3;         // erase @0x54c3fa
+			FirePendingEffect( e, &pe );  // finish @0x54c409 -> fire then free
+			e->inboxTrace[1] = 1;
+			e->effectsFreed++;
+			e->inboxTrace[2] = 2;
+		}
+		e->inbox.fxCount = (int)e->InboxCount();
+		// 0x54c422 calls the GUI-busy de-reg meth_0x54bf00 and 0x54c429 sets +0x171; both belong to
+		// Step 3 and the unported GUI seam (cited-and-absent law), so neither is faked here.
+	}
+
 	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch );
 
 	static void TickOneEntity( SpawnedEntity* e, int ms ) {
@@ -470,6 +640,11 @@ namespace F3 {
 				default:
 					break;      // ACTIVE
 			}
+			// P-CMBT Step 1: walk #1, the effect inbox, runs FIRST - after the lifecycle switch and
+			// strictly BEFORE the action walk (shipped 0x54c597 precedes the OnMessage pop 0x54c643
+			// and the +0x304 action walk 0x54c77c; T-074 §4a). The mailbox pop (Step 5) and the anim
+			// deque (Step 6) will slot between/after these, per the same order sentence.
+			RunInboxWalk( e );
 			// The walk, P-REV shape (0x54c77c loop / 0x54c7f6 predicate / erase-and-ADVANCE):
 			// process the head; if it FINISHES this tick the shipped walk erases and
 			// CONTINUES to the next entry in the SAME frame (instant finishers - idle's
