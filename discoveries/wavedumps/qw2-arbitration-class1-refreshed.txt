@@ -1,0 +1,116 @@
+# class-1 REFRESHED (WAVE-4 W4-R1, 2025-10-22, writer seat SwiftOwl 01a16198).
+# Source of truth: LIVE IDB read-back (32/65 sampled, dump==live zero drift) + w3-postdump census.
+# Verdicts: CONFIRMED-APPLIED (live == plan doc), RE-HOST-APPLIED (live == key-holder, the plan
+#  doc is the pre-rehost label - live wins; wave-3 applied these), HOLD-OPEN (values-era owner-
+#  chase batch, untouched as designed; anon-holder names are deliberate per band-consistency),
+#  SUPERSEDED (0x4903E0 staleness class closed: live already correct, the OLD plan row must NEVER
+#  be re-applied). This file REPLACES qw2-arbitration-class1.txt for future waves; the original
+#  stays as the historical plan.
+
+  0x4216B0  plan_doc=JE::AreaMapWindow        live=JE::AreaMapWindow::meth_0x4216b0_4216b0              verdict=CONFIRMED-APPLIED  key=[JE::AreaMapWindow field-load x1 @0x421813]
+  0x431000  plan_doc=JE::CounterControl       live=JE::CounterControl::meth_0x431000_431000             verdict=CONFIRMED-APPLIED  key=[JE::CounterControl @+0x1C x3 @0x43330e]
+  0x431220  plan_doc=JE::CounterControl       live=JE::CounterControl::meth_0x431220_431220             verdict=CONFIRMED-APPLIED  key=[JE::CounterControl @+0x4C x4 @0x432eef]
+  0x4327E0  plan_doc=JE::CounterControl       live=JE::CounterControl::meth_0x4327e0_4327e0             verdict=CONFIRMED-APPLIED  key=[JE::CounterControl @+0x4C x4 @0x432eef]
+  0x43A420  plan_doc=F3::GameActionEquip      live=F3::GameActionEquip::meth_0x43a420_43a420            verdict=CONFIRMED-APPLIED  key=[F3::GameActionEquip field-load x2 @0x43b542]
+  0x441D90  plan_doc=F3::GameActionEquip      live=F3::GameActionEquip::meth_0x441d90_441d90            verdict=CONFIRMED-APPLIED  key=[F3::GameActionEquip @-0x34 x1 @0x442ae1]
+  0x442BF0  plan_doc=F3                       live=cls_0x442bf0::meth_0x442bf0_442bf0                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x45ebac]
+  0x4433E0  plan_doc=F3                       live=cls_0x442bf0::meth_0x4433e0_4433e0                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x45ebac]
+  0x44DCB0  plan_doc=F3::GameActionEquip      live=F3::GameActionEquip::meth_0x44dcb0_44dcb0            verdict=CONFIRMED-APPLIED  key=[F3::GameActionEquip field-load x3 @0x450190]
+  0x44FC70  plan_doc=F3::GameActionEquip      live=F3::GameActionEquip::meth_0x44fc70_44fc70            verdict=CONFIRMED-APPLIED  key=[F3::GameActionEquip field-load x2 @0x4501a0]
+  0x45C800  plan_doc=JE::Graphics             live=JE::Graphics::meth_0x45c800_45c800                   verdict=CONFIRMED-APPLIED  key=[JE::Graphics other x19 @0x582cb5]
+  0x45C8E0  plan_doc=JE::Graphics             live=JE::Graphics::meth_0x45c8e0_45c8e0                   verdict=CONFIRMED-APPLIED  key=[JE::Graphics other x19 @0x582cb5]
+  0x467780  plan_doc=JE::Gfx_AnimMeshInstance live=JE::Gfx_AnimMeshInstance::meth_0x467780_467780       verdict=CONFIRMED-APPLIED  key=[JE::Gfx_AnimMeshInstance field-load x1 @0x4a5658]
+  0x4903E0  plan_doc=JE::Gfx_Engine           live=JE::Gfx_RenderManager::meth_0x4903e0_4903e0          verdict=SUPERSEDED  key=[JE::Gfx_Engine field-load x1 @0x5be073]
+  0x490450  plan_doc=JE::GUI::Skin            live=JE::GUI::Skin::meth_0x490450_490450                  verdict=CONFIRMED-APPLIED  key=[JE::GUI::Skin @+0x4 x1 @0x522add]
+  0x4904B0  plan_doc=JE::GUI::Skin            live=JE::GUI::Skin::meth_0x4904b0_4904b0                  verdict=CONFIRMED-APPLIED  key=[JE::GUI::Skin @+0x4 x1 @0x522add]
+  0x4960D0  plan_doc=F3::GameActionOperateContainer live=F3::GameActionOperateContainer::meth_0x4960d0_4960d0 verdict=CONFIRMED-APPLIED  key=[F3::GameActionOperateContainer other x1 @0x406cb6]
+  0x4962C0  plan_doc=F3::GameActionOperateContainer live=F3::GameActionOperateContainer::meth_0x4962c0_4962c0 verdict=CONFIRMED-APPLIED  key=[F3::GameActionOperateContainer other x1 @0x406cd0]
+  0x49CA00  plan_doc=JE::ModelInstance        live=JE::ModelInstance::meth_0x49ca00_49ca00              verdict=CONFIRMED-APPLIED  key=[JE::ModelInstance field-load x1 @0x563ab9]
+  0x49CAF0  plan_doc=JE::ModelInstance        live=JE::ModelInstance::meth_0x49caf0_49caf0              verdict=CONFIRMED-APPLIED  key=[JE::ModelInstance field-load x2 @0x565060]
+  0x49DD80  plan_doc=JE::ModelInstance        live=JE::ModelInstance::meth_0x49dd80_49dd80              verdict=CONFIRMED-APPLIED  key=[JE::ModelInstance field-load x2 @0x563ce8]
+  0x4A1F30  plan_doc=JE::VFX_Model            live=JE::VFX_Model::meth_0x4a1f30_4a1f30                  verdict=CONFIRMED-APPLIED  key=[JE::VFX_Model field-load x2 @0x4f42e0]
+  0x4A4BA0  plan_doc=JE::VFX_Model            live=JE::VFX_Model::meth_0x4a4ba0_4a4ba0                  verdict=CONFIRMED-APPLIED  key=[JE::VFX_Model field-load x1 @0x4f4424]
+  0x4B48E0  plan_doc=JE::GUI::Skin            live=JE::GUI::Skin::meth_0x4b48e0_4b48e0                  verdict=CONFIRMED-APPLIED  key=[JE::GUI::Skin @+0x4 x1 @0x5226ad]
+  0x505540  plan_doc=JE::Gfx_AnimMeshInstance live=JE::Gfx_AnimMeshInstance::meth_0x505540_505540       verdict=CONFIRMED-APPLIED  key=[JE::Gfx_AnimMeshInstance field-load x1 @0x4a5124]
+  0x539CC0  plan_doc=JE::CSoundSystem         live=JE::CSoundSystem::meth_0x539cc0_539cc0               verdict=CONFIRMED-APPLIED  key=[JE::CSoundSystem heap-ctor x1 @0x52a64a]
+  0x55BB10  plan_doc=JE::DialogueManager      live=JE::DialogueManager::meth_0x55bb10_55bb10            verdict=CONFIRMED-APPLIED  key=[JE::DialogueManager @+0x8 x3 @0x55fa65]
+  0x55BDC0  plan_doc=JE::DialogueManager      live=JE::DialogueManager::meth_0x55bdc0_55bdc0            verdict=CONFIRMED-APPLIED  key=[JE::DialogueManager @+0x8 x3 @0x55fa65]
+  0x55BF60  plan_doc=JE                       live=cls_0x55bf60::meth_0x55bf60_55bf60                   verdict=HOLD-OPEN  key=[JE field-load x1 @0x5c3a36]
+  0x55BFA0  plan_doc=JE                       live=cls_0x55bfa0::meth_0x55bfa0_55bfa0                   verdict=HOLD-OPEN  key=[JE field-load x1 @0x5c3ab6]
+  0x55E910  plan_doc=JE::DialogueManager      live=JE::DialogueManager::meth_0x55e910_55e910            verdict=CONFIRMED-APPLIED  key=[JE::DialogueManager @+0x8 x1 @0x55fa89]
+  0x55F360  plan_doc=JE::DialogueManager      live=JE::DialogueManager::meth_0x55f360_55f360            verdict=CONFIRMED-APPLIED  key=[JE::DialogueManager @+0x8 x1 @0x55fa89]
+  0x570400  plan_doc=JE::Map                  live=JE::Map::meth_0x570400_570400                        verdict=CONFIRMED-APPLIED  key=[JE::Map @+0xC8 x1 @0x573256]
+  0x571510  plan_doc=JE::Map                  live=JE::Map::meth_0x571510_571510                        verdict=CONFIRMED-APPLIED  key=[JE::Map @+0x234 x1 @0x5744d5]
+  0x5810F0  plan_doc=JE::Client               live=JE::Client::meth_0x5810f0_5810f0                     verdict=CONFIRMED-APPLIED  key=[JE::Client field-load x2 @0x58c510]
+  0x581190  plan_doc=JE::AreaMapWindow        live=JE::AreaMapWindow::meth_0x581190_581190              verdict=CONFIRMED-APPLIED  key=[JE::AreaMapWindow field-load x1 @0x41ea7c]
+  0x5813A0  plan_doc=F3                       live=cls_0x5813a0::meth_0x5813a0_5813a0                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x588b72]
+  0x5813C0  plan_doc=F3                       live=cls_0x5813a0::meth_0x5813c0_5813c0                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x588b8b]
+  0x5813E0  plan_doc=F3                       live=cls_0x5813e0::meth_0x5813e0_5813e0                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x588c38]
+  0x581400  plan_doc=F3                       live=cls_0x5813e0::meth_0x581400_581400                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x588c42]
+  0x581420  plan_doc=F3                       live=cls_0x5813e0::meth_0x581420_581420                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x58b951]
+  0x581430  plan_doc=F3                       live=cls_0x5813e0::meth_0x581430_581430                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x588bfe]
+  0x581470  plan_doc=F3                       live=cls_0x581460::meth_0x581470_581470                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x58bc1d]
+  0x5817A0  plan_doc=F3                       live=cls_0x5813e0::meth_0x5817a0_5817a0                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x58b940]
+  0x59AAA0  plan_doc=JE                       live=cls_0x59aa70::meth_0x59aaa0_59aaa0                   verdict=HOLD-OPEN  key=[JE other x2 @0x5c2d06]
+  0x5B2900  plan_doc=JE                       live=cls_0x5b2900::meth_0x5b2900_5b2900                   verdict=HOLD-OPEN  key=[JE field-load x1 @0x5c9d8c]
+  0x5B2990  plan_doc=JE                       live=cls_0x5b2900::meth_0x5b2990_5b2990                   verdict=HOLD-OPEN  key=[JE field-load x1 @0x5c9d8c]
+  0x5B2C80  plan_doc=JE                       live=cls_0x5b2c80::meth_0x5b2c80_5b2c80                   verdict=HOLD-OPEN  key=[JE field-load x1 @0x5c9bec]
+  0x5B2CD0  plan_doc=JE                       live=cls_0x5b2cd0::meth_0x5b2cd0_5b2cd0                   verdict=HOLD-OPEN  key=[JE field-load x1 @0x5c9f23]
+  0x5B4F50  plan_doc=JE::Client               live=JE::Client::meth_0x5b4f50_5b4f50                     verdict=CONFIRMED-APPLIED  key=[JE::Client field-load x1 @0x58a6c9]
+  0x5B4F60  plan_doc=JE::Client               live=JE::Client::meth_0x5b4f60_5b4f60                     verdict=CONFIRMED-APPLIED  key=[JE::Client field-load x1 @0x58a6d6]
+  0x5B5640  plan_doc=F3                       live=cls_0x5b4f50::meth_0x5b5640_5b5640                   verdict=HOLD-OPEN  key=[F3 field-load x1 @0x588d2a]
+  0x410A90  plan_doc=F3::GameActionEquip      live=cls_0x4112c0::meth_0x410a90_410a90                   verdict=HOLD-OPEN(anon-holder)  key=[sub_411330 @-0x30C x1 @0x41137f]
+  0x569790  plan_doc=JE::Client               live=JE::World::meth_0x569790_569790                      verdict=RE-HOST-APPLIED  key=[JE::World @+0x118 x1 @0x548bfa]
+  0x569970  plan_doc=JE::Client               live=JE::World::meth_0x569970_569970                      verdict=RE-HOST-APPLIED  key=[JE::World @+0x118 x1 @0x548bfa]
+  0x569D50  plan_doc=JE::Client               live=JE::World::meth_0x569d50_569d50                      verdict=RE-HOST-APPLIED  key=[JE::World @+0x118 x1 @0x548bfa]
+  0x56A6F0  plan_doc=JE::Client               live=JE::World::meth_0x56a6f0_56a6f0                      verdict=RE-HOST-APPLIED  key=[JE::World @+0x108 x1 @0x548bea]
+  0x56A8D0  plan_doc=JE::Client               live=JE::World::meth_0x56a8d0_56a8d0                      verdict=RE-HOST-APPLIED  key=[JE::World @+0x108 x1 @0x548bea]
+  0x56ACB0  plan_doc=JE::Client               live=JE::World::meth_0x56acb0_56acb0                      verdict=RE-HOST-APPLIED  key=[JE::World @+0x108 x1 @0x548bea]
+  0x56D030  plan_doc=JE::Map                  live=cls_0x570800::meth_0x56d030_56d030                   verdict=HOLD-OPEN(anon-holder)  key=[cls_0x570800 @+0xE0 x1 @0x57b131]
+  0x56D090  plan_doc=JE::Map                  live=cls_0x570800::meth_0x56d090_56d090                   verdict=HOLD-OPEN(anon-holder)  key=[cls_0x570800 @+0xE0 x1 @0x57b131]
+  0x591F70  plan_doc=JE::Map                  live=cls_0x570800::meth_0x591f70_591f70                   verdict=HOLD-OPEN(anon-holder)  key=[sub_595C40 @+0xD64 x1 @0x595d0f]
+  0x591FD0  plan_doc=JE::Map                  live=cls_0x570800::meth_0x591fd0_591fd0                   verdict=HOLD-OPEN(anon-holder)  key=[sub_595C40 @+0xD64 x1 @0x595d0f]
+  0x5ACA90  plan_doc=net::client              live=net::connection::meth_0x5aca90_5aca90                verdict=RE-HOST-APPLIED  key=[net::connection @+0x1C x1 @0x5ab8fb]
+  0x5AD7B0  plan_doc=JE::Map                  live=JE::AreaMap::meth_0x5ad7b0_5ad7b0                    verdict=RE-HOST-APPLIED  key=[JE::AreaMap @+0x60 x1 @0x580056]
+
+# verdict counts: CONFIRMED-APPLIED=33, HOLD-OPEN=18, HOLD-OPEN(anon-holder)=5, RE-HOST-APPLIED=8, SUPERSEDED=1 (total 65)
+
+## WAVE-4 LEDGER (close entries, this file = the wave's verdict home)
+- W4-R1 CLOSED (this table): 33 CONFIRMED / 8 RE-HOST applied / 23 HOLD (18 doc-bare + 5 anon-
+  band-consistent, values-era queue) / 1 SUPERSEDED / 0 unexpected. Live==w3-postdump (32/65
+  read-back, zero drift); the refreshed table is now THE input for any future wave; the 2024
+  plan file stays historical.
+- W4-R2 CLOSED (salvage-with-audit, zero IDB writes): the 4 feed-unique ADOPT rows resolve
+  CONSISTENT with the applied state — (0x44dcb0, 0x44fc70): the feed's anonymous cluster
+  cls_0x44ad50 IS the F3::GameActionEquip family (its anchor 0x44ad50 live-named since wave-3);
+  both rows live as F3::GameActionEquip::meth_* (MINT+ADOPT = same family, two labels of one
+  truth; 0x44fc70's prototype still carries this: cls_0x44ad50* — TYPE-tier residue, named for a
+  future set_type pass, NOT a naming regression). (0x442bf0, 0x4433e0): the feed's ADOPT target
+  is the anonymous family itself (installer sub_443410 unattributed = values-era), live already
+  band-consistent cls_0x442bf0::meth_*; the EpicRaven cross-check (R-ST banked tables) adds no
+  better name — HOLD stays correct WITH EVIDENCE, which is the honest closure of the 'if they're
+  still standing' clause: they stand, holding, proven.
+- W4-R3 LANDED (1 IDB write): 0x4ffb60 '?Win95IsDebuggerPresent@@YGHXZ' ->
+  JE::VFX_ParameterInfo::toBool_0x4ffb60 (rename ok:true; live body 5 insns: call
+  VFX_ParameterInfo::meth_0x4ff970 + neg/sbb/neg = (r!=0); the Win95 name is IDA
+  signature-hallucination — YGHXZ pattern, no thiscall arg, BOOL(void) vs the real this+ret).
+  The receipt COMMENT could not land: set_comments schema (anyOf array|object) defeats the
+  MCP argument coercion at every payload tried (array/object/short) — DEFECT filed to register;
+  the citation lives in discoveries/2025-10-21-r-veg-e-value-cache-emit-family.md L13/L84 + this
+  ledger until the comment channel is fixed.
+- W4-R4 BLOCKED on the same set_comments defect (all five triage rows are annotation-tier by
+  manifest; renaming beyond plan (e.g. sub_5A9D50 -> isRegistered) would be scope-creep the
+  manifest explicitly gated as 'candidate' not 'mint'). The triage file carries every verdict +
+  EA for the next writer wave that has a working comment channel. One row IS name-eligible per
+  the triage's own receipts and the manifest's 'census note' wording — left for the coordinator
+  ruling rather than seat-side expansion.
+- W4-R5 HOLSTERED, NOT FIRED: committed hosts-regen on the named candidate band (cls_0x558740)
+  returns rc0 with all 12 fns derived and the full selftest PASS block — no non-74 row failed;
+  the reactivation line stays holstered with this run as the receipt (2025-10-22, w3-postdump).
+- IDB WRITE TOTAL this wave: 1 rename, 0 comments (channel defect), 0 type moves. Sole-writer
+  discipline held; close = this ledger + repo commit.
+- END SAVE (gold-standard partial): ida_loader.save_database -> True, artifacts/F3.exe.i64 mtime
+  2026-10-22 03:02:41 fresh, live read-back at 3 EAs (toBool_0x4ffb60 / GameActionEquip@0x44dcb0 /
+  CDebugInterface::ctor@0x558740) all named. FRESH-SERVER verification (process restart re-query)
+  queued for the coordinator's re-up per the skill's close/open flow - the seat does not kill the
+  live server mid-mesh.
