@@ -316,6 +316,18 @@ clean numeric discriminator, courtesy of JadeBear's Entity+0x1E0 lifecycle-state
   journal class; the unconditional `return 1` is itself a fact worth keeping - do not "improve" it into a
   success-dependent return.
 
+  **CORRECTED (B22, 2026-10-22) - the parenthetical is wrong, the rule stands.** Verified from instruction text
+  in `docs/f3/TaskJournalTrio.md` §2: a null `0x70bd98` is NOT a do-nothing path. The branch zeroes the pointer
+  (`xor ecx,ecx` @0x46ecdc / 0x46ed3c / 0x46ed9c) and the merge path's next instruction dereferences it
+  (`mov eax,[ecx]` @**0x46ecea / 0x46ed4a / 0x46edaa**) - shipped FAULTS and never reaches its `mov eax,1`.
+  The state that really does succeed while doing nothing is a FAILED `Journal -> GameJournal` cast
+  (`test eax,eax` / `jz` @0x46ed06-08), which skips both the journal write and the packet with no message.
+  Also recorded there: the tails are packet ids **97 / 98 / 99** (0x46db25 `61h` / 0x46dc05 `62h` /
+  0x46dce5 `63h`, stored in the packet's +0x30 id field), and the three natives fault EARLIER still if the
+  subsystem-manager global is null (`mov ecx,[eax+18h]` @0x45b92e / 0x45b96e / 0x45b9ae, no test). Kept as a
+  correction rather than a silent rewrite: the `else v2 = 0` branch LOOKS like graceful degradation in
+  pseudocode, which is exactly how the wrong claim got made.
+
 ## RESOLVED - the operand IS the entity's own handle (JadeBear's static proof; the ctor confirms it independently)
 
 The live read turned out to be unnecessary: a vbtable entry is a compile-time constant in the image. JadeBear

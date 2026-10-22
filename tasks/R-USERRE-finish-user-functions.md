@@ -1878,8 +1878,8 @@ hash or count with the listed command before acting on it.
 
 | item | value | how to confirm |
 |---|---|---|
-| batch B natives LIVE | **27**, table `s_gameCreatureNatives[27]` | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
-| suite | **196 asserts, 0 failures** | `run-all-tests` → `ScriptNatives=OK [196 >= 196]` |
+| batch B natives LIVE | **30**, table `s_gameCreatureNatives[30]` (27 at the pause; B22 added the task trio) | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
+| suite | **217 asserts, 0 failures**; floor raised 196 → 217 in `devenv/scripts/run-all-tests.nix` | `run-all-tests` → `ScriptNatives=OK [217 asserts >= 217]` |
 | gates at pause | run-all **13 pass / 0 fail** (incl. port-annot), `msvc-build` rc=0, cppcheck rc=0 | rerun; no dirty source behind them |
 | branch | `automated-reversing`, **ahead 60, UNPUSHED** (no push without a lane decision) | `git rev-list --count origin/automated-reversing..HEAD` |
 | dirty files | only `tools/t052-drive.py` (another owner's - never stage) | `git status --short` |
@@ -1898,6 +1898,21 @@ against a declared stand-in registry - read it that way, and say so in any relay
 1. **Task trio** - `OpenTask` 0x45b900, `CloseTask` 0x45b940, `AddEntry` 0x45b980. Arity 2, delegate to unported
    `GameServer::meth_0x46ecd0/0x46ed30/0x46ed90`, and **return 1 unconditionally** even when the singleton is null
    (B8 finding). Three rows, no other-lane decision needed; journal write named-deferred.
+   **CLOSED by TrueRaven `01a1652d` as slice B22.** Two claims in this own bullet failed against instruction text
+   (rule 1 paying rent again): (a) the null-singleton case is NOT a silent no-op - `xor ecx,ecx`
+   (0x46ecdc/0x46ed3c/0x46ed9c) feeds `mov eax,[ecx]` (0x46ecea/0x46ed4a/0x46edaa), so shipped FAULTS and never
+   reaches its `mov eax,1`; the state that truly succeeds while doing nothing is a failed `Journal -> GameJournal`
+   cast (0x46ed06-08). (b) The natives fault even earlier on a null subsystem-manager global
+   (`mov ecx,[eax+18h]` @0x45b92e/0x45b96e/0x45b9ae, no test anywhere). Landed: 3 bodies, table 27→30, suite
+   196→217, and the era read end to end in `docs/f3/TaskJournalTrio.md` — journal writers `sub_46C7A0`/`sub_46C840`
+   are ONE upsert differing only in the state literal (**1** @0x46c7ee/0x46c805 vs **2** @0x46c88e/0x46c8a5),
+   `sub_46C6C0` is insert-if-absent keyed on BOTH fields with `new(0xC)` not `new(0x10)`; the tails are packet
+   **97/98/99** stored in the packet's +0x30 id field (@0x46db25 `61h` / 0x46dc05 `62h` / 0x46dce5 `63h`) —
+   SEND ids, which is exactly why they are absent from JadeBear's RECV id-map: different number space. The B8
+   parenthetical in `docs/f3/CreatureHpWriters.md` is corrected in place with the misreading left visible.
+   NOT built, deliberately: a stand-in journal inside this TU — `GameWorld.cpp:78` allocates a `GameJournal` no
+   native can reach, and picking which world owns the journal is a decision this side cannot make (same error
+   class as gap 5's refused bridge).
 2. **The handle field the port is missing** - `Entity+0x1DC` (slot 9 of the adjusted `global_0x70bd98` singleton)
    has no port-side counterpart; `SpawnedEntity.netId` models `GameEntity+0x28`, which is **write-only** as shipped
    (stores at 0x4679b3/0x4679b8, zero readers). This is a spawn/openje lane decision, not a natives edit - the
@@ -1941,7 +1956,7 @@ against a declared stand-in registry - read it that way, and say so in any relay
 
 - `docs/f3/ScriptNatives`-family notes: `CreatureHpAccessors.md`, `CreatureHpWriters.md`,
   `CreatureSkillAndPerkArrays.md`, `AmxStringParamFetch.md`, `InventoryEquipPaths.md`, `PartyAccessors.md`,
-  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`
+  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`, `TaskJournalTrio.md` (B22: the trio, its era, the 97/98/99 send ids)
 - `docs/notes/commit-citation-protocol.md` - two-database citation rules + the 247-token sweep (7 non-citations,
   `f2b3a1c` deliberately left unresolved as evidence)
 - `src/F3/ScriptNatives.{hpp,cpp}`, `src/F3/ScriptInventory.hpp`, `src/F3/ScriptParty.hpp`,

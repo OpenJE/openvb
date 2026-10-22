@@ -92,6 +92,46 @@ namespace F3 {
 	//   GetLockDC             0x45b5dd / 0x45b5e8 `[+0C0h]`  cast CONTAINER, else DOOR
 	// +0xA0 is shared by two unrelated classes, i.e. a base-level type code, and +0xC0 lives on
 	// their common base GameUsableObject - which is why one field serves both GetLockDC branches.
+	// ---- the task-journal trio (batch B slice B22) -----------------------------------------
+	// 0x45b900 OpenTask / 0x45b940 CloseTask / 0x45b980 AddEntry. The ONLY batch-B family that never
+	// resolves an entity: gate on 2 cells, read the two cells, hand them to the server, return 1.
+	// Byte-verified shape, identical in all three bodies except the gate name and the delegate EA:
+	//   45b900 mov eax,[esp+param_1] / 45b905 mov esi,[esp+4+param_2]   - amx into eax, params into esi
+	//   45b909-12 push name,2,params,amx; call sub_59AF40; add esp,10h  - the arity gate with its OWN name
+	//   45b91a test al,al / jnz / 45b91e xor eax,eax / retn             - gate fail => 0
+	//   45b922 mov ecx,[esi+8] / 45b925 mov edx,[esi+4]                - params[2], params[1]
+	//   45b928 mov eax,F3::global_area_map_icons / 45b92e mov ecx,[eax+18h]  - NO null test; see below
+	//   45b92d/31 push ecx,edx / 45b932 call GameServer::meth_0x46ecd0  - cdecl arg order is (params[1],params[2])
+	//   45b937 mov eax,1 / retn                                         - UNCONDITIONAL success
+	// The fetch at +0x18 is the second sighting in this batch of the misnamed `global_area_map_icons`
+	// subsystem manager (JadeBear's name-fix candidate: it is a multi-singleton block, not map icons);
+	// `this` for the delegate is what lives there, and the delegate's tail uses it for the packet send.
+	//
+	// TWO SHIPPED LANDMINES, both kept as behavior rather than "fixed":
+	// (1) the return value is INDEPENDENT of the callee. The journal write and the packet are inside
+	//     `if (cast succeeded)` (0x46ed08 jz -> 0x46ed28, past both calls), so a script with no journal
+	//     object still gets 1. Do not "improve" this into a success-dependent return.
+	// (2) shipped CRASHES on the null states - `mov ecx,[eax+18h]` with a null manager faults at
+	//     0x45b92e, and inside the delegate the null-singleton branch faults one instruction later
+	//     (`mov eax,[ecx]` with ecx = 0 at 0x46ecea / 0x46ed4a / 0x46edaa). CORRECTION to the earlier
+	//     note in docs/f3/CreatureHpWriters.md (B8), which said the null singleton "did nothing": it
+	//     does not return at all. The port therefore does not reach the shipped state where the answer
+	//     is observable, and it does not reproduce a fault: with the era absent the port answers 1, the
+	//     same value the non-crashing path (failed RTTI cast) produces. Declared, not hidden.
+	//
+	// The era itself is NAMED-DEFERRED as a whole chain, not leg by leg: the journal object is reachable
+	// only through the world-server singleton 0x70bd98 + the vbptr base+delta walk + vft slot 30 +
+	// `RTTI Journal -> GameJournal`, and each tail is a net::packet send - ids 97 (OpenTask, 0x46dad0),
+	// 98 (CloseTask, 0x46dbb0), 99 (AddEntry, 0x46dc90), each `packet(a1); packet(a2); server->send(pkt,1)`.
+	// Those are SEND-side ids: they are absent from the RECV dispatch id-map in
+	// discoveries/2025-10-22-server-packet-dispatch-idmap.md, which is a different number space.
+	// The journal bodies are read and recorded (sub_46C7A0 upsert with state 1, sub_46C840 the same walk
+	// with state 2, sub_46C6C0 an add-if-absent over both key fields), but neither GameJournal nor
+	// GameServer nor the packet era exists port-side, so nothing here fakes a journal or logs a substitute.
+	int ScriptNative_OpenTask( int amx, int params );    // 0x45b900
+	int ScriptNative_CloseTask( int amx, int params );   // 0x45b940
+	int ScriptNative_AddEntry( int amx, int params );    // 0x45b980
+
 	// 0x45b9c0 - PlayMusic: the engine's own admission of a hole in the native table. Arity 1, and the
 	// ONLY effect when the gate passes is reporting the shipped literal "PlayMusic() unimplemented."
 	// (0x45b9e4) and returning 0. No callee, no state, no side effect - so the faithful port is exact,

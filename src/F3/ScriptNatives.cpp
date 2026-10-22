@@ -390,6 +390,74 @@ void ScriptNativeResetRegistry() {
 		return GameEntityMaxHp( pEntity );
 	} // ScriptNative_GetMaxHP
 
+	// ---- the task-journal trio (batch B slice B22) -------------------------------------------
+	// Shipped body, byte-verified, and the SAME 24 instructions in all three (0x45b900 / 0x45b940 /
+	// 0x45b980) except the gate name and the delegate EA:
+	//   arity gate with 2 cells and its OWN name -> gate fail: return 0
+	//   -> read params[2] into ecx (0x45b922) and params[1] into edx (0x45b925)
+	//   -> load the subsystem manager and take the server from [mgr+0x18] (0x45b928/2e, NO null test)
+	//   -> push ecx, push edx, call GameServer::meth_0x46eXX0 (cdecl order: (params[1], params[2]))
+	//   -> `mov eax,1` (0x45b937) with no test of anything the callee did.
+	// These are the ONLY batch-B natives that never resolve an entity - no 0x59aef0, no RTTI cast, no
+	// error message on the success path. So the two cells travel as opaque values, which is why the
+	// port's observable contract here is (gate outcome, return 1) and nothing else.
+	//
+	// NAMED-DEFERRED, and deferred as a CHAIN rather than leg by leg: each delegate is
+	//   vbptr walk on world-server singleton 0x70bd98 -> vft slot 30 -> RTTI `Journal -> GameJournal`
+	//   -> [journal write] + [GameServer packet tail], and BOTH of those need objects the port does not
+	//   have (no GameJournal instance - GameWorld.cpp:78 allocates one but nothing wires the natives to
+	//   it, and the singleton's slot-30 accessor is unported; no net::packet era). Journal write bodies
+	//   are READ and recorded, not guessed: sub_46C7A0 upserts a JE::TaskStatus node keyed on params[1]
+	//   storing params[2] with state 1 (0x46c805 `mov [v9+0Ch],1`), sub_46C840 is the SAME walk with
+	//   state 2 (0x46c8a5/0x46c88e) - one function plus a literal, not two behaviors - and sub_46C6C0 is
+	//   an add-if-absent over BOTH key fields with a `JournalEntry -> TaskEntry` cast in the scan.
+	//   Packet tails: 0x46dad0 = id 97 (0x46db25), 0x46dbb0 = id 98 (0x46dc05), 0x46dc90 = id 99
+	//   (0x46dce5), each serializing both cells then GameServer::meth_0x5a0a00(packet, 1).
+	// Deliberately NOT built here: a stand-in journal list inside this TU. The party seam (B21) could
+	// stand in because a party is ONE object the natives already reach by pointer; a journal would need
+	// the port to pick which world owns it (GameWorld's +0xF8 or a server singleton that does not exist
+	// here), and a guess would hide exactly that question - the same error class as the handle bridge
+	// NativeWiringGaps.md gap 5 refuses to invent.
+	//
+	// SHIPPED LANDMINES KEPT (see the header block for the full statement): (1) the unconditional 1 -
+	// a script with no journal object still gets success, and a failed `Journal -> GameJournal` cast
+	// skips BOTH the write and the packet with no message (0x46ed06 jz -> 0x46ed28); (2) shipped's null
+	// states are crashes, not failures - `mov ecx,[eax+18h]` faults at 0x45b92e on a null manager, and
+	// the delegate's own null-singleton branch faults at 0x46ecea / 0x46ed4a / 0x46edaa one instruction
+	// after setting the pointer to 0. The port has no manager and no singleton, so it cannot be in that
+	// state at all; it answers 1, which is the value shipped's non-crashing path (failed cast) returns.
+	// That is a DECLARED collapse of a shipped crash, not a claim that shipped returns 1 on a null server.
+
+	// 0x45b900 - OpenTask.
+	int ScriptNative_OpenTask( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		if ( !ScriptNativeCheckArity( amx, p, 2, "OpenTask" ) ) {   // 0x45b912 - and its OWN name (0x45b909)
+			return 0;                                                // 0x45b91e
+		}
+		// 0x45b922-0x45b932: (params[1], params[2]) -> GameServer::meth_0x46ecd0 - NAMED-DEFERRED era.
+		return 1;                                                    // 0x45b937 - unconditional
+	} // ScriptNative_OpenTask
+
+	// 0x45b940 - CloseTask.
+	int ScriptNative_CloseTask( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		if ( !ScriptNativeCheckArity( amx, p, 2, "CloseTask" ) ) {  // 0x45b952 (name pushed at 0x45b949)
+			return 0;                                               // 0x45b95e
+		}
+		// 0x45b962-0x45b972: (params[1], params[2]) -> GameServer::meth_0x46ed30 - NAMED-DEFERRED era.
+		return 1;                                                   // 0x45b977 - unconditional
+	} // ScriptNative_CloseTask
+
+	// 0x45b980 - AddEntry. Same body; only the name (0x45b989) and the delegate (0x46ed90) differ.
+	int ScriptNative_AddEntry( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		if ( !ScriptNativeCheckArity( amx, p, 2, "AddEntry" ) ) {  // 0x45b992
+			return 0;                                               // 0x45b99e
+		}
+		// 0x45b9a2-0x45b9b2: (params[1], params[2]) -> GameServer::meth_0x46ed90 - NAMED-DEFERRED era.
+		return 1;                                                   // 0x45b9b7 - unconditional
+	} // ScriptNative_AddEntry
+
 	// 0x45b9c0 - PlayMusic. Shipped stub: gate, report, zero. Note the report happens when the arity
 	// gate PASSES (0x45b9d2 tests the gate and falls through to 0x45b9e4) - i.e. a well-formed call is
 	// the one that gets told it is unimplemented, and a malformed call gets the arity message instead.
@@ -1139,7 +1207,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[27] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[30] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -1166,7 +1234,10 @@ void ScriptNativeResetRegistry() {
 		{ "GetWeaponRange", &ScriptNative_GetWeaponRange, 1 },   // 0x45b620
 		{ "EquipItem", &ScriptNative_EquipItem, 3 },             // 0x45a580
 		{ "Protagonist", &ScriptNative_Protagonist, 0 },         // 0x45a960
-		{ "AddCNPCToParty", &ScriptNative_AddCNPCToParty, 1 }    // 0x45a2d0
+		{ "AddCNPCToParty", &ScriptNative_AddCNPCToParty, 1 },   // 0x45a2d0
+		{ "OpenTask",  &ScriptNative_OpenTask,  2 },   // 0x45b900 - journal era NAMED-DEFERRED, returns 1
+		{ "CloseTask", &ScriptNative_CloseTask, 2 },   // 0x45b940
+		{ "AddEntry",  &ScriptNative_AddEntry,  2 }    // 0x45b980
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {
