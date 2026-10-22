@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: TrueCastle `01a16096-c00e-7404-8afe-e521a9bb7240` (R-INST first-pull per PARK a97a259; owner standing order supersedes rest-grant, pull issued by LoudDragon `01a15f82`)
 type: tooling + read-only re-derivation (NO IDB writes; ships a tool mode + regression + the 74-row install-resolved verdict feed for wave-2b arbitration)
 depends: Q-W2 Gate-A artifacts (obj/t087q/regen3.py base, wavedumps/qw2-gateA-*), T-084 sweep inputs (t064-postdump, t084-mint.json, byhost), ecx-flow pinned cache (md5 a68c22f3), harness items 35/42/44/49/50/52
@@ -51,3 +51,18 @@ component-ctor's stored vft (item-49 `c7 06` pattern) per band; shared vft => sa
 
 ## Rules
 Read-only: raw EXE + F3.json + wavedumps + pinned cache; zero IDB writes; zero product touches.
+
+## Result (TrueCastle, 2026-10-22)
+SELFTEST S1/S2/S3 ALL PASS -> verdicts released. S1 ANSWERED the open question with evidence:
+ONE component class (cls_0x569f10 family) embedded ONLY by JE::World @+0x118, zero Client
+embed-votes (doc's Client/World split = caller-mode artifact; wave-2a's minted Client field-load
+rows vindicated); +0x108 trio same shape (cls_0x56ae70). S2: banked T2b edge recovered among 49
+hosts of the generic init helper 0x56E0B0 (helper-vs-component discriminator). S3 BLIND:
+(GUI::Manager,+0x48) recovered for 0x4C6640 — the five-wave shape is routine for the install join.
+74-row feed: 13 ADOPT-BY-INSTALL (incl 0x5ad7b0 Map->AreaMap@+0x60; 2 PipBoy-embed rows
+recommended to follow their already-minted cluster host w/ annotation, NOT re-home),
+12 CONFIRM-DOC (safe wave-3 material), 16 CONTRADICTS/MULTI-HOST, 33 NO-EVIDENCE (honest silence).
+COLLISION-9 RESOLVED BY EVIDENCE: 11-25 install hosts each = shared machinery -> §3 annotate-foreign
+is right, §2 mint rows are the error; item-52 contradiction class closed without adjudication
+preference. Deliverables: tools/r-inst-deriv.py (committed), feed wavedumps/rinst-74-verdict-feed.txt
+(committed), discoveries/2025-10-21-rinst-install-deriv.md LEFT DIRTY. Zero IDB writes.
