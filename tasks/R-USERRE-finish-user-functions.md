@@ -122,6 +122,16 @@ Inventory: every `F3::`-named function in the live IDB (names anchored by EA per
 - `F3::CommandWeaponToggle` @ 0x45eed0
 
 ## Batch B-script-natives — B-script-natives(0x45a-0x45c)
+
+> **CLAIMED 2026-10-22 ~10:00 by WildKnight `01a1639b`** (PARK line R-USERRE-B read "any idle hand
+> post-A"; A is sealed at 5ccd0b5/97bc9de, so B is open). Recipe inherited verbatim from A's slices:
+> read the shipped body RAW (item 50 — the name is a claim, the bytes are the contract), port, cite
+> every def by EA (item 57), gate green (run-all-tests + msvc-build + port-annot + cppcheck).
+> Read-only IDB discipline: no renames unless a row escalates to a naming ruling (single-writer law;
+> JadeBear `01a163e9` is the other live seat and may want the IDB writer role — coordination sent).
+> New TU expected (`src/F3/ScriptNatives.cpp`) — BUILD-AFFECTING: cmake.toml + CMakeLists.txt are
+> hand-synced and the cmkr regen guard is INACTIVE (item 60), so both get edited and verified.
+
 - `F3::AddCNPCToParty` @ 0x45a2d0
 - `F3::AddEntry` @ 0x45b980
 - `F3::AddHP` @ 0x45b390
@@ -880,3 +890,53 @@ channel law) born from this seat's honest stop. Everything durable: this file, t
 discoveries/, git tips (parent 3475adb-side, openje tip, i64 saved 03:02:41). A warm successor
 resumes at: the P2 virtual-surface era (unblocks create+hub+pump+weather+Connect in one), then the
 remaining 50 registrations ride the existing recipe. -end-of-transmission
+
+## Slice-B1 (WildKnight 01a1639b, 2026-10-22 ~10:1x) — the GameCreature getter family READ WHOLE; three shared native helpers found; ONE typing trap caught
+
+Family read from the bytes, five natives, all the same shape (`__cdecl (int amx, int params)`):
+
+| native | EA | field read (bytes) | shipped error strings (verbatim) |
+|---|---|---|---|
+| F3::GetLevel | 0x45abe0 | `mov eax,[eax+0BCh]` | "GetLevel() - Unable to resolve the requested entity." / "GetLevel() - Entity ID does not belong to a game creature." |
+| F3::GetRace | 0x45aeb0 | `[eax+0C8h]` | "GetRace() - Unable to resolve requested entity." / "GetRace() - EntityID does not belong to a game creature." |
+| F3::GetGender | 0x45af40 | `[eax+0D0h]` | "GetGender() - Unable to resolve requested entity." / "GetGender() - EntityID does not belong to a game creature." |
+| F3::GetEthnicity | 0x45afd0 | `[eax+0D4h]` | "GetEthnicity() - Unable to resolve requested entity." / "GetEthnicity() - EntityID does not belong to a game creature." |
+| F3::GetSubRace | 0x45b070 | `[eax+0D8h]` | "GetSubRace() - Unable to resolve requested entity." / "GetSubRace() - Entity ID does not belong to a game creature." |
+
+Shared body (identical control flow, cited per-EA where it diverges): `sub_59AF40(amx, params, expectedCells, name)`
+arity gate → `sub_59AEF0(amx, params[1], &out, 1)` entity resolve → `___RTDynamicCast(out, 0, &Entity, &GameCreature, 0)`
+→ return the dword, `xor eax,eax` on every failure path (0 for all three failures — no distinguishing return value).
+
+THE TYPING TRAP (item 50 applied to the DECOMPILER, not just names): the pseudocode rendered these as
+`*(v3 + 52)` on a pointer it LABELS `char *`. Those are not byte offsets — 52 is a **cell index** (0xD0/4),
+and the same for 47→0xBC, 50→0xC8, 53→0xD4, 54→0xD8. Taken at face value the family reads as five adjacent
+BYTES in the GameEntity prologue; the instruction text says four-byte dwords at 0xBC..0xD8. Bytes win: the
+port's own `src/F3/GameCreature.hpp:53-59` already carries `mbr_0xbc…mbr_0xd4` as dwords in exactly that band,
+so the getters NAME five existing anonymous fields — no layout collision, no new offsets invented:
+
+  mbr_0xbc=level  mbr_0xc8=race  mbr_0xd0=gender  mbr_0xd4=ethnicity  mbr_0xd8=subrace
+  (mbr_0xc0/0xc4/0xcc stay anonymous — no native reads them; do NOT guess names for them)
+
+Three shared helpers, all UNPORTED (grep of src/ + modules/ for their EAs returns nothing) — these are the
+actual batch-B prerequisite, since all 39 rows call them:
+- `sub_59AF40` @0x59af40 — arity check: `cells = params[0] >> 2`, compare to expected; on mismatch reports
+  TWO strings in order: "Invalid number of paramters passed to function %s()." then
+  "Expected %d parameters but recieved %d." (the misspellings `paramters`/`recieved` are SHIPPED — add to
+  docs/notes/shipped-literals.md; T-022 byte-identity applies).
+- `sub_59AEF0` @0x59aef0 — entity resolve: `out = F3::GameActionEquip::meth_0x54be10(handle)` (the T-043
+  reference-handle resolver, already known at src/F3/GameActionEquip.hpp:274 but not ported), 0 → fail; the
+  4th arg is a "check active" flag: when set and `*(entity+928 /*0x3A0*/])==0` it reports
+  "Attempt to use inactive entity in script." and STILL returns 1 (warns, does not block — worth a test,
+  it reads like the guard everyone would assume blocks).
+- `sub_59AD20` @0x59ad20 — the script error reporter: resolves the script name and the running script's file
+  through `sub_5CCCC0(amx, tag, &out)` (tags 1179407181 / 1279415366), `_splitpath`s the file, then
+  sprintf("!Run-time error in script %s, file %s%s, line %d: ") + vsprintf into a 1028-byte buffer and hands
+  it to `(*(**byte_70C65C + 16))(*byte_70C65C, buffer)` — a logging-sink virtual, NOT FatalError: the shipped
+  natives REPORT and CONTINUE. Note the width: 254+253 path buffers + 1028 message, SEH cookie present
+  (stack canary at [ebp-4]) — the port has no cookie, documented deviation like every other ported body.
+
+NEXT (slice B2, code): port the trio (error reporter via the port's existing tracing/logging channel,
+sink-object deferral NAMED not faked per the EchoConsole precedent), port these five getters into a new TU
+`src/F3/ScriptNatives.cpp` (BUILD-AFFECTING: hand-edit cmake.toml AND CMakeLists.txt, cmkr guard INACTIVE
+per item 60/62 — verify generation), register them, and add a suite asserting arity-mismatch, unresolvable
+entity, non-creature cast, the five field reads, and the INACTIVE-entity warns-but-returns-1 behavior.
