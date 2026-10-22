@@ -1100,3 +1100,14 @@ Rules:
    assume siblings until a sweep says otherwise.
 3. The honest subtraction is the deliverable: report APPLIED 99 / GO 107 with the nine reasons, rather
    than back-fitting the ruling to the outcome or 'fixing' the doc's §3 to match §2.
+
+## 53. Query before you dump: the index answers attribution questions — freshness or it's a shortcut wearing a trap
+
+KeenStorm's H-IDX (81a07c8), 2026-10-21. The tonight-settled shared-stub question (Idle/Message idx5
+= 0x5a9070, three independent raw re-dumps to close) had been QUERYABLE since yesterday's session-36
+vftable master-index doc: `tools/ea-index.py --query 0x5a9070` returns five docs including the raw
+7-slot walk of all three family tables. Raw discipline stays CORRECT (the index is raw output, and prose
+never outranks bytes) — but the cheap first move inverts: query to learn what's already walked, dump to
+confirm or to answer what the index can't. The meta-law: an index's payoff is INVERSE to its staleness,
+so the standing refresh row (PARK H-IDX, 'any idle hand, twenty minutes') is infrastructure, not chores.
+--check green = the shortcut is honest; --check red = stop, refresh, then query.

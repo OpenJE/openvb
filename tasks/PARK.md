@@ -18,10 +18,11 @@ Rules (see tasks/README.md § Lane contract): every closed row names a PARK succ
 | P-CMBT | COMBAT/ANIM-QUEUE PORT-DESIGN DOC (the T-013-port-design genre applied to the next era): raiser truth-table + TurnPrep clear identity (virt_meth_0x549090 + [ent+0x300] stamp) + transient-idle arm (already P-REV'd — verify alignment) + HOL ownership by unfinished-WORK + inbox-vs-deque damage deferral (T-074 @0x55a501) + state-7 gate byte [ent+0x1BC] + D-2 3+resident cap semantics + explicit-time records (+0x10 offset math, ×−1000) — ordered steps with per-step acceptance + gates, ZERO thinking cost at execution, device-decode LAST if applicable | design-only | **SwiftMoon — PULLED (third consecutive close = next pull)** |
 
 ## QUEUED (trigger-gated)
+| H-IDX | STANDING ROW (never closes): ea-index --check gate + refresh-on-drift, 'any idle hand, twenty minutes' — the freshness guarantee behind item 53 |
 | id | scope | trigger |
 |----|-------|---------|
 | R-ST | StringTree/multi-host embedded-component split annotations (T-059 split queue + T-086 GfxCameraHolder decode notes) — annotation wave | after Q-W2 |
 | X-PUSH | T-084 tier-2 (141 mints, 9 READ-BACK-FIRST) + 82 foreign-annotations batched | after Q-W2 |
 | S-PEND | Sitting-dependent: GameCursorManager +0xA4 fill, event-kind NUMERICS, raiser/bp10 verdict fold (T-050), >4 depth, T-063-residual 801 cross-refs | after T-077 sitting |
-| H-IDX | tools/ea-index.py refresh + --check gate green (stale since eea66da era) | any idle hand |
+| ~~H-IDX~~ **DONE (KeenStorm, 81a07c8)**: refresh green; 42 docs/2,260 keys were stale; found the corpus ALREADY answered tonight's shared-stub question since yesterday -> HARNESS ITEM 53 'query before you dump' born from the row; standing order: re-check --gate before any attribution claim, refresh via any-idle-hand |
 | M-M001 | HUMAN: d3d8.lib decision — gates T-013 steps 4-5, s118 flush decode | needs the user |
