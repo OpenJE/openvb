@@ -92,6 +92,26 @@ namespace F3 {
 	//   GetLockDC             0x45b5dd / 0x45b5e8 `[+0C0h]`  cast CONTAINER, else DOOR
 	// +0xA0 is shared by two unrelated classes, i.e. a base-level type code, and +0xC0 lives on
 	// their common base GameUsableObject - which is why one field serves both GetLockDC branches.
+	// ---- the weapon-combo pair (batch B slice B23) - two shipped stubs that resolve and do nothing ----
+	// 0x45a9f0 GetWeaponCombo / 0x45aa40 SetWeaponCombo. Byte-verified from 0x45a9f0 and 0x45aa40 through
+	// their shared callee 0x45b9f0 (`sub_59AEF0(amx, params[1], &out, 1)` at 0x45ba02 with the ACTIVE-CHECK
+	// flag ON, then `RTTI Entity -> GameEntity` at 0x45ba23, store at 0x45ba31, return cast != 0):
+	//   gate -> resolve+cast -> if it FAILED, one report line -> `xor eax,eax` -> return 0.
+	// Both return 0 on EVERY path (0x45aa34 / 0x45aa85) and NEITHER reads what it resolved, so:
+	//   - GetWeaponCombo's "combo" has been a constant 0 for the whole life of the build;
+	//   - SetWeaponCombo is arity 2 and its SECOND CELL IS NEVER READ - `mov ecx,[edi+4]` (0x45aa60) loads
+	//     params[1] only, and nothing loads [edi+8]. The setter sets nothing.
+	// Ported as exactly that, and the "trivial" version is the point: a port that stored the combo, or
+	// returned the resolved entity, would delete the finding. Absence argument: the claim is "no instruction
+	// reads params[2]", established by reading the whole 28-instruction body (0x45aa40-0x45aa89) - not by
+	// the DB listing a field, since a listing is an excerpt (rule 7).
+	// The one observable is the message pair: "GetWeaponCombo() was unable to find the requested entity."
+	// (0x45aa2c, string @0x65e1a4) and "SetWeaponCombo() was unable to find the requested entity."
+	// (0x45aa7c, @0x65e1f0) - each naming itself, and both firing ONLY when the gate passed and the
+	// resolve/cast failed (0x45aa0e/0x45aa5c jump past the whole block on a gate failure).
+	int ScriptNative_GetWeaponCombo( int amx, int params );   // 0x45a9f0
+	int ScriptNative_SetWeaponCombo( int amx, int params );   // 0x45aa40
+
 	// ---- the task-journal trio (batch B slice B22) -----------------------------------------
 	// 0x45b900 OpenTask / 0x45b940 CloseTask / 0x45b980 AddEntry. The ONLY batch-B family that never
 	// resolves an entity: gate on 2 cells, read the two cells, hand them to the server, return 1.

@@ -390,6 +390,64 @@ void ScriptNativeResetRegistry() {
 		return GameEntityMaxHp( pEntity );
 	} // ScriptNative_GetMaxHP
 
+	// ---- the weapon-combo pair (batch B slice B23) - two setters/getters that set and get nothing ----
+	// 0x45b9f0 - the resolve-and-cast the pair shares. Shipped shape, byte-verified:
+	//   45ba02 `call sub_59AEF0(amx, handle, &out, 1)`   - the ACTIVE CHECK IS ON (flag 1, not 0)
+	//   45ba23 `call ___RTDynamicCast` with &Entity -> &GameEntity
+	//   45ba31 `mov [edi],eax` / 45ba33 `ret` (al = cast != 0)
+	// The cast result is stored EVEN WHEN IT IS 0, and on the resolve-failure path the out param is
+	// already 0 because 0x59aef0 stores 0 before returning (asserted in section 7 of the suite), so this
+	// helper does NOT write on that path - mirroring shipped rather than tidying it.
+	static int ResolveGameEntityForCombo( int amx, unsigned hHandle, JE::Entity **ppOut ) {
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeResolveEntity( amx, hHandle, &pEntity, 1 ) ) {   // 0x45ba02
+			return 0;                                                       // 0x45ba0f - out already 0, untouched here
+		}
+		*ppOut = RegistryIsClass( pEntity, F3::SNC_GAME_ENTITY ) ? pEntity : 0;   // 0x45ba23 / 0x45ba31
+		return *ppOut ? 1 : 0;                                                   // 0x45ba33
+	} // ResolveGameEntityForCombo
+
+	// 0x45a9f0 - GetWeaponCombo: arity 1, resolve, and then the resolved entity is DISCARDED. Every path
+	// returns 0 (0x45aa34 `xor eax,eax`), so scripts reading a weapon combo have been reading a constant
+	// for the whole life of the build - the port keeps the constant and the one message, and does NOT
+	// "helpfully" return what it resolved (docs/f3/WeaponComboStubs.md).
+	int ScriptNative_GetWeaponCombo( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pTarget = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 1, "GetWeaponCombo" ) ) {   // 0x45aa04
+			return 0;                                                     // 0x45aa0e jz -> 0x45aa34, no further message
+		}
+		if ( !ResolveGameEntityForCombo( amx, p[ 1 ], &pTarget ) ) {      // 0x45aa1a
+			ScriptNativeReportError( amx,
+			                             "GetWeaponCombo() was unable to find the requested entity." );   // 0x45aa2c, "@0x65e1a4
+		}
+		(void)pTarget;   // shipped never reads it either - the resolve exists only to decide the message
+		return 0;                                                        // 0x45aa34 - EVERY path
+	} // ScriptNative_GetWeaponCombo
+
+	// 0x45aa40 - SetWeaponCombo: arity 2, and the SECOND CELL IS NEVER READ. 0x45aa60 loads `[edi+4]`
+	// (params[1]) and nothing loads `[edi+8]`; the callee's result goes nowhere; the return is 0 on every
+	// path (0x45aa85). So shipped's weapon-combo SETTER SETS NOTHING - a two-cell gate, a resolve, an
+	// optional error line, and zero. Kept verbatim because "the API exists and does nothing" is the
+	// finding, and a port that wrote the combo would erase it. There is no combo field to blame: the
+	// instruction simply is not there (see docs/f3/WeaponComboStubs.md for the absence argument).
+	int ScriptNative_SetWeaponCombo( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pTarget = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "SetWeaponCombo" ) ) {   // 0x45aa54
+			return 0;                                                     // 0x45aa5c jz -> 0x45aa84
+		}
+		if ( !ResolveGameEntityForCombo( amx, p[ 1 ], &pTarget ) ) {      // 0x45aa6a - params[1] ONLY
+			ScriptNativeReportError( amx,
+			                             "SetWeaponCombo() was unable to find the requested entity." );   // 0x45aa7c, "@0x65e1f0
+		}
+		(void)pTarget;   // params[2] - the combo value - is not read by shipped at all, so nothing here reads it
+		return 0;                                                        // 0x45aa85 - EVERY path
+	} // ScriptNative_SetWeaponCombo
+
 	// ---- the task-journal trio (batch B slice B22) -------------------------------------------
 	// Shipped body, byte-verified, and the SAME 24 instructions in all three (0x45b900 / 0x45b940 /
 	// 0x45b980) except the gate name and the delegate EA:
@@ -1207,7 +1265,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[30] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[32] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -1237,7 +1295,9 @@ void ScriptNativeResetRegistry() {
 		{ "AddCNPCToParty", &ScriptNative_AddCNPCToParty, 1 },   // 0x45a2d0
 		{ "OpenTask",  &ScriptNative_OpenTask,  2 },   // 0x45b900 - journal era NAMED-DEFERRED, returns 1
 		{ "CloseTask", &ScriptNative_CloseTask, 2 },   // 0x45b940
-		{ "AddEntry",  &ScriptNative_AddEntry,  2 }    // 0x45b980
+		{ "AddEntry",  &ScriptNative_AddEntry,  2 },   // 0x45b980
+		{ "GetWeaponCombo", &ScriptNative_GetWeaponCombo, 1 },   // 0x45a9f0 - shipped stub: resolves, discards, returns 0
+		{ "SetWeaponCombo", &ScriptNative_SetWeaponCombo, 2 }    // 0x45aa40 - shipped stub: the 2nd cell is never read
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

@@ -1878,8 +1878,8 @@ hash or count with the listed command before acting on it.
 
 | item | value | how to confirm |
 |---|---|---|
-| batch B natives LIVE | **30**, table `s_gameCreatureNatives[30]` (27 at the pause; B22 added the task trio) | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
-| suite | **217 asserts, 0 failures**; floor raised 196 → 217 in `devenv/scripts/run-all-tests.nix` | `run-all-tests` → `ScriptNatives=OK [217 asserts >= 217]` |
+| batch B natives LIVE | **32**, table `s_gameCreatureNatives[32]` (27 at the pause; B22 added the task trio, B23 the weapon-combo pair) | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
+| suite | **237 asserts, 0 failures**; floor raised 196 → 217 → 237 in `devenv/scripts/run-all-tests.nix` | `run-all-tests` → `ScriptNatives=OK [237 asserts >= 237]` |
 | gates at pause | run-all **13 pass / 0 fail** (incl. port-annot), `msvc-build` rc=0, cppcheck rc=0 | rerun; no dirty source behind them |
 | branch | `automated-reversing`, **ahead 60, UNPUSHED** (no push without a lane decision) | `git rev-list --count origin/automated-reversing..HEAD` |
 | dirty files | only `tools/t052-drive.py` (another owner's - never stage) | `git status --short` |
@@ -1929,7 +1929,9 @@ against a declared stand-in registry - read it that way, and say so in any relay
 4. Era-blocked remainder: dialogue (`StartDialogue` needs the unaligned `+0x19/+0x1E` action dwords, a seam kind,
    and `GameDialogueInterface`), world server (attitude pair, task trio's journal), GUI hide (`HideInterfaces`
    0x45a100 → `sub_46EDF0`), AMX object-ref (`SetMoveMode` 0x45a140 → `sub_59AA50`), `EquipItem`'s skipped
-   effects/stance era, two documented stubs (`PlayMusic`, `GetWeaponCombo`).
+   effects/stance era, two documented stubs (`PlayMusic` — LIVE since B6, `GetWeaponCombo`/`SetWeaponCombo`
+   — LIVE since B23, `docs/f3/WeaponComboStubs.md`: both resolve-and-discard and return 0 on EVERY path,
+   and Set's second cell is never read at all).
    The same id-map shrinks part of this: packet cases **73** (InitiateDialogue - builds the action, stores the
    target at gap19, clears `HIBYTE(mbr_0x14)`, funnels through the named seam 0x550720), **90** (ReloadWeapon) and
    **91** (Attack, the table's largest action at 0xC8) are the SERVER twins of the wiring-blocked natives, so
@@ -1956,7 +1958,7 @@ against a declared stand-in registry - read it that way, and say so in any relay
 
 - `docs/f3/ScriptNatives`-family notes: `CreatureHpAccessors.md`, `CreatureHpWriters.md`,
   `CreatureSkillAndPerkArrays.md`, `AmxStringParamFetch.md`, `InventoryEquipPaths.md`, `PartyAccessors.md`,
-  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`, `TaskJournalTrio.md` (B22: the trio, its era, the 97/98/99 send ids)
+  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`, `TaskJournalTrio.md` (B22: the trio, its era, the 97/98/99 send ids), `WeaponComboStubs.md` (B23: the resolve-and-discard pair)
 - `docs/notes/commit-citation-protocol.md` - two-database citation rules + the 247-token sweep (7 non-citations,
   `f2b3a1c` deliberately left unresolved as evidence)
 - `src/F3/ScriptNatives.{hpp,cpp}`, `src/F3/ScriptInventory.hpp`, `src/F3/ScriptParty.hpp`,
