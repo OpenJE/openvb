@@ -107,29 +107,60 @@ image — `0x55070c` (+0x2E0, ready-gated, damage never satisfies it), `0x55072e
 seam), and **`0x552692` (+0x2E0, inside `JE::Entity::virt_meth_0x552420`, Entity vft slot 10
 @`0x692084` — the delta-record apply path)**. Extents read whole: `0x552420-0x552752`.
 
-When the server flag is on (`0x5525d3` AreaMapIcon+0x4 test) and the incoming record carries a pending
+When the server flag is on (outer gate `call 0x5b4f30` @0x5525c6 / `test al,1` @0x5525cb / `jz 0x5526CA`
+@0x5525cd) and the incoming record carries a pending
 effects block (`[rec+744/748/752]` ring, loop `0x5525e1..0x5526a0`), the replay path, per entry:
 
 ```
-55266b: call [server_vft+28h](server, *(v7+12))   ; RE-CREATES the effect by its recorded TYPE word
-552676: call [effect_vft+8]                        ; slot 2 = 0x45c0c0 assign-op (copies +0x9C damage cell et al.)
-552682: call meth_0x55a3a0                          ; bind target handle
-552692: call 0x54ea00(&[entity+0x2E0], &effect)     ; PUSH - NO slot-0 READY TEST, NO 0x55ae10 FIRE WALK ANYWHERE IN THE LOOP
-552699: call meth_0x54ef30(entity)                  ; wake (same wake the 0x5506c0 enqueue branch uses)
+552664: call [server_vft+28h](server, [entry+0Ch])    ; RE-CREATES the effect by its recorded TYPE word
+552676: call [effect_vft+8]                            ; slot 2 = 0x45c0c0 assign; BASE 0x55ac10 COPIES +8/+9/+0A/+0B
+552682: call meth_0x55a3a0                             ; bind target handle
+55268c: lea ecx,[esi+2E0h] / 552692: push 0x54ea00     ; ENQUEUE - NO slot-0 readiness test BEFORE the push
+552699: call meth_0x54ef30(entity)                     ; wake
+5526a0: call meth_0x55af80                             ; POST-PUSH FIRE-ELIGIBLE LEG - see law below
 ```
+
+Gate cites, corrected against FastNova's byte-check (my first cite, `0x5525d3`, was the SOURCE deque's
+COUNT check `mov eax,[edi+2F0h]; test eax,eax; jbe 0x5526CA` @0x5525d3-0x5525db, not the flag):
+the loop's OUTER flag gate is `call 0x5b4f30` @0x5525c6 / `test al,1` @0x5525cb / `jz 0x5526CA` @0x5525cd,
+and the flag is RE-TESTED per entry at `0x552644-49` with `jz 0x5526ab` -> the throw path
+("Invalid attempt to retrieve world server instance.", flag-off mid-loop THROWS rather than skips).
+
+The fire-eligible leg, which makes both one-sided readings wrong (`0x55af80` read whole,
+`0x55af80-0x55afa0`): `mov al,[eff+0Ah]; test al,al; jz ret` — if +0xA is SET it calls
+`[vft+0x1C]` (for damage, slot 7 = `0x408d30: mov al,1; retn` — ALWAYS TRUE), clears +0xA, and
+TAIL-JUMPS into the fire-walk `0x55ae10`. And the base assign `0x55ac10` (extent read
+`0x55ac10-0x55adb5`) COPIES the control bytes +0x8/+0x9/+0xA/+0xB from the record entry. So:
+a replayed entry whose source was already fire-marked (+0xA=1) fires IMMEDIATELY after the push;
+a clean one waits for the pump. "No fire-walk in the loop" (my first phrasing) is literally true of
+direct calls but UNDER-CONSTRAINED behaviorally — HALF-VERIFIED-CLASS against my own sentence,
+filed accordingly.
+
+**T-074 parenthetical resolved from bytes** (T-074 `discoveries/2025-10-21-t074-entity-2e0.md` claimed
+"finish-apply via [vft+0x2C] @0x55a501 = where GameEffectDamage actually lands — shipped damage IS
+deferred effect-inbox traffic"): `0x55a4f0` (extent `0x55a4f0-0x55a527`, also reached from the push-side
+release `0x55a570`) is that tick — `mov al,[eff+0Ah]; test; jz ret; mov byte[eff+0Ah],0;
+call [vft+2Ch] @0x55a501` — but for `GameEffectDamage` the `+0x2C` CELL IS THE BARE `retn` `0x404b70`
+(vft `0x66073c` raw dump, §0 above). A queued damage entry would be TICKED, NOT APPLIED — damage apply
+exists ONLY at +0x28 via the fire-walk. T-074's deque taxonomy stands; its damage parenthetical does not.
+Full damage lifecycle now closed end to end: feeder creates (+0xA=0 fresh) -> push binds -> fire-walk
+applies via slot 10, sets +0xB=1 pre-gate and +0xA=1 post-apply -> push release leg runs the +0x2C
+no-op tick -> deleting dtor. Damage queues nowhere.
 
 So the corrected law, both halves stated:
 1. Damage from the LIVE attack feeder (0x403770 -> 0x5506c0) never queues — fire-inline and free, the
    +0x2E0 ready-branch unreachable (unchanged; structural, 0x45c6b3).
-2. Damage REPLAYED through a delta record (type word `*(v7+12)` = 1 re-creates a GameEffectDamage)
-   **is enqueued into +0x2E0 with NO readiness gate at all** — the replay path skips both the slot-0
-   predicate and the fire-walk. The inbox is therefore **live-code territory**, just not fed by live
-   attack hits: its shipped traffic is net/replay, and a full port owes the replay feeder eventually
-   (era-blocked with the delta-record machinery, named-deferred; the drain side is the target's walk
-   per the banked era, not re-derived here).
+2. Damage REPLAYED through a delta record (type word `[entry+0Ch]` = 1 re-creates a GameEffectDamage)
+   **is enqueued into +0x2E0 with NO readiness gate before the push** — and may fire immediately after
+   it via the +0xA-gated `0x55af80` leg if the record carried the mark (assign copies it). The inbox is
+   therefore **live-code territory**, just not fed by live attack hits: its shipped traffic is
+   net/replay, and a full port owes the replay feeder eventually (era-blocked with the delta-record
+   machinery, named-deferred; the drain side is the entity pump `0x54c390` walking `+0x2E0`, per T-074
+   and re-confirmed at `0x54c398/0x54c39e` raw).
 
 Absence bounds per item 73: exactly 3 CodeRefs to 0x54ea00 in the image (one is the 0x550720 seam itself);
-no slot-0 `call [edx]`/`test al` appears between 0x5525d3 and 0x5526a0 (whole extent read); what effect
+no slot-0 `call [edx]`/`test al` appears between 0x5525c0 and 0x5526a0 (whole extent read), other than
+the +0xA test inside the post-push 0x55af80 leg; what effect
 TYPE WORDS actually appear in shipped demo records is not enumerable statically — the path is proven
 reachable-by-construction, not observed-fires-in-the-demo.
 
