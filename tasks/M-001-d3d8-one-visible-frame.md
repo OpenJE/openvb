@@ -188,3 +188,21 @@ image has no DX8 headers, that is a decision point for the human, not a work-aro
   d3d8 REACHES our guard, the remaining blocker is whatever made the demo's 32-bit DXVK boot
   survive Vulkan on this host - a boot-lane question with a known-good prefix to compare against,
   not a code defect. Prefix fully reverted (dlls + registry), :96 untouched.
+
+
+### Hardware-ICD round (same evening, after the coordinator's item-53 correction)
+
+VK_DRIVER_FILES/VK_ICD_FILENAMES = the banked 32-bit nvidia ICD (graphics-drivers-32bit/
+nvidia_icd.json, library_path libGLX_nvidia.so.0 lib32, api 1.4.329; /dev/nvidia0/-ctl/-uvm
+all PRESENT, kernel 595.71.05 open module): DXVK armed (d3d8+dxgi native, HKCU overrides) ->
+run on private :98 -> **clean `Direct3DCreate8 returned NULL` at 124-alive, no hang, no crash,
+no DXVK stderr at all** (the earlier hang was a wineserver-state artifact; recovery recipe below).
+So on THIS shell, DXVK's d3d8 proxy fails at/ before vkCreateInstance against BOTH backends
+(lvp32: LLVM OOM; nv32: silent NULL) while HappyEagle's demo boots crash-free 12 minutes
+hardware-backed in ITS prefix. The delta is in his prefix/env, not our code or the ICD family -
+relay question sharpened with the exact two failure signatures.
+
+SHARED-STATE HONOR NOTE: the experiments transiently broke f3-reimpl-wineprefix boot (rc 53,
+then a cold-start race) - recovered with the canonical `wineserver -k; wineboot -u`, re-verified
+124 + full battery re-run after clean revert (dlls removed, DllOverrides deleted). When a row
+touches a shared CI prefix, the exit gate is proving the UN-GATED boot again, not assuming it.
