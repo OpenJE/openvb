@@ -387,7 +387,12 @@ gated-but-never-called — two-thirds of shipped's native surface has no demo ca
 only from the C prologue (and the 14 zero-evidence stubs only from the table itself). This bounds
 what the installer decision can be *validated* by, independently of whether it is correct, and it
 means "make the port's natives reachable" is chasing an engine API far broader than the demo ever
-exercised. A disjoint count from TrueRaven's lane agrees in shape: 16 of the port's batch-B 36
+exercised. **And (TrueRaven's parting refinement, e6a5744): "all bytes pinned" must not be read as
+"validation complete" in the decision record.** The pinned bytes settle the CALL FORM; they do not
+settle the typedef call itself — correcting `NativeScriptFn` leaves the openje lane's existing
+Mover*-shaped consumers owing a migration story, and with 80/209 slots uncallable-by-demo, parity
+for the never-called majority can be *argued* from prologues and only *tested* for the ≤129-slot
+minority. A disjoint count from TrueRaven's lane agrees in shape: 16 of the port's batch-B 36
 rows have no shipped caller either.
 
 ## Appendix — verified AMX struct field map (all hex, each from instruction text)
