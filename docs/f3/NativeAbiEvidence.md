@@ -376,6 +376,58 @@ two bodies' prologues beyond FastNova's extractor.)
 per-image declaration divergence is the working hypothesis; the multi-arity itself is NOT evidence
 of a bug, only of divergence — an ungated native facing k smaller than what its body reads would
 consume stack garbage, and nobody has yet counted that function's param reads.
+**SUPERSEDED by §6.8: these two are MIN-GATED (≥2), multi-arity is legal by design.**
+
+### 6.8 The second arity gate (FastNova 248f842, independently verified here) and the re-partition
+
+There are **two arity gates, not one**:
+
+* `sub_59AF40` — exact-match, 4 args: `*params >> 2 ; cmp ; je`, "Expected %d parameters but
+recieved %d."
+* `sub_59AF90` — **minimum**, 5 args (5th = `&out_actual`): `*params >> 2` @0x59af9b,
+`*out_actual = cells` @0x59afa5, `cmp ; **jge**` @0x59afa7, "Expected at least %d parameters but
+recieved %d." (@0x6A0694 string). Verified live in the IDB this pass, not adopted: the min gate
+re-decompiled in full, and `JE::SendMessage` @0x5c5410 shows the call-site signature byte-for-byte
+— `push 2` @0x5c5427, `call sub_59AF90` @0x5c542b, `add esp,14h` @0x5c5430 (note `add esp,14h` =
+5 args vs `10h` = 4 args for exact; the stack cleanup is a second, independent discriminator).
+
+Six engine-core SendMessage-family natives are **min-gated at 2**: A_SendMessage 0x5c5120,
+A_SendMessageToTeam 0x5c52b0, A_SendMessageToSquad 0x5c5660, SendMessage 0x5c5410,
+SendMessageToTeam 0x5c57c0, SendMessageToSquad 0x5c5930 (FastNova objdump; the two I re-checked
+match). Consequences, applied to §6.7:
+
+* **DISAGREE 4 → 2.** `SendMessage {2:1,3:6,4:80}` and `SendMessageToTeam {2:1,4:5}` are legal
+min-gate use, not divergence and not bug — the stack-garbage open question is CLOSED for them
+(no row can have k < 2 without failing the gate first). The residual DISAGREE rows are exactly
+`GetGlobal` (gate 1 vs {1:864, 2:1}) and `FloatingSpeechText` (gate 6 vs {3:14, 6:211}), both still
+`owed: body re-read`, both still provenance-not-engine-bug.
+* **Re-partition of the 209**: AGREE-or-min-admitted **113**, DISAGREE **2**, gated-never-called
+**84** (+A_SendMessageToTeam/A_SendMessageToSquad/SendMessageToSquad/Debug moved out of the
+zero-evidence bucket — they have gates), ungated-AND-never-called **10** (4 quest aliases,
+TransferItemToParty, Year/Month/Day/Second, floatstr). 113+2+84+10 = 209 exact.
+* **FastNova's corrected callee-side numbers** (§9.3 of NativeTableAudit.md): engine-core ungated
+is **9** (Year Month Day Hour Minute Second GetTimeStamp TransferItemToParty MessageArgCount),
+not 16; engine-core total **17** with **21** error-name divergences — `Debug` (0x5c3710) gates
+late at body offset **+0x86**, outside the old 96-byte window, and prints **"PointDistance"**
+(0x6AD37C) in its arity error; gate coverage 209 = exact **181** / min **6** / none **22**.
+* Of the 15 "ungated but called" rows in §6.7, **12** (float family, GetTimeStamp, Hour, Minute,
+MessageArgCount) are genuinely ungated; the 3 SendMessage variants are min-gated.
+* **Audit rule (supersedes the allow-multi suggestion)**: the six min-gated names form a DISTINCT
+GATE CLASS (detect: `call 59AF90` / `add esp,14h`), everything else is exact-arity — a multi-arity
+sighting outside the six is now a REAL signal, not an expected exception.
+
+### 6.9 Stating the bound of every negative result (adopted rule; my census audited against it)
+
+Item 72's lesson pointed at my own instrument: my "never called" rows rested on a `PUSH_C · SYSREQ123`
+regex that **structurally cannot see the 122 form** (index-in-PRI). Explicit audit run this pass over
+all 119 images' code spans: 32 cells equal 122 exist, **zero** are preceded by the in-range
+LIN-const-load form `[11][idx] · [122]` — all are operands/data coincidences. So no demo script uses
+the PRI-index call form via constant index, and §6.7/§6.8's never-called rows stand. Bound stated
+honestly: a 122 call whose PRI was loaded by any *other* means (computed index) was not excluded —
+dismissing that fully requires walking all code with the complete per-opcode operand table, which
+nobody has written. Every negative in this doc now carries its instrument's bound:
+"no 123-pattern site and no LIN+122 site in each image's `[image+0x0C, image+0x14)` code span",
+never a bare "never called".
 
 Method note for anyone re-deriving: caller-side name resolution goes through EACH image's own
 ordinal table ([image+0x24] stride 40), so one name can hide several ordinals across images; the
