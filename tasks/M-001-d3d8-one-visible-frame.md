@@ -14,6 +14,15 @@ type: milestone
 > DXVK+lavapipe; if CreateDevice still faults, the row's harness-limit sentence restands,
 > re-measured not inherited.
 
+> CORRECTION TO MY OWN CLAIM NOTE (same day, gen-7 applied to me within the hour): the note's
+> premise that the installed msvc-build payload "predates the bbf7346 wiring" is WRONG. I grepped
+> `bin/msvc-build` - which is a two-line LAUNCHER delegating to a separate `-msvc-build-script`
+> store path that DOES call `msvc-sdk-prerelease.bat` in both cmake passes. "0 matches in the
+> launcher" is not "the wiring is stale"; the payload my session runs is current. The check I
+> should have done (and the wrapper's own text proves) is grep the FILE THAT EXECUTES. This is
+> the coordinator's b2a0633 trap replayed by me, minutes later, in the very row about it -
+> which is how the register earns the name standing order.
+
 # M-001 — D3D8: get one visible frame (slice 1 of 4). NOT "port the renderer".
 
 ## Why this is on the board now, and why it is sliced
