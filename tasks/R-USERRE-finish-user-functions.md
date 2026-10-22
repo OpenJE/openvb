@@ -321,3 +321,22 @@ FOWLOS 0x58e340. Port posture: thunks port 1:1 ONLY with per-member engine vft n
 (no guessing) + Gfx_Engine seam = slice 4, with G1 device validation available per keeper.
 REGISTRY ORDER: full 84-command ctor decompile re-verified verbatim against my slice map this
 pass (zero divergence); shipped RegisterCommand total = 109 sites (84+24+quit @0x5ace0f).
+
+
+## Slice-3c RESEARCH — dispatch question CLOSED in shape, registry CONSUMER open
+Store census for [0x70C528]: the ONLY text store is 0x585b8a = JE::ModelCache::dtor clearing
+the singleton (pattern identical to the Network 0x70BD90 slot). => the script-execution tree
+belongs to the MODEL CACHE: ModelCache holds TWO name-trees (tree_a +0x04/+0x08/+0x0C VFX-Param
+sibling destroy 0x45d1d0; tree_b +0x10/+0x14/+0x18 StringTree destroy 0x585640, node+0x28 holds
+CACHED MODEL objects freed via 0x567f50). So 'executor+0x10 lookup, call [node+0x28](argv)'
+means: command name -> per-command arg string -> CACHED OBJECT -> object's slot-0 called.
+The console registry tree 0x70C668 has, by raw census, EXACTLY TWO consumer-callers of its
+lookup meth_0x5ace40: cls_0x4c5ac0::meth_0x56bd50 (@0x56bdb5) and EngineStringSystem::meth_
+_0x56be30 (@0x56c117, the '<token>' fall-through - ESS token substitution). Working shape
+(NAMED as hypothesis, consumer read queued): in this demo the command console IS the string
+system's token path - script text flowing through ESS::Format resolves command-name tokens by
+LOOKING UP the registry; the F3::RegisterCommand tree is the name->handler map consumed by the
+TOKEN path, and the 'call' leg is the remaining evidence gap. NEXT READ: cls_0x4c5ac0::
+meth_0x56bd50 (0xd8 bytes, the non-ESS consumer). Until it reads, no port claim about HOW the
+handler gets invoked — only HOW IT'S FOUND (registry, proven) and WHERE lookups happen (2 sites,
+census-closed).
