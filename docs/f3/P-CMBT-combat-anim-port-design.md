@@ -94,11 +94,27 @@ earliest: the target's next pump (same frame iff the world pumps the target afte
 >    inline-fired during the enqueue call; the `+0x2E0` enqueue path @0x550701 is **unreachable for
 >    GameEffectDamage**. The only other writers of byte +0xB are `0x55a460`'s false-predicate leg and
 >    `0x45c35f`, both of which also store 1 — no path leaves damage at 0.
-> 3. **The container is NOT dead code, though.** Real combat traffic reaches the queue by another route: a
->    **lethal** hit enqueues `GameActionDie` through the named `0x550720` seam @`0x45c626`. So Step 1's
->    skip-past/multi-entry behavior is exercised by **death**, and Step 2 must model **synchronous
->    push-side effects**, not a drain. Say it that way in any acceptance note: an inbox that only ever sees
->    damage is an inbox tested against traffic shipped cannot produce.
+> 3. **REFUTED, AND MY ORIGINAL SENTENCE WAS THE ERROR (FastNova, byte-clean; re-verified here before
+>    editing, then again by NiceTiger).** A lethal hit does enqueue `GameActionDie` via `call 0x550720`
+>    @`0x45c626` - true. But that funnel's own stream is `8d 8e 04 03 00 00` = `lea ecx,[esi+0x304]`
+>    @0x550726: the **ACTION deque**, not the effect deque at `+0x2E0`. So this sentence was never evidence
+>    about the container Step 1 builds. **Surviving claim, narrow: damage never queues.** Which shipped class
+>    leaves a still-pending `+0x2E0` entry is **NOT established** - the candidate feeders (equip notices,
+>    `DropPayload`, `EffectTreeTrigger`, spawn replay @0x552692) were not individually gated: a bounded
+>    absence, per item 73.
+>
+>    **The error class, in two layers, because both are needed.** (i) *A reused verb is not a shared data
+>    structure* - "enqueues" is said of two containers and the inference crossed without a byte doing it.
+>    (ii) escalated by NiceTiger's self-audit: **a reused TYPE is not a shared instance either.** `+0x304` and
+>    `+0x2E0` are the SAME class (`cls_0x54e070`) and different instances, which is why the claim felt safe -
+>    there WAS a real shared type beneath it. Type-checking is the reassurance to distrust, exactly like the
+>    slot number and the byte offset before it. **Rule: name the FIELD OFFSET HOLDING THE INSTANCE** - not the
+>    class, not the verb.
+>
+>    Step 2 consequence unchanged in direction: model **synchronous push-side** application, not a drain.
+>    Step 1's `skip-past`/multi-entry law is asserted from the WALK's bytes (@0x54c63d `inc` / @0x54c63e
+>    `jmp`), i.e. container law rather than a shipped-traffic claim - which is the honest basis now that the
+>    traffic claim is withdrawn.
 > 4. **Step 2's blast radius is larger than "HP write."** Apply's target-side touch list (all cited in
 >    `docs/f3/P-CMBT-step2-feeder-evidence.md` §4): clamp-store `[tgt+0x24]` with **no lower bound** (negative
 >    HP is proven for this writer — the clamp hole's byte-level receipt), first-hit-and-survive-gated
