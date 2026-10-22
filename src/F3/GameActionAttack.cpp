@@ -343,8 +343,9 @@ namespace F3 {
 		return 0;
 	}
 	// No shipped single-fn counterpart: port extraction of the VFX .veg pick table — switch on
-	// [effect+0xA0] (damage type 0..5) x [effect+0xA4] (material), literals shipped, per
-	// discoveries/2025-10-20-session7-effect-pipeline-and-damage-apply.md §3 step 6 (L75).
+	// [effect+0xA0] (damage type 0..5) x [effect+0xA4] (material) sub-cases @0x45C37A-0x45C3ED,
+	// literals shipped, per discoveries/2025-10-20-session7-effect-pipeline-and-damage-apply.md
+	// §3 step 6 (L75; the enclosing apply-damage chain is that document's §3).
 	const char* SelectHitVeg( int damageType, int material, int dmg ) {
 		// session 7 §3 step 6 table (+0xA0 switch, +0xA4 sub-cases)
 		switch ( damageType ) {
