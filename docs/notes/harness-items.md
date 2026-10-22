@@ -1194,3 +1194,19 @@ cadence line. Rule: TRACE2=<lane>-<purpose>-<date> per window; the run-identity 
 cross-check, but a shared log needs shared bytes to stay honest, and protocols don't get specified by
 coincidence. Same-sitting note: the two-window concurrence (both green, sha 3b8c45a5) is the best
 accidental replication of the night — next time, make it deliberate.
+
+## 62. A gate that has never run on its own activated path is UNTESTED CODE — the author's wiring commit is not the first real execution; force it
+
+The item-60 cmkr-regen block (wired 00:08, ad6c494, 'nix-syntax checked') had NEVER actually run:
+the cached cmkr is a Linux ELF, the container's wine is i386-only, upstream cmkr ships PE32+ only —
+three-way format mismatch that nix-instantiate --parse structurally cannot see. All post-midnight
+'msvc rc0' greens ran the PRE-activation PATH script (T-049's 'activation = re-up, not performed'
+predicted the class). SwiftOwl's item-58 re-eval tonight re-resolved the PATH, activated the block,
+and it failed on its FIRST REAL RUN — then filed the defect not-silently-patched (cache parked at
+/tmp/disabled-cmkr-cache-20261022 with full ledger, known-good flow restored, consequence broadcast).
+Rules: (1) any wiring change to a gate-bearing script must be EXECUTED ONCE by the author on a
+freshly-resolved path before the commit claims 'green' — syntax checks are necessary and nowhere
+near sufficient; (2) a disabled guard must be broadcast as disabled with an interim manual rule
+(here: every cmake.toml touch = hand-verify CMakeLists.txt) — an inactive enforcement is a known
+hole, a silent one is a trap; (3) the item-58 law (re-source before quoting) just paid for its own
+minting twice — the second time catching the fix that carried the first lesson.
