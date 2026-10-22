@@ -125,3 +125,25 @@ new angles (his suite `b2c3931`-era, 69 asserts, 13/0):
   4+1 samples). A container therefore has a readable lock DC but cannot be locked or
   IsLocked-queried by script. One field, two doors — the DC pair lives at +0xC0 for both
   classes through their common base.
+
+### Family adjudication (B11/B12 relay, all offsets by instruction text)
+
+- GetWeaponRange chain bytes: inv ptr 0x45b6af `mov eax,[eax+168h]`; GameWeapon range-src
+  0x45b729 `mov eax,[eax+408h]`; fallback 0x45b732 `mov eax,[edi+6f4h]`; +0x2C 0x45b740.
+  IsItemEquipped shares 0x45b821 `mov eax,[edx+168h]` on the PRE-cast base — +0x168 is
+  Entity-era, +0x6F4 GameCreature-era; both natives deliberately mix bases.
+- Protagonist's handle-as-result is literal: 0x45a9e0 `mov eax,[eax+1dc]`; leader cell
+  0x45a9c7 `mov eax,[eax+14]`. AddCNPCToParty: slot-26 call 0x45a343 `call [edx+68h]`,
+  GameParty VFT slot 0 with entity pushed 0x45a370.
+- RULE — native discriminator (routes batch-B rows by kind, immune to address-range
+  conflation): every true script native calls the gate trio within ~60 bytes —
+  0x59AF40 (arity+name), 0x59AEF0 (handle resolve), 0x59AD20 (error print).
+  Command*Window (0x45ea50/0x45eac0) has none: __usercall interface plumbing -> Commands.cpp.
+- RULE — offsets by instruction text, never by the decompiler's number (two unit bugs in
+  one batch: 0xC0 rendered as 48, +0x14 family rendered as cells; a correct ×4 on the
+  wrong sample proves nothing). Same family as the EA±1 register, extended to disp
+  renderings: 5 samples now.
+- cls_0x616328 is a FAMILY of at least two server-era singletons with different semantics:
+  0x70bd98 = party-side (slot 26 -> Party; Protagonist 0x45a991, AddCNPC 0x45a32f),
+  0x401150 = map-icon side (attitude pair, GameEntity ctor mbr_0x28). When the registry
+  era names them, name them SEPARATELY.
