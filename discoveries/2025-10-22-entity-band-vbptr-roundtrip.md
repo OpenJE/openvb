@@ -96,3 +96,32 @@ divergence.
   sibling-redeclaration instances (3rd), alongside the shared-pad items 43/44.
   Related: repro prints that evaluate state before a call must be sequenced, not
   one-lined (printf argument-eval order masqueraded as `ptrmatch=0` resolve failure).
+
+## Addendum (same session) — corroboration from B10/Protagonist, all bytes re-read
+
+WildKnight's B10 batch + the Protagonist native independently confirm the band from three
+new angles (his suite `b2c3931`-era, 69 asserts, 13/0):
+
+- **T-043 handle delivered as a NATIVE RESULT.** `F3::Protagonist` (0x45a960): WSI-idiom
+  base at 0x45a991 (`&g[2] + *(g[2].mbr_0x0 + 4)` — THIRD base-plus-delta sighting),
+  vft slot 26 (+104), `Party -> GameParty` cast, leader read at `[party+5]` cells =
+  **+0x14** (bytes `8b 40 14` @0x45a9c7), then `return *(leader + 476)` — 476 = **0x1DC**:
+  the handle field this note's chain resolves through, now seen as a plain success return.
+  Two shipped oddities kept verbatim by the port: both failure lines print
+  `"Returning INVALID_ID."` yet return 0; the leader slot is a +0x14 dword, not a member name.
+- **`cls_0x616328` contamination is bigger than a function-label artifact.** Protagonist
+  reaches its callee through a SECOND global singleton of the same bogus class
+  (`F3::global_cls_0x616328_0x70bd98`, alongside the WSI `0x401150`). The label family is
+  server-side-era objects, not `GameActionEquip`; treat every `cls_0x616328` name (methods
+  AND globals) as untrusted pending era work.
+- **Door/lock band asymmetry, named.** `LockDoor` (0x45a1b0) / `UnlockDoor` (0x45a240) /
+  `IsLocked` (0x45b4e0) are DOOR-ONLY: IsLocked casts to `GameDoor` only
+  (`"IsLocked() - Entity is not a door"`) and returns the BYTE at `GameDoor+0xBD`
+  (`v3[189]`, movzx — port asserts 0xAB -> 171 unsigned). `GetLockDC` (0x45b570) instead
+  tries `GameContainer` then `GameDoor` and reads **+0xC0 off either cast result** —
+  bytes at 0x45b5dd `8b 80 c0 00 00 00` (IDA's pseudocode printed this displacement as
+  "+48", a PSEUDOCODE-PRINT hazard: offsets in decompilation vary with the rendered
+  pointer type — adjudicate offsets with bytes, same discipline as the EA±1 class, now
+  4+1 samples). A container therefore has a readable lock DC but cannot be locked or
+  IsLocked-queried by script. One field, two doors — the DC pair lives at +0xC0 for both
+  classes through their common base.
