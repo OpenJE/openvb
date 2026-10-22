@@ -18,6 +18,17 @@
 #      set LIBGL_ALWAYS_SOFTWARE/GALLIUM softpipe once DXVK owns GL (32-bit LLVM OOM storm).
 #   5. WAYLAND_DISPLAY stays inherited; DISPLAY=:96 stays for RandR metadata (hybrid stack).
 #
+# COLD BOOTSTRAP IS PROVEN (keeper run 2026-10-22: bare wineboot prefix + fresh Xorg :97 ->
+# Direct3DCreate8 non-NULL, CreateDevice OK, 3300+ presents, rc=124, magenta capture). Two
+# errata this proof corrected:
+#   * msvcr70/msvcp70 are NOT missing on a bare prefix — wine-11 ships them natively
+#     (lib/wine/i386-windows/*.dll, byte-identical to the t056 template's copies, which were
+#     therefore never a manual install). The .devenv/state/rig-crt-seed/ pair below is harmless
+#     redundancy insurance against a wine that ever stops shipping them.
+#   * A mid-run root capture can legitimately be BLACK while the device is healthy — early in
+#     boot the intro movie occludes the magenta clear (cold run: black @ T+45s, magenta @ T+8s).
+#     The TRACE lines are device truth; the capture is wall truth. Trust both only in that order.
+#
 # Usage:  tools/rig-g1-run.sh                     # gated run of build/F3.exe, 120s window
 #         TIMEOUT_S=45 SCREENSHOT=1 tools/rig-g1-run.sh   # short window + mid-run capture
 # Env knobs: RIG_DIR (default /tmp/r-rig-redquartz), EXE (default $PWD/build/F3.exe),
@@ -122,9 +133,17 @@ if [ ! -f "$RIG_DIR/prefix/system.reg" ]; then
         WINEPREFIX="$RIG_DIR/prefix" "$WINE" reg add 'HKCU\Software\Wine\DllOverrides' \
             /v "$d" /t REG_SZ /d n /f >> "$RIG_DIR/reg.log" 2>&1 || die "reg add $d failed"
     done
-    if [ ! -f "$S32/msvcr70.dll" ]; then
-        say "WARN: prefix lacks msvcr70/msvcp70 (the exe imports them). On a bare wineboot prefix,
-        stage them into system32 from the VC7.0 redist or reuse the t056 template — see task file."
+    if [ ! -f "$S32/msvcr70.dll" ] || [ ! -f "$S32/msvcp70.dll" ]; then
+        CRT_SEED_DEFAULT="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)/.devenv/state/rig-crt-seed"
+        CRT_SEED="${CRT_SEED:-$CRT_SEED_DEFAULT}"
+        for c in msvcr70 msvcp70; do
+            if [ -f "$CRT_SEED/$c.dll" ]; then
+                cp -f "$CRT_SEED/$c.dll" "$S32/" && say "seeded $c.dll from $CRT_SEED"
+            else
+                say "WARN: prefix lacks $c.dll and no seed at $CRT_SEED/$c.dll — the exe imports it;
+        stage from the VC7.0 redist or reuse the t056 template (PREFIX_TEMPLATE=<dir>)."
+            fi
+        done
     fi
 fi
 
