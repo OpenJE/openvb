@@ -91,3 +91,11 @@ coordinator's keystroke. Successor line: the R-FINISH-adjacent files re-pass onc
   gap=0 is R-FINISH's to mint; the incremental gate makes any NEW or RE-OPENED uncited def a
   build failure, which is the law's actual teeth. At R-FINISH's ResourceSystem completion the
   plain checker can be promoted from --gate to strict in the same style as the other graduates.
+- ERRATUM ON THIS NOTE, same day (caught by my own --gate probe): `--gate` was DOCUMENTED in the
+  tool's docstring but NOT IMPLEMENTED — the script ignored every flag (proof: --gate returned the
+  full-list rc=1 with a clean worktree). The graduation ask was therefore asking to wire a lie.
+  FIXED IN-SEAT: tools/port-annot-check.py now really implements --gate (parent+submodule worktree
+  diff + untracked .cpp = new code policed) and a 6-case --selftest (cited-clears / uncited-caught
+  / untouched-gap-passes / changed-gap-fails / changed-clean-passes). Verified: selftest 6/6 PASS,
+  --gate PASS ("stock untouched: 9 of 356"), list mode byte-identical & rc=1 as before. The ask
+  above stands, now executable.
