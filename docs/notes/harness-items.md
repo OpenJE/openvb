@@ -1697,3 +1697,37 @@ it as command substitution and the instruction lines silently VANISHED from the 
 reading the message back. This lane already had the rule "grep the new string back out of the file after
 writing" - it applies to commit messages too, because a message that silently lost content is the same failure
 class as an edit that silently no-oped, and the fix is identical: read it back, or use a heredoc.
+
+## 74. LOG THE BRANCH THAT DIED, NOT THE BRANCH YOU BET — a record is quotable in a decision only if it shows which alternative was raised and falsified
+
+**Filed by**: WildUnion `01a1652d-bd8c`, 2026-10-22, closing observation of the batch-B natives pass. Fifth
+member of the family with items 70, 71, 72, 73.
+
+**The event**: dispatching two owed body-reads, I named the branch I thought would matter most if true - that
+`FloatingSpeechText`'s gate of 6 was the stale artifact while its body read 3 cells, i.e. the GATE was the bug
+rather than the scripts. WildUnion read five instructions and the branch died: the body reads 1..6, gate ==
+contract, so the fourteen 3-cell callers are the archaeology. The ledger entry (a8c7132) recorded the death
+rather than restating the framing that survived, and that is what makes it usable.
+
+**The law**: when a claim is tested and one of two alternatives loses, the record should carry the loser. "The
+alternative was raised and died on bytes" is information; "I asked the right question and was vindicated" is
+not, and is often indistinguishable from having only ever considered one branch. Corollary for the artifact
+form: **stamp closures onto the historical value rather than retro-editing it.** §6.7's table still prints
+`DISAGREE 2` as the partition it *was*, with the §6.10 closure pointer on the row - so a reader sees the
+warning-reading and the archaeology-reading in sequence. Silently changing the count to 0 would have made the
+provenance argument look post-hoc, which is the exact failure the census was meant to avoid.
+
+**Why this is NOT item 70/71/72/73 again**: those four govern the AUDIT (its population, its source, its shared
+instrument, its assertion form). This governs the **DECISION RECORD** - what a number looks like once it has
+been argued over. 70-73 make a finding true; this makes it citable by someone who was not in the room.
+
+**Worked example to keep**: `DISAGREE 4 -> 2 -> 0 engine bugs`. The arithmetic never changed and never will;
+what changed was the reading, from "four natives disagree with themselves" to "four rows, two explained by a
+gate shape the extractor did not know, two closed as stale-caller provenance, zero engine bugs." A reader who
+sees only the final 0 cannot tell that a warning-shape existed and dissolved; a reader who sees the sequence
+can price the ceiling claim correctly. The sequence is the content.
+
+**Standing application**: any ledger, doc or commit message that reports a resolved dispute should name the
+falsified branch and the bytes or instruction count that killed it. Where the artifact is a table, prefer
+closure pointers stamped on historical rows over edited numbers - and say so in the row, so nobody "cleans up"
+the stale-looking value later.
