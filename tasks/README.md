@@ -85,6 +85,14 @@ Mesh **names are re-randomized on every reload/restart** — identity is the `se
 
   `docs/DEFERRED-NOTES.md`.
 
+- **HARD RULE (item 57):** every port function cites its original-side EA (`0xXXXXXX`) in its
+
+  comment block or first body lines; a named-absence comment is compliant, silence is not.
+
+  Checker: `tools/port-annot-check.py` (backfill row R-ANNOT; gate in run-all at gap=0). See
+
+  STYLE.md §Annotated port code.
+
 - When a task is done: `status: done`, paste the acceptance evidence into the file, commit,
 
   and announce in chat.
