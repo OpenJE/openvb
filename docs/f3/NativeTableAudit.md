@@ -578,3 +578,69 @@ port (ScriptNatives.cpp) rows=36  F3 game lib (off_6F3750) entries=45  exact nam
   - OpenQuest
 
 ```
+
+## 8. Follow-up: the shared helper makes the table's `cells` column decorative on 13 rows
+
+Found while reproducing TrueRaven's 36/36 with `tools/native-gate-audit.py`. It reproduces: 36 rows,
+zero drift, denominators 13 helper-mediated / 19 direct-gate / 4 no-gate. One reconciliation: the
+helper-mediated set is **13** rows, not 17 (`ResolveNativeEntity(` appears in exactly 13 bodies, and
+the other entity-resolving native group calls `ScriptNativeResolveEntity(` directly under its own
+gate - 12 of those, zero overlap, which is likely where 17 came from).
+
+`ResolveNativeEntity` hardcodes the arity it checks:
+
+```c
+if ( !ScriptNativeCheckArity( amx, params, 1, pcFnName ) ) {   // 0x59af54-era gate
+```
+
+So on those 13 rows the **enforcing** cell count is the helper's literal `1`, not the table's `n`
+column. All 13 are shipped-arity-1 (checked against the gate immediates in 7.2), so nothing is wrong
+today. The structural point is what matters:
+
+| a PE audit of the `n` column proves | a PE audit of the `n` column cannot prove |
+|---|---|
+| the column is honest about SHIPPED | the column is what the PORT ENFORCES - on helper rows the real constant lives in one shared literal |
+
+Fold a shipped-arity-2 native into `ResolveNativeEntity` and both this doc's audit and
+`native-gate-audit.py` would still print zero drift while the binary gates on 1. What actually
+catches it is not an audit: it is the suite's runtime probe
+(`modules/openje/tests/je/ScriptNatives/ScriptNatives.cpp:1075`, `probe[0] = n * 4`, then asserting
+no `"Invalid number of paramters"`), which calls the real body instead of reading a declaration.
+
+Lane rule worth keeping next to the two-name law: **a declared arity and an enforced arity are two
+facts; only a call-site probe tells you they still agree.** Same shape as the vacuous-green failure
+class - the number was derivable from a source that shared no failure path with the behavior.
+
+### 8.1 Immediate consequence for the 9 unported F3 natives
+
+8 of 9 have shipped arity != 1, so they must not be folded into `ResolveNativeEntity` as written:
+
+| name | shipped cells | name | shipped cells |
+|---|---|---|---|
+| `A_Attack` | 2 | `HideInterfaces` | 0 |
+| `A_JustAttack` | 2 | `SetMoveMode` | 3 |
+| `StartDialogue` | 2 | `A_ReloadWeapon` | **1 (helper-safe)** |
+| `DisplayStringRef` | 4 | `GetSquadAttitude` | 2 |
+| `GetTeamAttitude` | 2 | | |
+
+`HideInterfaces` at 0 is the case that would bite hardest: a helper that forces 1 both over-gates it
+(rejecting a legitimate no-arg call) and its arity error would then be the only thing a script ever
+sees. Note 0 is a real value here, not the `-1` sentinel — `Protagonist` already ships that way.
+Parameterising the helper by cell count would make the table column load-bearing again and close
+this whole class.
+
+### 8.2 Caller-side corroboration (independent direction, same field)
+
+`docs/f3/NativeAbiEvidence.md` traces `params[0]` from the COMPILED SCRIPT side: every decoded call
+in 119 `.int` images ends `<param pushes> / 39 PUSH_C <4*arity> / 123 <ordinal>`. Against this doc's
+callee-side prologue extraction:
+
+| native | script payload | cells implied | gate extraction here |
+|---|---|---|---|
+| `GetCurrentHP` | `39 4` | 1 | 1 |
+| `SetValue` | `39 12` | 3 | 3 |
+| `float` | `39 4` | 1 | no body-side gate |
+| `floatcmp` | `39 8` | 2 | no body-side gate |
+
+Caller and callee agree wherever both exist. The float lib having no gate while the caller still
+publishes `4*arity` is consistent: arity for that family is checked engine-side, not per-native.
