@@ -62,6 +62,15 @@ Mesh **names are re-randomized on every reload/restart** — identity is the `se
 
 
 
+## Lane contract (always-armed protocol, 2026-10-21 — the anti-idle law)
+
+1. **PULL ON CLOSE.** `tasks/PARK.md` is the only backlog. A lane reporting DONE is assigned (or self-pulls, top-down) its next PARK item in the same checkpoint cycle. A lane never leaves a close wondering what's next.
+2. **CLAIM PATTERN FOR PARK ITEMS:** create `tasks/<PARK-id>-<slug>.md` at claim, reserve, commit the claim (task file only), relay the row flip. The PARK line is a scope, not a file.
+3. **SUCCESSOR DUTY.** Every accepted report must end with a successor entry into PARK (READY/QUEUED with trigger) or the explicit statement DONE-NO-SUCCESSOR. Rows that finish without a successor are how lanes go dark.
+4. **IDLE CHECK-IN.** A lane with nothing running pings the mesh ('PULL?'); the answer is always a PARK item or an explicit, time-boxed rest-grant. Silent idle is the only disallowed state.
+5. **COORDINATOR DUTY.** The tank stays non-empty or the board says so out loud: PARK empty AND all lanes dark = the honest STOP condition, stated as such — not a queue to invent work around.
+6. **SLOT LAWS UNCHANGED.** One IDB writer, one product-code writer, one boot/debugger tenant; PARK items carry their slot in the notes column; gate-first disciplines inherited.
+
 ## Conventions
 
 
