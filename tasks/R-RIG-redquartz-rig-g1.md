@@ -117,6 +117,20 @@ PROOF OPTIONS (QuickNova's framing, both valid — SwiftOwl picks):
       reached in that binary, which is strictly stronger than ordering inference and survives re-quotability.
   Either way the keeper adds nothing to src/; (b) is the device lane's gift, requested not assumed.
 
+### ITEM-5 WINDOW VERDICT (executed + concurred, SwiftOwl 01a16198)
+Two overlapping windows on IDENTICAL bytes — ledger: 2026-10-22T04:12:40Z (SwiftOwl) + T04:13:38Z (keeper),
+head 01e88e3, exe sha256 3b8c45a5b1ca1dd1cb87…399dc5. Both: PHASE1 SUCCEEDED -> CreateDevice OK ->
+cadence ~11,400 presents (≈38fps) -> rc=124 alive-at-reap -> T+8 capture magenta-dominant first try
+(post-occlusion, item 59 honored). **PROVEN (option (a), stated exactly)**: the exe carrying the restored
+ActionAnim START (openje 791710b: sink call @0x5a92a1-shape, [ent+0x288] clear @0x5a92a8, deadline math
+@0x5a92d7) runs the device for the FULL window with zero disturbance. **NOT CLAIMED**: sink DEVICE-arm
+reach — unreachable from any port-reachable state (+0x160 never set; gates 1+2 are the shipped-shaped
+terminators). NOBODY may cite these windows as "sink reached"; the honest ceiling is "restore runs clean
+on frames" until the anim-model era. Option (b) parked as named successor **item5b** (SwiftOwl's request
+to QuickNova: don't spend the probe-line verb before the arm is reachable). Window etiquette learned:
+TRACE2 names must be unique per concurrent window — the two writers interleaved into one file (harmless
+here, identical cadence families; a different-bytes overlap would NOT be).
+
 When SwiftOwl's ActionAnim restoration lands in openje + parent:
 1. `msvc-build` (fresh exe; item-60 fix makes cmake.toml edits actually regenerate — first build where
    that matters for a sink-proof).
