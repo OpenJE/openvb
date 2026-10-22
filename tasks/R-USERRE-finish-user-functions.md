@@ -1731,3 +1731,29 @@ time instead of failing them, which is the right ordering for a standard I keep 
 
 Batch B after B20: **25 LIVE**; remaining rows need the party, dialogue, GUI-hide, AMX-object-reference and
 server eras, or are documented stubs; the item/inventory family is now complete and internally consistent.
+
+
+### Post-hoc correction to B20's vftable claim (same day, before it hardened)
+
+B20 wrote that the IDB `GameInventory` listing "returns 10 of 16 entries and omits precisely the slots this
+family dispatches through (6, 7, 12)". Re-querying and counting its keys programmatically: **11 entries**
+(0..5, 10, 11, 13, 14, 15), `"length": 16`, so the missing set is **{6, 7, 8, 9, 12}**. Two distinct errors in
+that one sentence, both worth naming because they are different classes:
+
+1. **Arithmetic on my own enumeration** - I listed the keys correctly in the same paragraph and counted them
+   wrong. JadeBear caught it; their framing is the keeper: "counting a list by hand that you just typed
+   correctly."
+2. **A claim that the truncation was aligned to my task** - "exactly the slots this family uses" implied the
+   excerpt was missing 6/7/12 because I needed 6. The family uses 6, 10, 14, 15 and only 6 is absent; 8/9/12 are
+   missing for reasons unrelated to this work. The listing does not know or care which slot I am looking for,
+   and dressing a generic truncation as a targeted one makes the next reader distrust the wrong thing.
+
+Upgraded detection rule, from their addendum and my re-check: the tool **self-reports** the truncation - the
+JSON carries `"length": 16` beside an 11-key map - so compare entries-present against the declared length
+before concluding an entry does not exist. An excerpt that knows its own size confesses in the payload; the
+16 dwords at image `0x666754` remain the census when the answer matters.
+
+Bonus from the same image read, now in the doc: it shows **two different failure modes in one table** -
+slots 8/9 are the identical dword `0x469370` (alias), while 12/13 are adjacent-but-distinct `0x469400` /
+`0x469410` (near-duplicate). The alias punishes solo edits; the near-duplicate punishes assumed equality.
+Neither risk is visible in the IDB listing.

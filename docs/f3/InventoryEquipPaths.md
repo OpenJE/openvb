@@ -122,7 +122,7 @@ name with `_stricmp`. So:
 | native | its name comparison | cite |
 |---|---|---|
 | `IsItemEquipped` | `_stricmp` | 0x46a777 |
-| `EquipItem` (finder) | `_stricmp` | 0x55fde... inside 0x55fda0 |
+| `EquipItem` (finder) | `_stricmp` | 0x55fdef (inside 0x55fda0) |
 | `UnequipItem`, named-slot path | **`strcmp`** | 0x45a8e7 |
 
 The consequence is gameplay, not bookkeeping: a script can `EquipItem("SNIPER RIFLE", 1)` successfully and then

@@ -130,9 +130,11 @@ namespace F3 {
 			}
 		} // Equip
 
-		// 0x55fda0 - JE::Inventory vft slot 6 (the table read from .rdata at 0x666754, not from the
-		// IDB's partial listing, which shows 10 of 16 entries and skips exactly the ones this family
-		// uses). Walks the item list and compares each ITEM's name to the query with _stricmp, so the
+		// 0x55fda0 - JE::Inventory vft slot 6 (the table read from .rdata at 0x666754, not from the IDB's
+		// listing, which carries 11 of 16 entries with length:16 and is missing slots 6, 7, 8, 9 and 12 -
+		// including slot 6, the finder this native dispatches through; the self-reported length is the
+		// tell). Walks the item list and compares each ITEM's name to the query with _stricmp at
+		// 0x55fdef, so the
 		// EQUIP path is case-INSENSITIVE - while UnequipItem's named-slot path is strcmp (0x45a8e7).
 		// Shipped therefore lets a script equip "HUNTING RIFLE" and refuse to unequip the same string,
 		// which is the sort of asymmetry a "cleanup" silently changes gameplay over.
