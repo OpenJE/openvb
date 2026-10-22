@@ -224,3 +224,15 @@ visible per the board state rule; this block referees them. Byte claims re-verif
   resident**, shipped `q` at rest reads **1**, never 0, and T-056 never observed >4 pre-crash.
   D-2's ">4" question re-expresses under T-071 step 4 (digest upgrade owns it).
 
+
+---
+
+## T-079 batch-3 addendum (2026-10-22) — the T-048 `st=` block, queue attribution pointer
+
+The `0x54c864` store described here as "budget-exhaustion" reads, per the T-085 §4 truth table, a
+**two-occurrence debounce** on the `+0x304` ACTION deque walk #2 (arm `[ent+0x318]` @0x54c85d ->
+raise `+0x319` @0x54c864; budget operand `[ent+0x174]` @0x54c828 — all raw re-verified at apply,
+receipts in `docs/f3/CombatTurnDispatch.md` §T-079 batch-3). Nothing in this block's port claims
+moves — `0x54c833` analog landed, `0x54c864` stays cited-and-absent — but any FUTURE reader of the
+"animated-event" naming (T-039-era wording elsewhere in the corpus) should read T-074 (+0x2E0 =
+effect inbox) / T-085 (+0x1A8 = anim deque) before building on a queue identity.

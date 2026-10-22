@@ -209,3 +209,34 @@ combatant from being pumped twice; `CombatMidTurn()` (+8) already mirrors the ou
 is one body with one flag, because a second copy of the pump would drift, and the drift would read
 as combat behaviour. `TickWorldForEntity` keeps its old state-5 skip, so the suites that were written
 against it are unchanged.
+
+---
+
+## T-079 batch-3 correction (2026-10-22) — the "+0x319 raiser, deverified" section re-attributed
+
+Per the P-CMBT annotation-errata list (`docs/f3/P-CMBT-combat-anim-port-design.md` §"Annotation-errata",
+items 1-2) applied to this page; canonical order sentence lives in T-085 §4/§7. Raw re-read BY THIS
+LANE at apply time (T-079 ledger): `0x54c828 = 8b 85 74 01 00 00` (`mov eax,[ebp+0x174]`), `0x54c833
+= c6 85 19 03 00 00 01` (latch), `0x54c85d = c6 85 18 03 00 00 00` / `0x54c864 = c6 85 19 03 00 00 01`
+/ `0x54c86d = c6 85 18 03 00 00 01` — every byte P-CMBT cited, confirmed. Corrections:
+
+- **"walks the SECOND deque (`+0x2E0` … the animated-event queue per T-039's structural note)"** —
+  the queue identity is THREE documents stale. `+0x2E0` is the **effect INBOX** (root pointers of
+  effect trees, T-074); the animated-event deque lives at **`+0x1A8`** (by-value 24B records, T-085).
+  What `Entity::virt_meth_0x54c570` walks is the **`+0x304` ACTION deque — its second walk** (walk
+  #2, break-at-`0x54c7f6`), and the raiser sits at THAT walk's tail (T-085 §4/§7). The
+  `head +0x2EC / count +0x2F0` field reads are real deque-family fields (shared 20-byte family,
+  T-074) — they just describe the inbox, not the queue this pump walks.
+- **"dt budget at `+0x179`"** — the budget field is **`[ent+0x174]`** (raw `mov eax,[ebp+0x174]`
+  @0x54c828, re-verified above); `+0x179` was a mis-walk of the same dword.
+- **"sibling byte at `+0x2E0+0x34`"** — the arm byte is **`[ent+0x318]`** (the `c6 85 18 03` stores
+  at `0x54c85d/0x54c86d`, re-verified above). Per T-085's truth table the exhausted path is a
+  **TWO-OCCURRENCE DEBOUNCE**: first pass ARMES `+0x318`, second pass RAISES `+0x319` at
+  `0x54c864` — not a single-frame "stopped early" flag.
+- Related bytes the section kept correct: `+0x314` IS the `+0x304` deque live count (`inc` @0x54ea71,
+  T-069), and the CONSUMER/CLR pair (`0x5a955d` test; TurnPrep `0x549090` blind clear, T-085's named
+  shipped identity for T-048's "keeps the clear") stand.
+- The same passage family in `docs/f3/SimDigest.md` (T-048 block) carries the pointer there; the
+  product-side twin of item 2 — the `src/F3/MapEntitySpawn.cpp` ~:556 attribution comment — is
+  **routed to the product lane** (P-CMBT says T-079 owns items 1-2 only; decision unchanged,
+  attribution sentence amended there).

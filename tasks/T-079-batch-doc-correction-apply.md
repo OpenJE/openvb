@@ -58,13 +58,34 @@ depends: T-072 deliverable (the per-file errata LIST — discoveries/2025-10-21-
   stamp Update subtracts" — contradicts the page's own Conclusion (`Update` subtracts `X+0x4C` via
   `this=X+4`; `X+0x48` is the accumulator zeroed there). T-072's W-list missed it (body declared
   "otherwise current"); apply-time reverify caught it. CRLF/absolute-path machinery: n/a here (docs only).
-- [ ] batch 2 (I1 ×8 relabels)
-- [ ] batch 3 (DEFERRED-NOTES appendix + annotations + P-CMBT 2 items) — pinned regions ~114/~195
-  supersession-cite d284880/9207579, reverify against CURRENT scripts first (WildKnight relay accepted)
+- [x] **batch 2 LANDED** — I1 ×8 interface-stub shared annotation line appended under each
+  "Inheritance" mermaid (T-072 §9.3 "shared line beats rewrite"). APPLY RE-DERIVATION: raw E8
+  rel32 scan of .text over `$OPENVB_ORIG_EXE` found EXACTLY 33 direct call sites of
+  `JE::CEngineInterface::ctor_0x580330` (T-057's embedding count, independently reproduced);
+  `[0x69A95C-4] = 0x6D6510` with COL primaryOffset=0 (one-COL non-base proof, both dwords
+  raw-read); slot1=0x4953c0, slots3/4=0x404b70 (T-061 facade). CGameFloatingTextInterface's extra
+  F3-side derive edges untouched (out of I1's scope). Glob-miss caught at commit time:
+  COptionsGameInterface had silently dropped from the check pattern — 8/8 confirmed written
+  before the commit, none after.
+- [x] **batch 3 LANDED (this commit)** — DEFERRED-NOTES remaining D-items (D5 half-close, D6,
+  D7 half-open split, D8, D10 retired-with-reason, D12, D13) + the coordinator-block bullet
+  re-map (its third/fourth/fifth/sixth bullets = sweep D3/D4-tail/D11/D9 — a numbering drift
+  caught in MY OWN new prose before the commit, gen-1 of this lane) + the two WildKnight-pinned
+  regions (~114 run-data staging, ~195 pasted wine path) handled as supersession-CITES to
+  d284880/9207579, not restatements. P-CMBT items 1-2 applied to CombatTurnDispatch (raiser
+  section: +0x2E0 is the effect INBOX per T-074, anim deque is +0x1A8 per T-085, walk #2 of
+  +0x304 raises at the tail; budget [ent+0x174] not +0x179; arm byte +0x318 not '+0x2E0+0x34';
+  two-occurrence debounce per T-085 §4) + SimDigest T-048 pointer addendum. Item 3 (MapEntitySpawn.cpp
+  comment) routed to the product lane (WildKnight/B2 owns that file's era). APPLY VERIFICATION:
+  `0x54c828 = 8b 85 74 01 00 00`, `0x54c833/0x54c864 = c6 85 19 03 00 00 01`, `0x54c85d/0x54c86d
+  = c6 85 18 03 00 00 00/01` — every byte the errata cites, re-read from the image; `8b 41 3c c3`
+  at 0x436240 (D8); `[0x691a1c+0x18]=0x404b70` (D6); GUIStringTags §0 / GUILoadingRecon §1
+  sections confirmed present (D7); the D12 12/0 number is attributed as the runtime lane's mesh
+  report, not this lane's measurement.
 - [ ] batch 4 (§4 per-file correction blocks: GUILoadingRecon, EntityActionQueueSeam,
-  CombatTurnDispatch, ScriptNativeActionDoors, StartupAndSubsystemTable, GUIStringTags,
-  GamePathManager, WorldYearSeedConsumer, T013-registry-port-design, AttackPositionOverrideDoors,
-  GITMItemRecordLayout)
+  CombatTurnDispatch (T-072's own C2/C4 — separate from the P-CMBT block), StartupAndSubsystemTable,
+  GUIStringTags, GamePathManager, WorldYearSeedConsumer, T013-registry-port-design,
+  AttackPositionOverrideDoors, GITMItemRecordLayout; ScriptNativeActionDoors check vs B2 lane)
 - [ ] batch 5 (pending flips / DONE marks)
 - [ ] close: coverage statement + relay
 

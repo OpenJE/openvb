@@ -703,3 +703,64 @@ read-the-rest statement. Refs: docs/f3/WorldTickPump*, discoveries/2025-10-21-t0
 - **'server-only 6->7 flip' — SUPERSEDED** by session-25 retraction (already noted there).
 Frame-0-leap reconciliation already lives at the end of this file (appendix, earlier this batch); inheritance-
 relabel batch for docs/f3/* follows as T-079 batch 2. All items sourced to discoveries/2025-10-21-t072-doc-errata-sweep.md.
+
+## T-079 batch-3 annotations (2026-10-22, JadeBear lane) — the remaining D-items + two rig-era regions
+
+Completing the D1–D13 list from `discoveries/2025-10-21-t072-doc-errata-sweep.md` §5 after the
+coordinator's block above (which covered D1 appendix + its D2/D4 bullets; numbering note: the
+coordinator block's third bullet labels itself "D5" but is the sweep's **D3** (the vft[5] no-op),
+its fourth bullet ("CombatManager port NOT started") is the tail of the sweep's **D4**, its fifth
+("set_comments broken") is the sweep's **D11**, and its sixth ("server-only 6->7") is the sweep's
+**D9** — the sweep doc is the canonical D-map). Apply-time discipline: every raw
+claim below re-read from `$OPENVB_ORIG_EXE` by this lane (receipts in
+`tasks/T-079-batch-doc-correction-apply.md`), pinned boot regions CITED supersession, not restated,
+per the runtime-lane relay.
+
+- **D5 (console path) — ANNOTATE half-close**: the registry side is mapped (`Meth_FindValue_0x5ace40`
+  callers, tokenizer/dispatch shapes — see `discoveries/2025-10-20-death-console-only-and-packet-fixes.md`
+  and the R-USERRE-A landing in `src/F3/CommandRegistry.cpp`/`Commands.cpp`, 34 live registrations +
+  suite); **typed-command dispatch from the message loop remains genuinely open** — the sentence
+  above is no longer fully true, keep it as the named half-gap.
+- **D6 (session pump) — SUPERSEDED**: "Session pump belongs to the unmapped session layer" is mapped
+  end-to-end: `JE::Server::virt_meth_0x552b60` -> `+4`-view slot 6 -> `World::Update_0x544a90`
+  (R0 LIVE-CONFIRMED at that target, three boots, T-056; `lea esi,[eax+4]` @0x552ba4 and
+  `call [ebx+18h]` re-verified raw at apply). The sibling claim "subsystem Ticks all empty stub
+  0x404B70 except Network::Tick_0x543770" stands — `[0x691a1c+0x18] = 0x404b70` confirmed — attach
+  the WorldTickPump four-table map when citing it.
+- **D7 (strings) — SUPERSEDED for the disasm ask, HALF-OPEN for the wiring**: `Format_0x56be30` and
+  `Skin::LoadDefault` got their disasm passes (`docs/f3/GUIStringTags.md` §0, `docs/f3/GUILoadingRecon.md`
+  §1 — sections verified present at apply). "**WIRING PENDING**: who calls SS::EngineStringSystem::Init/ctor"
+  is NOT covered by any closed row — it stays open, and should be read as one item, not two.
+- **D8 (sim-seconds posture) — SUPERSEDED**: the "clock POINTER read as int?? — REQUIRES
+  runtime/lockstep confirmation (C-23)" paragraph is answered — C-23 closed: slot 0 `0x436240` is
+  `mov eax,[ecx+0x3C]; ret`, a PLAIN SCALAR getter of GameWorld+0x40 on the `+4` view (raw re-read
+  at apply: `8b 41 3c c3`; `discoveries/2025-10-20-c23-answer-worldsim-seconds-not-pointer.md` is the
+  authority). The clock OBJECT lives at GW+0x3C behind a different slot; the YearsPassed-native
+  note below it stands.
+- **D10 (PM_REMOVE ask) — RETIRED, not moved**: the lockstep era (T-052/T-056/T-067) ran and the
+  six-row + R5/R6 list never needed the `PeekMessageA` wRemoveMsg datum — no paired-observable
+  depends on it, so it does not belong on T-067's boot list either. If the message pump's
+  queue-consumption semantics ever get modeled, the site is `ProcessMessagesAndUpdateTime` 0x56AF60;
+  the port currently mirrors the shipped UNINITIALIZED-local behavior (deviation already implicit).
+- **D12 (gate quote) — STALE, supersession-cite**: "tests: PathManager OK, cls_0x4d8d70 registry OK"
+  is a stamp-less quote (item 19/30 family). Current accepted gate: `run-all-tests` **12/0** on the
+  2026-10-22 ARMED-prefix re-run (runtime lane, message board; previous stamped reading 10/0 +
+  GATE STAMP table-hash 483599247 @21:32:26Z, T-069). Always take the number from a live run with
+  the stamp lines, never from this file.
+- **D13 (D-1/D-2 deviation blocks) — RE-EXPRESSED with evidence pointers**:
+  the D-2 fifth-action sentence stays the PORT's behavior (refusal, d2-stress exit 1), but the
+  SHIPPED comparison now carries the idle resident (T-070/T-071: shipped `q` at rest is 1, never 0;
+  capacity reads 3 orders + resident; frame-0 q=1 ak=GameActionIdle pinned in the digest) — see the
+  S4/O4 blocks appended to `docs/f3/SimDigest.md` / `docs/f3/OrigCapture.md`. For D-1 item 2,
+  T-068 is the live precedent that pinning is measurement, not invention: shipped state 0x65AD8170 /
+  draw 0x2D81 -> unique preimage 0x6AD92B15 reproduced AND continued (CombatMath 46>=43, no debugger).
+- **Region near "f3-reimpl-run-data.nix becomes a devenv script" (~line 114)** — SUPERSEDED without
+  restatement: the script LANDED and every prefix-booting path now stages data and heals the wine
+  user-dirs first — see commits `d284880` (rig fixes) and `9207579` (DXVK classifier); the
+  "-trace lacked data staging" fatals and the dangling-symlink boot fatal are both closed there.
+- **Region near "Unit tests convention: ... wine at /nix/store/b0d6...wine-11.0/bin/wine" (~line 195)** —
+  the COMMAND shape stands (mingw32 -std=c++98 static + wine + `.devenv/state/f3-reimpl-wineprefix`),
+  but the PASTED STORE PATH is exactly the class item 68 rule 1 retired (GC makes pasted paths lie
+  on a delay): resolve wine via the devenv shell, and treat prefix soundness as CLASSIFIED STATE,
+  not assumption — `f3-wine-dxvk status` (post-`9207579`: refuses a verdict on REG-ERROR, names
+  DEFAULT-BUILTINS/HALF-ARMED) before any render-dependent reading.
