@@ -374,3 +374,22 @@ FINAL open query). Tree-identity answer status: CONFIRMED two trees exist; the i
 tree_b; console registry consumption = still open, ONE read (0x59f5d0's insert target + 0x38-
 vs 0x30-byte node-shape discriminator, which is decisive since the two builders differ) away.
 No claim beyond that. Slice-4 body work (Gfx seam per ruling) continues next.
+
+
+## FINAL read this session (BrightYak, 2026-10-22) - tree-identity CLOSED as TWO distinct consumers
+(1) RegisterCommand @0x59f63a/0x59f6b5 (decompile): lower_bound + insert-or-get BOTH on
+&F3::global_cls_0x4d8d70_0x70c668 (lea imm32 in the .data era) - console registrations land in
+THE F3 REGISTRY TREE, full stop. (2) Executor core sub_5857F0 @0x58589c RAW: 'lea 0x10(edi),esi;
+mov esi,ecx; call 0x545710' - looks up the tree at EXECUTOR-OBJECT+0x10; script path's ecx =
+g_model_cache (0x54caa0) so tree_b (+0x10, StringTree-buynode class) is the SCRIPT command tree.
+=> ARCHITECTURE ANSWERED: name->handler registry (console) and ModelCache script-command tree
+are DISTINCT consumers of the same StringTree machinery (value slot +0x28 in both shapes). The
+remaining wiring question - who fills ModelCache tree_b with command names (its insert callers:
+StringTree::meth_0x59f540-class or the decimal-probe era) - is the NEXT lane's first census,
+named here as OPEN, not answered. Port consequence unchanged: F3::RegisterCommand mirrors
+shipped (registry tree, proven); an Execute() seam on the registry is port-side value-add and
+must be marked PORT-SIDE (no shipped twin) when slice 4/5 builds it.
+SESSION LEDGER: slice1 9e5698e / slice2 e7731d0 / 3a b69fca0 / 3b bedff55 / 3c 55a76af / 3d 5cf7d2f
+(+ intermediate openje 9e/c2/f2/37a commits, all pushed) - 26/84 registered, gates green at every
+pointer, two self-corrections landed same-sitting. Resume: ledger tail above -> tree_b inserters
+census -> Gfx_Engine seam (toggle thunks + FOV view trio). -end-of-transmission (compaction imminent)
