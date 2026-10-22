@@ -116,6 +116,7 @@ set(F3_SOURCES
 	"src/F3/GameAnimationCache.cpp"
 	"src/F3/GamePathManager.cpp"
 	"src/F3/GameNetwork.cpp"
+	"src/F3/RenderD3D8.cpp"
 	"src/F3/GameActionMoveTo.cpp"
 	"src/F3/MapEntitySpawn.cpp"
 	"src/F3/CombatManager.cpp"
@@ -153,6 +154,7 @@ if(WIN32) # windows
 		gdi32
 		winmm
 		shell32
+		d3d8
 	)
 endif()
 

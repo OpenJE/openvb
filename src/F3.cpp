@@ -18,6 +18,7 @@
 #include "JE/Scripting.hpp"
 #include "JE/Strings.hpp"
 #include "JE/Network.hpp"
+#include "F3/RenderD3D8.hpp"   // M-001 slice 1 (opt-in render slot; un-gated path is a strict no-op)
 #include "F3/GameAnimationCache.hpp"
 #include "F3/GameWorld.hpp"
 #include "F3/MapEntitySpawn.hpp"
@@ -528,6 +529,12 @@ namespace F3 {
 			g_subsystemSlots[i].object->Tick();   // vft[3], 0x5ACDEA: call *[eax+0Ch]
 		}
 
+		// M-001 slice 1 render slot: SAME placement argument as the digest below - a port-side
+		// hook OUTSIDE the byte-accurate 8-slot table (no 9th entry), positioned AFTER the walk
+		// so the Present lands after the world pump (the row's frame-order requirement).
+		// No-op unless opted in and a device is live.
+		F3::Render::Tick();
+
 		// T-026 digest, OUTSIDE the faithful 8-slot walk: the table at 0x6FF6C8..0x6FF70C is a
 		// byte-accurate mirror and must not gain a 9th entry. No-op unless the env var opened a
 		// file, so shipped behaviour is unchanged.
@@ -764,11 +771,13 @@ namespace F3 {
 				JE::FatalError( "Could not create main window." );
 			}
 			ShowWindow( pwinWindow, nCmdShow );
+			F3::Render::InitOnce( g_window );   // M-001: opt-in d3d8 device; NO-OP unless OPENVB_RENDER=1
 			return UpdateWindow( g_window );
 		}
 
 		// 0x56B1A0
 		void DestroyGameWindow() {
+			F3::Render::Shutdown();   // M-001: device before window; no-op when never enabled
 			tracing::instrument( tracing::LOCATION, "F3::g_window=0x%p", F3::g_window );
 			DestroyWindow( F3::g_window );
 		}

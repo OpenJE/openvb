@@ -51,10 +51,10 @@ msvc.private-compile-options = ["/EHsc", "/wd4234"]
 
 [target.F3]
 type = "executable"
-sources = ["src/main.cpp", "src/F3.cpp", "src/F3/GameWorld.cpp", "src/F3/GameAnimationCache.cpp", "src/F3/GamePathManager.cpp", "src/F3/GameNetwork.cpp"]
+sources = ["src/main.cpp", "src/F3.cpp", "src/F3/GameWorld.cpp", "src/F3/GameAnimationCache.cpp", "src/F3/GamePathManager.cpp", "src/F3/GameNetwork.cpp", "src/F3/RenderD3D8.cpp"]
 private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
 private-link-libraries = ["openje", "tracing"]
-windows.private-link-libraries = ["user32", "gdi32", "winmm", "shell32"]
+windows.private-link-libraries = ["user32", "gdi32", "winmm", "shell32", "d3d8"]   # M-001 slice 1: d3d8 links via the SDK prerelease dirs appended by msvc-sdk-prerelease.bat (bbf7346); smoke-proven compile+link 2026-10-21
 msvc.private-compile-options = ["/EHsc"]
 cmake-after = """
 if(NOT MSVC)

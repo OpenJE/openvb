@@ -1,5 +1,5 @@
 ---
-status: in-progress (slice 1 pulled by KeenStorm per owner relay b2a0633; board flip is coordinator's)
+status: slice-1 LANDED except the visible frame (device slot + guards + msvc link green 2026-10-21; visible-frame attempt measured on DXVK: Direct3DCreate8 NULL + 32-bit LLVM OOM - boot-lane question outstanding, see observations)
 priority: P2 slice / P4 whole
 assignee: KeenStorm (slice 1; board mirror via relay per coordinator-only law)
 type: milestone
@@ -159,3 +159,32 @@ renderer.** Slice 1 pays for itself because it converts five currently-blind ver
 into observable ones and it is the only thing standing between B and finishing T-007. Slices 3–4 pay
 for themselves only when something is gated on them, and nothing is yet. If slice 1's probe says the
 image has no DX8 headers, that is a decision point for the human, not a work-around to invent.
+
+
+## Slice-1 observations (KeenStorm, 2026-10-21, landed code + measurements)
+
+- **Step 1 CLOSED affirmatively, live:** `[sdk-prerelease] d3d8 SDK on INCLUDE+LIB` prints in the
+  real msvc leg; throwaway smoke compiled d3d8.h and linked d3d8.lib (20,992-byte exe). No
+  vendoring, no shim. The bbf7346 wiring is CURRENT in my session's executing payload - my claim
+  note's "stale payload" premise was my own gen-7 replay (grepped the launcher, not the delegated
+  script) and is corrected in place above.
+- **Slot landed:** src/F3/RenderD3D8.{hpp,cpp} + F3.cpp three touchpoints (InitOnce(hwnd) after
+  ShowWindow - parameter, not the F3.hpp namespace-static g_window [decompiler-shape internal
+  linkage; LNK2019 caught the reach-across-TU attempt]; Tick after the 8-slot walk beside the
+  digest hook, NOT a 9th table entry; Shutdown before window destroy). cmake.toml + manual
+  CMakeLists sync (board precedent 22ad779; regeneration-safe: toml is the truth).
+- **2002-era header truths (live-caught compile errors, not folklore):** CreateDevice wants a
+  NON-const D3DPRESENT_PARAMETERS* (C2664); d3d8's field is `FullScreen_PresentationInterval`
+  (C2039 - the short name is d3d9); SetRenderTarget is two-arg (C2660). Recorded so the next
+  lane does not rediscover them.
+- **Gates:** msvc rc0 + d3d8 linked; run-all 10/10 (app-boot 124 with the new exe - un-gated path
+  is a strict no-op); cppcheck 0; gate-integrity rc0.
+- **Visible-frame attempt, measured (revert-clean):** DXVK 2.7.1 i686 d3d8+dxgi into
+  f3-reimpl-wineprefix + HKCU DllOverrides + lvp_icd.i686.json (library_arch 32, loader present).
+  Our guarded path executed EXACTLY as designed: window created (hwnd 0x0005006C logged),
+  **Direct3DCreate8 returned NULL** while stderr showed `LLVM ERROR: out of memory` (the 32-bit
+  lavapipe OOM HappyEagle named for softpipe) - NO crash, app kept booting until killed. The
+  row's harness-limit sentence therefore AMENDS, not restands: wined3d dead (proven), DXVK
+  d3d8 REACHES our guard, the remaining blocker is whatever made the demo's 32-bit DXVK boot
+  survive Vulkan on this host - a boot-lane question with a known-good prefix to compare against,
+  not a code defect. Prefix fully reverted (dlls + registry), :96 untouched.
