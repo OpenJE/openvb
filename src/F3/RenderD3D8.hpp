@@ -20,7 +20,13 @@
 
 namespace F3 {
 	namespace Render {
-		// Call once after the game window exists. No-op unless OPENVB_RENDER=1.
+		// PHASE 1 (bad_alloc hypothesis, three-dll round): Direct3DCreate8's ctor reserves
+		// DXVK's slab VA WITHOUT any window - call it BEFORE F3::Startup() so the reservation
+		// competes with an (almost) empty 32-bit address space instead of our own loaded
+		// subsystem assets. No-op unless OPENVB_RENDER=1; a failure here does not stop boot.
+		void PreInit();
+
+		// PHASE 2. Call once after the game window exists. No-op unless OPENVB_RENDER=1.
 		// Takes the HWND as a parameter (void* to keep windows.h out of this header):
 		// g_window in F3.hpp is a namespace-scope STATIC (decompiler-shape, internal
 		// linkage per TU) - reaching for it from another TU is a different window, and
@@ -36,6 +42,11 @@ namespace F3 {
 
 		// 0 = not enabled, 1 = device live, 2 = enabled but no device (failure logged).
 		int DeviceState();
+
+		// Diagnostics hook: writes one line to the render trace channel if (and only if)
+		// the operator set OPENVB_RENDER_TRACE or the render gate is on. Used to settle
+		// "was this code path executed at all" questions with bytes, not theories.
+		void Probe( const char* line );
 	} // namespace Render
 } // namespace F3
 

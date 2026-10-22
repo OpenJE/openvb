@@ -389,6 +389,8 @@ namespace F3 {
 	// 0x5ACE00
 	int Main() {
 		tracing::instrument( tracing::LOCATION, "" );
+		F3::Render::Probe( "F3::Main entered (loop driver)" );   // frame-shape breadcrumb
+		F3::Render::PreInit();   // idempotent second chance if WinMain skipped it
 		F3::Startup();
 
 		// T-026: opt-in digest (default off - the app must not create files nobody asked for).
@@ -819,6 +821,8 @@ namespace JE {
 		// frame must say so explicitly via OPENVB_SIM_DIGEST_EVERY=1.
 		static unsigned g_simDigestEvery = 1;
 
+		// PORT-SIDE (T-026): digest plumbing has NO shipped twin anywhere near the 0x5ACE00 loop era;
+		// observer-only side effects behind OPENVB_SIM_DIGEST, byte-absent from the shipped exe.
 		int EnableSimDigest( const char* path ) {
 			if ( g_simDigest || !path || !*path ) { return g_simDigest ? 1 : 0; }
 			const char* every = getenv( "OPENVB_SIM_DIGEST_EVERY" );
@@ -841,6 +845,8 @@ namespace JE {
 			return 1;
 		}
 
+		// PORT-SIDE (T-026): runs after the 0x5ACDEA vft[3] walk return in GameStateLoop (0x5ACE00);
+		// no shipped code at that frame position exists - shipped frames end at Present (Gfx era 0x509DC1).
 		void DumpSimState() {
 			if ( !g_simDigest ) { return; }
 			// The frame-0 clock is captured on the FIRST TICK, not on the first WRITTEN frame: with
@@ -860,6 +866,8 @@ namespace JE {
 			                     w ? w->ClockSeconds() : 0u, 0, NULL );
 		}
 
+		// PORT-SIDE (T-026): flush hook on the shutdown path; the 0x56B1A0 window-destroy era has no
+		// digest counterpart in the shipped binary (named absence, not an unmapped EA).
 		void CloseSimDigest() {
 			if ( g_simDigest ) {
 				fprintf( g_simDigest, "# END frames=%u every=%u\n", g_simDigestFrame, g_simDigestEvery );

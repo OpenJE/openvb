@@ -25,11 +25,24 @@ namespace F3 {
 		static unsigned long g_frames = 0;
 		static FILE*         g_trace  = 0;
 
+		// PORT-SIDE helper (M-001 slice 1): no shipped twin at 0x56B470 - the shipped window-era
+		// gate 0x56B810 reads nCmdShow/registry, not env. Pure reimpl opt-in mechanics.
+		static int Gated() {
+			char v[ 8 ];
+			DWORD n = GetEnvironmentVariableA( "OPENVB_RENDER", v, (DWORD)sizeof( v ) );
+			return ( n != 0 && strcmp( v, "1" ) == 0 );   // the un-gated path: NOTHING happens
+		}
+
+		// PORT-SIDE helper (M-001 slice 1): diagnostics channel for a GUI-subsystem image whose
+		// stderr is NULL (shipped logged via the OutputDebugString-era 0x56B390 stream, absent here).
 		static void Trace( const char* fmt, int a, int b ) {
 			if ( !g_trace ) {
 				char path[ 512 ];
 				DWORD n = GetEnvironmentVariableA( "OPENVB_RENDER_TRACE", path, (DWORD)sizeof( path ) );
-				if ( n == 0 || n >= sizeof( path ) ) { strcpy( path, "render-trace.log" ); }
+				if ( n == 0 || n >= sizeof( path ) ) {
+					if ( !Gated() ) { return; }   // un-gated and no explicit trace path: stay silent
+					strcpy( path, "render-trace.log" );
+				}
 				g_trace = fopen( path, "a" );
 				if ( !g_trace ) { return; }
 			}
@@ -55,6 +68,9 @@ namespace F3 {
 			__try {
 				hr = g_d3d8->CreateDevice( adapter, type, hwnd, flags, pp, out );
 			}
+		// PORT-SIDE guard: the shipped counterpart had no such handler - measured evidence: the AV at
+		// d3d8+0x01305A (six-digit form of the RVAS) in HappyEagle w12 run (2026-10-21) is that
+// unguarded crash, byte-recorded; the shipped loader anchor era is 0x56B470 window-side.
 			__except ( EXCEPTION_EXECUTE_HANDLER ) {
 				hr = (HRESULT)GetExceptionCode();
 				*out = 0;
@@ -84,20 +100,40 @@ namespace F3 {
 			return hr;
 		}
 
-		void InitOnce( void* hwnd ) {
-			HWND window = (HWND)hwnd;
-			if ( g_state != 0 || g_d3d8 ) { return; }   // idempotent
-			char v[ 8 ];
-			DWORD n = GetEnvironmentVariableA( "OPENVB_RENDER", v, (DWORD)sizeof( v ) );
-			if ( n == 0 || strcmp( v, "1" ) != 0 ) {
-				return;                               // the un-gated path: NOTHING happens
-			}
-			Trace( "opt-in enabled, hwnd=0x%08X", (int)(UINT_PTR)window, 0 );
+
+		// PORT-SIDE phase hook (M-001 slice 1): earliest port-controlled point; runs before the
+		// 0x56B470 window creation called from the 0x56B810 prologue era. No shipped twin.
+		void PreInit() {
+			if ( g_d3d8 || g_state ) { return; }
+			// probe: log the verdict even when the gate reads false, so "gate invisible
+			// at entry" vs "function never called" separate by the trace, not by theory
+			if ( Gated() ) { Trace( "PHASE1 enter, gate OK (max-free VA)", 0, 0 ); }
+			else           { Trace( "PHASE1 enter, GATE READS FALSE at Main() entry", 0, 0 ); return; }
+			if ( 0 ) { return; }
 			g_d3d8 = Direct3DCreate8( D3D_SDK_VERSION );
 			if ( !g_d3d8 ) {
-				Trace( "Direct3DCreate8 returned NULL", 0, 0 );
+				Trace( "Direct3DCreate8 returned NULL at PRE-init too - VA hypothesis weakened", 0, 0 );
 				g_state = 2;
 				return;
+			}
+			g_state = 3;   // preloaded, device not yet created
+			Trace( "Direct3DCreate8 SUCCEEDED pre-Startup (VA/ORDER was the wall)", 0, 0 );
+		}
+
+		// PORT-SIDE slot init (M-001 slice 1): runs at the 0x56B470 window-create return; the shipped
+		// frame there goes to its Gfx subsystem (device era 0x509DC1 chain), not an env-gated path.
+		void InitOnce( void* hwnd ) {
+			HWND window = (HWND)hwnd;
+			if ( g_state == 2 || g_state == 1 ) { return; }   // failed, or already live
+			if ( !Gated() ) { return; }
+			Trace( "PHASE2 opt-in enabled, hwnd=0x%08X", (int)(UINT_PTR)window, 0 );
+			if ( !g_d3d8 ) {                              // PreInit skipped/failed to run early
+				g_d3d8 = Direct3DCreate8( D3D_SDK_VERSION );
+				if ( !g_d3d8 ) {
+					Trace( "Direct3DCreate8 returned NULL", 0, 0 );
+					g_state = 2;
+					return;
+				}
 			}
 			D3DDISPLAYMODE dm;
 			memset( &dm, 0, sizeof( dm ) );
@@ -134,6 +170,8 @@ namespace F3 {
 			Trace( "CreateDevice OK; magenta clear+present armed per frame", (int)hr, 1 );
 		}
 
+		// PORT-SIDE frame hook: placed at the 0x5ACE00 GameStateLoop slot-walk return (shipped walk
+		// anchor: the vft[3] call 0x5ACDEA). After-walk = after the world pump, per the row.
 		void Tick() {
 			if ( g_state != 1 || !g_dev ) { return; }
 			IDirect3DSurface8* bb = 0;
@@ -159,6 +197,8 @@ namespace F3 {
 			}
 		}
 
+		// PORT-SIDE teardown: runs at the 0x56B1A0 DestroyGameWindow entry; shipped tears its Gfx
+		// subsystem via the slot table before the window (different shape, same frame position for us).
 		void Shutdown() {
 			if ( g_dev ) { g_dev->Release(); g_dev = 0; }
 			if ( g_d3d8 ) { g_d3d8->Release(); g_d3d8 = 0; }
@@ -167,7 +207,24 @@ namespace F3 {
 			if ( g_trace ) { fclose( g_trace ); g_trace = 0; }
 		}
 
+		// PORT-SIDE telemetry accessor (M-001): no shipped twin; shipped side is the byte_707CE4
+		// ready-flag era, which this slot deliberately does not touch.
 		int DeviceState() { return g_state; }
+
+		// PORT-SIDE diagnostic (M-001): settles execution-reach questions with bytes. No shipped
+// twin anywhere in the 0x56B810 prologue era; invented during the probe-vs-theory fight.
+		void Probe( const char* line ) {
+			if ( !Gated() && !GetEnvironmentVariableA( "OPENVB_RENDER_TRACE", 0, 0 ) ) { return; }
+			if ( !g_trace ) {
+				char path[ 512 ];
+				DWORD n = GetEnvironmentVariableA( "OPENVB_RENDER_TRACE", path, (DWORD)sizeof( path ) );
+				if ( n == 0 || n >= sizeof( path ) ) { strcpy( path, "render-trace.log" ); }
+				g_trace = fopen( path, "a" );
+				if ( !g_trace ) { return; }
+			}
+			fprintf( g_trace, "[render] probe: %s\n", line );
+			fflush( g_trace );
+		}
 
 	} // namespace Render
 } // namespace F3

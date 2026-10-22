@@ -6,6 +6,7 @@
 #include "JE.hpp"
 #include "F3.hpp"
 #include "tracing.hpp"
+#include "F3/RenderD3D8.hpp"   // M-001 (gated; Probe/PreInit are no-ops un-gated)
 
 // 0x56b810
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow ) {
@@ -21,6 +22,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 	int nSavedRegs;
 
 	F3::g_instance = hInstance;
+	// Port-shape guard inside the 0x56B810 WinMain prologue era (module-path read is shipped-inline).
 	if( !GetModuleFileName( (HMODULE)0x0, szModulePath, MAX_PATH ) ) {
 		tracing::error( tracing::LOCATION, "Unable to get module file name." );
 		JE::FatalError( "Unable to get module file name." );
@@ -35,6 +37,9 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmd
 	F3::g_nSystemTimeMS = timeGetTime();
 	tracing::info( tracing::LOCATION, "F3::g_nSystemTimeMS=%d", F3::g_nSystemTimeMS );
 
+	F3::Render::PreInit();   // M-001 phase 1: D3D8 object VA reservation BEFORE window/subsystem
+	                       // loading - the earliest port-controlled point in the REAL frame
+	                       // driver (WinMain: the window is created HERE, not in F3::Main)
 	F3::Display::CreateGameWindow( nCmdShow );
 	timeStartupTime = std::time( 0 );
 	F3::SetStartupTime( timeStartupTime );
