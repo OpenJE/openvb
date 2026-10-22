@@ -82,3 +82,26 @@ their WINEPREFIXes are the .devenv/state ones, mine is /tmp/r-rig-redquartz/pref
 ## Relay contract
 Report to QuickNova at FIRST trace output with the exact repro line + which of the two gold answers it is.
 **FULFILLED**: first-trace relay sent (POSITIVE); exit-code + capture-proof relay sent after run2 reap (rc=124).
+
+## KEEPER ADDENDUM (post-cfeb8df, commits c815809 + dcbb28e)
+- **Cold bootstrap PROVEN** (5th replication): bare wineboot + fresh Xorg :97 built entirely by
+  `tools/rig-g1-run.sh` -> full positive verdict chain, rc=124, magenta capture. Two self-corrections
+  banked with it: wine-11 ships msvcr70/msvcp70 natively (the "bare prefix lacks them" warning was
+  FALSE; the .devenv seed stays as harmless insurance), and **keeper law = harness item 59**: a black
+  capture can coexist with a healthy device (intro-movie occlusion) — TRACE = device truth, CAPTURE =
+  wall truth, trust in that order.
+- **Runner hardened** (dcbb28e): item-59 CAPTURE GATE — SCREENSHOT mode polls the root histogram until
+  magenta-dominant (CAPTURE_TRIES/CAPTURE_GAP), and when it can't reach magenta it WARNs instead of
+  manufacturing a pass (negative path live-fired against pre-slice-1 F3-trace.exe). Plus the
+  **RUN-IDENTITY LEDGER** (`$RIG_DIR/g1-runs.log`: UTC + git HEAD + exe sha256 per window) — earned the
+  same night, when build/F3.exe VANISHED mid-window (a BrightYak cmake.toml reconfigure) and returned
+  168s later under a NEW sha. Verdicts must name the bytes they ran.
+- Windows served from this seat so far: G1 x2 (warm) + keeper verify + cold x2 + gate-negative x2 +
+  fresh-exe re-check — all ledgered; current rig exe `894e53a5…` at HEAD e2c1bac-era.
+- Paper note (relayed, not chased): QuickNova's 23:47 feed announced an "R-KEEPER standing row" commit;
+  no such row exists in PARK/tasks/README on this branch. The contract's durable homes are the PARK
+  R-FINISH row ("warm rig available for item 5's sink-proof"), harness-items item 59, this file, and
+  the runner header. If a standing row is wanted, keeper's suggested text: "R-KEEPER — the rig is a
+  board service; entry point tools/rig-g1-run.sh; check $RIG_DIR/g1-runs.log for window identity;
+  item 59 governs captures."
+- Queue stance: item-5 sink-proof window first, slice-2 acceptance proper second. Keeper standing by.
