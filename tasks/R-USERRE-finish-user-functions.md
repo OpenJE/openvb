@@ -644,3 +644,29 @@ FULL CHAIN, ALL SLOTS RAW-PINNED (the era's spine, port-ready):
   it's fixed right, cmake.toml edits silently no-op AGAIN. Every cmake.toml touch between now
   and the fix must be manually verified against CMakeLists.txt. The regen design needs a host-
   native cmkr leg (ELF in, wine out) - named for rework, not guessed at a fix.
+
+## Slice-5b: behavior proof RUNS - and catches the registry's latent insertion defect
+- New Commands row in the run-all table (10th suite): modules/openje/tests/je/Commands/
+  Commands.cpp drives register -> push -> drain -> dispatch end-to-end under mingw+wine:
+  cell texts/cell math (read DURING dispatch - the shipped cells die with the drain; my own
+  post-drain read was dangling and the suite caught its own author first), PROBE case-
+  insensitivity with typed-case tokens, strtok run-collapsing, FIFO order (alpha immediately
+  before beta), void()-handler ABI cleanliness (probe survives it in-queue), miss-continue,
+  drain-empties-queue, empty/space-line skip, >255 truncate deviation - 20 asserts, floor 16.
+- DEFECT FOUND BY THE SUITE (openje 1f46073): cls_0x4d8d70::InsertOrGet's lower-bound-node
+  LEFT-slot placement overwrote an OCCUPIED slot, orphaning the subtree below it. The app's
+  26 registrations never hit it (first key CameraAzimuth is the alphabetical floor of the
+  family - every descent attached right-of-root or into empty left slots); 'alpha' after
+  'beta' is the first key pair in the port's history that made it reachable - silently
+  registered-but-unfindable, count incremented anyway. Fixed by mirroring the shipped
+  _Insert_hint descent (0x59f3f0-0x59f443): walk to the NIL slot, attach there, bound
+  pointers update only when the parent WAS the bound. RB deviation untouched.
+- Registry TU split (src/F3/CommandRegistry.cpp): global + RegisterCommand moved VERBATIM
+  from F3.cpp so the console subsystem links standalone (test rows pull defs, not apps).
+  Build-affecting: cmake.toml + CMakeLists.txt updated; CMakeLists regenerated HOST-NATIVELY
+  with the parked ELF cmkr (~/cmkr-verify/cmkr-elf gen) - the ONLY diff was my line,
+  proving the committed list was cmkr-canonical and my hand-edit matches what regeneration
+  will produce when the guard is revived. THE KEEPER'S REWORK IS NOW DEMONSTRATED, not
+  suggested: the ELF cmkr runs on the host directly (wine was never needed for cmkr itself).
+- Gates at this row: run-all 12/0 (with app), msvc TRUE rc0, annot PASS; cls_0x4d8d70 suite
+  re-run green post-fix (no regression in the shared tree code).

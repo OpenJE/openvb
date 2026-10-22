@@ -117,6 +117,7 @@ set(F3_SOURCES
 	"src/F3.cpp"
 	"src/F3/CombatManager.cpp"
 	"src/F3/CombatMath.cpp"
+	"src/F3/CommandRegistry.cpp"
 	"src/F3/Commands.cpp"
 	"src/F3/GameActionAttack.cpp"
 	"src/F3/GameAnimationCache.cpp"

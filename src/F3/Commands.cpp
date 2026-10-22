@@ -438,7 +438,7 @@ namespace F3 {
 				// push argv / call / add esp,4 (@0x580c4a-0x580c4d). void() handlers ignore the
 				// physical slot; argv readers take cdecl(void*) - matches their compiled retn.
 				reinterpret_cast<void (__cdecl *)( unsigned int )>( handler )(
-				    static_cast<unsigned int>( reinterpret_cast<uintptr_t>( &argv ) ) );
+				    static_cast<unsigned int>( reinterpret_cast<unsigned long>( &argv ) ) );
 			} else {
 				JE::LogDebugString( NULL, "Unknown command %s\n", cells[ 0 ] );   // @0x580c65
 			}
