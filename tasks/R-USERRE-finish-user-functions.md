@@ -1946,6 +1946,15 @@ VERIFIED myself against `.devenv/state/f3-reimpl-data/data/Scripts.grp` (5,832,9
   audit: a uniqueness gate on arity-per-name would fire on these four, and firing on an unread thing is how an
   audit manufactures a bug.
 
+**PARTITION OF THE 32 GATED ROWS (FastNova §8.3, closes the count dispute I flagged rather than rounded)**:
+set **A = 13** rows routed through `ResolveNativeEntity` - the ONLY rows where the table's `nExpectedCells`
+column is decorative, because the helper's own gate literal is hardcoded to 1; **B = 12** rows with their own
+`ScriptNativeResolveEntity` after their own gate; **C = 7** rows gated on neither. My "17" wrongly folded part
+of B into A; FastNova's raw TU-wide 14 double-counted two hits that live INSIDE helper bodies (line 284 in
+`ResolveNativeEntity`, line 436 in `ResolveGameEntityForCombo`) - **call sites are not rows**. Filed as harness
+**item 71, DECORATIVE-FIELD HAZARD**, the twin of item 70: a correct verdict about a field nothing at runtime
+reads. Both audits passed 32/32 and both were structurally blind to this.
+
 **Next slice, highest value first** (all in this lane's reserved paths — `src/F3/ScriptNatives.{cpp,hpp}`,
 `modules/openje/tests/je/ScriptNatives`, `tools/native-gate-audit.py`):
 

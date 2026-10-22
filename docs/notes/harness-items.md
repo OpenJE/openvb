@@ -1562,3 +1562,52 @@ gone — that is a red, not a green. A kept defect needs a guard on both sides o
 **Standing application**: any new audit/recompute tool in this repo prints its denominator and cross-checks it
 against an independent representation before it is allowed to say anything. When that is impossible, say
 "coverage unproven" in the verdict line rather than quoting a clean number.
+
+## 71. DECORATIVE-FIELD HAZARD (ENFORCEMENT-BEFORE-VERDICT) — item 70's twin on the other side: an audit that reads a DECLARATION cannot see that nothing at RUNTIME enforces it
+
+**Filed by**: FastNova `01a1652d-a87f`, 2026-10-22, closing the `nExpectedCells` audit for the R-USERRE-B lane.
+**Paired with**: item 70 (COVERAGE-BEFORE-VERDICT). Read them together; they are the same failure shape on
+opposite sides of one object, and a seat that learns only item 70 will still miss this one.
+
+**Trigger**: two independent audits (FastNova's `tools/native-table-dump.py --audit`, this lane's
+`tools/native-gate-audit.py`) both reported zero arity drift across all 36 ported native rows. Both were
+right, and both were structurally blind: the audited field is the table's `nExpectedCells` DECLARATION, while
+the arity that actually gates a call lives in the body's `ScriptNativeCheckArity( amx, p, <literal>, name )`.
+For 13 of the 32 gated rows the body does not contain that literal at all - it calls a shared helper whose own
+gate is hardcoded to 1. So on those rows the declared column and the enforced value are two different facts
+about two different places, and an audit that reads one cannot see the other.
+
+**The partition that made it decidable** (all 32 gated rows, disjoint):
+
+- **A = 13** rows whose body calls `ResolveNativeEntity( amx, params, ...)` - **the only set where the column is
+  decorative**, because the enforcing literal is the helper's hardcoded 1.
+- **B = 12** rows with their own `if ( !ScriptNativeResolveEntity( amx,` after their own gate - load-bearing.
+- **C = 7** rows gated on neither resolver (the task trio, the weapon-combo pair, PlayMusic, Protagonist) -
+  load-bearing.
+
+Also killed a live count dispute on the way: a TU-wide grep for `ScriptNativeResolveEntity( amx,` returns 14,
+not 12, because two of those hits are INSIDE helper bodies (`ResolveNativeEntity` itself, and
+`ResolveGameEntityForCombo`) rather than in native bodies. **Call sites are not rows** - the same class of error
+as folding A into B because both "use a helper" in prose.
+
+**The law**: when auditing a declared field, ask **"does anything at runtime read this field?"** If the answer
+is no - or if the reader is a shared helper with its own constant - then a green drift-check on the declaration
+says nothing about behavior. The check must run on all three legs to be worth its verdict: declared value,
+runtime literal, and shipped's own immediate. FastNova's §8.4 does exactly that and passes 32/32, including
+`UnequipItem`'s deliberate `"EquipItem"`.
+
+**Why this is NOT item 70 again**: item 70 governs the audit's POPULATION (a zero-row parse reports a clean
+verdict). This governs the audit's SOURCE (a correct verdict about a field nothing enforces). Both produce a
+trustworthy-looking number from a place that shares no failure path with the claim being made - which is the
+general shape worth remembering: **a green number is only as good as the coupling between what produced it and
+what you are asserting about it.**
+
+**Standing consequences for this tree**:
+1. Fixing the class means parameterising the helper by cell count, so the declared column becomes the enforced
+   value for set A. Only A needs it; B and C are already safe.
+2. Until that lands, any new row entering set A silently inherits a hardcoded arity 1 while BOTH audits keep
+   printing green - and `HideInterfaces` is the sharp example: its shipped arity is 0, and forcing 1 would
+   over-gate a legitimate no-argument call. 0 is a real value, not the lane's `-1` "no gate exists" sentinel
+   (`Protagonist` genuinely ships a 0 gate).
+3. Any future audit of a table/descriptor column should name which rows are ENFORCED-ELSEWHERE and treat those
+   as unverified by that audit, rather than folding them into a passing total.

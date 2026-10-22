@@ -170,6 +170,7 @@ def audit(pe, tu_text, suite_text):
     coverage["ok"] = True
 
     findings, kept, checked = [], [], 0
+    enforced_elsewhere = []
     for r in rows:
         if r["cells"] < 0:                      # port claims: no gate exists
             if not r["body_found"]:
@@ -195,6 +196,16 @@ def audit(pe, tu_text, suite_text):
                              % (ea, r["cells"])))
             continue
         checked += 1
+        # ENFORCEMENT-BEFORE-VERDICT (harness item 71): a row whose gate lives in a SHARED HELPER has no
+        # enforcing literal in its own body, so the table's declared `cells` column is DECORATIVE on it - the
+        # helper hardcodes its own value. Report those separately instead of folding them into a passing
+        # total, because a match here only proves the declaration is honest about shipped, not that the port
+        # enforces it. Fix for the class: parameterise ResolveNativeEntity by cell count.
+        if r["cells"] >= 0 and pg.get("via") == "ResolveNativeEntity":
+            enforced_elsewhere.append(
+                (r["name"], sg["name"], sg["cells"], pg["cells"],
+                 "helper hardcodes %s; declared %s%s" % (pg["cells"], r["cells"],
+                                                         "" if r["cells"] == pg["cells"] else " - MISMATCH")))
         if (pg["name"], pg["cells"]) != (sg["name"], sg["cells"]):
             findings.append((r["name"], "DRIFT: port passes (%r,%d) but shipped pushes (%r,%d) at %#x"
                              % (pg["name"], pg["cells"], sg["name"], sg["cells"], ea)))
@@ -214,7 +225,8 @@ def audit(pe, tu_text, suite_text):
             else:
                 kept.append((r["name"], (sg["name"], sg["cells"]), cite))
     return coverage, {"rows_checked": checked, "divergences": findings,
-                     "kept_shipped_defects": kept, "total_rows": len(rows)}
+                     "kept_shipped_defects": kept, "total_rows": len(rows),
+                     "enforced_in_helper_only": enforced_elsewhere}
 
 
 def selftest():
@@ -282,13 +294,29 @@ def main():
         for k in verdict["kept_shipped_defects"]:
             print("  MIRRORED SHIPPED DEFECT (correct, do not 'fix'): %s gate=(%r,%d)  [%s]"
                   % (k[0], k[1][0], k[1][1], k[2]))
+        if verdict["enforced_in_helper_only"]:
+            print("  DECLARED-BUT-NOT-ENFORCED (item 71): %d rows route their gate through"
+                  % len(verdict["enforced_in_helper_only"]))
+            print("  ResolveNativeEntity, whose own literal is what runs; the table column on these rows is")
+            print("  DECORATIVE. A clean verdict above does NOT cover behavior on these rows.")
+            for n, sname, scells, pcells, note in verdict["enforced_in_helper_only"]:
+                print("    %-20s shipped=(%r,%s)  %s" % (n, sname, scells, note))
         if verdict["divergences"]:
             for f in verdict["divergences"]:
                 print("  DIVERGENCE: %s: %s" % f)
             return 1
+        n_dec = len(verdict["enforced_in_helper_only"])
         print("=> every ported body's gate (name, cells) equals shipped's prologue immediates, and the kept\n"
-              "   defect is still kept. Denominators agree, so this verdict covers all %d rows."
+              "   defect is still kept. Denominators agree, so the verdict covers all %d rows."
               % verdict["total_rows"])
+        if n_dec:
+            print("   SCOPE LIMIT: that is a verdict on DECLARATIONS vs shipped for all %d rows, and on"
+                  % verdict["total_rows"])
+            print("   ENFORCED behavior for only %d of them. The %d set-A rows named above are gated by a"
+                  % (verdict["total_rows"] - n_dec, n_dec))
+            print("   shared helper, so this tool cannot see their enforcement at all. Item 70 killed the\n"
+                  "   unproven population; item 71 kills the unproven SOURCE. Both limits are stated\n"
+                  "   because a green number is only as good as its coupling to what is being claimed.")
     return 0
 
 
