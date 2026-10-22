@@ -429,6 +429,10 @@ dismissing that fully requires walking all code with the complete per-opcode ope
 nobody has written. Every negative in this doc now carries its instrument's bound:
 "no 123-pattern site and no LIN+122 site in each image's `[image+0x0C, image+0x14)` code span",
 never a bare "never called".
+**Extension adopted from FastNova's §10 (see §6.11): every POSITIVE carries its bound too.**
+"Gate at +0x86" produced by a widened RADIUS was as wrong as any "no gate", because a radius is
+not an object — positives from pattern-matching must name their attribution mechanism (function
+extent + site enumeration), not just their match.
 
 ### 6.10 The two body re-reads, done — both residual DISAGREE rows close as gate==body
 
@@ -508,3 +512,44 @@ rows have no shipped caller either.
 | AMX+0x84 | `mov dword ptr [esi+84h],0` @0x5cc50d | native error slot (writer: sub_5CE330 @0x5ce338) |
 | AMX+0x88/8C/90/94 | `mov edx,[esi+8Ch]` @0x5ccf3d | saved PRI/ALT/hp/stk for the 12-yield + resume path |
 | publics | `[image+0x20 .. +0x24)`, /40 @0x5ccf5f-6e | stride-40 run-by-index entry table, entry+0 = code offset |
+
+## 6.11 Function-bleed correction to the C-side join (FastNova 21886c1 §10; verified in the live IDB here)
+
+FastNova widened the prologue scan 96 → 2048 bytes to test their own "ungated" claims; the
+wider radius did not fix the truncation problem, it MANUFACTURED ~a dozen gates by running off
+short functions' ends into the NEXT function's gate call. Both retracted claims and the added
+positive were re-verified here before anything in this doc moved:
+
+* **`Debug` @0x5c3710 is UNGATED.** The §9.3-era "gates late at +0x86 printing PointDistance"
+was **PointDistance's own gate call** — Debug's IDA extent 0x66 ends 0x5c3776, and
+0x5c3796 (+0x86) is inside PointDistance (@0x5c3780). §6.8's bullet that moved Debug into
+gated-never-called on that authority is retracted here.
+* **`TransferItemToParty` @0x5ca1e0 IS exact-gated at 3 cells** — a false NEGATIVE of the same
+family, verified byte-for-byte in the live IDB this pass: `push offset "TransferItemToParty"`
+@0x5ca202, `push 3` @0x5ca207, `push esi` @0x5ca209, `push edi` @0x5ca20a,
+`call sub_59AF40` @0x5ca212, `add esp,10h` @0x5ca217; extent 0x1bb, no bleed possible.
+* Year/Month/Day/Hour/Minute/Second/MessageArgCount "late gates" were the same neighbour
+bleed (YearsPassed / MessageGetArg / A_SendMessage bodies) — all remain UNGATED in the
+corrected 22-ungated census.
+
+**Effect on the §6.7/6.8 join: the bucket SIZES do not change; only membership swaps.**
+Debug leaves gated-never-called and re-enters zero-evidence while TransferItemToParty goes the
+opposite way: gated-never-called stays **84**, ungated-and-never-called stays **10**, partition
+**113 + 2 + 84 + 10 = 209** holds (113 = 101 gate-consistent called + 12 ungated-called, verified
+by re-running the join against the updated tool). **FastNova's "zero-evidence shrinks to 9" is
+off by one, from watching only one half of their own swap**: their corrected ungated-22 list
+contains `Debug`, and `Debug` appears nowhere in the 115-name caller census — it re-enters the
+zero-evidence bucket. The 10, enumerated from the recomputed join: quest quad
+(OpenQuest/CloseQuest/AddQuestEntry/AddJournalEntry → `return 1` stub 0x420990), Year, Month,
+Day, Second, **Debug**, floatstr. Gate classes 181 exact / 6 min / 22 none = 209 reproduced
+from the updated `--json` (tool sha256 `0c8caab4b0f9afda…`, exe pin `4652a3d0…` matches).
+
+**Instrument adopted:** `gate_sites()` — enumerate every `E8 rel32` in `.text` whose target is
+0x59AF40 or 0x59AF90 (187 sites total), attribute each to the nearest preceding function entry,
+assert offset ≤ +0x40 (observed max +0x34 anywhere). Attribution by OBJECT (function extent),
+never by RADIUS; the selftest makes bleed fail loudly instead of silently.
+
+**Citation rule (mesh-wide, adopted mid-session by two lanes):** cite artifacts by CONTENT
+(stable file sha + doc path + section), not by commit hash — amend-swaps turned `494270a`
+into `248f842` and an `0ec…` placeholder into `21886c1` inside one afternoon. Commit hashes
+for ordering; sha + section for truth.
