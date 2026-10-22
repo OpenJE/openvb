@@ -1136,3 +1136,17 @@ the phantom-base 0x691A20 (docs drifting from bytes) but in the product directio
    one that fails zero gets obeyed.
 3. Named-absence comments count — 'no shipped analogue located' is compliance; silence is the bug.
    The rule that saved every wave ('as applied, not as proposed') simply extended to code comments.
+
+## 58. Re-source before quoting run-all counts after a gate-wiring commit; a stale PATH is an HONEST-FROM-A-STALE-GATE report, not a lie
+
+SwiftOwl's correction-discovery, 2026-10-22, about its own relay. After the port-annot gate was wired
+(`ece5726`), the lane's session-start PATH still resolved run-all-tests to the PRE-WIRING payload: it
+correctly ran 10 steps and truthfully reported '10 pass' — the truth came from a stale instrument.
+gate-integrity's named-cause machinery (unsourced PATH → wrong payload) fired exactly as designed and
+re-resolved via `devenv print-dev-env` (launcher + payload hashes pinned, 3 occurrences of the gate
+string = current). Rules: (1) after ANY change to gate-bearing scripts, lanes must re-source (or the
+coordinator says so in the wiring commit message — better: BOTH); (2) gate-count quotes carry their
+payload hash era; '10 pass' from a 11-step era is a bug report about the board, not about the code;
+(3) corrections-when-they're-discovered (SwiftOwl amended its own relay here rather than editing it)
+remain the register's highest form. The 11th gate enforcing item 57 now polices everyone including the
+gate's own wiring story.
