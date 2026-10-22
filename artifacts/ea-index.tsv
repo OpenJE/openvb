@@ -3,7 +3,7 @@
 #   Superseded docs stay in the index; judge them by the reader (see canonical-fact-sheet).
 #   Scope: discoveries/*.md only (not tasks/, not src/, not docs/f3/, not the IDB).
 #   Keys are literal addresses; 0x45c140 and 0x45c141 are unrelated keys here.
-# corpus_docs=197 indexed_eas=7842 mentions=12729 refused_tokens=1059 {'vftable slot offset (relative to an unresolved table)': 665, 'bare all-digit hex: could be a decimal count, not indexed': 34, 'outside image span 0x400000-0x715800': 241, 'ambiguous +0x hex: struct offset vs global address': 6, 'masked/pattern EA (N significant digits, not an address)': 106, 'range outside image': 6, 'out-of-image (file offset/FourCC/mask)': 1}
+# corpus_docs=199 indexed_eas=7872 mentions=12825 refused_tokens=1061 {'vftable slot offset (relative to an unresolved table)': 665, 'bare all-digit hex: could be a decimal count, not indexed': 34, 'outside image span 0x400000-0x715800': 241, 'ambiguous +0x hex: struct offset vs global address': 6, 'masked/pattern EA (N significant digits, not an address)': 106, 'range outside image': 6, 'out-of-image (file offset/FourCC/mask)': 3}
 # 87 keys are backed ONLY by inference from compressed prose (slash lists like @0x45c251/261/271,
 #   zero-padded or after-offset suffixes). They are real but not literally written: list with --inferred.
 #   Every other key appears literally as 0x.../sub_.../name_0x... in at least one document.
@@ -599,7 +599,7 @@ ea	count	docs
 0x40e6e0	1	2025-10-20-gobj-gdor-gcon-door-geometry-inventory-additem.md
 0x40e720	1	2025-10-20-family-virtual-ledger-gchr-roundtrip.md
 0x40e72b	1	2025-10-20-class-vft-tables-fourcc-matrix-gcre-gchr.md
-0x40e780	7	2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-input-dispatcher-4b3040.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-session26-inventory-shell-findteam-closed.md;2025-10-21-t074-entity-2e0.md;2025-10-21-wave3-mint-ledger.md
+0x40e780	8	2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-input-dispatcher-4b3040.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-session26-inventory-shell-findteam-closed.md;2025-10-21-t074-entity-2e0.md;2025-10-21-wave3-mint-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x40e7f0	2	2025-10-20-entity-class-family-layout.md;2025-10-20-full-class-geometry-vbtables.md
 0x40e852	1	2025-10-20-class-vft-tables-fourcc-matrix-gcre-gchr.md
 0x40e869	1	2025-10-20-gobj-gdor-gcon-door-geometry-inventory-additem.md
@@ -627,7 +627,7 @@ ea	count	docs
 0x40e9d0	1	2025-10-20-door-rebase-correction-changestate-machine.md
 0x40e9e0	1	2025-10-20-door-rebase-correction-changestate-machine.md
 0x40e9f0	2	2025-10-20-class-vft-tables-fourcc-matrix-gcre-gchr.md;2025-10-20-door-rebase-correction-changestate-machine.md
-0x40ea00	1	2025-10-20-door-rebase-correction-changestate-machine.md
+0x40ea00	2	2025-10-20-door-rebase-correction-changestate-machine.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x40ea10	1	2025-10-20-door-rebase-correction-changestate-machine.md
 0x40ea13	1	2025-10-20-door-rebase-correction-changestate-machine.md
 0x40ea1f	1	2025-10-20-door-rebase-correction-changestate-machine.md
@@ -791,6 +791,7 @@ ea	count	docs
 0x412cd0	3	2025-10-20-session17-tohit-subsystem.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md
 0x412cde	1	2025-10-20-session18-weapon-layout-final-giwp.md
 0x412d20	1	2025-10-20-session18-weapon-layout-final-giwp.md
+0x412ed0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x412f50	2	2025-10-20-session17-tohit-subsystem.md;2025-10-20-tohit-formulas-complete.md
 0x412f79	2	2025-10-20-session17-tohit-subsystem.md;2025-10-20-session18-weapon-layout-final-giwp.md
 0x412f84	1	2025-10-20-session17-tohit-subsystem.md
@@ -980,11 +981,13 @@ ea	count	docs
 0x41d1d0	3	2025-10-20-door-polarity-and-clock-consumer-verdicts.md;2025-10-20-vftable-master-index.md;README.md
 0x41d200	1	2025-10-20-vftable-master-index.md
 0x41d340	1	2025-10-20-vftable-master-index.md
+0x41d500	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x41e4b0	8	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-emef-map-effect-wire-and-registry.md;2025-10-20-session10-amo-namelist-giam-efev.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-session9-ammo-prototype-registry.md;2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t072-doc-errata-sweep.md
 0x41e820	1	2025-10-20-door-polarity-and-clock-consumer-verdicts.md
 0x41e8d0	1	2025-10-20-door-polarity-and-clock-consumer-verdicts.md
 0x41e8ea	1	2025-10-20-door-polarity-and-clock-consumer-verdicts.md
-0x41f3d0	1	2025-10-20-vftable-master-index.md
+0x41f300	1	2025-10-22-r-headersan-jsites-verdicts.md
+0x41f3d0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x41fb90	1	2025-10-20-t036-helper-noise-taxonomy.md
 0x420140	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x4201c0	1	2025-10-21-t059-pad-owner-census.md
@@ -1006,7 +1009,7 @@ ea	count	docs
 0x422d40	1	2025-10-21-t062-addendum-window-d24-d40-census.md
 0x422da0	1	2025-10-21-t062-addendum-window-d24-d40-census.md
 0x423d40	1	2025-10-20-vftable-master-index.md
-0x423f30	1	2025-10-20-vftable-master-index.md
+0x423f30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x424570	1	2025-10-20-vftable-master-index.md
 0x424590	1	2025-10-20-vftable-master-index.md
 0x4245c0	1	2025-10-20-vftable-master-index.md
@@ -1246,7 +1249,8 @@ ea	count	docs
 0x43cd50	5	2025-10-20-gameclient-vft-demand-ui-factories.md;2025-10-20-gameinterfaces-singleton-table.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t055-mint-queue-apply-ledger.md;2025-10-21-t057-escalation-family-readjudication.md
 0x43d035	1	2025-10-21-t073-orphans-final.md
 0x43d04b	1	2025-10-21-r-st-split-annotations-ledger.md
-0x43e760	2	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md
+0x43e690	1	2025-10-22-r-headersan-jsites-verdicts.md
+0x43e760	3	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x43e8b6	3	2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;HANDOFF-2025-10-20.md
 0x43e8c9	1	2025-10-20-session6-classid-readers-weapon-ammo-combat.md
 0x43e92e	1	2025-10-20-session6-classid-readers-weapon-ammo-combat.md
@@ -1254,8 +1258,8 @@ ea	count	docs
 0x43f1f0	3	2025-10-20-t010c-conflict-resolved-equip-slot-model.md;2025-10-21-t018-helmet-reqslot-vector-read.md;2025-10-21-t059-pad-owner-census.md
 0x43f265	1	2025-10-21-t059-pad-owner-census.md
 0x43f4c0	1	2025-10-20-f3-ui-command-handlers-window-slots.md
-0x43f5e0	1	2025-10-20-f3-ui-command-handlers-window-slots.md
-0x43ff30	1	2025-10-20-vftable-master-index.md
+0x43f5e0	2	2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x43ff30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x43ffb0	1	2025-10-20-vftable-master-index.md
 0x440050	2	2025-10-20-gameinterfaces-singleton-table.md;2025-10-21-r-cs-csound-census.md
 0x44045d	1	2025-10-21-r-cs-csound-census.md
@@ -1441,12 +1445,13 @@ ea	count	docs
 0x458264	1	2025-10-20-gameworld-interfaces-effects-classid.md
 0x458710	1	2025-10-20-f3-ui-command-handlers-window-slots.md
 0x458770	2	2025-10-21-qw2-wave2-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md
+0x4587e0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x45880b	1	2025-10-21-t081-gfx-slot-table-bases.md
 0x4588df	1	2025-10-21-t081-gfx-slot-table-bases.md
 0x458930	1	2025-10-20-vftable-master-index.md
 0x458950	1	2025-10-20-vftable-master-index.md
 0x458980	1	2025-10-20-vftable-master-index.md
-0x4589e0	1	2025-10-20-vftable-master-index.md
+0x4589e0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x458a00	1	2025-10-20-vftable-master-index.md
 0x458a20	2	2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t086-retro-share-check.md
 0x458a70	1	2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md
@@ -1455,7 +1460,9 @@ ea	count	docs
 0x458aa9	1	2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md
 0x458aaf	1	2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md
 0x458ef0	2	2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t086-retro-share-check.md
-0x459bc0	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
+0x458f30	1	2025-10-22-r-headersan-jsites-verdicts.md
+0x458fe0	1	2025-10-22-r-headersan-jsites-verdicts.md
+0x459bc0	3	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x459c35	1	2025-10-21-t059-pad-owner-census.md
 0x459c50	1	2025-10-21-t084-long-tail-batch-attribution.md
 0x459e70	2	2025-10-20-session28-client-receivers-77-78-gameid-map.md;HANDOFF-2025-10-20.md
@@ -1616,6 +1623,7 @@ ea	count	docs
 0x45e560	1	2025-10-20-server-receive-handler-semantics.md
 0x45e5e0	1	2025-10-20-serverupdate-pump-unpackstate-state-census.md
 0x45e670	1	2025-10-20-vftable-master-index.md
+0x45e690	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x45e6a0	1	2025-10-20-gameclient-vft-demand-ui-factories.md
 0x45e6b0	2	2025-10-20-gameclient-vft-demand-ui-factories.md;2025-10-20-vftable-master-index.md
 0x45e6c0	6	2025-10-20-action-factory-client-recv-table.md;2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-session28-client-receivers-77-78-gameid-map.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-21-t017-pass4-blk-allocation-handlers.md;HANDOFF-2025-10-20.md
@@ -2223,6 +2231,7 @@ ea	count	docs
 0x4782f4	1	2025-10-20-vftable-master-index.md
 0x47841a	1	2025-10-20-vftable-master-index.md
 0x478d08	1	2025-10-20-vftable-master-index.md
+0x4795f3	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x47a5cd	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x47a6b7	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x47abdb	1	2025-10-20-vftable-master-index.md
@@ -2306,7 +2315,7 @@ ea	count	docs
 0x490150	7	2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t087-wave1-ledger.md
 0x4901d0	2	2025-10-21-t073-orphans-final.md;2025-10-21-t087-wave1-ledger.md
 0x490330	3	2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t087-wave1-ledger.md
-0x4903e0	7	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-t086-retro-share-check.md;2025-10-21-t087-wave1-ledger.md;2025-10-21-wave3-mint-ledger.md
+0x4903e0	8	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-t086-retro-share-check.md;2025-10-21-t087-wave1-ledger.md;2025-10-21-wave3-mint-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x490400	2	2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md
 0x490450	3	2025-10-21-t059-pad-owner-census.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
 0x4904b0	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
@@ -2340,11 +2349,13 @@ ea	count	docs
 0x493cb5	1	2025-10-21-t059-pad-owner-census.md
 0x493cd0	5	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t087-wave1-ledger.md
 0x493d70	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
+0x4947e0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4948a0	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x494b00	1	2025-10-21-t073-orphans-final.md
 0x494b40	3	2025-10-21-t073-orphans-final.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t087-wave1-ledger.md
 0x494ca0	3	2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t073-orphans-final.md;2025-10-21-t087-wave1-ledger.md
 0x494f00	1	2025-10-21-t073-orphans-final.md
+0x494f30	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x495090	1	2025-10-21-t073-orphans-final.md
 0x4950d0	4	2025-10-21-t073-orphans-final.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-t086-retro-share-check.md;2025-10-21-t087-wave1-ledger.md
 0x495105	1	2025-10-21-t073-orphans-final.md
@@ -2478,11 +2489,12 @@ ea	count	docs
 0x49c730	1	2025-10-20-family-virtual-ledger-gchr-roundtrip.md
 0x49c7a0	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x49c8d0	8	2025-10-20-b11-gwam-slots-part1-and-census-verdict.md;2025-10-20-class-vft-tables-fourcc-matrix-gcre-gchr.md;2025-10-20-door-polarity-and-clock-consumer-verdicts.md;2025-10-20-scripttrigger-map-factory-cutscene.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-t015-gwam-record-premap.md;2025-10-21-t015-slottable-twin-parity.md
-0x49c9e0	1	2025-10-21-t084-long-tail-batch-attribution.md
+0x49c9e0	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x49ca00	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
 0x49caf0	3	2025-10-20-body-part-table-item-copyfrom-plus18-verdict.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
 0x49cb90	1	2025-10-20-vftable-master-index.md
-0x49cc40	3	2025-10-21-t033-batch4-ledger.md;2025-10-21-t063-conservative-half-attribution.md;README.md
+0x49cc40	4	2025-10-21-t033-batch4-ledger.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md;README.md
+0x49cf30	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x49cf90	1	2025-10-21-t053-string-mining-unexamined-bands.md
 0x49d180	1	2025-10-21-t084-long-tail-batch-attribution.md
 0x49d290	3	2025-10-21-qw2-wave2-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t084-long-tail-batch-attribution.md
@@ -2503,16 +2515,17 @@ ea	count	docs
 0x4a0600	1	2025-10-20-vftable-master-index.md
 0x4a1cc0	1	2025-10-20-entity-file-format-gent-eftr.md
 0x4a1d50	2	2025-10-20-entity-file-format-gent-eftr.md;2025-10-20-session6b-effect-node-dispatch.md
-0x4a1f30	3	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
+0x4a1f30	4	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4a1f80	2	2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md
 0x4a2630	3	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t058-annotation-apply-ledger.md;README.md
 0x4a26d0	6	2025-10-20-anim-event-scheduling-pipeline.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-ge94-speed-door-anittimer-gentsave.md;2025-10-21-p-cmbt-combat-anim-port-design.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t085-animated-event-deque.md
 0x4a2750	1	2025-10-21-t057-escalation-family-readjudication.md
-0x4a2e10	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
+0x4a2e10	3	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4a2e90	1	2025-10-21-t059-pad-owner-census.md
 0x4a3250	1	2025-10-20-t036-helper-noise-taxonomy.md
 0x4a3290	1	2025-10-21-t059-pad-owner-census.md
 0x4a3305	1	2025-10-21-t059-pad-owner-census.md
+0x4a3e10	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4a3ed0	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x4a40b0	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x4a4970	1	2025-10-21-t084-long-tail-batch-attribution.md
@@ -2596,6 +2609,7 @@ ea	count	docs
 0x4abc60	3	2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md
 0x4abdd0	2	2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch4-ledger.md
 0x4abe60	1	2025-10-21-t084-long-tail-batch-attribution.md
+0x4abe80	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4add40	1	2025-10-20-vftable-master-index.md
 0x4add80	1	2025-10-20-vftable-master-index.md
 0x4ae0a0	2	2025-10-21-qw2-wave2-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md
@@ -2615,7 +2629,7 @@ ea	count	docs
 0x4af190	1	2025-10-20-vftable-master-index.md
 0x4af1a0	1	2025-10-20-vftable-master-index.md
 0x4af1b0	1	2025-10-20-vftable-master-index.md
-0x4af1e0	1	2025-10-20-vftable-master-index.md
+0x4af1e0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4af1f0	1	2025-10-20-vftable-master-index.md
 0x4af250	1	2025-10-20-vftable-master-index.md
 0x4af260	1	2025-10-20-vftable-master-index.md
@@ -2623,16 +2637,17 @@ ea	count	docs
 0x4af280	1	2025-10-20-vftable-master-index.md
 0x4af290	1	2025-10-20-vftable-master-index.md
 0x4af2d0	1	2025-10-20-vftable-master-index.md
-0x4af2e0	1	2025-10-20-vftable-master-index.md
+0x4af2e0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4af2f0	1	2025-10-20-vftable-master-index.md
-0x4af300	1	2025-10-20-vftable-master-index.md
-0x4af310	1	2025-10-20-vftable-master-index.md
-0x4af320	1	2025-10-20-vftable-master-index.md
+0x4af300	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4af310	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4af320	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4af35f	1	2025-10-21-t061-cengineinterface-virtual-surface.md
-0x4af380	1	2025-10-20-vftable-master-index.md
-0x4af390	2	2025-10-20-vftable-master-index.md;2025-10-21-t081-gfx-slot-table-bases.md
+0x4af380	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4af390	3	2025-10-20-vftable-master-index.md;2025-10-21-t081-gfx-slot-table-bases.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4af427	1	2025-10-21-t061-cengineinterface-virtual-surface.md
 0x4af440	1	2025-10-21-t061-cengineinterface-virtual-surface.md
+0x4af4e0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4af5a0	1	2025-10-20-vftable-master-index.md
 0x4af5b0	1	2025-10-20-vftable-master-index.md
 0x4af659	1	2025-10-21-t061-cengineinterface-virtual-surface.md
@@ -2647,6 +2662,7 @@ ea	count	docs
 0x4afc70	1	2025-10-20-vftable-master-index.md
 0x4afd19	1	2025-10-21-t061-cengineinterface-virtual-surface.md
 0x4afe00	1	2025-10-21-t061-cengineinterface-virtual-surface.md
+0x4aff30	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4b02c0	1	2025-10-20-vftable-master-index.md
 0x4b06a0	3	2025-10-21-t062-cursor-subsystem-and-child-notify.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t081-gfx-slot-table-bases.md
 0x4b06c0	2	2025-10-21-t081-gfx-slot-table-bases.md;RESPONSES-from-implementer-B.md
@@ -2813,15 +2829,15 @@ ea	count	docs
 0x4b2770	1	2025-10-20-vftable-master-index.md
 0x4b2790	1	2025-10-20-vftable-master-index.md
 0x4b27c0	1	2025-10-20-vftable-master-index.md
-0x4b27e0	1	2025-10-20-vftable-master-index.md
+0x4b27e0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4b2800	1	2025-10-20-vftable-master-index.md
 0x4b2830	2	2025-10-20-vftable-master-index.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md
 0x4b2850	2	2025-10-20-vftable-master-index.md;2025-10-21-t007-skin-subrecord-g1-g2.md
 0x4b2880	1	2025-10-20-vftable-master-index.md
 0x4b2890	2	2025-10-20-vftable-master-index.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md
-0x4b28a0	22	2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-20-session28-client-receivers-77-78-gameid-map.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-qw2-wave2-ledger.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t054-ecx-flow-owner-attribution.md;2025-10-21-t055-mint-queue-apply-ledger.md;2025-10-21-t061-cengineinterface-virtual-surface.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t081-gfx-slot-table-bases.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-t086-retro-share-check.md;2025-10-21-t087-wave1-ledger.md;HANDOFF-2025-10-20.md;README.md
+0x4b28a0	23	2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-20-session28-client-receivers-77-78-gameid-map.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-qw2-wave2-ledger.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t054-ecx-flow-owner-attribution.md;2025-10-21-t055-mint-queue-apply-ledger.md;2025-10-21-t061-cengineinterface-virtual-surface.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t081-gfx-slot-table-bases.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-t086-retro-share-check.md;2025-10-21-t087-wave1-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md;HANDOFF-2025-10-20.md;README.md
 0x4b28c0	2	2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md
-0x4b28e0	2	2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md
+0x4b28e0	3	2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4b2900	2	2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md
 0x4b2910	2	2025-10-21-t075-skin-registry-identity.md;RESPONSES-from-implementer-B.md
 0x4b2a90	1	2025-10-21-t075-skin-registry-identity.md
@@ -2838,13 +2854,13 @@ ea	count	docs
 0x4b2d40	4	2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md
 0x4b2dd0	7	2025-10-21-r-st-split-annotations-ledger.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t086-retro-share-check.md;2025-10-21-wave3-mint-ledger.md;README.md
 0x4b2e80	2	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t058-annotation-apply-ledger.md
-0x4b2f30	7	2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-input-dispatcher-4b3040.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md;README.md
+0x4b2f30	8	2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-input-dispatcher-4b3040.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md;README.md
 0x4b2f38	2	2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-watchers-pump-c-25-answer.md
 0x4b2f53	1	2025-10-20-root-watchers-pump-c-25-answer.md
 0x4b2f68	1	2025-10-20-root-watchers-pump-c-25-answer.md
 0x4b2f74	1	2025-10-20-root-watchers-pump-c-25-answer.md
 0x4b2f80	2	2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md
-0x4b2fe0	6	2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md;README.md
+0x4b2fe0	7	2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-iface-open-close-lifecycle-root.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md;README.md
 0x4b2feb	1	2025-10-20-root-watchers-pump-c-25-answer.md
 0x4b3000	5	2025-10-20-gui-root-cls-0x4b28a0-map.md;2025-10-20-root-watchers-pump-c-25-answer.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t087-wave1-ledger.md;README.md
 0x4b3017	1	2025-10-20-root-watchers-pump-c-25-answer.md
@@ -3072,7 +3088,7 @@ ea	count	docs
 0x4c818a	1	2025-10-21-r-cs-csound-census.md
 0x4c81bb	1	2025-10-21-r-cs-csound-census.md
 0x4c8204	1	2025-10-21-t062-cursor-subsystem-and-child-notify.md
-0x4c82e0	4	2025-10-20-vftable-master-index.md;2025-10-21-r-cs-ann-ledger.md;2025-10-21-r-cs-csound-census.md;2025-10-21-t062-cursor-subsystem-and-child-notify.md
+0x4c82e0	5	2025-10-20-vftable-master-index.md;2025-10-21-r-cs-ann-ledger.md;2025-10-21-r-cs-csound-census.md;2025-10-21-t062-cursor-subsystem-and-child-notify.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4c82f3	1	2025-10-21-t062-cursor-subsystem-and-child-notify.md
 0x4c8312	1	2025-10-21-r-cs-csound-census.md
 0x4c8319	1	2025-10-21-t062-cursor-subsystem-and-child-notify.md
@@ -3082,11 +3098,12 @@ ea	count	docs
 0x4c84c0	1	2025-10-21-r-cs-csound-census.md
 0x4c8540	3	2025-10-20-vftable-master-index.md;2025-10-21-r-cs-ann-ledger.md;2025-10-21-r-cs-csound-census.md
 0x4c8596	2	2025-10-21-r-cs-csound-census.md;2025-10-21-t086-retro-share-check.md
+0x4c86e0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4c8d70	1	2025-10-20-session38-t033-batch1-adjudication.md
 0x4c8df0	1	2025-10-21-t084-long-tail-batch-attribution.md
 0x4c8e50	3	2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t072-doc-errata-sweep.md
 0x4c8eb0	1	2025-10-20-session33-socket-table-is-attachment-space.md
-0x4c8f30	2	2025-10-21-t033-batch4-ledger.md;2025-10-21-t063-conservative-half-attribution.md
+0x4c8f30	3	2025-10-21-t033-batch4-ledger.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4ca730	1	2025-10-20-vftable-master-index.md
 0x4ca9c0	1	2025-10-20-vftable-master-index.md
 0x4caaa0	1	2025-10-21-t064-mint-queue-apply-ledger.md
@@ -3131,6 +3148,7 @@ ea	count	docs
 0x4cddc0	1	2025-10-20-vftable-master-index.md
 0x4ce3d0	1	2025-10-20-vftable-master-index.md
 0x4ce5b0	1	2025-10-20-vftable-master-index.md
+0x4ce6f0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4ce730	1	2025-10-20-session38-t033-batch1-adjudication.md
 0x4ce9b0	1	2025-10-20-vftable-master-index.md
 0x4cea90	1	2025-10-20-vftable-master-index.md
@@ -3140,12 +3158,13 @@ ea	count	docs
 0x4ceca0	1	2025-10-20-vftable-master-index.md
 0x4ced80	1	2025-10-20-vftable-master-index.md
 0x4ceeb0	1	2025-10-20-vftable-master-index.md
-0x4cef30	1	2025-10-20-vftable-master-index.md
+0x4cef30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4cef90	1	2025-10-20-vftable-master-index.md
 0x4cf090	1	2025-10-20-vftable-master-index.md
 0x4cf9d0	1	2025-10-20-vftable-master-index.md
 0x4cfa20	1	2025-10-20-vftable-master-index.md
 0x4cfa70	1	2025-10-20-vftable-master-index.md
+0x4d05e0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4d07f0	1	2025-10-21-t033-batch2-apply-ledger.md
 0x4d09b0	1	2025-10-21-t033-batch2-apply-ledger.md
 0x4d09be	1	2025-10-21-t033-batch2-apply-ledger.md
@@ -3154,7 +3173,7 @@ ea	count	docs
 0x4d0b40	1	2025-10-20-vftable-master-index.md
 0x4d0c80	1	2025-10-20-vftable-master-index.md
 0x4d0f00	1	2025-10-20-vftable-master-index.md
-0x4d0f30	1	2025-10-20-vftable-master-index.md
+0x4d0f30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4d0f60	1	2025-10-20-vftable-master-index.md
 0x4d1ac0	1	2025-10-20-vftable-master-index.md
 0x4d1b60	1	2025-10-20-vftable-master-index.md
@@ -3304,10 +3323,11 @@ ea	count	docs
 0x4e8650	1	2025-10-20-vftable-master-index.md
 0x4e886c	1	2025-10-21-t074-entity-2e0.md
 0x4e88a0	1	2025-10-21-t074-entity-2e0.md
+0x4e8be0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4e8c60	1	2025-10-20-vftable-master-index.md
 0x4e8e40	1	2025-10-20-vftable-master-index.md
 0x4e8e60	1	2025-10-20-vftable-master-index.md
-0x4e8f30	1	2025-10-20-vftable-master-index.md
+0x4e8f30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4e8f70	1	2025-10-20-vftable-master-index.md
 0x4e9150	1	2025-10-20-vftable-master-index.md
 0x4e9170	1	2025-10-20-vftable-master-index.md
@@ -3335,6 +3355,7 @@ ea	count	docs
 0x4edce0	1	2025-10-20-vftable-master-index.md
 0x4ee2e0	1	2025-10-20-vftable-master-index.md
 0x4ee400	1	2025-10-20-vftable-master-index.md
+0x4ee6f0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4ee7c0	1	2025-10-20-vftable-master-index.md
 0x4ee8b0	1	2025-10-20-vftable-master-index.md
 0x4eea10	1	2025-10-20-vftable-master-index.md
@@ -3352,16 +3373,17 @@ ea	count	docs
 0x4f2be0	1	2025-10-20-vftable-master-index.md
 0x4f2d30	1	2025-10-20-vftable-master-index.md
 0x4f2d50	1	2025-10-20-vftable-master-index.md
-0x4f30c0	1	2025-10-20-vftable-master-index.md
-0x4f3690	1	2025-10-20-vftable-master-index.md
-0x4f36c0	1	2025-10-20-vftable-master-index.md
-0x4f36f0	1	2025-10-20-vftable-master-index.md
-0x4f3720	1	2025-10-20-vftable-master-index.md
-0x4f3740	1	2025-10-20-vftable-master-index.md
-0x4f3760	1	2025-10-20-vftable-master-index.md
-0x4f3770	1	2025-10-20-vftable-master-index.md
-0x4f3780	1	2025-10-20-vftable-master-index.md
+0x4f30c0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f3690	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f36c0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f36f0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f3720	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f3740	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f3760	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f3770	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x4f3780	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4f39e0	1	2025-10-20-vftable-master-index.md
+0x4f3a00	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4f3b09	1	2025-10-20-serverupdate-pump-unpackstate-state-census.md
 0x4f4000	2	2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md
 0x4f419a	1	2025-10-21-t054-ecx-flow-owner-attribution.md
@@ -3538,6 +3560,7 @@ ea	count	docs
 0x4fdfff	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4fe010	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4fe029	1	2025-10-21-r-veg-e-value-cache-emit-family.md
+0x4fe0c0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x4fe1d2	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4fe1e0	2	2025-10-21-r-veg-e-value-cache-emit-family.md;2025-10-21-r-vfm2-parameterinfo-applicator.md
 0x4fe1f1	1	2025-10-21-r-vfm2-parameterinfo-applicator.md
@@ -3548,7 +3571,7 @@ ea	count	docs
 0x4fe3a5	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4fe3c7	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4fe450	1	2025-10-21-r-veg-e-value-cache-emit-family.md
-0x4fe690	1	2025-10-21-r-veg-e-value-cache-emit-family.md
+0x4fe690	2	2025-10-21-r-veg-e-value-cache-emit-family.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x4fe880	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4feb20	1	2025-10-21-r-veg-e-value-cache-emit-family.md
 0x4feef0	1	2025-10-21-r-veg-e-value-cache-emit-family.md
@@ -3761,8 +3784,8 @@ ea	count	docs
 0x51f185	2	2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch6-ledger.md
 0x51f1a0	2	2025-10-21-t033-batch6-ledger.md;2025-10-21-t083-gfx-engine-vft-census.md
 0x51f200	1	2025-10-21-t033-batch6-ledger.md
-0x51f340	1	2025-10-21-t033-batch6-ledger.md
-0x51f3e0	1	2025-10-21-t033-batch6-ledger.md
+0x51f340	2	2025-10-21-t033-batch6-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
+0x51f3e0	2	2025-10-21-t033-batch6-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x51f550	1	2025-10-20-vftable-master-index.md
 0x51f570	5	2025-10-20-t033-batch1-identity-decisions.md;2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t083-gfx-engine-vft-census.md
 0x51f58f	1	2025-10-21-t007-skin-subrecord-g1-g2.md
@@ -3972,7 +3995,7 @@ ea	count	docs
 0x536e10	1	2025-10-20-vftable-master-index.md
 0x536e30	1	2025-10-20-vftable-master-index.md
 0x536e40	1	2025-10-20-vftable-master-index.md
-0x536e60	1	2025-10-20-vftable-master-index.md
+0x536e60	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x536e90	1	2025-10-20-vftable-master-index.md
 0x536eb0	1	2025-10-20-vftable-master-index.md
 0x536ed0	1	2025-10-21-t073-orphans-final.md
@@ -4071,9 +4094,10 @@ ea	count	docs
 0x538b70	1	2025-10-21-r-cs-csound-census.md
 0x538bb0	1	2025-10-21-r-cs-csound-census.md
 0x538bf0	2	2025-10-20-vftable-master-index.md;2025-10-21-r-cs-csound-census.md
-0x538f30	1	2025-10-21-t084-long-tail-batch-attribution.md
+0x538f30	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x538f50	1	2025-10-21-t084-long-tail-batch-attribution.md
 0x538f90	1	2025-10-21-t084-long-tail-batch-attribution.md
+0x538fe0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x539030	1	2025-10-21-r-cs-csound-census.md
 0x539033	1	2025-10-21-r-cs-csound-census.md
 0x53903a	1	2025-10-21-r-cs-csound-census.md
@@ -4108,7 +4132,7 @@ ea	count	docs
 0x53b840	1	2025-10-20-vftable-master-index.md
 0x53ba20	1	2025-10-20-vftable-master-index.md
 0x53bc00	1	2025-10-20-vftable-master-index.md
-0x53bf30	1	2025-10-20-vftable-master-index.md
+0x53bf30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x53c290	1	2025-10-20-vftable-master-index.md
 0x53c630	1	2025-10-20-vftable-master-index.md
 0x53c800	1	2025-10-20-vftable-master-index.md
@@ -4121,7 +4145,7 @@ ea	count	docs
 0x53ea00	1	2025-10-20-vftable-master-index.md
 0x53ec50	1	2025-10-20-vftable-master-index.md
 0x53f120	1	2025-10-20-vftable-master-index.md
-0x53f360	1	2025-10-20-vftable-master-index.md
+0x53f360	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x53fbe0	1	2025-10-20-vftable-master-index.md
 0x540040	1	2025-10-20-vftable-master-index.md
 0x540950	1	2025-10-20-vftable-master-index.md
@@ -4594,7 +4618,7 @@ ea	count	docs
 0x54fbe6	1	2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md
 0x54fd90	2	2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-vftable-master-index.md
 0x54ff10	1	2025-10-20-vftable-master-index.md
-0x54ff30	1	2025-10-20-vftable-master-index.md
+0x54ff30	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x54ff50	1	2025-10-20-vftable-master-index.md
 0x54ffb0	1	2025-10-20-vftable-master-index.md
 0x54ffd0	1	2025-10-20-vftable-master-index.md
@@ -4919,7 +4943,7 @@ ea	count	docs
 0x55b6be	4	2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-rleconvexquad-collision-grid-actionmoveto.md;HANDOFF-2025-10-20.md;README.md
 0x55b6e9	1	2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md
 0x55b700	2	2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-rleconvexquad-collision-grid-actionmoveto.md
-0x55bb10	4	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
+0x55bb10	5	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x55bdb0	2	2025-10-20-server-receive-handler-semantics.md;2025-10-20-vftable-master-index.md
 0x55bdc0	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
 0x55bf60	3	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
@@ -4940,14 +4964,14 @@ ea	count	docs
 0x55d015	1	2025-10-21-t059-pad-owner-census.md
 0x55d9a0	1	2025-10-20-dialogue-call-dlg-system-opener.md
 0x55dc50	1	2025-10-21-t059-pad-owner-census.md
-0x55dc80	20	2025-10-20-session15-effect-clone-callers-damage-path.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t014-record-mark-19-writer.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t058-annotation-apply-ledger.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t084-long-tail-batch-attribution.md;README.md
+0x55dc80	21	2025-10-20-session15-effect-clone-callers-damage-path.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t014-record-mark-19-writer.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t058-annotation-apply-ledger.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t084-long-tail-batch-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md;README.md
 0x55dcf5	1	2025-10-21-t059-pad-owner-census.md
 0x55df60	2	2025-10-20-dialogue-call-dlg-system-opener.md;README.md
 0x55e720	2	2025-10-21-qw2-wave2-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md
 0x55e910	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
 0x55e960	3	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-21-qw2-wave2-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md
 0x55edb0	1	2025-10-20-dialogue-call-dlg-system-opener.md
-0x55f360	2	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md
+0x55f360	3	2025-10-21-t084-long-tail-batch-attribution.md;2025-10-21-wave3-mint-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x55fa10	1	2025-10-21-t033-batch6-ledger.md
 0x55fb30	3	2025-10-20-session13-teams-ondeath-armor-dr.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-vftable-master-index.md
 0x55fba0	1	2025-10-20-vftable-master-index.md
@@ -5004,6 +5028,7 @@ ea	count	docs
 0x563eb0	1	2025-10-20-entity-update-updater-maps.md
 0x563f10	2	2025-10-20-door-rebase-correction-changestate-machine.md;2025-10-20-entity-update-updater-maps.md
 0x564280	1	2025-10-20-session14-frame-pump-chain.md
+0x5642e0	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x5643a0	2	2025-10-21-p-cmbt-combat-anim-port-design.md;2025-10-21-t085-animated-event-deque.md
 0x5646b0	2	2025-10-21-qw2-wave2-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md
 0x5648b0	1	2025-10-20-vftable-master-index.md
@@ -5014,12 +5039,12 @@ ea	count	docs
 0x564ab4	1	2025-10-20-session32-part-name-table-second-source.md
 0x564b30	1	2025-10-20-called-shot-part-second-source.md
 0x564b88	1	2025-10-20-session33-socket-table-is-attachment-space.md
-0x564ce0	3	2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t054-ecx-flow-owner-attribution.md
+0x564ce0	4	2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t054-ecx-flow-owner-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x564d3c	2	2025-10-21-rinst-install-deriv.md;2025-10-21-t054-ecx-flow-owner-attribution.md
 0x564ea8	1	2025-10-21-t054-ecx-flow-owner-attribution.md
 0x564eb1	1	2025-10-21-t054-ecx-flow-owner-attribution.md
 0x564f20	3	2025-10-20-body-part-table-item-copyfrom-plus18-verdict.md;2025-10-20-called-shot-part-second-source.md;README.md
-0x564f30	1	2025-10-21-t033-batch6-ledger.md
+0x564f30	2	2025-10-21-t033-batch6-ledger.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x564f90	3	2025-10-20-session32-part-name-table-second-source.md;2025-10-20-session33-socket-table-is-attachment-space.md;README.md
 0x5650c5	3	2025-10-20-session32-part-name-table-second-source.md;2025-10-20-session33-socket-table-is-attachment-space.md;README.md
 0x565540	1	2025-10-20-session16-updater-map-children-modelinstance.md
@@ -5252,6 +5277,8 @@ ea	count	docs
 0x57eb40	1	2025-10-20-gobj-gdor-gcon-door-geometry-inventory-additem.md
 0x57f220	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x57f2d0	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
+0x57f300	1	2025-10-22-r-headersan-jsites-verdicts.md
+0x57f370	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x57f760	2	2025-10-21-t033-batch6-ledger.md;2025-10-21-t063-conservative-half-attribution.md
 0x57fad0	2	2025-10-21-t033-batch6-ledger.md;2025-10-21-t063-conservative-half-attribution.md
 0x57fcd0	1	2025-10-20-vftable-master-index.md
@@ -5337,7 +5364,7 @@ ea	count	docs
 0x587c30	1	2025-10-20-vftable-master-index.md
 0x587c90	1	2025-10-20-vftable-master-index.md
 0x587d00	1	2025-10-20-vftable-master-index.md
-0x587ee0	2	2025-10-20-session14-frame-pump-chain.md;2025-10-20-vftable-master-index.md
+0x587ee0	3	2025-10-20-session14-frame-pump-chain.md;2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x587fd5	1	2025-10-20-input-path-architecture-command-fifo-actions.md
 0x5880a0	1	2025-10-20-vftable-master-index.md
 0x5880c0	1	2025-10-20-vftable-master-index.md
@@ -5388,7 +5415,7 @@ ea	count	docs
 0x58f20a	1	2025-10-21-t017-pass4-blk-allocation-handlers.md
 0x58f2a0	1	2025-10-20-vftable-master-index.md
 0x58f2f0	1	2025-10-20-effect-node-wrapper-worldserver-interfaces.md
-0x58f3e0	1	2025-10-20-vftable-master-index.md
+0x58f3e0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x58f450	3	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md
 0x58f5b0	1	2025-10-20-vftable-master-index.md
 0x58f750	1	2025-10-20-vftable-master-index.md
@@ -5552,7 +5579,7 @@ ea	count	docs
 0x5a05f0	1	2025-10-20-vftable-master-index.md
 0x5a0680	3	2025-10-20-gameparty-contract-and-party-natives.md;2025-10-20-hp-adjudication-protagonist-writer.md;2025-10-20-vftable-master-index.md
 0x5a06b0	3	2025-10-20-gameparty-contract-and-party-natives.md;2025-10-20-hp-adjudication-protagonist-writer.md;2025-10-20-vftable-master-index.md
-0x5a06e0	3	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md
+0x5a06e0	4	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session18-weapon-layout-final-giwp.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x5a0710	3	2025-10-20-gameparty-contract-and-party-natives.md;2025-10-20-party-close-transfer-teleport.md;2025-10-20-vftable-master-index.md
 0x5a0724	1	2025-10-20-party-close-transfer-teleport.md
 0x5a0742	1	2025-10-20-party-close-transfer-teleport.md
@@ -5572,6 +5599,7 @@ ea	count	docs
 0x5a0bb2	1	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md
 0x5a0bc0	2	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-vftable-master-index.md
 0x5a0bf0	1	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md
+0x5a0f30	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x5a19c0	1	2025-10-20-vftable-master-index.md
 0x5a1b80	1	2025-10-20-vftable-master-index.md
 0x5a1bd0	2	2025-10-20-session14-frame-pump-chain.md;2025-10-20-vftable-master-index.md
@@ -5811,7 +5839,7 @@ ea	count	docs
 0x5af160	1	2025-10-20-vftable-master-index.md
 0x5af200	1	2025-10-20-vftable-master-index.md
 0x5af270	1	2025-10-20-vftable-master-index.md
-0x5af370	1	2025-10-20-vftable-master-index.md
+0x5af370	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x5af4c0	1	2025-10-20-vftable-master-index.md
 0x5af630	1	2025-10-20-vftable-master-index.md
 0x5af710	1	2025-10-20-vftable-master-index.md
@@ -5969,7 +5997,7 @@ ea	count	docs
 0x5bde60	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x5bde90	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x5bdeb0	1	2025-10-21-t083-gfx-engine-vft-census.md
-0x5bdee0	1	2025-10-21-t083-gfx-engine-vft-census.md
+0x5bdee0	2	2025-10-21-t083-gfx-engine-vft-census.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x5bdf30	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x5bdf80	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x5bdfc0	1	2025-10-21-t083-gfx-engine-vft-census.md
@@ -6498,13 +6526,13 @@ ea	count	docs
 0x5d99d7	1	2025-10-20-vftable-master-index.md
 0x5d9a86	1	2025-10-20-vftable-master-index.md
 0x5d9b5c	1	2025-10-20-vftable-master-index.md
-0x5d9bee	1	2025-10-20-vftable-master-index.md
+0x5d9bee	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x5d9c90	1	2025-10-20-vftable-master-index.md
 0x5d9d02	1	2025-10-20-vftable-master-index.md
 0x5d9db4	1	2025-10-20-vftable-master-index.md
 0x5d9e53	1	2025-10-20-vftable-master-index.md
 0x5d9eda	1	2025-10-20-vftable-master-index.md
-0x5d9f3e	1	2025-10-20-vftable-master-index.md
+0x5d9f3e	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x5d9fac	1	2025-10-20-vftable-master-index.md
 0x5da035	1	2025-10-20-vftable-master-index.md
 0x5da0be	1	2025-10-20-vftable-master-index.md
@@ -6525,8 +6553,9 @@ ea	count	docs
 0x5db26b	1	2025-10-20-vftable-master-index.md
 0x5db44c	1	2025-10-20-vftable-master-index.md
 0x5db749	1	2025-10-20-vftable-master-index.md
-0x5dbf3f	1	2025-10-20-vftable-master-index.md
+0x5dbf3f	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x5dbf5b	1	2025-10-20-vftable-master-index.md
+0x5debf3	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x5e8dd4	2	2025-10-20-vftable-master-index.md;2025-10-21-t033-batch4-ledger.md
 0x5e8e18	1	2025-10-20-vftable-master-index.md
 0x5e8e42	1	2025-10-20-vftable-master-index.md
@@ -6711,7 +6740,7 @@ ea	count	docs
 0x60a8f6	1	2025-10-20-vftable-master-index.md
 0x60aa45	1	2025-10-20-vftable-master-index.md
 0x60af3d	1	2025-10-20-vftable-master-index.md
-0x60b0eb	2	2025-10-21-t033-batch4-ledger.md;2025-10-21-t063-conservative-half-attribution.md
+0x60b0eb	3	2025-10-21-t033-batch4-ledger.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x60b152	1	2025-10-21-t084-long-tail-batch-attribution.md
 0x60b179	1	2025-10-21-t084-long-tail-batch-attribution.md
 0x60b667	1	2025-10-20-vftable-master-index.md
@@ -6734,6 +6763,7 @@ ea	count	docs
 0x60cc61	1	2025-10-20-vftable-master-index.md
 0x60ccb1	1	2025-10-20-vftable-master-index.md
 0x60ce5f	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
+0x60cf38	1	2025-10-22-r-headersan-jsites-verdicts.md
 0x60d559	1	2025-10-20-vftable-master-index.md
 0x60d63b	1	2025-10-20-vftable-master-index.md
 0x60d71a	1	2025-10-20-vftable-master-index.md
@@ -7112,7 +7142,7 @@ ea	count	docs
 0x66863c	2	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md
 0x668644	2	2025-10-20-gameworld-interfaces-effect-pipeline-closed.md;2025-10-20-gameworld-interfaces-effects-classid.md
 0x668c68	1	2025-10-20-vftable-master-index.md
-0x668cd8	9	2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-20-vftable-master-index.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-21-t063-conservative-half-attribution.md
+0x668cd8	10	2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-20-vftable-master-index.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x668d50	1	2025-10-20-vftable-master-index.md
 0x668dc0	1	2025-10-20-vftable-master-index.md
 0x668e30	1	2025-10-21-t033-batch4-ledger.md
@@ -7499,7 +7529,7 @@ ea	count	docs
 0x6add98	1	2025-10-21-t083-gfx-engine-vft-census.md
 0x6ae2cc	1	2025-10-20-vftable-master-index.md
 0x6ae7c0	1	2025-10-21-t081-gfx-slot-table-bases.md
-0x6ae7ec	9	2025-10-20-vftable-master-index.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t073-orphans-final.md;2025-10-21-t081-gfx-slot-table-bases.md;2025-10-21-t083-gfx-engine-vft-census.md;RESPONSES-from-implementer-B.md
+0x6ae7ec	10	2025-10-20-vftable-master-index.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t007-skin-subrecord-g1-g2.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t073-orphans-final.md;2025-10-21-t081-gfx-slot-table-bases.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-22-r-headersan-jsites-verdicts.md;RESPONSES-from-implementer-B.md
 0x6ae940	1	2025-10-21-t081-gfx-slot-table-bases.md
 0x6ae9cc	2	2025-10-21-t081-gfx-slot-table-bases.md;2025-10-21-t083-gfx-engine-vft-census.md
 0x6aea0c	1	2025-10-21-t083-gfx-engine-vft-census.md
@@ -7514,7 +7544,7 @@ ea	count	docs
 0x6b848c	1	2025-10-20-vftable-master-index.md
 0x6b849c	1	2025-10-20-vftable-master-index.md
 0x6b84e0	1	2025-10-20-vftable-master-index.md
-0x6b84f0	1	2025-10-20-vftable-master-index.md
+0x6b84f0	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x6b8500	1	2025-10-20-vftable-master-index.md
 0x6b8510	1	2025-10-20-vftable-master-index.md
 0x6b8520	1	2025-10-20-vftable-master-index.md
@@ -7529,7 +7559,7 @@ ea	count	docs
 0x6b85e4	1	2025-10-20-vftable-master-index.md
 0x6b85f4	1	2025-10-20-vftable-master-index.md
 0x6b8604	1	2025-10-20-vftable-master-index.md
-0x6b8614	1	2025-10-20-vftable-master-index.md
+0x6b8614	2	2025-10-20-vftable-master-index.md;2025-10-22-r-headersan-jsites-verdicts.md
 0x6b8624	1	2025-10-20-vftable-master-index.md
 0x6b8634	1	2025-10-20-vftable-master-index.md
 0x6b8644	1	2025-10-20-vftable-master-index.md
