@@ -462,3 +462,41 @@ forward per register law; BrightYak's text above stands as the record of what wa
 GATES at this census commit: paper-only (task file); no src touched. Census method was
 xrefs_to/decompile on ida_original_f3 + F3.json class tables; every claim above carries its
 EA and can be re-dumped cold.
+
+
+### Slice-4e FOLLOW-UP (SwiftOwl, same seat, same night) — queue identity found; enqueue census
+RE-SHAPED, not closed. Plus BrightYak's independent re-verification relayed (bytes both ways).
+- The drained object is NOT a plain queue: GameClient+0x7C holds a POINTER to a 0x18-byte
+  GameHotKeys object (vft GameHotKeys_HotKeys_vftable_0x6647f4; base JE::HotKeys vft 0x69fd34).
+  Factory = GameClient::virt_meth_0x45e880 (new(0x18) @0x45e89c -> HotKeys::ctor_0x599810 @0x45e8be
+  -> vft-patch @0x45e8c3 -> object returned in eax for the Initialize-chain caller to store).
+  Construction READS +0x78/+0x7C BEFORE any store -> begin/end seed 0 = EMPTY RANGE (matches the
+  drainer's empty-check @0x580be5).
+- HotKeys::ctor stores param_2->mbr_0x8, param_1->mbr_0x4, LOBYTE(param_1)->mbr_0xc
+  (0x599820-0x599831) - the drainer's range cursor IS the HotKeys base fields; 28-byte stride
+  comes from the drain-advance shift/dtor loops (0x580c70-0x580cb0) - elements are 0x1C-part
+  SSO strings. GameHotKeys ALSO owns a StringTree at +0x10 (buynode @0x599833, 0x30B nodes) =
+  the KEY-BINDING table. ONE object is both hotkey map and command FIFO: the console era and
+  the hotkey era share an owner class - port consequence: Commands' owner mirrors the 0x18
+  layout, cited to 0x599810/0x45e880.
+- STILL OPEN, SHAPED: who APPENDS into [GC+7C]+mbr_0x8..mbr_0xc. Candidates for the next
+  block (enumerated, none assumed): key-event handlers via the two vfts (census
+  0x6647f4/0x69fd30 slots), GUI console Enter path (CDebugInterface 0x558740 era), script
+  command emitters. Port models the FIFO as vector<string> with pusher-sites NAMED-UNKNOWN.
+- BrightYak re-verified every pillar on the md5-pinned exe BEFORE accepting (0x5858e4 byte
+  alignment 8b 78 28 = mov, zero calls; sub_585700 caller census [0x58598e]; meth_0x580ba0
+  caller census [0x587fd5]; sub_59EC80 prologue 'b9 68 c6 70 00' = mov ecx,0x70c668 in-register;
+  invoke 0x580c4b call *%eax; miss-string push 0x69ad98 @0x580c60) and added one context fact:
+  the drain sits BETWEEN 'call *0xd0(%eax)' @0x587fcc and 'mov ecx,0x84(%esi)' @0x587fda -
+  queue-drain is pump-ADJACENT to the CameraControl(+0x84) tick, so registered camera commands
+  take effect one instruction before the camera animates. Their records: obs #130 rewritten with
+  supersession banner, #131 resume-recipe item (2) marked SATISFIED, next-read narrowed to the
+  enqueue write-census above (converges with my shaping independently).
+- Method notes for the register (both directions, self included): (a) my first +0x7C reading
+  came from BYTE-INDEXED decompiler output on an untyped this - the raw 'mov ecx,[esi+7Ch]'
+  @0x587fd2 settled it; (b) F3.json member-usage lists MISS write-sites (no [GC+7C] store is
+  listed anywhere) - a FLOOR, never a census; every 'complete' census above is an xrefs_to one;
+  (c) BrightYak's own generalization, adopted: 'no shipped twin' is itself a negative claim that
+  requires a census wide enough to see register-passed objects - an imm32 scanner literally
+  cannot find this executor, and that must stop any lane calling a seam twin-less on scan-absence.
+- Gates: paper-only again; no src touched this block.
