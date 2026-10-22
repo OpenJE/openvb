@@ -43,7 +43,8 @@ in {
 
       # Say out loud which d3d8 the render path will get. An "armed" prefix that is really
       # falling back to the Wine builtin cost M-001 a full day of chasing a NULL device.
-      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2
+      # `|| true`: a REG-ERROR verdict must be LOUD but must never abort the boot it is reporting on.
+      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2 || true
 
       cd "$dataDir"
       exec "${wine}" "$exePath"

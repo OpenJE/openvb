@@ -40,7 +40,8 @@ in {
 
       # Say out loud which d3d8 the render path will get (an "armed" prefix that is really using
       # the Wine builtin looks identical from the trace stream).
-      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2
+      # `|| true`: a REG-ERROR verdict must be LOUD but must never abort the boot it is reporting on.
+      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2 || true
 
       # Stage the original demo's data directory (read-only symlinks) so the engine finds
       # resource.rht, *.grp, STF, Fonts... exactly like f3-reimpl-run-data's `cd "$dataDir"`.

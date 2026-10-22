@@ -1384,3 +1384,49 @@ discovery itself, then wrote a priority claim about my own measurement.
 Rule added: (5) before any "first / never / blocked" sentence in a commit, item, or reply, `git log` the
 artifact path and grep discoveries/ for the claim's own nouns - a priority claim is a diff against the tree,
 and only the tree referees it.
+
+
+### Item 68 ADDENDUM (same day, after JadeBear's catch): the tool built to end silent lies sprouted two of its own, and one premise in this item was wrong
+
+JadeBear reported that `f3-wine-dxvk` "lies on bare invocation". The SYMPTOM was real, the ROOT CAUSE
+was not - the `$PWD` default prefix is absolute, and bare `status` was truthful; both of their INERT repros
+passed an explicit RELATIVE argument. The real defects, both confirmed by measurement:
+
+1. **Relative prefix args were accepted.** `[ -d "$sys32" ]` resolves against the CWD and passes, while
+   wine refuses `WINEPREFIX=relative` and exits. Every registry read died, `|| true` swallowed it, and the
+   tool FABRICATED `INERT` off a wine exit code - on a genuinely armed prefix. Fixed: realpath the prefix
+   before wine or printf sees it, and require `system.reg` (which also rejects the fake directories a
+   repro can create).
+2. **`arm` wrote dlls BEFORE the registry.** A registry failure plus `set -e` therefore left
+   dlls-without-overrides installed: the tool manufactured the exact INERT state it exists to detect, on
+   precisely the CLEAN prefix someone re-arms after a recreation. Fixed: registry first, each value read
+   back, dlls last and hash-checked.
+3. **`absent` and `query-failed` were the same string**, so a broken read was indistinguishable from an
+   empty key. Fixed: one cached query keeps its exit status; `REG-ERROR` refuses the verdict and exits
+   nonzero (the run scripts pipe through `|| true`, so a loud verdict can never abort the boot it reports on).
+4. **Wine's CRLF** broke read-back compares: `got` held "n\r" and != "n" while PRINTING "n" (live-caught).
+5. Two of my own fixes were broken by the fix - a nix/bash escaping class (writing `''${VAR}` where `${VAR}`
+   was meant silently turns a nix-interpolated path into an unbound BASH variable, and it bit twice) and a
+   `[ "$x" = UNKNOWN* ]` glob that `=` never matches. Both caught only by RUNNING the tool against a scratch
+   prefix; both would have shipped under a parse-only check. Cure: one bash variable per declared source, and
+   `nix eval` the exec out to a file and EXECUTE it, never just `bash -n`.
+
+AND A PREMISE IN THIS ITEM WAS WRONG (which is the one that matters for future rows): the pristine prefix
+`wineboot -u` produced ALREADY contains system32 d3d8/d3d9/dxgi copies byte-identical to Wine's own builtins.
+So the Oct-21 22:47 copies were probably NOT a mistaken manual install at all - they are Wine's default
+layout, present in every prefix on this host. The item's conclusion survives and gets sharper: **file
+presence in system32 carries zero information**, which is exactly why a name-based reading looked plausible
+for a day. New named states now reflect that: DEFAULT-BUILTINS (pristine) and HALF-ARMED (override set, only
+builtin copies present - a load that cannot come from those files).
+
+HONEST GAP: the "abort before copying" leg (defect 2) is a CODE-level guarantee, not a measured one - my
+attempt to force it (`chmod 000 user.reg`) failed to fail, because wineserver holds the file, so the arm
+simply succeeded. Anyone who wants that leg proven needs a prefix where the registry write genuinely
+refuses, and should say so rather than counting the abort text as tested.
+
+Rules added: (6) a verification tool is the most dangerous place for a silent lie, because its output is
+what everyone else trusts - give it failure modes and NAMED states, and never fold an error into an empty
+result; (7) run the tool against a scratch object before shipping it, including the paths that should FAIL;
+(8) when a peer's catch arrives, reproduce the symptom AND the mechanism separately - agreeing with a wrong
+root cause is how a fix lands on the wrong layer; (9) a claim about WHY files were in a directory is a
+hypothesis about the past: check what a pristine one looks like before accusing a previous session.
