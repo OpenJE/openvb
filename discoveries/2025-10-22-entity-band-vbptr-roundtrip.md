@@ -291,3 +291,47 @@ B16 observables, all verified in the image:
   Process rule hardened (second sample today): a bit-dump printing NOTHING with rc=53 is
   the loader dying before main (missing -static), not a program crash - check linkage
   before believing any runtime verdict (WildKnight hit it, JadeBear hit it on the d3d8 probe).
+
+## Addendum 7 — B18 (UnequipItem) verified; unit-flip consequence; attribution fixed
+
+WildKnight's B18 claims, all re-checked against the image at relay time:
+- Arity copy-paste CONFIRMED: UnequipItem's gate registers the native under
+  ArgList "EquipItem" at 0x45a72c (wrong-arity on Unequip complains about Equip).
+  Copy-paste family now: this + shared "was unable to find the attacking entity."
+  tail at 0x45a5dc/0x45a750 (function-name prefix differs, Attack vocabulary
+  identical) + GetPerkRank/GetPosition.
+- byte_65DC00 = 2A 00 ('*') read from .rdata, not inferred from the symbol name ✓.
+- The wildcard lie CONFIRMED structurally: named-slot exact strcmp success ->
+  payload call -> return 1 (0x45a920); wildcard strcmp success -> SAME payload call
+  -> FALLS THROUGH to return 0 (0x45a93f region). Unequipping by "*" works and
+  reports failure. Kept, not fixed.
+- Two-comparison-rules pair CONFIRMED: named-slot path uses strcmp (0x45a8e7);
+  slot-7 "everywhere" path routes through meth_0x46a6c0 whose matcher is _stricmp
+  (0x46a777). "HUNTING RIFLE" reads equipped via IsItemEquipped but refuses a
+  named-slot unequip. Neither path prefix-matches (both full-string compares).
+
+UNIT-CONVENTION FLIP, with a sharper consequence than "adjacent lines differ":
+EquipItem's payload call bytes @0x45a6ce are ff 52 38 = call [edx+38h] -> +56 BYTES,
+slot 14 (the pseudocode's "+56" was truthful there). UnequipItem's pseudocode renders
+its payload as "+15" — CELLS — real disp 0x3C = slot 15. The two natives use
+DIFFERENT payload slots (14 vs 15), and a reader who took "+15" as bytes would probe
+[edx+0Fh] (slot 3, mid-table nonsense) — pseudocode unit flip can silently MOVE THE
+FUNCTION, not just misstate it. Instruction text settled both; census rule extended:
+for vft-call citations, quote the bytes `ff /N disp`, never the pseudocode addend.
+
+ATTRIBUTION FIXED (annotate): the six-slot equipped array (GameInventory vft entry 10
+= 0x46a860, while (v3 < 6) over +0x14 cells) is WILDKNIGHT'S find; my earlier "your
+slot-10" credit was his crossed wire, self-corrected on query. This lane's actual
+outputs there: +0x168 accessor, EquipItem vft+24/+56 pair, [party+5] = +0x14 cell math.
+
+EquipItem named-deferred, endorsed: payload GameInventory::Equip (0x46be40 via
+[edx+38h]) bundles RB-tree bookkeeping, style-slot remap (cases 2/3/7 with
+Get_mbr_0x98 reads), server-context-gated ApplyEquipEffects (0x46c1a1),
+SetWeaponStance(0) reset, own double-equip log — an era, not a row. Unequip portable
+alone because the siblings share only the preamble (visible in the decompiles).
+
+SILENT-VERDICT FAMILY (third member, WildKnight's): accumulating message-capture that
+stops at buffer-full with no error — 10 downstream misses reading as "natives went
+quiet". Same shape as rc=53 loader death (this lane) and gate-kept-standard port-annot
+(WildKnight, twice). Rule: a dead observer is indistinguishable from absent behavior;
+observers must fail LOUD (overflow restarts / linkage checks / cited anchors).
