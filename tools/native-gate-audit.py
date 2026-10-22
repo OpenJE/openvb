@@ -42,7 +42,16 @@ from pathlib import Path
 # --- identity of the thing being read (a verdict without an exe identity is not reproducible) ---------
 PINNED_SHA256 = "4652a3d03e7e09facab0ea123568a36c9be3b44ada80c1f60dac0449b3579b87"
 IMAGE_BASE = 0x400000
-GATE_EA = 0x59AF40            # the shared arity gate; the port's ScriptNativeCheckArity
+# TWO shipped arity gates, not one (found by FastNova 248f842; both verified here from instruction text):
+#   0x59AF40 EXACT   : cmp/je  - 4 args, `add esp,10h`, message "Expected %d parameters but recieved %d."
+#   0x59AF90 MINIMUM : cmp/jge - 5 args, `add esp,14h`, the 5th is &out_actual (written by
+#                                `mov [edi],eax` @0x59afa5) and its own message
+#                                "Expected at least %d parameters but recieved %d." @0x6A0694
+# The port implements only the EXACT form (ScriptNativeCheckArity). No F3 game-lib native uses the min gate
+# (engine core does, in 6 SendMessage-family natives), so this audit's verdict on the 36 rows is unaffected -
+# but a tool that cannot TELL the two apart would silently mis-audit any future min-gated port.
+GATE_EA = 0x59AF40
+GATE_MIN_EA = 0x59AF90
 RDATA_LO, RDATA_HI = 0x647000, 0x6F1000
 
 # Shipped's OWN name defect, per row: the arity gate pushes a name different from the registered one.
@@ -100,21 +109,51 @@ class Pe:
         return b.split(b"\x00")[0].decode("latin1")
 
 
-def shipped_gate(pe, fn_va, window=96):
-    """Read the (name, cells) a shipped native pushes into the arity gate.
+GATE_WINDOW = 140   # Debug 0x5c3710 gates at +0x86, which a 96-byte window MISPASSED as "no gate"
+                    # (FastNova's own miss). Any "no gate" this tool returns is a statement about THIS
+                    # window and these two EAs, not about the binary - so it is printed with its bound.
 
-    Prologue shape: push <name-ptr>; push <imm8 cells>; push reg; push reg; call 0x59AF40.
-    Returns None when the native has NO gate at all (the quest/journal alias case)."""
+
+def shipped_gate(pe, fn_va, window=GATE_WINDOW):
+    """Read (name, cells, kind) from a shipped native's prologue arity gate.
+
+    Two gate shapes are recognised, by their call target: 0x59AF40 EXACT and 0x59AF90 MINIMUM.
+    Prologue shape: push <name-ptr>; push <imm8 cells>; push reg [; push &out]; call <gate>.
+    Returns None when NO gate call is found for either EA within `window` bytes - which, per item 72's
+    corollary, must be reported as a BOUNDED negative, never as "this native has no gate"."""
     code = pe.read(fn_va, window)
-    for i in range(len(code) - 1):
-        if code[i] == 0x68:                                    # push imm32
-            nv = struct.unpack_from("<I", code, i + 1)[0]
-            if RDATA_LO <= nv < RDATA_HI:
-                for j in range(i + 5, min(i + 20, len(code) - 1)):
-                    if code[j] == 0x6A:                         # push imm8  = cells
-                        return {"name": pe.cstring(nv), "cells": code[j + 1],
-                                "name_va": nv, "at": fn_va + i}
+    for i in range(len(code) - 4):
+        if code[i] == 0xE8:                                     # call rel32
+            tgt = fn_va + i + 5 + struct.unpack_from("<i", code, i + 1)[0]
+            if tgt not in (GATE_EA, GATE_MIN_EA):
+                continue
+            kind = "exact" if tgt == GATE_EA else "min"
+            # walk the pushes BEFORE the call for the name ptr and the cells imm8
+            head = code[:i]
+            nv = None
+            for k in range(len(head) - 4):
+                if head[k] == 0x68:
+                    cand = struct.unpack_from("<I", head, k + 1)[0]
+                    if RDATA_LO <= cand < RDATA_HI:
+                        nv = cand
+            cells = None
+            if nv is not None:
+                for k in range(len(head) - 1, nv_at(head, nv), -1):
+                    if head[k] == 0x6A:
+                        cells = head[k + 1]
+                        break
+            if nv is not None:
+                return {"name": pe.cstring(nv), "cells": cells, "kind": kind,
+                        "name_va": nv, "gate": tgt, "at": fn_va + i}
     return None
+
+
+def nv_at(head, nv):
+    """Index of the push-imm32 for `nv` in `head`, or 0 if not found (scan lower bound)."""
+    for k in range(len(head) - 4):
+        if head[k] == 0x68 and struct.unpack_from("<I", head, k + 1)[0] == nv:
+            return k
+    return 0
 
 
 # --- port side: what each ported body actually passes ------------------------------------------------
@@ -171,6 +210,7 @@ def audit(pe, tu_text, suite_text):
 
     findings, kept, checked = [], [], 0
     enforced_elsewhere = []
+    min_gated = []
     for r in rows:
         if r["cells"] < 0:                      # port claims: no gate exists
             if not r["body_found"]:
@@ -209,6 +249,12 @@ def audit(pe, tu_text, suite_text):
         if (pg["name"], pg["cells"]) != (sg["name"], sg["cells"]):
             findings.append((r["name"], "DRIFT: port passes (%r,%d) but shipped pushes (%r,%d) at %#x"
                              % (pg["name"], pg["cells"], sg["name"], sg["cells"], ea)))
+        # Gate KIND: the port implements only the EXACT form. A min-gated shipped native ported into this
+        # table would need a second gate (jge semantics, an &out_actual 5th arg, and the separate
+        # "Expected at least %d parameters but recieved %d." string @0x6A0694). Flag it rather than let the
+        # (name, cells) pair alone look like a clean match - "at least" is not a spelling you can borrow.
+        if sg.get("kind") == "min":
+            min_gated.append((r["name"], sg["cells"], ea))
         # Now the separate, INVERSE check: a registered-name-vs-gate-name defect shipped has, that the port
         # is supposed to still mirror. If shipped's gate name stops differing, the defect was "fixed" and
         # the evidence disappeared - which is a finding, not a success.
@@ -226,7 +272,10 @@ def audit(pe, tu_text, suite_text):
                 kept.append((r["name"], (sg["name"], sg["cells"]), cite))
     return coverage, {"rows_checked": checked, "divergences": findings,
                      "kept_shipped_defects": kept, "total_rows": len(rows),
-                     "enforced_in_helper_only": enforced_elsewhere}
+                     "enforced_in_helper_only": enforced_elsewhere,
+                     "shipped_min_gated": min_gated,
+                     "negative_bound": ("'no gate' means: no call to either 0x59AF40 (exact) or 0x59AF90 "
+                                        "(minimum) within %d bytes of the native's entry" % GATE_WINDOW)}
 
 
 def selftest():
@@ -236,7 +285,7 @@ def selftest():
     pe = Pe(exe)
     # 1. the gate reader must find a known (name, cells) and a known divergence.
     g = shipped_gate(pe, 0x45b900)
-    assert g == {"name": "OpenTask", "cells": 2, "name_va": g["name_va"], "at": g["at"]}, g
+    assert (g["name"], g["cells"], g["kind"], g["gate"]) == ("OpenTask", 2, "exact", GATE_EA), g
     assert shipped_gate(pe, 0x45a6f0)["name"] == "EquipItem", "UnequipItem's shipped defect moved"
     # 1b. and the port must be MIRRORING it, not fixing it.
     tu_probe = TU.read_text()
@@ -246,6 +295,16 @@ def selftest():
     assert v_probe["divergences"] == [], "real tree must be drift-free: %s" % v_probe["divergences"]
     # 2. the ungated alias body must yield NO gate (else -1 rows would be wrong).
     assert shipped_gate(pe, 0x420990, window=16) is None, "0x420990 must have no arity gate"
+    # 2b. MIN gate detection: A_SendMessage 0x5c5120 gates at minimum 2 via 0x59AF90 (FastNova 248f842).
+    mg = shipped_gate(pe, 0x5c5120)
+    assert mg and mg["kind"] == "min" and mg["gate"] == GATE_MIN_EA, ("A_SendMessage should be min-gated", mg)
+    # 2c. the window bound that made FastNova's tool miss Debug: it gates at +0x86, INSIDE our 140 window.
+    dg = shipped_gate(pe, 0x5c3710)
+    assert dg and dg["at"] >= 0x5c3710 + 0x80, ("Debug's late gate not found", dg)
+    assert dg["name"] == "PointDistance", ("Debug prints PointDistance", dg)
+    # 2d. a too-small window must produce a BOUNDED negative, not a false 'no gate' claim - and the tool
+    #     must be able to tell that it is bounded. This is item 72's corollary made executable.
+    assert shipped_gate(pe, 0x5c3710, window=96) is None, "96-byte window should still miss Debug (that is the point)"
     # 3. a known cell count from a helper-mediated native.
     assert shipped_gate(pe, 0x45abe0)["cells"] == 1, "GetLevel cells != 1"
     # 4. COVERAGE-BEFORE-VERDICT must actually fire: feed it a suite text with a wrong number.
@@ -301,6 +360,13 @@ def main():
             print("  DECORATIVE. A clean verdict above does NOT cover behavior on these rows.")
             for n, sname, scells, pcells, note in verdict["enforced_in_helper_only"]:
                 print("    %-20s shipped=(%r,%s)  %s" % (n, sname, scells, note))
+        if verdict["shipped_min_gated"]:
+            print("  MIN-GATED SHIPPED ROWS (port has no form for these): %s"
+                  % ", ".join("%s(min=%d)" % (n, c) for n, c, _ in verdict["shipped_min_gated"]))
+            print("  The port's ScriptNativeCheckArity implements the EXACT gate only; each of these needs a")
+            print("  second gate: jge semantics, an &out_actual 5th argument, and the separate")
+            print("  'Expected at least %d parameters but recieved %d.' string (@0x6A0694).")
+        print("  BOUND on any 'no gate' reading: %s" % verdict["negative_bound"])
         if verdict["divergences"]:
             for f in verdict["divergences"]:
                 print("  DIVERGENCE: %s: %s" % f)
