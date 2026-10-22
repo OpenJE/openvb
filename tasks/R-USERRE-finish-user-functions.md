@@ -1985,6 +1985,19 @@ gap-doc reading that these are engine API surface with no shipped caller rather 
 what any `.int`-based parity oracle can ever prove about the port's 36 rows (16 of them, measured independently
 here, have no shipped caller at all).
 
+**Unassigned, named, and NOT claimed by either seat** (WildUnion deliberately leaving them unclaimed: "the
+worst outcome for this lane would be two half-seats both assuming the other re-read the prologue"). Each is
+~5 instructions of a re-read:
+- **`GetGlobal`** - caller-side arity histogram **{1: 864, 2: 1}** against a C-side gate of 1. The lone 2-cell
+  site is the DOA candidate.
+- **`FloatingSpeechText`** - histogram **{3: 14, 6: 211}** against a C-side gate of 6. The fourteen 3-cell sites
+  are the DOA candidate; sibling `A_` form is clean.
+- Both `fn_va`s resolve straight from `tools/native-table-dump.py --json` joined to §6.7's histograms. Resolving
+  either row needs only the BODY's cell reads counted against its own gate - the item-71 discriminator.
+- **The helper parameterisation** (one line): make `ResolveNativeEntity` take the cell count so set A's 13 rows
+  stop carrying a decorative `nExpectedCells`. `HideInterfaces`' shipped arity **0** is the case that will bite
+  first, and 0 is a real value, not the `-1` "no gate exists" sentinel.
+
 **Next slice, highest value first** (all in this lane's reserved paths — `src/F3/ScriptNatives.{cpp,hpp}`,
 `modules/openje/tests/je/ScriptNatives`, `tools/native-gate-audit.py`):
 

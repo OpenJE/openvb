@@ -1646,9 +1646,13 @@ as trustworthy as the coupling between the instrument that produced it and the c
   before entry, so the `.int`s were compiled against a different declaration than the exe ships. That is
   **provenance evidence about the script payload, not engine behavior** - and it is evidence that only survives
   if you resist filing the sexier thing.
-- **Refusing to launder is what makes the upgrade cheap.** Because the 0-hit scans were recorded as
-  "peer-verified, not lane-verified" rather than quietly dropped, the later reproduction *upgraded* a claim with
-  a clear before/after. If I had hedged it into the prose instead, there would have been nothing to upgrade.
+- **Refusing to launder is what makes the upgrade cheap** - and the mechanism is the *recorded probe*, not the
+  reviewer's diligence. WildUnion corrected my first wording here rather than adopting it flattering, which is
+  the rule's own standard applied to the rule: their re-run cost nothing extra **because my message quoted the
+  failed byte patterns literally**. A hedge like "my scan didn't reproduce it" would have given them nothing to
+  execute, and the claim could have been upgraded only by re-deriving from scratch. So the operational form of
+  this corollary is: **when a probe fails, publish the probe.** The artifact that makes a later upgrade cheap is
+  the literal instrument, recorded in the message or the ledger - not the sentiment about not laundering.
 
 **Standing application in this mesh**: any `intercom`/`pi_messenger` report of a non-reproduction must contain
 the peer's own probe and its count. Two counts, one message.
