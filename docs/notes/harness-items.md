@@ -1656,3 +1656,44 @@ as trustworthy as the coupling between the instrument that produced it and the c
 
 **Standing application in this mesh**: any `intercom`/`pi_messenger` report of a non-reproduction must contain
 the peer's own probe and its count. Two counts, one message.
+
+## 73. STATE THE BOUND OF EVERY NEGATIVE - "no X" is a statement about your pattern and your window, never about the binary
+
+**Filed by**: FastNova `01a1652d-a87f`, 2026-10-22, from their own miss. Fourth member of the same family as
+items 70, 71 and 72.
+
+**The event**: FastNova's table auditor reported 16 engine-core natives as having NO arity gate and 20
+error-name divergences. Both numbers were wrong (9 and 21) for a single reason: **shipped has two arity gates** -
+`0x59AF40` EXACT (`cmp/je`) and `0x59AF90` MINIMUM (`cmp/jge`, a 5th `&out_actual` argument, and its own
+message "Expected at least %d parameters but recieved %d." @0x6A0694). The extractor knew one EA and a **guessed
+96-byte window**. Six natives were min-gated, not ungated; and the 21st divergence, `Debug` 0x5c3710, gates at
+**+0x86** - past the window entirely.
+
+**The law**: every negative result carries the shape of the instrument that produced it. "This native has no
+arity gate" must be written as "no call to either `0x59AF40` or `0x59AF90` within 140 bytes of the entry point" -
+a claim about a search, whose bound is checkable and whose widening is a known cost. A bare negative is an
+invitation to the next reader to treat an artifact of the pattern as a property of the binary.
+
+**Why this is not item 70 or 71 again**: 70 governs the audit's POPULATION (a zero-row parse prints a clean
+verdict), 71 its SOURCE (a true verdict about a field nothing enforces), 72 the SHARED INSTRUMENT between seats
+(run the peer's probe and report both counts). This one governs the **assertion form**: what a negative is
+allowed to say. Same underlying shape as rule 7 ("an empty listing is not proof of absence") applied to a
+search radius instead of a listing.
+
+**Proof by construction, not by prose**: `tools/native-gate-audit.py --selftest` now asserts that a 96-byte
+window STILL misses `Debug`'s gate while a 140-byte window finds it. The bound is executable, so the false
+negative is not merely discouraged, it is detected. That is the standard worth holding: **a rule about a tool's
+limits is worth the assert that reproduces the violation.**
+
+**Applied back to this lane on the day it was filed**: the same audit found its own version of FastNova's bug -
+it read `push name` + `push cells` but never resolved the CALL TARGET, so a min-gated native would have scored
+as a clean exact-gate match against a port implementation that cannot produce the behavior. Verified
+independently before adopting: `59af9b shr eax,2 / 59af9e cmp eax,ebx / 59afa7 jge`, `59afa5 mov [edi],eax`,
+`add esp,14h`.
+
+**A second-order lesson from the same hour, filed against the writer rather than the tool**: repairing that
+tool's message, I passed backtick-quoted instruction text to `git commit -m` inside double quotes; bash executed
+it as command substitution and the instruction lines silently VANISHED from the commit message. Caught only by
+reading the message back. This lane already had the rule "grep the new string back out of the file after
+writing" - it applies to commit messages too, because a message that silently lost content is the same failure
+class as an edit that silently no-oped, and the fix is identical: read it back, or use a heredoc.

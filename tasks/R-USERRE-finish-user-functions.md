@@ -1998,6 +1998,24 @@ worst outcome for this lane would be two half-seats both assuming the other re-r
   stop carrying a decorative `nExpectedCells`. `HideInterfaces`' shipped arity **0** is the case that will bite
   first, and 0 is a real value, not the `-1` "no gate exists" sentinel.
 
+**TWO-GATE LAW (FastNova 248f842; verified from instruction text here)**: shipped has TWO arity gates -
+`0x59AF40` EXACT (`cmp/je`, 4 args) and `0x59AF90` MINIMUM (`cmp/jge` @0x59afa7, 5 args with `&out_actual`
+written at `0x59afa5`, `add esp,14h`, its own string "Expected at least %d parameters but recieved %d."
+@0x6A0694). **The port implements ONLY the exact form.** Consequences: name divergences are 21 not 20; engine-core
+"ungated" is 9 not 16 (six were min-gated); `Debug` 0x5c3710 gates at +0x86 and prints "PointDistance" - the
+21st, found only by widening the window. No F3 native uses the min gate, so the lane's 36/36 audit stands.
+BUT **if any of the 6 min-gated engine-core natives is ever ported** (`A_SendMessage` 0x5c5120,
+`A_SendMessageToTeam` 0x5c52b0, `A_SendMessageToSquad` 0x5c5660, `SendMessage` 0x5c5410, `SendMessageToTeam`
+0x5c57c0, `SendMessageToSquad` 0x5c5930 - all min=2), `ScriptNativeCheckArity` CANNOT reproduce it: a new gate
+needs jge semantics, an out-param publishing the real cell count, and the third message string. "At least" is
+not a spelling borrowable from the exact gate. The helper parameterisation therefore needs **count AND
+comparison kind**, not count alone - amend that job above accordingly.
+
+Also filed as harness **item 73, STATE THE BOUND OF EVERY NEGATIVE**: "no arity gate" must be written "no call
+to either EA within 140 bytes of entry". Same family as 70 (population), 71 (source), 72 (shared instrument);
+this is the assertion-form member. My tool's selftest now asserts a 96-byte window STILL misses Debug, so the
+bound is executable rather than aspirational.
+
 **Next slice, highest value first** (all in this lane's reserved paths — `src/F3/ScriptNatives.{cpp,hpp}`,
 `modules/openje/tests/je/ScriptNatives`, `tools/native-gate-audit.py`):
 
