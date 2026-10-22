@@ -83,3 +83,14 @@ Byte-verbatim, all asserted by the port suite (T-022 identity):
   (`GetPerkRank() - Entity ID does not belong to a game creature.`, 0x45abc1). The port reproduces the wrong
   string verbatim: fixing engine telemetry is not the reimplementation's job, and a parity diff that hides a
   shipped bug is worse than the bug.
+
+## HP setter telemetry (B4, 2026-10-22)
+
+- `meth_0x46d620` logs exactly `Server - Sending GAME_ID_ENTITY_SETCURRENTHP` (0x46d6a6) - no format args, and
+  the packet id it fills is the literal `88` (0x46d675, `packet.mbr_0x30 = 88`).
+- `meth_0x46ee10`'s failure paths (handle unresolvable at 0x46ee23, cast null at 0x46ee3e) return 0 with **no
+  string at all** - unlike the script natives, the setter chain is silent on failure. Absence of a message is
+  the shipped behavior; do not add one.
+- `GameCreature::GetTotalSkill` default arm: `GameCreature::GetTotalSkill() - UNKNOWN SKILL: %d` (0x409830-era) -
+  the only skill-name-leaking literal found so far; its numbers are still marked unverified in
+  docs/f3/CreatureSkillAndPerkArrays.md.

@@ -1047,3 +1047,37 @@ Self-note, caught by my own suite again (item 69's discipline working, not a sha
 first placed AFTER the section that unregisters the test entity, so 2 asserts failed for harness ordering
 reasons, not product ones. Diagnosis was `offsetof`+standalone repro before touching the code - which is how
 the B2 layout finding got found in the first place.
+
+## Slice-B4 (WildKnight 01a1639b, 2026-10-22 ~11:5x) — the HP WRITERS read WHOLE, and stay unported on ONE named question
+
+No new natives landed. What landed is the full read of the deferred chain, in docs/f3/CreatureHpWriters.md,
+with the port blocked on a single identified uncertainty rather than on vagueness:
+
+- **SetHP/AddHP are arity 2 and write nothing themselves** - both go through `meth_0x46ee10` (0x46ee10), whose
+  IDB owner label (`GameActionEquip`) is wrong the now-customary way. Its legs: resolve the FETCHED HANDLE
+  (0x46ee19 -> 0x54be10, argument passed on the STACK - the same shape 0x59aef0 uses, which is why IDA prints
+  it as `this`), RTTI Entity->GameEntity, then `meth_0x4629c0(entity,value)` + `meth_0x46d620(server,handle,value)`,
+  return 1; every failure path returns 0 and, unlike the natives, **silently** (no error string at all).
+- **`meth_0x4629c0` (0x4629c0) is a clamp with a hole**: `mbr_0x24 = value; if (value > mbr_0x20) mbr_0x24 = mbr_0x20;
+  return mbr_0x20`. Upper cap at max HP, **NO lower clamp** - HP goes negative through this door. The combat
+  lane must not assume HP >= 0 on the strength of this setter.
+- **AddHP is `set to current + N`** (0x45b3de passes `[entity+0x24] + params[2]`), not an increment primitive.
+- **HP is server-authoritative and broadcast**: `meth_0x46d620` builds a `net::packet` (0x2048-byte frame,
+  cookie), sets id **88**, writes handle then value through `packet::meth_0x45f130` (0x46d67d/0x46d68e), sends
+  via `GameServer::meth_0x5a0a00(pkt,1)` - a fan-out loop `i < *(server+92)` calling `meth_0x5a09d0` per peer -
+  and logs `"Server - Sending GAME_ID_ENTITY_SETCURRENTHP"`. A script cannot set HP locally without a packet.
+- **THE BLOCKING QUESTION, named**: the clamp is applied to the entity resolved from
+  `*(entity + vbdisp + 0x1E0)`, not from `params[1]`. It is the same object iff that slot holds the entity's own
+  net handle. The evidence says yes (MSVC virtual-base displacement chain, +0x1E0 sits right before the handle
+  band T-041 pinned at +0x1DC/+0x1E4, and the same value is the packet's target field) - but `artifacts/F3.json`
+  records NO member at +0x1E0 (f3_member_index: zero rows), so the frozen export cannot confirm the writer.
+  Porting the two-step identity as a one-step one would differ exactly in the borrowed-handle case, if it
+  exists, so the rows wait.
+- Close cost, one sitting: find the writer of +0x1E0 in the create/pack path (`Entity::Create` 0x55190c-era /
+  `PackState`, both already known to touch the handle band). If it stores the entity's own id, port SetHP/AddHP
+  as resolve -> clamp(upper only) -> packet-88 (NAMED-deferred until the GameServer era) -> return 1, and assert
+  the negative pass-through.
+
+Batch-B running scorecard: 7 natives LIVE (B1 five + B3 HP pair), 2 read-whole-deferred (SetHP/AddHP), 3 read-
+whole-blocked-on-layout (the skill/perk arrays - item 69's header decision), and the remaining batch-B rows still
+unread. The deferrals are all "mechanism known, one link open", not "we did not look".
