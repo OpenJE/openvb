@@ -1,0 +1,37 @@
+# T-088 arbitration, class-(2) nine §3-collision rows. Rule: item-52 — fn-level holder vs class-level epoch key reconcile per row; fn-level STRONG key (@±0x field / heap-ctor / pin) wins the MINT; §3 class annotation stands for the class's REMAINING members (item-51 rule-2 coexistence). Regenerator shown per row.
+
+0x52CC70  §3-key=cls_0x401b00   doc=JE::Gregorian            keys=[JE::Gregorian field-load x1 @0x52d132]
+   -> MINT-CONFIRMED-WEAK (doc key [JE::Gregorian field-load x1 @0x52d13] is consumer-shape; §2 embed claim came from sibling band row — writer: mint as JE::Gregorian member only if band-level regen confirms, else annotate consumer)
+   regen: hosts --addrs 0x52cc70 --dump t064-postdump.json
+
+0x515040  §3-key=cls_0x515040   doc=JE::Gfx_ParticleSystem   keys=[JE::Gfx_ParticleSystem heap-ctor x2 @0x5]
+   -> MINT-CONFIRMED (fn-level holder=JE::Gfx_ParticleSystem, STRONG key [JE::Gfx_ParticleSystem heap-ctor x2 @0x5])
+   regen: hosts --addrs 0x515040 --dump t064-postdump.json
+
+0x5150C0  §3-key=cls_0x515040   doc=JE::Gfx_ParticleSystem   keys=[JE::Gfx_ParticleSystem field-load x1 @0x]
+   -> MINT-CONFIRMED-WEAK (doc key [JE::Gfx_ParticleSystem field-load x1] is consumer-shape; §2 embed claim came from sibling band row — writer: mint as JE::Gfx_ParticleSystem member only if band-level regen confirms, else annotate consumer)
+   regen: hosts --addrs 0x5150c0 --dump t064-postdump.json
+
+0x515580  §3-key=cls_0x40cc80   doc=JE::Gfx_ParticleSystem   keys=[cls_0x40cc80 plain-this x1 @0x515d8d]
+   -> FOREIGN-confirmed (§3 stands)
+   regen: hosts --addrs 0x515580 --dump t064-postdump.json
+
+0x515D50  §3-key=cls_0x40cc80   doc=JE::Gfx_ParticleSystem   keys=[JE::Gfx_ParticleSystem @+0x24 x1 @0x51a9]
+   -> MINT-CONFIRMED (fn-level holder=JE::Gfx_ParticleSystem, STRONG key [JE::Gfx_ParticleSystem @+0x24 x1 @0x51a9])
+   regen: hosts --addrs 0x515d50 --dump t064-postdump.json
+
+0x4A5720  §3-key=cls_0x40cc80   doc=JE::Gfx_AnimMeshInstance keys=[cls_0x40cc80 plain-this x1 @0x4a5a4d]
+   -> FOREIGN-confirmed (§3 stands)
+   regen: hosts --addrs 0x4a5720 --dump t064-postdump.json
+
+0x4A5A10  §3-key=cls_0x40cc80   doc=JE::Gfx_AnimMeshInstance keys=[JE::Gfx_AnimMeshInstance @+0xA0 x1 @0x4a]
+   -> MINT-CONFIRMED (fn-level holder=JE::Gfx_AnimMeshInstance, STRONG key [JE::Gfx_AnimMeshInstance @+0xA0 x1 @0x4a])
+   regen: hosts --addrs 0x4a5a10 --dump t064-postdump.json
+
+0x436410  §3-key=cls_0x401b00   doc=F3::GameActionEquip      keys=[F3::GameActionEquip other x4 @0x43e73e; F3::GameInventory other x3 @0x46a8b7; cls_0x401b00 plain-this x1 @0x437e4f; JE::AreaMapIcon @+0x40 x1 @0x437ea9]
+   -> MINT-CONFIRMED-WEAK (doc key [F3::GameActionEquip other x4 @0x43e7] is consumer-shape; §2 embed claim came from sibling band row — writer: mint as F3::GameActionEquip member only if band-level regen confirms, else annotate consumer)
+   regen: hosts --addrs 0x436410 --dump t064-postdump.json
+
+0x523450  §3-key=cls_0x4dff90   doc=JE::GUI::Skin            keys=[JE::GUI::Skin @+0x10 x1 @0x4b5b6a; cls_0x490450 other x1 @0x522a32]
+   -> MINT-CONFIRMED (fn-level holder=JE::GUI::Skin, STRONG key [JE::GUI::Skin @+0x10 x1 @0x4b5b6a])
+   regen: hosts --addrs 0x523450 --dump t064-postdump.json
