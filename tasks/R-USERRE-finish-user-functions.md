@@ -1408,3 +1408,53 @@ multi-row unblock in batch B: `GetWeaponRange` (0x45b620) needs `creature+0x168`
 container plus a string fetch, versus `StartDialogue` needing an action-layout decision AND the dialogue
 interface, and `AddCNPCToParty` needing the party class. Recommendation: take the inventory era next, starting
 with `sub_59AB20` because it is shared by every string-taking native in the batch, not just these two.
+
+## Slice-B13 (WildKnight 01a1639b, 2026-10-22 ~15:2x) — the SPECIAL band lands, derived HP's off-by-one is shipped behavior, and two bug classes I caused myself
+
+JadeBear's census routed `GetPrimaryAttribute` (0x45ac70) and `GetDerivedAttribute` (0x45ad00) to this lane as
+"item-69 era" work. They turned out to need no layout reconstruction at all: the IDB already names the band, and
+the bytes show it is a real contiguous array. Both are LIVE; suite 69 -> **92 asserts**, table 18 natives.
+
+What shipped gave up:
+
+- **The primary band is `int[]` at `GameCreature+0x760`, stride 4, post-cast, UNBOUNDED**
+  (`mov ecx,[esi+8]` / `mov eax,[eax+ecx*4+760h]`, 0x45acef/0x45acf2). Index 99 is shipped behavior, not a
+  crash guard - asserted only in range, with the missing guard documented rather than "fixed".
+- **Charisma (`+0x76c`) is in the band but read by NO derived case** - a hole in the switch. The temptation to
+  invent a charisma formula is exactly the invention the census note tells me to avoid.
+- **EVASION reads `+0x7FC`, not the band** (`maybe_agility_0x7fc`), so the derived switch straddles two
+  regions. IDA's hedged name kept verbatim; it is the only evidence of what the field is.
+- **`HIT_POINTS` is not a field at all** - it re-enters for ACTION_POINTS, scales by a stored double
+  `1/6000`, compares to zero, reciprocals, and converts via `__ftol2` (0x409b3c, truncation). Because
+  `1/6000` is inexact, the product lands above `AP/6000`, the reciprocal lands below `6000/AP`, and every
+  AP that divides 6000 evenly comes out **one LOW**: AP=20 -> 299, AP=30 -> 199, AP=12 -> 499, AP=1 -> 5999.
+  Zero AP yields **1000**, the largest value in the range and off the curve entirely. My first assert said
+  200 for AP=30 and FAILED - the suite caught me writing the formula instead of the engine.
+  Consequence recorded in `docs/f3/CreatureSkillAndPerkArrays.md`: a `6000 / AP` implementation diverges at
+  precisely the round numbers a test would choose, and the artifact is a falsifiable lockstep prediction
+  (AP 20 shows 299) rather than a claim.
+
+**Two self-inflicted bug classes, both found by the suite and worth the record:**
+
+1. `(int)(memset( g_params, 0, 12 ), g_params[0]=8, g_params[1]=h, g_params[2]=i)` - I expected a params
+   pointer and got **0**, because the comma operator yields the LAST assignment's value. That is a NULL params
+   pointer into a `__cdecl` native and a page fault on read of `00000000`. Fixed by a named `makeParams2()`
+   helper; the lesson is that a clever one-liner in a test is still a one-liner whose value you must name.
+2. A test-helper insert that silently no-op'd twice because I anchored on text I remembered instead of text I
+   checked (`//: Methods` vs the actual `// ---- attribute readers`), then a helper inserted *inside* a function
+   body. Both caught by grepping the anchor count before trusting the edit - the same
+   "assert-the-count-before-write" discipline that has been saving this lane all session.
+
+Also added, as a named seam rather than behavior: `ScriptNativeGetLastError()`. The shipped sink is
+`JE::LogDebugString` and a test linking `JE.cpp` cannot override a definition it links against, so byte-exact
+assertions on shipped sentences go through a copy of the last formatted message. That is what makes the
+**sibling-space quirk** enforceable: `GetPrimaryAttribute` prints `"Entity ID does not belong to a game
+creature."` with a space and `GetDerivedAttribute` prints the same sentence as `"EntityID..."` without one -
+JadeBear spotted it, T-022 eats it, and both are now asserted character-for-character instead of being
+"unified" by the next person who finds them ugly.
+
+Note the default case's OTHER behavior for the record: unknown derived index (>14) returns 0 AND logs
+`"GameCreature::GetDerivedAttribute() - Unknown attribute requested: %d"` via `JE::LogDebugString_0x497120`.
+That sink is unported, so the port keeps the value (0) and does NOT emit the line - named-deferred like the
+packet-88 broadcast, and deliberately NOT routed through `ScriptNativeReportError`, because shipped does not
+write the script error string here and conflating the two sinks would be an invention.

@@ -42,3 +42,69 @@ discipline as everything else here. Verification is B5 with a named claim list: 
 (2) which skill enum value maps to which case, (3) the attribute offsets in bytes, (4) whether the Firearms/
 Melee arm is really a constant or a mis-scaled attribute term. The doc records the SHAPE as discovered and the
 NUMBERS as unproven, so the combat lane can start from a real lead instead of a re-derivation.
+
+## The primary band is REAL and contiguous at +0x760 - and derived HP has a systematic off-by-one-low (slice B13)
+
+`GetPrimaryAttribute` (0x45ac70) settles the band's shape with one instruction: after the
+Entity->GameCreature cast, `mov ecx,[esi+8]` / `mov eax,[eax+ecx*4+760h]` (0x45acef/0x45acf2) indexes
+**`GameCreature+0x760` as a contiguous `int[]`, stride 4, off the POST-CAST base, with no bounds test
+anywhere**. `GetDerivedAttribute` (0x45ad00) then names every slot by reading it in a 15-case switch
+(`cmp eax,0Eh` at 0x409a67): strength `+0x760`, perception `+0x764`, endurance `+0x768`, charisma
+`+0x76c`, intelligence `+0x770`, agility `+0x774`, luck `+0x778`. That is SPECIAL + charisma, seven
+values, and it is the FIRST attribute array in this file that the generated headers do not need to be
+reconstructed for - the IDB already has the names.
+
+Two things the band itself gave, both now asserted (92 asserts in `ScriptNatives`):
+
+1. **`charisma_0x76c` is read by no derived case.** It exists in the band and in the index path, and the
+   switch simply has no formula that touches it. A port that "knows" charisma must be derived from
+   something will invent a case that is not there.
+2. **EVASION does not come from the band.** Case 4 reads `+0x7FC` (`maybe_agility_0x7fc`), a separate
+   field 0x84 bytes away, so the derived switch straddles two different regions of the creature. The
+   IDB's own hedged name is the only clue to what that field is; it is recorded as-is, not renamed.
+
+### The artifact: `HIT_POINTS` is a multiply-then-reciprocal, and it lands one low at every exact divisor
+
+Case 14 is not a field. It re-enters the function for `ACTION_POINTS`, then:
+
+    409b19  fild  [esp+4+derived_attribute]   ; AP as a float
+    409b1d  fmul  ds:dbl_64D590               ; * (1/6000), a stored DOUBLE
+    409b23  fcom  ds:dbl_64D588               ; compare with 0.0
+    409b30  fld   ds:dbl_64D580               ; 1.0
+    409b36  fdiv  st, st(1)                   ; 1.0 / (AP/6000)
+    409b3c  call  __ftol2                     ; TRUNCATE toward zero
+
+`1/6000` is not representable in binary, so `AP * const` lands slightly **above** `AP/6000`, its
+reciprocal lands slightly **below** `6000/AP`, and truncation drops the fraction. Measured against the
+port's mirrored arithmetic for every AP from 1 to 40, the result is one LOW whenever `6000/AP` is an
+exact integer:
+
+| AP | obvious `6000/AP` | shipped formula |
+|---|---|---|
+| 1 | 6000 | **5999** |
+| 6 | 1000 | **999** |
+| 12 | 500 | **499** |
+| 20 | 300 | **299** |
+| 30 | 200 | **199** |
+| 7 | 857.14 | 857 (agrees - no exact integer to lose) |
+
+Three consequences worth writing down:
+
+- **A "cleaner" implementation diverges in the most common cases.** Writing `6000 / AP` would be wrong at
+  AP=20 (the base agility-0 human value), AP=30, AP=12 - i.e. at exactly the round numbers a test would
+  pick. The mirror is only two extra lines and it is the difference between matching the engine and
+  matching the formula.
+- **The zero-AP case is 1000, not a divide-by-zero** (`0x409b4c`), and 1000 is not on the curve: AP=0 gives
+  the *largest* derived HP in the range. Any HP-recovery design that assumed monotonicity in AP is wrong
+  about shipped.
+- **This is falsifiable against the running exe, which is the point of noting it.** Prediction for whoever
+  has lockstep: a creature with derived HP reported as `N` should satisfy `N = trunc(1/(AP*(1/6000)))`, so
+  a creature with AP exactly 20 shows **299**, not 300. If the shipped demo shows 300, then x87's 80-bit
+  intermediate differs from the port's double-step and the mirror needs revisiting - the discrepancy would
+  be information, not noise, and the table above is what to check it against.
+
+Note on precision, stated rather than assumed: shipped uses x87 (extended intermediates) and the port uses
+`double` steps in the same order. For these values both give the same truncation, because the error is
+introduced by the stored `1/6000` constant rather than by intermediate width. That is a reason the artifact
+is *portable across compilers* - and the lockstep check above is what would falsify that claim instead of
+leaving it as reassurance.

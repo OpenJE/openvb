@@ -50,6 +50,11 @@ namespace F3 {
 	// IS read from the amx handle (+0x2C, 0x59ae38 era) when an amx is supplied.
 	void ScriptNativeReportError( int amx, const char *pcFormat, ... );
 
+	// Read the last message ScriptNativeReportError formatted. TEST SEAM only: the shipped sink is
+	// JE::LogDebugString, which a test linking JE.cpp cannot override, so byte-exact assertions on
+	// shipped sentences (the B13 sibling-space quirk) go through this copy instead.
+	const char *ScriptNativeGetLastError();
+
 	// ---- the getter family (batch B slice B2) ------------------------------------
 	// Field offsets are BYTE offsets verified against the instruction text. Do NOT
 	// trust the decompiler's printed offsets here: it rendered these five as
@@ -116,6 +121,38 @@ namespace F3 {
 	int ScriptNative_UnlockDoor( int amx, int params );  // 0x45a240
 
 	int ScriptNative_GetItemType( int amx, int params );           // 0x45b240
+	// The shipped DerivedAttribute enum, value order taken from the switch's jump table
+	// (cmp eax,0Eh at 0x409a67 = 15 cases, 0..0xE). Names are the IDB's. Kept as an enum because the
+	// native's parameter IS one of these and because the resistance trio (9/10/11) shares one body -
+	// a fact a plain int switch would hide.
+	enum DerivedAttribute {
+		SNC_DA_ACTION_POINTS = 0,
+		SNC_DA_CARRY_WEIGHT = 1,
+		SNC_DA_COMBAT_SEQUENCE = 2,
+		SNC_DA_CRITICAL_CHANCE = 3,
+		SNC_DA_EVASION = 4,
+		SNC_DA_HEALING_RATE = 5,
+		SNC_DA_MELEE_DAMAGE = 6,
+		SNC_DA_PERCEPTION_RANGE = 7,
+		SNC_DA_PERK_RATE = 8,
+		SNC_DA_RADIATION_RESISTANCE = 9,
+		SNC_DA_FLASH_RESISTANCE = 10,
+		SNC_DA_BIOLOGICAL_RESISTANCE = 11,
+		SNC_DA_SKILL_RATE = 12,
+		SNC_DA_THROWING_RANGE = 13,
+		SNC_DA_HIT_POINTS = 14
+	};
+
+	// ---- attribute readers (batch B slice B13) -------------------------------------------------
+	// GetPrimaryAttribute (0x45ac70) is the array shape: cast, then `mov ecx,[esi+8]` /
+	// `mov eax,[eax+ecx*4+760h]` (0x45acef/0x45acf2) - a contiguous int[] at GameCreature+0x760
+	// indexed by params[2] with NO bounds test anywhere (asserted). GetDerivedAttribute (0x45ad00)
+	// is the same preamble but delegates to GameCreature::GetDerivedAttribute 0x409a60, a 15-case
+	// (cmp eax,0Eh) switch over the primary band. Both live in this file; the switch is ported as a
+	// static helper so its formulas have one home and the native keeps shipped order.
+	int ScriptNative_GetPrimaryAttribute( int amx, int params );    // 0x45ac70
+	int ScriptNative_GetDerivedAttribute( int amx, int params );    // 0x45ad00
+
 	int ScriptNative_GetUsableObjectType( int amx, int params );   // 0x45b440
 	int ScriptNative_GetLockDC( int amx, int params );             // 0x45b570
 

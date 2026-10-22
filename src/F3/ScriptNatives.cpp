@@ -20,6 +20,9 @@
 
 namespace F3 {
 
+	// Last message formatted by ScriptNativeReportError (see the sink note there).
+	static char s_szLastError[ 1028 ] = { 0 };
+
 	// ---------------------------------------------------------------------------
 	// Port-side handle registry - the byte_70BE0C stand-in.
 	//
@@ -147,7 +150,18 @@ void ScriptNativeResetRegistry() {
 		// a write-strings warning, so the pass-through format is a real array.
 		static char szPassThrough[] = "%s";
 		JE::LogDebugString( (char *)0, szPassThrough, szBuffer );
+
+		// TEST SEAM, not a behavior: the shipped sink is JE::LogDebugString and this TU cannot
+		// override a definition it links against, so exact-string assertions (the sibling-space
+		// quirk in B13) need the last formatted message readable here. It is a copy, so the sink
+		// call above is untouched and nothing about shipped behavior changes.
+		strncpy( s_szLastError, szBuffer, sizeof( s_szLastError ) - 1 );
+		s_szLastError[ sizeof( s_szLastError ) - 1 ] = 0;
 	} // ScriptNativeReportError
+
+	const char *ScriptNativeGetLastError() {
+		return s_szLastError;
+	} // ScriptNativeGetLastError
 
 	// ---------------------------------------------------------------------------
 	// 0x59af40 - arity gate. `params[0]` is the parameter block size IN BYTES; the shipped
@@ -467,6 +481,111 @@ void ScriptNativeResetRegistry() {
 		return 1;
 	} // ScriptNative_UnlockDoor
 
+	// 0x409a60 - GameCreature::GetDerivedAttribute. Ported as a file-static helper: a 15-case switch
+	// (cmp eax,0Eh at 0x409a67) over the primary band. Every formula below is the shipped arithmetic,
+	// with the EA of its load or imul cited where the constant is not obvious. Notes worth keeping:
+	//   - HIT_POINTS is NOT a field: it re-enters this function for ACTION_POINTS, converts to double,
+	//     scales by 1/6000, and returns (int)(1.0 / that) - with the zero case producing 1000, not 0.
+	//     The scaling is a MULTIPLY then a reciprocal, so writing 6000/ap is NOT the same computation
+	//     in floating point and this port mirrors the shipped two steps deliberately.
+	//   - the three resistances share one body that returns 0 (goto caseD_a in the pseudocode), so
+	//     "no resistance implemented" and "zero resistance" are the same answer in shipped too.
+	//   - PERK_RATE is the constant 3; PERK SIZING is not this function's business.
+	//   - default (>14) logs via JE::LogDebugString_0x497120 and returns 0. That debug sink is
+	//     UNPORTED - NAMED-DEFERRED like the packet-88 broadcast: the VALUE stays faithful (0), the
+	//     log line is not emitted. Do not route it through ScriptNativeReportError: shipped does not
+	//     write the script error string here, and conflating the two sinks would be an invention.
+	static int CreatureDerivedAttribute( const GameCreature *pC, int nWhich ) {
+		switch ( nWhich ) {
+			case SNC_DA_ACTION_POINTS:                            // 0x409a77: [ecx+774h] + 20
+				return pC->agility_0x774 + 20;
+			case SNC_DA_CARRY_WEIGHT:                             // 0x409a86: 25 * ([ecx+760h] + 1)
+				return 25 * (pC->strength_0x760 + 1);
+			case SNC_DA_COMBAT_SEQUENCE:                          // 0x409a96: 2 * [ecx+764h]
+				return 2 * pC->perception_0x764;
+			case SNC_DA_CRITICAL_CHANCE:                          // 0x409aaa: [ecx+778h]
+				return pC->luck_0x778;
+			case SNC_DA_EVASION:                                  // 0x409ab6: SEPARATE field +0x7FC
+				return pC->maybe_agility_0x7fc;
+			case SNC_DA_HEALING_RATE:                             // 0x409ac2: [ecx+768h]
+				return pC->endurance_0x768;
+			case SNC_DA_MELEE_DAMAGE:                             // 0x409ace: [ecx+760h]
+				return pC->strength_0x760;
+			case SNC_DA_PERCEPTION_RANGE:                         // 0x409ade: 3 * [ecx+764h] + 40
+				return 3 * pC->perception_0x764 + 40;
+			case SNC_DA_PERK_RATE:                                // 0x409ae9: constant 3
+				return 3;
+			case SNC_DA_RADIATION_RESISTANCE:                     // all three share one body
+			case SNC_DA_FLASH_RESISTANCE:                         // (goto caseD_a) returning 0
+			case SNC_DA_BIOLOGICAL_RESISTANCE:
+				return 0;
+			case SNC_DA_SKILL_RATE:                               // 0x409af9: 2 * [ecx+770h] + 5
+				return 2 * pC->intelligence_0x770 + 5;
+			case SNC_DA_THROWING_RANGE:                           // 0x409b08: 3 * [ecx+760h]
+				return 3 * pC->strength_0x760;
+			case SNC_DA_HIT_POINTS: {                             // 0x409b1d: reciprocal of AP/6000
+				const double ap = (double)CreatureDerivedAttribute( pC, SNC_DA_ACTION_POINTS );
+				const double scaled = ap * 0.0001666666666666667;
+				if ( scaled == 0.0 ) {
+					return 1000;                                 // 0x409b4c: the zero case is 1000
+				}
+				return (int)(1.0 / scaled);
+			}
+			default:
+				// shipped: JE::LogDebugString_0x497120("GameCreature::GetDerivedAttribute() - Unknown
+				// attribute requested: %d", nWhich) then 0. Debug sink NAMED-DEFERRED, value kept.
+				return 0;
+		}
+	} // CreatureDerivedAttribute
+
+	// 0x45ac70 - GetPrimaryAttribute: arity 2, resolve, cast GameCreature, then the ARRAY read
+	// `mov eax,[eax+ecx*4+760h]` at 0x45acf2 off the POST-CAST base. There is NO bounds test on
+	// params[2] anywhere in the native - index 99 reads past the band and returns whatever is there,
+	// and that is shipped behavior, asserted rather than "fixed".
+	int ScriptNative_GetPrimaryAttribute( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "GetPrimaryAttribute" ) ) {   // 0x45ac8e
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {         // 0x45ac9c
+			ScriptNativeReportError( amx, "GetPrimaryAttribute() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {             // 0x45accf
+			// SHIPPED SPELLING, byte-identical, including the SPACE in "Entity ID". Its sibling
+			// GetDerivedAttribute prints the SAME sentence WITHOUT the space ("EntityID") - see the
+			// B13 note in tasks/R-USERRE-finish-user-functions.md; do not unify them.
+			ScriptNativeReportError( amx,
+				"GetPrimaryAttribute() - Entity ID does not belong to a game creature." );
+			return 0;
+		}
+		const GameCreature *pC = (const GameCreature *)pEntity;
+		return ( (const int *)&pC->strength_0x760 )[ (int)p[ 2 ] ];   // 0x45acf2, unbounded like shipped
+	} // ScriptNative_GetPrimaryAttribute
+
+	// 0x45ad00 - GetDerivedAttribute: same preamble, same delegate shape, and the cast-failure string
+	// differs from its sibling by that ONE SPACE. Shipped passes the index straight into the switch.
+	int ScriptNative_GetDerivedAttribute( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "GetDerivedAttribute" ) ) {   // 0x45ad1e
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {         // 0x45ad2c
+			ScriptNativeReportError( amx, "GetDerivedAttribute() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {             // 0x45ad5f
+			ScriptNativeReportError( amx,
+				"GetDerivedAttribute() - EntityID does not belong to a game creature." );   // NO space
+			return 0;
+		}
+		return CreatureDerivedAttribute( (const GameCreature *)pEntity, (int)p[ 2 ] );
+	} // ScriptNative_GetDerivedAttribute
+
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
@@ -524,7 +643,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[16] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[18] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -540,7 +659,9 @@ void ScriptNativeResetRegistry() {
 		{ "AddHP",       &ScriptNative_AddHP,       2 },   // 0x45b390
 		{ "LockDoor",    &ScriptNative_LockDoor,    1 },   // 0x45a1b0
 		{ "UnlockDoor",  &ScriptNative_UnlockDoor,  1 },   // 0x45a240
-		{ "IsLocked",    &ScriptNative_IsLocked,    1 }    // 0x45b4e0
+		{ "IsLocked",    &ScriptNative_IsLocked,    1 },   // 0x45b4e0
+		{ "GetPrimaryAttribute", &ScriptNative_GetPrimaryAttribute, 2 },   // 0x45ac70
+		{ "GetDerivedAttribute", &ScriptNative_GetDerivedAttribute, 2 }    // 0x45ad00
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

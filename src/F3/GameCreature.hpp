@@ -60,6 +60,27 @@ namespace F3 {
 			dword mbr_0xd8;
 			dword mbr_0xdc;
 			dword mbr_0xe0;
+		// ---- the primary-attribute band, shipped GameCreature+0x760..0x778 (slice B13) -----------
+		// Appended AFTER every existing member on purpose: per item 69 these generated headers are
+		// name-sorted excerpts, so inserting mid-list would silently move every later member's PORT
+		// offset. Declared in shipped order and contiguously because GetPrimaryAttribute indexes them
+		// as an array (`mov eax,[eax+ecx*4+760h]` at 0x45acf2) while the derived-attribute switch
+		// reads them by NAME - both shapes are shipped, neither is style. Names come from the IDB
+		// (strength/perception/endurance/charisma/intelligence/agility/luck) because the meanings are
+		// load-bearing for the formulas, not decoration. charisma_0x76c is read by NO derived case -
+		// a hole in the switch - and exists here for the index path.
+		// Typed int (not the file's dword) because every shipped formula is signed arithmetic
+		// (imul/add on agility/str) and these are read by natives returning int.
+			int strength_0x760;
+			int perception_0x764;
+			int endurance_0x768;
+			int charisma_0x76c;
+			int intelligence_0x770;
+			int agility_0x774;
+			int luck_0x778;
+			// EVASION reads this SEPARATE field at +0x7FC, not the band - the IDB's own name says
+			// "maybe_agility", so the derived switch's EVASION case does not alias agility_0x774.
+			int maybe_agility_0x7fc;
 		//: Methods
 			void ctor_0x40d010();
 			undefined4 virt_meth_0x40d300();
