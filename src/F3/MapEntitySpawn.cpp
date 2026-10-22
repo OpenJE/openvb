@@ -56,6 +56,9 @@ namespace F3 {
 		return kClassGameEntity;
 	}
 
+	// Flagless convenience form of the ext resolver cited above (0x46FB20, vb 0x668494
+	// slot[12]): the shipped call sites pass the player flag explicitly; our default is
+	// .CRT -> creature.
 	int ClassIdForResourceName( const char* name ) {
 		return ClassIdForResourceNameEx( name, 0 );   // flagless default = creature for .CRT
 	}
@@ -90,6 +93,11 @@ namespace F3 {
 		}
 	}
 
+	// Port-side stand-in for the shipped PARSED-TEMPLATE class id that feeds
+	// CreateGameEntityByClass_0x46f530: the original reads the class from the GCRE-style chunk of
+	// the .CRT/.ITM/... blob (spawn-time template load, EME2 record handler 0x573f30, session 21
+	// §3). Our fourcc-marker inference agrees with every shipped EME2 name but stays OUR reading
+	// until template parsing is reconstructed — the marker set itself is verbatim.
 	int ClassIdFromTemplateChunks( const unsigned char* data, unsigned len ) {
 		bool seenCRE=0, seenITM=0, seenWP=0, seenAR=0, seenAM=0, seenOBJ=0, seenDOR=0, seenCON=0;
 		unsigned pos = 0;
@@ -157,6 +165,10 @@ namespace F3 {
 		return s_loadedMapCount;   // id = 1-based
 	}
 
+	// Getter over the port's OWN 1..16 map-id table (ids minted by the Map::Create loader
+	// meth_0x57b8a0 @0x57B8A0, IDB-verified 2026-10-22; the loader body carries the call order).
+	// No shipped counterpart function: the original hands the map pointer around through the
+	// map-request manager, not by id.
 	JE::Map* FindLoadedMap( int id ) {
 		if ( id < 1 || id > s_loadedMapCount ) {
 			return 0;
@@ -164,10 +176,16 @@ namespace F3 {
 		return s_loadedMaps[id];
 	}
 
+	// Registry depth for the test harness; no shipped counterpart (same port-side bookkeeping
+	// family as FindLoadedMap above, 0x57B8A0 loader era).
 	int LoadedMapCount() {
 		return s_loadedMapCount;
 	}
 
+	// Entry-point ring = the shipped EMEP chunk @0x573B00 (u8 flag + 6x3 u32 positions + 6 u32
+	// -> 96-byte payload; our reader JE/Map.cpp ReadEMEP). ringSlot <= 5 mirrors the shipped
+	// 6-slot ring; writing e->pos from it is the spawn-time SetPosition step of the EME2 handler
+	// chain @0x573f30 (session 21 verbatim: lookup52 -> create24 -> Create -> SetPosition).
 	int PlaceEntityAtEntryPoint( SpawnedEntity* e, JE::Map* map, unsigned entryId, unsigned ringSlot ) {
 		tracing::instrument( tracing::LOCATION, "entry=%u slot=%u", entryId, ringSlot );
 		if ( !e || !map || ringSlot > 5 ) {
@@ -256,6 +274,10 @@ namespace F3 {
 		}
 	}
 
+	// Port enqueue seam = the shipped store+refresh pair: uniform owner store 0x550737 (link
+	// policy per kind lives in LinkActionOwner above) and the deferred GUI/net refresh
+	// meth_0x54ef30 @0x550741, deliberately NOT ported (docs/f3/EntityActionQueueSeam.md).
+	// The null guard is ours — no shipped null-order source.
 	int EnqueueEntityAction( SpawnedEntity* entity, void* action, int kind ) {
 		tracing::instrument( tracing::LOCATION, "kind=%d", kind );
 		if ( !entity || !action ) {
@@ -291,6 +313,9 @@ namespace F3 {
 
 	// The one place a slot is written (owner linking lives in EnqueueEntityAction, which is what
 	// new code should call; these call sites predate the seam and keep their own setup).
+	// First-block slot writer: our actions[4] is the deque's FIRST BLOCK only (T-074 §1a
+	// container anatomy; shipped record stride 24B via the sub_54EB40 allocator @0x54eb80, T-085
+	// §1). The original APPENDS blocks when full — we refuse and return 0, logged by callers.
 	int PushActionOntoEntity( SpawnedEntity* e, int kind, void* action ) {
 		tracing::instrument( tracing::LOCATION, "kind=%d", kind );
 		if ( !e ) {
@@ -376,6 +401,10 @@ namespace F3 {
 		}
 	}
 
+	// Per-entity frame pump mirroring shipped virt_meth_0x54c570 (walk#1 +0x2E0 -> mailbox
+	// +0x37C pop -> walk#2 +0x304 + raiser pair -> anim-deque paths A/B, raw 0x54c891-0x54ca31,
+	// T-085 §4), reached per frame through F3::ServerUpdate @0x549130's state gate
+	// ([ent+0x78] in {1..7}; state 7 passes ONLY when [ent+0x1BC] != 0).
 	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch ) {
 		{
 			RegisterOccupancy( e, GetActiveMap() );
@@ -573,6 +602,10 @@ namespace F3 {
 	// one game-layer TU present in every suite that compiles GameActionAttack.cpp.
 	static CombatJoinFn g_combatJoinSeam = 0;
 	void SetCombatJoinSeam( CombatJoinFn fn ) { g_combatJoinSeam = fn; }
+	// Seam indirection ONTO shipped Entity::JoinCombat @0x5490b0 (Entity vft +0x30, idx12;
+	// server-gated — the original throws the world-server string when no server instance, session
+	// 23 §1). The fn-pointer seam itself is port-side plumbing (this TU must compile without
+	// src/F3.cpp); the join semantics belong to 0x5490b0 and CombatManager owns the list.
 	int JoinCombatThroughSeam( SpawnedEntity* e ) {
 		if ( !g_combatJoinSeam || !e ) {
 			return 0;   // no manager: the caller reports it, it does not pretend to have joined
@@ -813,6 +846,10 @@ namespace F3 {
 	}
 
 	// test/game-side accessor: find a spawned entity by name prefix (e.g. "Default_PC")
+	// Test/game-side accessor: prefix walk over the port's spawn registry. NO shipped counterpart
+	// located via ea-index 2026-10-22 — the original reaches entities through the busy-list walk
+	// (byte_70BE24 loop @0x545e71..0x545ecc, World step virt_meth_0x545d60 era) and name-keyed
+	// _Tree lookups; our registry contents ARE the 0x573f30-era spawns.
 	SpawnedEntity* FindSpawnedEntity( const char* prefix ) {
 		size_t n = prefix ? strlen( prefix ) : 0;
 		for ( int i = 0; i < g_spawnedEntityCount; ++i ) {
