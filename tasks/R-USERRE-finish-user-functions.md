@@ -810,3 +810,46 @@ is a bus payload, not a registered command — census note for the cursor lane).
   net::packet broadcasts (type 110 @0x460242 via client send 0x59c4f0). Label corrected to
   PROVEN with EAs. Third instance of the register's own law biting this seat: shape words
   ('weather flag') replaced by body bytes, caught before any port code used the guess.
+
+## Slice-7c: THE CONFIG PIPELINE - read whole, ported live, instantiation named-gated (fence held)
+- Network::virt_meth_0x543ac0 CONFIG READ ported COMPLETE: nine defaults @0x543ad9-0x543aff
+  (config 3; [Server] port 21498/debug 17416248/rate 33/timeout 600000; [Client]
+  22501/17416248/0/600000), then the same nine via the engine ini tree [Network]configuration,
+  [Server]port|debug|rate|timeout, [Client]... (atol-with-keep-default == the port GetInt
+  def-contract, sub_4DF770 semantics, EAs per key @0x543c2f...0x5441dd).
+- Network::meth_0x543930 -> ApplyNetConfig(int) ported COMPLETE (the old stub's comment had
+  mbr_0x4 data flow BACKWARDS - it is WRITTEN @0x543a1c/0x543a38, corrected in the hpp with a
+  supersession note): param&3 validation + FatalError('Invalid network configuration
+  requested.\r\n') @0x54394a; SERVER branch (vft[4] factory @0x543962-0x543965, conn init/
+  log-sink/address/rate/timeout/START sequence named per step 0x54396c-0x54399f incl
+  net::server::meth_0x5a19a0(1)); CLIENT branch (vft[5] factory @0x5439e4, the SAME named-
+  per-step init sequence @0x5439ee-0x543a19); teardown else-arms (world-server stop chain
+  @0x5439bd, deleting-dtor vft[0](conn,1) @0x5439cb/0x543a2f, slots null @0x5439cd/0x543a31).
+- FACTORIES READ WHOLE and CITED, INSTANTIATION NAMED-GATED per the coordinator fence:
+  vft[5] 0x45dfd0 = new(0x118) + GameClient::ctor_0x460b30(this, net->mbr_0x1c) @0x45dfee/
+  0x45e00f (engine default 0x543820 same shape onto JE::Client); vft[4] 0x45e040 = new(0x7108)
+  + GameServer::ctor_0x46ee70(this, net->mbr_0x8) @0x45e05e/0x45e07f. Constructing either in
+  port TODAY emits a vft referencing ~35 declared-undefined virtuals (LNK2001 both toolchains)
+  - the P2 surface lands them; the port-guard path on factory-0 is the named deviation (the
+  shipped factories never return 0, guard unreachable shipped-side).
+- THE CLIENT INSTALL HUB MAPPED: conn vft[1] = Client::virt_meth_0x58f010 (read whole) = the
+  site that constructs EVERY pump-mapped inner object through client vft slots +132..+196
+  (graphics pair, four CLoadMapInterface/CDebugInterface windows with their exact geometries
+  420x110/300x420/1024x768 @0x58f0f0-0x58f14d, the +0x78/+0x7C/+0x80 event-queue/FIFO/
+  GameHotKeys trio @0x58f1ab-0x58f239 - the pump's exact slots!), the veg selector store
+  'FX_Selection_Critter_Medium_01.veg' @0x58f255, and the LOCALHOST self-connect @0x58f28d
+  gated on the server bit. Enumerated in ApplyNetConfig's comment so no successor re-derives.
+- GameServer OWNERSHIP: the slice-6 script-flag trio +0x70E4-E6 lives inside the 0x7108-byte
+  GameServer ([net->mbr_0x18]); RequestNewGame @0x58dbe0 adds +0x70A8 (map-name string,
+  meth_0x401bd0 store) and +0x70C4 (flag clear) to the layout; the authority gate [net]+0x04&1
+  is PROVEN to be the config SERVER bit (only-a-server controls scripts). Comments updated.
+- Test section 14 (suite now 32 asserts): constructs a REAL JE::Network, installs the
+  singleton, drives config READ (defaults asserted per-EA) and APPLY(2) (config write +
+  gated-factory slots + boot-safety), then dispatches the script commands through the LIVE
+  config gate (2&1==0 -> remote-echo branch, queue survives) - the config pipeline is tested
+  end to end, not comment-tested.
+- Gates: msvc TRUE rc0 (F3.exe), run-all 12/0 Commands [32>=16] app=124, annot GATE PASS
+  stock 0/401, cppcheck clean on all four touched files. One MSVC catch: reinterpret_cast
+  integer->integer rejected (C2440 x2) - static_cast, mingw had accepted it (toolchain
+  strictness asymmetry, named for the register: MSVC2002 polices casts the modern cross
+  compiler lets slide).

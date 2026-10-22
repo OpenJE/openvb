@@ -79,11 +79,12 @@ namespace F3 {
 			(void) net;
 		}
 
-		// Script-control subsystem flags, shipped [net->mbr_0x18]+0x70E4/0x70E5/0x70E6 (the
-		// connection object's byte trio: toggle 28900 @0x5888a2, disabled 28901 @0x58e4dc/0x58e5ec,
-		// one-pass 28902 via sub_5567F0 @0x5568a6). Port: typed off the untyped dword slot with the
-		// slice-1 boot-only guard (shipped faults identically pre-connect; conn install is the
-		// net-boot era, named-unresolved).
+		// Script-control flags: the byte trio +0x70E4 toggle @0x5888a2 / +0x70E5 disabled
+		// @0x58e4dc/0x58e5ec / +0x70E6 one-pass @0x5568a6 lives INSIDE the SERVER connection -
+		// [net->mbr_0x18] is the 0x7108-byte F3::GameServer (factory 0x45e040 read whole
+		// slice-7c), so 'scripts disabled' is authoritative-server state (the authority gate
+		// mbr_0x4 & 1 IS the config server bit). Port: typed off the untyped dword slot with
+		// the slice-1 boot-only guard (GameServer creation is the named netcode-era gate).
 		byte* ScriptConn( JE::Network* net ) {
 			return reinterpret_cast<byte*>( net->mbr_0x18 );
 		}
@@ -374,11 +375,11 @@ namespace F3 {
 	//    (byte_70BE0C sentinel loop, entity +0x1E8/+0x1DC keys, resolver meth_0x54be10).
 
 	// ------------------------------------------------------------------
-	// Script-control family (slice 6). Shipped shape, four commands, all gated on
-	// [net]+0x04 & 1 (the local-client authority bit; shipped reads it through
-	// JE::AreaMapIcon::Get_mbr_0x4_0x5b4f30 on the [0x70BD90] alias, e.g. @0x58e4d2 - the
-	// mislabeled global is the Network object per slice 1). Flags are the conn byte trio;
-	// echoes route through EchoConsole (named-absent deviation above).
+	// Script-control family (slice 6; attribution sharpened by 7c). Shipped shape, four
+	// commands, all gated on [net]+0x04 & 1 - the NETWORK CONFIG server bit (vft[6] default
+	// 3; ApplyNetConfig writes it @0x543a1c), i.e. 'may only control scripts when we run the
+	// server'. Flags live in the 0x7108-byte GameServer at [net->mbr_0x18] +0x70E4..+0x70E6.
+	// Echoes route through EchoConsole (named-absent deviation above).
 	// ------------------------------------------------------------------
 
 	// @0x588880 "ToggleScripts": gate-only, NO echo in either branch (unlike its siblings);
