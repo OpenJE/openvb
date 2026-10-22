@@ -22,7 +22,8 @@ Both are the same 24-to-28-instruction shape:
 
 The callee at 0x45b9f0 is the resolve-and-cast the pair shares:
 
-    45ba02  call sub_59AEF0(amx, handle, &out, 1)     ; the ACTIVE-CHECK FLAG IS 1 (push 1, not 0)
+    45ba02  call sub_59AEF0(amx, handle, &out, 1)     ; the ACTIVE-CHECK FLAG IS 1 (like 104 of the 105
+                                                       ;  direct callers of this wrapper - see §1's census)
     45ba23  call ___RTDynamicCast(local, 0, &Entity, &GameEntity, 0)
     45ba31  mov [edi],eax                             ; stores the cast result EVEN WHEN IT IS 0
     45ba33  ret                                       ; al = (cast != 0)
@@ -34,11 +35,31 @@ Two consequences the port keeps rather than smooths over:
   at 0x45ba31. Both then produce the same single message, so a "not a GameEntity" and a "no such entity"
   are indistinguishable to the script — asserted as one leg in section 12, because splitting them into
   two messages would be inventing behavior shipped does not have.
-- **The active-check is ON for these two natives.** That is observable: an INACTIVE but registered
-  entity emits `"Attempt to use inactive entity in script."` (0x59af12-era, the warn-and-continue guard)
-  and does NOT emit the combo line, because the resolve returned 1. So the pair is distinguishable from
-  the arity-1 getters that pass flag 0, and the suite pins it by asserting the warning appears — this was
-  the leg that went red under falsification, which is why it is worth having.
+- **The active-check is ON for these two natives** (flag 1 at 0x45b9f9/0x45ba02). That is observable: an
+  INACTIVE but registered entity emits `"Attempt to use inactive entity in script."` (0x59af12-era, the
+  warn-and-continue guard) and does NOT emit the combo line, because the resolve returned 1. The suite pins
+  it by asserting the warning appears — the leg that went red under falsification, which is why it is here.
+
+  **CORRECTION to the first draft of this bullet**, which said the pair "is distinguishable from the arity-1
+  getters that pass flag 0". That contrast is FICTION and was falsified by NiceTiger's census, reproduced
+  independently here from the PE's own `.text` (E8 rel32 scan for direct calls to the resolver wrapper
+  0x59AEF0, taking the last `6A xx` push-imm8 within the preceding 24 bytes):
+
+      105 direct call sites:   104 push 1,   1 pushes 0  ->  JE::ActivateEntity_0x5c9180 @ 0x5c91ac
+
+  So essentially EVERY native that resolves an entity passes flag 1 — `GetMaxHP` pushes 1 at 0x45b133, as do
+  SetHP/AddHP's preamble resolve calls at 0x45b314/0x45b3c4 — and the image's single flag-0 caller is
+  `ActivateEntity`, whose entire job is FINDING inactive entities. The exception proves the rule rather than
+  breaking it. Nothing shipped into the suite asserted the false contrast, so no test ever went red for the
+  wrong reason; only this prose did.
+
+  The distinction that IS real, and which the port already models correctly: natives resolving through a
+  SERVER TAIL never touch the wrapper at all. `SetHP`/`AddHP`'s shared chain `meth_0x46ee10` calls the raw
+  entity-list resolver `meth_0x54be10` DIRECTLY (0x46ee19), so there is no flag argument and no inactive
+  warning on that path — null resolves to silent 0, a failed cast to silent 0. That is why the port's
+  `HpSetterChain` passes 0 (`ScriptNatives.cpp`, the 0x46ee23 leg): a faithful mirror of "no wrapper here",
+  not a competing policy. Recorded because "the port passes 1 in one place and 0 in another" otherwise reads
+  as an inconsistency the port invented.
 
 ## 2. The finding: a getter that gets nothing and a setter that sets nothing
 

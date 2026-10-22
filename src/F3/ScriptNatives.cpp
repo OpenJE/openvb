@@ -419,7 +419,12 @@ void ScriptNativeResetRegistry() {
 
 	// ---- the weapon-combo pair (batch B slice B23) - two setters/getters that set and get nothing ----
 	// 0x45b9f0 - the resolve-and-cast the pair shares. Shipped shape, byte-verified:
-	//   45ba02 `call sub_59AEF0(amx, handle, &out, 1)`   - the ACTIVE CHECK IS ON (flag 1, not 0)
+	//   45ba02 `call sub_59AEF0(amx, handle, &out, 1)`   - the ACTIVE CHECK IS ON (flag 1). NOT a
+	//   distinguishing feature: of the 105 direct callers of this wrapper in the image, 104 pass 1 and the
+	//   only flag-0 caller is JE::ActivateEntity_0x5c9180 @0x5c91ac, whose job is finding inactive entities.
+	//   (Census from the PE .text, corroborated by NiceTiger's IDA CodeRefsTo pass. The path that skips the
+	//   wrapper entirely is the server tail meth_0x46ee10 -> meth_0x54be10 @0x46ee19, which is why
+	//   HpSetterChain below correctly passes 0: no wrapper means no flag and no inactive warning.)
 	//   45ba23 `call ___RTDynamicCast` with &Entity -> &GameEntity
 	//   45ba31 `mov [edi],eax` / 45ba33 `ret` (al = cast != 0)
 	// The cast result is stored EVEN WHEN IT IS 0, and on the resolve-failure path the out param is

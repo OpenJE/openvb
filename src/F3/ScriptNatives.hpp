@@ -95,6 +95,9 @@ namespace F3 {
 	// ---- the weapon-combo pair (batch B slice B23) - two shipped stubs that resolve and do nothing ----
 	// 0x45a9f0 GetWeaponCombo / 0x45aa40 SetWeaponCombo. Byte-verified from 0x45a9f0 and 0x45aa40 through
 	// their shared callee 0x45b9f0 (`sub_59AEF0(amx, params[1], &out, 1)` at 0x45ba02 with the ACTIVE-CHECK
+	// flag ON - note ON, not distinctive: 104 of the image's 105 direct callers of that wrapper pass 1, and
+	// the lone 0 is JE::ActivateEntity, which exists to find inactive entities. docs/f3/WeaponComboStubs.md
+	// §1 has the census and the correction this replaced),
 	// flag ON, then `RTTI Entity -> GameEntity` at 0x45ba23, store at 0x45ba31, return cast != 0):
 	//   gate -> resolve+cast -> if it FAILED, one report line -> `xor eax,eax` -> return 0.
 	// Both return 0 on EVERY path (0x45aa34 / 0x45aa85) and NEITHER reads what it resolved, so:
