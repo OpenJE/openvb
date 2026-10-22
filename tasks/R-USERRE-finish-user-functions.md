@@ -1081,3 +1081,27 @@ with the port blocked on a single identified uncertainty rather than on vaguenes
 Batch-B running scorecard: 7 natives LIVE (B1 five + B3 HP pair), 2 read-whole-deferred (SetHP/AddHP), 3 read-
 whole-blocked-on-layout (the skill/perk arrays - item 69's header decision), and the remaining batch-B rows still
 unread. The deferrals are all "mechanism known, one link open", not "we did not look".
+
+
+### B4 follow-up (same sitting) - the +0x1E0 probe made the deferral STRONGER, and caught me in a lookup error
+
+Two things, filed so nobody re-derives them (full text in docs/f3/CreatureHpWriters.md "FOLLOW-UP"):
+
+1. **My own error, corrected**: I wrote "the frozen export records NO member at +0x1E0" after
+   `f3_member_index(class=GameEntity, 0x1e0)` returned zero rows. The member EXISTS - it is
+   **JE::Entity+0x1E0** (`mbr_0x1e0`, size 4, base-inherited; 9 usages incl. `Entity::ctor_0x5513a0` @0x551475
+   and `Entity::virt_meth_0x54ab00` @0x54ab0c/0x54ab53). Querying the DERIVED class and concluding the evidence
+   was absent is the item-66 trap pointed at my own tool call: absence in one query is not absence in the data.
+2. **The link is now sharper, not closed**: that virtual compares `*(this+0x1E0)` against **1, 2, 3, 6** - a
+   small-integer enumeration, i.e. a TYPE/MODE-looking field, while `SetHP`'s chain feeds the value fetched at
+   that offset into `meth_0x54be10`, whose entire purpose is matching a cell against `entity+0x1DC`. So either
+   the `+4/+4` chain puts a DIFFERENT object in the base register (and my offset reading is about another
+   object), or the setter's subject is found through the resolver's map fallthrough (0x54be41) and has nothing
+   to do with the script's handle. Both keep the deferral; neither is guessable safely, because a clamp applied
+   to the WRONG entity is precisely the bug a test cannot catch - the test would assert the same wrong entity.
+   Next probe is one window, not a chase: disassemble `Entity::ctor_0x5513a0` at 0x551475 and see whether the
+   stored value is a small constant (enum) or an id-like value (handle). That single read decides it.
+
+Net: batch B stays 7 natives LIVE; SetHP/AddHP remain read-to-the-last-interpretable-instruction with a named,
+cheap, decisive next probe. I stopped rather than ported an ambiguous operand - the row's own law (bytes are the
+contract) cuts both ways, and an ambiguous subject IS a bytes-not-settled state.

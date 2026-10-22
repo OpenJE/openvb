@@ -70,3 +70,42 @@ return 1`, with the clamp asserts including the negative pass-through.
 
 Nothing here is guessed: every instruction quoted was read from the disassembly, and the one open link is
 stated as the open link rather than assumed shut.
+
+## FOLLOW-UP (same sitting): the +0x1E0 hunt made the question SHARPER, not smaller - the deferral now has two reasons
+
+`artifacts/F3.json` DOES record the slot - as **JE::Entity+0x1E0** (`mbr_0x1e0`, size 4, base-inherited, so it
+is the same field GameEntity sees through the virtual base). Its nine usages include `JE::Entity::ctor_0x5513a0`
+(write at 0x551475) and `JE::Entity::virt_meth_0x54ab00` (reads at 0x54ab0c/0x54ab53). So my "the frozen export
+cannot confirm the writer" line was wrong in form: the export has the member, my first query filtered on the
+wrong class (GameEntity) and returned nothing - a lookup mistake, not an evidence gap. Item 66 in my own face.
+
+But reading that second function is what matters. `virt_meth_0x54ab00` (0x54ab00, 0x45 bytes) is:
+
+    result = 1;
+    if ( !(*([vft] + 25))(this) ) {                 // dynamic-object vft slot 25
+        v2 = *(this + 0x1E0);
+        if ( v2 != 1 && v2 != 3 && v2 != 2 && v2 != 6 && !*(this+0x2F0) && !*(this+0x214-ish) )
+            return 0;
+    }
+    return result;
+
+**+0x1E0 is compared against the small integers 1, 2, 3, 6** - which makes it look like a TYPE/MODE enum, not a
+runtime handle. A handle would be compared against other handles, and here it is enumerated against four
+one-digit constants. Meanwhile `SetHP`'s chain feeds the value read at that very offset into `meth_0x54be10`,
+whose whole job (T-043) is to MATCH a cell against `entity+0x1DC`. Either:
+
+  (a) the offset in `[edx+eax+1E0h]` is not +0x1E0 of the entity I think it is - i.e. the `+4/+4` chain puts a
+      DIFFERENT object in `eax` (a containing/owning object), and the enum-looking field at Entity+0x1E0 is a
+      coincidence of numbering; or
+  (b) `meth_0x54be10` is being handed a non-handle and falls through to its map branch (0x54be41) in this path,
+      meaning SetHP's subject is found by a route that has nothing to do with the script's handle at all.
+
+Both readings keep the deferral alive and neither can be settled from what I have now, so the honest status is:
+**SetHP/AddHP are read down to the last instruction I can interpret, and the one operand that decides WHO gets
+written is genuinely ambiguous.** That is a much better sentence than a ported guess: a clamp on the wrong
+entity is exactly the bug a test suite cannot catch, because the test would assert the same wrong entity.
+
+Cheapest next probe (B4b, named so nobody re-derives it): disassemble `Entity::ctor_0x5513a0` around 0x551475 to
+see WHAT is stored at +0x1E0 at construction - a small constant means enum (supports (a)/(b) split, and SetHP's
+fetch is a different object), a pointer-ish/id-like value means handle. That single read flips the call, and it
+is one function window rather than another chain chase.
