@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done (wave-2a; HOLD residue routes to arbitration/re-cut per ruling)
 assignee: TrueCastle `01a16096-c00e-7404-8afe-e521a9bb7240` (PARK pull Q-W2 per lane contract ed8c1af, 2026-10-21; lane-fit named at PARK; CalmRaven first-in deferred to wave-3 on return)
 type: writer wave (sole IDB writer; T-087/wave-1 ruleset VERBATIM)
 depends: T-084 queue (doc §2 tier-1), wave-1 precedent (T-087 ledger), T-075 §8 same-this sibling list (for the &global fold rows), harness items 42/44/49/50
@@ -68,3 +68,10 @@ discoveries/wavedumps/qw2-gateA-{queue-split,regen-full}.txt (commit 9afc531):
 - Churn: rows already minted by wave-1 (0x4903E0 family) book APPLIED-PRIOR, never re-minted.
 - Zero IDB writes since wave-1 final save (mtime 23:43:17) pending coordinator GO/WAIT ruling.
 
+
+## Wave-2a result (2026-10-22 00:20 UTC)
+99/108 applied in 5 bands (0 read-back mismatches; checkpoints 00:18:43/00:19:07/00:19:38/00:20:07;
+final save 00:20:40). 9 rows HELD at preflight on §3-foreign-key collisions (incl the named
+0x515040 contradiction) -> joined the 65 Gate-A HOLDs for arbitration/re-cut. 6 Gate-B Manager
+folds landed with per-row cites (0x4b2ac0/4b2c80/4b3690/4b4180/4b4ce0 + hidden-10 0x4b4d90).
+Census cls_ 1,991 -> 1,892 (exactly -99). Ledger a4db6ca; recovery wavedumps/qw2-wave2a-poststate.txt.
