@@ -109,3 +109,38 @@ Cheapest next probe (B4b, named so nobody re-derives it): disassemble `Entity::c
 see WHAT is stored at +0x1E0 at construction - a small constant means enum (supports (a)/(b) split, and SetHP's
 fetch is a different object), a pointer-ish/id-like value means handle. That single read flips the call, and it
 is one function window rather than another chain chase.
+
+## RESOLVED AS FAR AS IT GOES (B4b): Entity+0x1E0 is an ENUM, so hypothesis (b) is dead and the subject is a different object
+
+The probe ran. Two readers settle the field's nature:
+
+    0x549030 (JE::Entity::virt_meth_0x549030, 11 bytes)  ->  return *(this + 0x1E0) == 7;
+    0x54ab50 (JE::Entity::virt_meth_0x54ab50)            ->  mov eax,[esi+1E0h]; cmp 1,2,3,6 ... then
+                                                              [vft+0x64] test, +0x2F0, +0x314 fallbacks
+    0x551475 (Entity::ctor_0x5513a0)                    ->  mov [esi+1E0h], ebx  (a zero-init run:
+                                                              +0x1C4/+0x1DC/+0x1E0/+0x1E4/+0x1E8/+0x1EC all ebx)
+    + two writers inside JE::Entity::UnpackState_54e690 (0x54e6ac, 0x54e733)
+
+Values tested: **1, 2, 3, 6, 7**. A field tested for equality against seven one-digit constants, deserialized
+by `UnpackState`, and zero-initialised alongside its neighbours is a TYPE/MODE enum. It is NOT a runtime
+handle, and `meth_0x54be10`'s list branch matches `entity+0x1DC` - a DIFFERENT offset, adjacent, and per T-043
+the handle proper.
+
+Consequence: of the two open readings, **(b) is dead**. `SetHP` does not hand an enum to the handle resolver -
+which means the base register in `mov eax,[edx+eax+1E0h]` is NOT the Entity subobject these readers share, and
+reading that operand as "the entity's own +0x1E0" was my inference, not the bytes' statement. The `+4/+4` chain
+(`[entity+4]` then `[+4]`) is still an uninterpreted adjustment - a vbtable displacement would land on the enum,
+which the readers just ruled out, so the loaded value is either a different object's base or a table whose slot
+4 is not a vb displacement at all.
+
+**Status of SetHP/AddHP: still unported, and now for a better reason than before.** The blocker is no longer
+"is the handle self-referential?" (answer: it isn't a handle at all); it is **which object the fetched operand
+belongs to**. That is exactly the question whose answer decides WHOSE HP gets clamped, so guessing it would put
+a wrong-entity write into product code with a test asserting the same wrong entity. Next probe, named:
+disassemble `JE::Entity::virt_meth_0x54dea0` (0x54dea0, 0x106 bytes, uses +0x1E0 at 0x54df63) and the two
+UnpackState sites - if +0x1E0 is written from a byte/short stream it is a serialized type code, and then the
+SetHP chain's `+4/+4` deserves its own short doc instead of being folded into this one.
+
+What this sitting produced anyway, and is solid: the clamp semantics (upper only, no floor), AddHP =
+set-to-current+N, the packet-88 broadcast path, the silent failure legs, and the refutation of a plausible
+reading that would have shipped a bug.

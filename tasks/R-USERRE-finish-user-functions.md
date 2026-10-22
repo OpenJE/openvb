@@ -1105,3 +1105,28 @@ Two things, filed so nobody re-derives them (full text in docs/f3/CreatureHpWrit
 Net: batch B stays 7 natives LIVE; SetHP/AddHP remain read-to-the-last-interpretable-instruction with a named,
 cheap, decisive next probe. I stopped rather than ported an ambiguous operand - the row's own law (bytes are the
 contract) cuts both ways, and an ambiguous subject IS a bytes-not-settled state.
+
+
+## Slice-B4b (same sitting) - the +0x1E0 probe ran: the field is an ENUM (1,2,3,6,7), so one hypothesis died and the blocker got honest
+
+Measured: `virt_meth_0x549030` (11 bytes) returns `*(this+0x1E0) == 7`; `virt_meth_0x54ab50` compares it against
+1/2/3/6 before falling through to `[vft+0x64]`, `+0x2F0`, `+0x314`; `Entity::ctor_0x5513a0` @0x551475 zero-inits
+it in a run with +0x1C4/+0x1DC/+0x1E4/+0x1E8/+0x1EC; and `Entity::UnpackState_54e690` writes it at 0x54e6ac and
+0x54e733. A field equality-tested against one-digit constants, deserialized from state, zero-initialised next to
+the handle band - that is a TYPE/MODE enum. The handle proper is +0x1DC (T-043), a DIFFERENT adjacent offset.
+
+So hypothesis (b) - "SetHP hands an enum to the handle resolver" - is dead, and with it my own inference that the
+`[edx+eax+1E0h]` fetch reads the same Entity subobject these readers share. The `+4/+4` chain is still
+uninterpreted: a vbtable displacement would land on the enum, which the readers just excluded, so the base is a
+different object or the table's slot 4 is not what I assumed.
+
+Net for the batch: SetHP/AddHP stay unported, and the question is now sharper than the one I filed an hour ago -
+not "is the handle self-referential" (it isn't a handle) but **"which object owns the fetched operand"** - i.e.
+whose HP gets clamped. Guessing it would put a wrong-entity write into product code with a green test asserting
+the wrong entity, which is the failure mode this board's laws exist for. Next probe named: `virt_meth_0x54dea0`
+(uses +0x1E0 at 0x54df63) plus the two UnpackState sites; if +0x1E0 arrives from a byte stream it is a serialized
+type code and the `+4/+4` chain gets its own short doc rather than another paragraph here.
+
+The sitting still banked real facts regardless: clamp is upper-only (no floor - HP goes negative), AddHP is
+set-to-current+N, HP writes broadcast as packet id 88 through GameServer::meth_0x5a0a00's per-peer fan-out, and
+the setter chain fails SILENTLY (no string), unlike the natives.
