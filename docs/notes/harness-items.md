@@ -1183,3 +1183,14 @@ or neither; (3) a per-row-source mingw suite can NEVER catch link drift — any 
 sources is a second source of truth to be reconciled, and 'green tests + red link' is the signature;
 (4) RedQuartz's run-identity ledger pairs with this perfectly: builds move under verdicts, so verdicts
 now name their bytes. The sleep wasn't laziness — it was a skip-generation flag nobody re-read.
+
+## 61. Concurrent rig windows need unique TRACE2 names — identical bytes make an overlap harmless ONCE; that's a coincidence, not a protocol
+
+RedQuartz's window-etiquette note (43c8e1b), from the item-5 proof: SwiftOwl's window overlapped the
+keeper's pre-armed run in the SAME log file (item5-sinkproof.log) — verdicts agreed because both ran
+byte-identical exes, which is the one input that made interleaving survivable. The general case
+(btwo lanes, two exe hashes, one log) is an unrecoverable ambiguity: which bytes produced which
+cadence line. Rule: TRACE2=<lane>-<purpose>-<date> per window; the run-identity ledger lines are the
+cross-check, but a shared log needs shared bytes to stay honest, and protocols don't get specified by
+coincidence. Same-sitting note: the two-window concurrence (both green, sha 3b8c45a5) is the best
+accidental replication of the night — next time, make it deliberate.
