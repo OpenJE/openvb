@@ -328,3 +328,26 @@ Handed to RedXenon/NiceHawk on exactly that basis; not claimed here.
 5. **Server packet door** (§ above).
 6. Whether `meth_0x54be10`'s `byte_70BE0C` list walk and the `global_0x70be14` map can disagree
    (two resolution paths, one ref key) — relevant to "target despawned mid-attack".
+
+---
+
+## T-079 batch-4 correction block (2026-10-22) — N1-N4
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4; re-verified against `$OPENVB_ORIG_EXE`
+at apply (raw: `0x54be33 = 39 b0 dc 01 00 00` = `cmp [eax+1DCh],esi` confirmed at the exact EA).
+
+- **N1 — SETTLED (T-043)**: `Entity+0x1DC` is a **runtime-allocated reference handle** (allocated
+  `0x55190c`, serialized by PackState `0x5459c7`, matched against the raw AMX cell by
+  `meth_0x54be10`'s list walk at `0x54be33`), not a form-id/load-serial/index. `netId` remains
+  non-substitutable; D-3 stands, now precisely describable — see `docs/f3/EntityRefKey0x1DC.md`.
+- **N2 — caller found (T-044)**: explicit-position override `GameActionAttack::meth_0x401100` has
+  exactly ONE identified caller — server packet ID 91 path, store `0x46df14`, guard
+  `attacker && (hasPos || target)` @`0x46decb` (`docs/f3/AttackPositionOverrideDoors.md`).
+- **N3 — the R4 statics question got its live answer (T-056)**: pre-call value at `+0x14` is
+  **0x00000000 on every one of 12 entities** (not garbage), post = entity pointer, 35/35 stores on
+  the script-path funnel; T-070 explains the two shapes (script path no-drain vs packet-pump
+  drain-then-enqueue). The "statics alone cannot say zero-vs-garbage" posture is retired.
+- **N4 — half the door is now examined**: case 91 done (T-044, above); the OTHER
+  `GameServer::virt_meth_0x46dd70` sites into `0x550720` stay open as written; T-070 additionally
+  pins the packet command shape (cases `0x1A/0x3C` = drain-then-enqueue).
+- (N5 — Routed-questions 3/4 — still honestly open; no correction owed, recorded for coverage.)

@@ -240,3 +240,17 @@ LANE at apply time (T-079 ledger): `0x54c828 = 8b 85 74 01 00 00` (`mov eax,[ebp
   product-side twin of item 2 — the `src/F3/MapEntitySpawn.cpp` ~:556 attribution comment — is
   **routed to the product lane** (P-CMBT says T-079 owns items 1-2 only; decision unchanged,
   attribution sentence amended there).
+
+## T-079 batch-4 annotation (2026-10-22) — C2/C3 from the T-072 sweep (distinct from the batch-3 block above)
+
+- **C2 — banner re-based**: the "if a **T-034 capture** ever shows a live nonzero `+4`/`+14` producer,
+  THIS line is what gets rewritten" banner points at a row that closed-as-miss; the capture era then
+  actually RAN (T-052 startup-dance fix -> T-056 six rows -> T-069 gate run). T-069's finding stands
+  as the current arbiter: neither R2 (world clock) nor R3 (deque count) exercises the dead walk-branch,
+  manager `accMs_` stays 0 in free-run — **PINS HOLD, no reclassification**. Future falsifiers ride
+  T-067's boot list, not T-034.
+- **C3 — R3 sentence is count-true but state-qualified**: "deque growing to 3 at funnel `0x550720`"
+  matches, but T-070 downgraded the T-068 pairing to **count-agreement with state-disagreement** —
+  shipped's first insert at frame 0 is the idle RESIDENT on 12/12 entities (q=1, ak=GameActionIdle,
+  `t071-r3-pair.txt`), ours was a real order at the same count. Read any R3 comparison through the
+  state annotation; `st=`/`q=` semantics per the T-071 addendum.

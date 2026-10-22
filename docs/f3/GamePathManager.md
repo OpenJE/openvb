@@ -231,3 +231,15 @@ pool/heap/closed-set/waypoints. ActionMoveTo re-requests after 2000 ms when the 
 - OnAdd_0x55b4f0 / Update_0x55b600 ported (job issue through the world queue, speed*dt
   interpolation over the CellToWorld chain, yaw = acos(dz)*57.295776 sign-by-dx, entity field
   writes at +4/+0x178/+0x3A2, drift>20 & >=2000ms re-request). Tests: modules/openje/tests/je/ActionMoveTo.
+
+---
+
+## T-079 batch-4 annotation (2026-10-22) — GP1 (annotate-only; no gameplay claim refuted)
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4. Two currency notes on the Layout section:
+(1) the `0x6602e4`/`0x696388` member table cites `artifacts/F3.json`, whose SIZE column is the
+declared-not-authoritative artifact (T-040 erratum + T-081 mechanism: family-cumulative sizing) —
+quote allocation-site sizes for anything load-bearing; (2) the b6 escalation CLOSED
+`0x55dc80` -> `JE::Gfx_Texture_Manager` (11 manager fns are Gfx_Texture_Manager's, NOT PathManager
+bands), so any `_Tree`-clone adjacency in the PathManager region reads through the b3/b6 map-
+member boundary, not through the export's class column.

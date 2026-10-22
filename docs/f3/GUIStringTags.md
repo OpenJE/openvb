@@ -112,3 +112,20 @@ Tests for either: feed real `English.stf` strings containing `<CHARNAME>`, `<DEV
 names yield `<Bad Token>` (all expected values from the STF file + the EAs in §0, none from our
 code). Nothing in this task needs the GUI tree (T-005) — only the wiring step does, and that can
 wait for the dialogue work anyway.
+
+---
+
+## T-079 batch-4 annotation (2026-10-22) — GS1/GS2/GS3
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4 (GS2's open half stays open).
+
+- **GS1**: `cls_0x4d8d70` = live name **`JE::StringTree`** (T-033-b3 mint; ST1 same family). The
+  "registry instance, not a hash" conclusion is unaffected.
+- **GS2**: the "blocked on a handshake" §3 item is DONE — `StringFormat.{hpp,cpp}` exists under
+  `modules/openje/src/JE/SS/` (directory re-confirmed at apply time). The `[Globals]` key-vs-section
+  residual ("needs one lockstep run") is genuinely OPEN — and per the sweep it is NOT on T-067's
+  R5/R6/L1-L6 list either: it needs routing as a named bonus read, not silent carrying.
+- **GS3**: the cross-reference to `docs/DEFERRED-NOTES.md` "callers not yet RE'd" is stale on BOTH
+  sides now — this page found a caller (`Format_0x56be30` @0x56c117) and the console-registry side
+  was mapped (see the D5 half-close annotation in DEFERRED-NOTES + R-USERRE-A's CommandRegistry/
+  Commands landing); typed-command dispatch from the message loop remains the named half-gap.

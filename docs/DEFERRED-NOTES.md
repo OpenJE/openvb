@@ -743,10 +743,11 @@ per the runtime-lane relay.
   queue-consumption semantics ever get modeled, the site is `ProcessMessagesAndUpdateTime` 0x56AF60;
   the port currently mirrors the shipped UNINITIALIZED-local behavior (deviation already implicit).
 - **D12 (gate quote) — STALE, supersession-cite**: "tests: PathManager OK, cls_0x4d8d70 registry OK"
-  is a stamp-less quote (item 19/30 family). Current accepted gate: `run-all-tests` **12/0** on the
-  2026-10-22 ARMED-prefix re-run (runtime lane, message board; previous stamped reading 10/0 +
-  GATE STAMP table-hash 483599247 @21:32:26Z, T-069). Always take the number from a live run with
-  the stamp lines, never from this file.
+  is a stamp-less quote (item 19/30 family). Current accepted gate: `run-all-tests` **13/0** as of
+  2026-10-22 with the new ScriptNatives suite (R-USERRE-B B2, `70b4549`); same-morning readings were
+  12/0 on the ARMED-prefix re-run (runtime-lane mesh report) and 10/0 + GATE STAMP table-hash
+  483599247 @21:32:26Z (T-069). Always take the number from a live run with the stamp lines, never
+  from this file.
 - **D13 (D-1/D-2 deviation blocks) — RE-EXPRESSED with evidence pointers**:
   the D-2 fifth-action sentence stays the PORT's behavior (refusal, d2-stress exit 1), but the
   SHIPPED comparison now carries the idle resident (T-070/T-071: shipped `q` at rest is 1, never 0;

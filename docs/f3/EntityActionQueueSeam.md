@@ -222,3 +222,25 @@ the protocol slots all STAND):
 - Run H's "Attack never fired" is NOT explained by idle blocking under this model - it stands as
   an observation with named unverified candidates (T-082 RE-REOPEN queue). No HOL claim for idle
   survives here; the legitimate head-of-line owner is an UNFINISHED order (the Wait family).
+
+---
+
+## T-079 batch-4 correction block (2026-10-22) — E1-E4
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4; re-verified from `$OPENVB_ORIG_EXE` at apply.
+
+- **E1 — the +0x1E4 open question is CLOSED (T-041)**: map-membership flag `inMap0x1E4`; predicate
+  `mov eax,[edi+1E4h]; test eax,eax` at **0x5a95af** (the sweep's §3 locator `0x5a95b0` sits one byte
+  INTO the instruction — EA±1 artifact, opcode start cited here after raw re-read); sole runtime
+  writer `JE::Entity::SetInMap_0x551ba0`, store `mov [esi+1E4h],ebx` at **0x551c4a** (sweep locator
+  `0x551c4b`, same ±1 class). T-070's cross-note worth keeping: `SetInMap` doubles as the idle feeder
+  (drain-then-enqueue-idle) — the flag and the RESIDENT presentation share a site.
+- **E2 — both named doors LANDED**: T-028's driver reaches a combat round through the seam (verify
+  green), and T-047 shipped the packet-91 `attack-pos` verb verbatim (parent `8e272e6` — commit
+  re-confirmed present at apply). "still absent" wording is superseded by the file's own T-071 addendum.
+- **E3 — defer to the T-071 addendum** (annotate, not rewrite): the older PORT CHOICE sentence
+  ("shipped `q>4` beside our `q=4` is D-2 firing") predates the idle RESIDENT: capacity reads
+  **3 orders + resident** and shipped `q` at rest is 1, never 0 (T-070/T-071; `t071-r3-pair.txt`
+  frame-0 q=1 ak=GameActionIdle).
+- **E4 — rename lag**: the port carries `inMap0x1E4` (T-041); `flag0x1E4` above is an intermediate
+  doc name only.

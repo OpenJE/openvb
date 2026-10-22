@@ -502,3 +502,29 @@ stack-defaults / 1 cmp; zero content loads, so no float-0.0 reading exists). met
 is strlen(0) + assign(ptr,len) via 0x401bd0 into Manager+0x70 — i.e. Manager+0x70 := "". The
 adjacent ASCII ("GameCreature::ReadVersion2() - Making failsafe attack mode…") is a DIFFERENT pool
 object with exactly one referrer (push @0x40da6c). Evidence: discoveries/2025-10-21-t078-byte-run-0x64d7d8.md.
+
+---
+
+## T-079 batch-4 correction block (2026-10-22) — Gr1-Gr5 (Gr6 already applied at fb3d03f/T-078)
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4; raw claims re-read from `$OPENVB_ORIG_EXE`
+at apply (receipts: `tasks/T-079-batch-doc-correction-apply.md`).
+
+- **Gr1 — size caveat required (§7 G1)**: vft `0x6ae7ec` identity is raw-true (Gfx_Engine ctor carries
+  `mov [esi],0x6ae7ec` @0x5bfe43 and the singleton store `mov [0x707CE4],eax` @0x5bfe33, re-read at
+  apply), but "class size 2212, 120 slots per `artifacts/F3.json`" are EXPORT numbers and the export's
+  SIZE column is the declared-not-authoritative artifact (T-040 erratum: GUI::Fragment 3384 vs 0x158;
+  T-081 mechanism: family-cumulative sizing). Quote sizes from the export with that caveat or from ctor
+  allocation sites.
+- **Gr2 — G9 closed**: `byte_70B200`/`cls_0x55dc80` = **`JE::Gfx_Texture_Manager`** (T-033 b6 escalation
+  CLOSED on cross-lane G2 evidence; T-057 names its map at +0x24; T-066 ported it standalone with the
+  id-0 reserved-absent-sentinel). §9's registry line should be read as T-013 steps 1-3 EXECUTED (T-066),
+  4-5 device-gated.
+- **Gr3/Gr4 — the inferred key form is DECIDED statically (T-013 static tail)**: probe compares the
+  VERBATIM wire name (case-sensitive memcmp, `0x41e4b0`) while inserts key on the stripped STEM
+  (`sub_499F10` @0x499f84/89) — GUI-side probe of a dotted name is a STRUCTURAL MISS, port rule "key by
+  stem", and per T-062 the two key policies must NOT be unified (the cursor manager stricmps). The
+  "one lockstep observation owed" is retired; nothing on T-056/T-067's lists depends on it.
+- **Gr5 — `+0x2C` is UN-interpreted no longer**: it is the animated **frame index** — slot 15 writes it
+  (`0x4b1760` = `89 56 2c`, `mov [esi+2Ch],edx`, raw re-read at apply), slot 16 consumes it (frame x
+  piece-width UV origin), slots 8/9 reload/save participate; the wire value is the starting frame.

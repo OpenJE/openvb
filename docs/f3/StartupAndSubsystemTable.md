@@ -112,3 +112,28 @@ capacity @+0x18 }` (evidence: `cls_0x50db20_StringAssign_0x401bd0` and the lower
 capacity >= 0x10 (0x59F6BD).
 
 [Return to `F3`](/docs/f3.md)
+
+---
+
+## T-079 batch-4 annotation (2026-10-22) — ST1-ST3
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4.
+
+- **ST1 — label currency**: `JE::cls_0x4d8d70` is minted **`JE::StringTree`** (T-033 batch-3 `_Tree`
+  family proof CONFIRMED; T-059's amendment left the mint standing). Keep item-43's caution where
+  this page's name appears in pad contexts: the 2,062-pad "owner" reading was RETRACTED — 1,958 pads
+  target ONE function, `0x4B2DD0`, the app-wide std::string SSO dtor wearing a stale
+  `JE::StringTree::meth_*` live name (split-comment queue).
+- **ST2 — class attribution REFUTED, layout claims survive**: the "`cls_0x50db20` tempString shape =
+  JE::String" aggregate is batch-1 REFUTED — re-checked at apply against the frozen export's member
+  table: `cls_0x50db20` embeds `.?AVG3D_Water@@` (180B) at +0x20 and `.?AVVFX_Parameter@@` at +0x1c
+  (size 577, 109 members), which no string class is. T-057 re-confirmed both single-embedders land
+  on it. The MSVC4 STRING LAYOUT mechanics cited on the page (0x401bd0 assign shape, SSO cap 15,
+  free-at-`>=0x10`) are independently evidenced and stand — as layout knowledge, not as this
+  class's identity.
+- **ST3 — superseded cascade item**: "[World] Year/Month -> JE::GameTime-ish, deferred" is now
+  specific: `JE::Gregorian` (vft ladder 0x69166C, size 0x38) lives at `World+0x3C`, fields read by
+  `0x546b50` into `+0x14..+0x28`/`+0x40` as Initialize's FIRST statement (`0x5466b0` -> primary slot
+  5), and the clock ctor seeds via a 24-byte `rep movsl` block copy (`0x54497d`, `ecx=6`). The
+  `?: 2253` fallback was proven a port bug and FIXED under T-042 (absent-key = ctor `0,1,1,0,0,0`;
+  authored-zero reachable; StringSystem suite asserts the order) — ported and tested, no longer deferred.
