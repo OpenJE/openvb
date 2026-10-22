@@ -93,7 +93,64 @@ The two warning strings on the early exits are shipped's, worth keeping if the p
 `"Warning: seek error reading script %s.  Script will not be loaded.\n"`,
 `"Script_Small::Load() was unable to initialize the AMX.\n"`.
 
-## 5. What this does NOT settle
+## 5. The exact accounting: shipped's 45 vs the port's 36 (B24, same sitting)
+
+Both sides computed programmatically, not by eye — shipped's table walked to its {0,0} terminator from the PE,
+the port's rows parsed out of `s_gameCreatureNatives[36]`:
+
+- **shipped F3 game-lib entries: 45. Port rows: 36.**
+- **Name drift: ZERO.** Every one of the port's 36 names exists verbatim in shipped's table. That is worth
+  stating because this batch has been burned by names before (the `je->f3` header corruption, the IDB's
+  `GameActionEquip::` label contamination on server functions) — here the port's registered names are clean.
+- The 9 shipped names the port does not register, with their table fn EAs:
+
+| name | fn | why it is not in the port |
+|---|---|---|
+| `A_Attack` | 0x459eb0 | wiring-blocked: builds `GameActionAttack` (new 0xC8) and funnels through 0x550720 — gap 5 |
+| `A_JustAttack` | 0x459f70 | same family |
+| `A_ReloadWeapon` | 0x45a380 | same family (`GameActionReload`) |
+| `StartDialogue` | 0x45a040 | wiring-blocked (queue flush + funnel), plus the dialogue interface era |
+| `HideInterfaces` | 0x45a100 | era-blocked (GUI, `sub_46EDF0`) |
+| `SetMoveMode` | 0x45a140 | era-blocked (AMX object reference, `sub_59AA50`) |
+| `GetSquadAttitude` | 0x45aa90 | era-blocked (world-server singleton vft slot 34 + `meth_0x5692e0`) |
+| `GetTeamAttitude` | 0x45aaf0 | same, slot 33 + `meth_0x56a240` |
+| `DisplayStringRef` | 0x45a410 | **was never in the batch's inventory at all** — see below |
+
+### 5a. The inventory had a filter-shaped hole, and this is the finding
+
+Batch B's row list (39 entries) was built as "every `F3::`-NAMED function in the live IDB whose address is not
+cited in src/". `DisplayStringRef` 0x45a410 does not match that filter, because the IDB stores it with NO
+namespace prefix — the disassembly header reads `DisplayStringRef (.text @ 0x45a410)`, not
+`F3::DisplayStringRef`. So a native that shipped registers and a script can call was invisible to an
+inventory keyed on a NAME PATTERN, and the batch's "39 rows" total was quietly under-counting the F3 game lib.
+
+Standing rule 7 again, in a new costume: a listing built by a filter is an excerpt of the image, and the
+filter's own criterion is part of the claim. The table at 0x6F3750 — read from bytes — is the authority for
+"which natives does the F3 game lib expose", not a symbol query.
+
+### 5b. Registered name vs gate ArgList — two different names for one native
+
+Shipped registers `A_Attack`, `A_JustAttack` and `A_ReloadWeapon`, but the ARITY GATE inside each body passes
+the unprefixed name: 0x459ed0-era pushes `"Attack"`, and the failure lines read
+`"Attack() was unable to find the attacking entity."` / `"...the target entity."`. So the prefix is the
+REGISTRATION name and the bare word is the MESSAGE name.
+
+Consequence for whoever ports those three: the table row must key on the `A_` name (that is what a script
+resolves against at 0x5ccd60-era), while the arity-gate string must stay the bare word, because that is what
+the shipped error prints. Getting either one right and the other wrong would be a new defect with the smell of
+faithfulness. No such row exists in the port yet, so nothing is broken today; the note is to stop a future
+port from choosing one name for both jobs.
+
+### 5c. Entry EAs vs inner-site EAs
+
+Earlier rows in this batch cite `Attack` at 0x459f5d, `JustAttack` at 0x45a025 and `ReloadWeapon` at 0x45a3e6.
+Those are the ENQUEUE CALL SITES inside the bodies (e.g. 0x459f5d is
+`net::critical::section::meth_0x550720(local_4, v4)`), not the natives' entries, which the table gives as
+0x459eb0 / 0x459f70 / 0x45a380. Both numbers are correct for what they cite; recorded here because a reader
+matching "Attack 0x459f5d" against the table would find no such entry and conclude the table disagrees with
+the doc. It does not — one is an entry, the other an interior site.
+
+## 6. What this does NOT settle
 
 - **The native ABI (gap 4).** Load registers; it does not show the call form. That needs the OP_NATIVE
   handler in the exec loop — WildUnion's pass. No claim here about `(amx, params)` vs the port's

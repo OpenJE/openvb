@@ -1863,6 +1863,40 @@ null 0x70bd98.
 with enforced behavior, NOT runtime parity** — nothing in B22-B24 changes what the running port does,
 because gaps 2-5 remain open.
 
+## Batch B completeness correction (TrueRaven, same sitting) - the inventory itself had a filter-shaped hole
+
+Batch B was defined as "every `F3::`-NAMED function in the IDB not cited in src/", and that criterion is an
+excerpt of the image, not the image. Walking shipped's F3 game-lib native table @0x6F3750 (45 entries,
+{0,0}-terminated, read from the PE) against the port's 36 rows and against the 39-row inventory yields:
+
+- **Port name drift: ZERO.** All 36 ported names exist verbatim in shipped's table. Stated because this
+  batch has been burned by name corruption before, and here the port is clean.
+- **9 shipped natives are not in the port:** `A_Attack` 0x459eb0, `A_JustAttack` 0x459f70,
+  `A_ReloadWeapon` 0x45a380 (all three: builds an action + funnels 0x550720 - wiring-blocked, gap 5),
+  `StartDialogue` 0x45a040 (same), `HideInterfaces` 0x45a100 + `SetMoveMode` 0x45a140 (GUI / AMX-object-ref
+  eras), `GetSquadAttitude` 0x45aa90 + `GetTeamAttitude` 0x45aaf0 (singleton vft slots 34 / 33), and
+  **`DisplayStringRef` 0x45a410 - which was NEVER in the 39-row inventory at all.**
+- Why the miss: the IDB stores it with NO `F3::` prefix (`DisplayStringRef (.text @ 0x45a410)`), so an
+  inventory keyed on a NAME PATTERN could not see a native that scripts can call. Rule 7 in a new costume:
+  the filter's own criterion is part of the claim, and a symbol query is not an enumeration of the table.
+- Registered name vs gate name: shipped registers `A_Attack` but the body's gate passes `"Attack"` and the
+  failure lines say `"Attack() was unable to find the attacking entity."` / `"...the target entity."`. So a
+  future row must key the TABLE on the `A_` name and the MESSAGE on the bare word - choosing one name for
+  both jobs creates a new defect that smells of faithfulness.
+- EA disambiguation, because two docs would otherwise appear to contradict each other: earlier rows cite
+  `Attack` 0x459f5d / `JustAttack` 0x45a025 / `ReloadWeapon` 0x45a3e6. Those are ENQUEUE CALL SITES inside
+  the bodies (0x459f5d is `meth_0x550720(local_4, v4)`), not the natives' entries, which the table gives as
+  0x459eb0 / 0x459f70 / 0x45a380. Both numbers are right for what they cite.
+- **A falsification of my own earlier framing.** `TaskJournalTrio.md` §2a: the claim that the trio's
+  untested `+0x18` deref is house style is WRONG. `DisplayStringRef` walks the same global and tests every
+  hop after the first, with a distinct message per hop ("couldn't find client." @0x65dad8 /
+  "couldn't find interfaces." @0x65daa8 / "couldn't find string ref." @0x65da40), while NOTHING anywhere
+  tests the manager global's own value. So the trio is the careless member of its family, not the typical
+  one - which is what makes the port's collapse a declared asymmetry rather than "the engine crashes so we
+  crash". Recorded with the four strings and hop order so the GUI era does not re-derive them.
+
+Full write-up: `docs/f3/NativeInstallerEvidence.md` §5-6, `docs/f3/TaskJournalTrio.md` §2a.
+
 ## Status correction for the whole batch (WildKnight 01a1639b) — the natives are reversed and tested, but unreachable from the running port
 
 While scoping `StartDialogue` I found that nothing in the tree can call the 27 natives: `ScriptNativeGameCreatureTable`

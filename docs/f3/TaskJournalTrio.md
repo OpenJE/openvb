@@ -47,6 +47,43 @@ This distinction is the reason a note in `docs/f3/CreatureHpWriters.md` (B8) is 
 So the honest sentence is: *a script gets success whenever shipped does not fault* — and the only
 non-faulting no-op is the failed cast. A null server does not "do nothing", it dies.
 
+### 2a. And the trio's missing tests are a shipped ASYMMETRY, not shipped's style
+
+The obvious objection to §2 — "this engine just doesn't null-check, that's the house style" — is falsifiable,
+and it is false. `DisplayStringRef` (0x45a410, arity 4, gate name at 0x45a427) walks the SAME subsystem-manager
+global and tests every hop after the first, with a DISTINCT message for each:
+
+    45a444 mov eax, ds:F3::global_area_map_icons     ; the global's VALUE, still untested
+    45a449 mov eax, [eax+2Ch]                        ; client
+    45a44c xor ecx, ecx / cmp eax, ecx / jnz         ; TESTED
+    45a452 push "DisplayStringRef() couldn't find client."            (string @0x65dad8)
+    45a475 mov eax, [eax+0A0h]                       ; interfaces
+    45a47b cmp eax, ecx / jnz                        ; TESTED
+    45a47f push "DisplayStringRef() couldn't find interfaces."        (@0x65daa8)
+    45a4a2 mov esi, [eax+0Ch]                        ; feedback interface
+    45a4a5 cmp esi, ecx                              ; TESTED again, and two more messages exist:
+                                                     ; "...couldn't find string ref." (@0x65da40)
+
+Three things fall out of that, and they matter more than the original §2 claim did:
+
+1. **Loading the global and dereferencing it is untested everywhere** — `DisplayStringRef` does not test the
+   manager pointer either. So the trio's fault at 0x45b92e is the engine's uniform behavior at THAT step, and
+   §2's claim about the manager global stands unchanged.
+2. **But every hop AFTER that is tested elsewhere.** The trio reads `+0x18` and immediately calls through it
+   with no `cmp`, no message, no fallback. So the trio's untested hop is a real shipped asymmetry between
+   natives, not a convention — a careful native in the same batch, same global, does check.
+3. **A tested hop gets a named message; an untested one gets a crash.** That is why the trio has no
+   "couldn't find …" string anywhere near it, and why the earlier prose could read a null branch as
+   graceful degradation: in the natives that DO check, a null branch IS graceful. The trio is the careless
+   member of the family, and the port's declaration that it cannot reproduce those faults is therefore not
+   "the engine crashes, so we crash" — it is "this native has no error path to port".
+
+Port-side consequence recorded honestly: `DisplayStringRef` remains era-blocked (client -> interfaces ->
+feedback-interface -> string ref is GUI plumbing the port does not have), but its four message strings and
+their hop order are now documented, so when the GUI era lands the strings do not have to be re-derived. That
+is the second time today a blocked row yielded durable evidence anyway (the first being the trio's journal
+writers).
+
 Port decision (declared, per standing rule 5 — a port does not earn credit for reproducing a crash):
 the port has no subsystem manager and no 0x70bd98 singleton, so it cannot enter either fault state; it
 answers **1** with no side effect, which is the value shipped's failed-cast path returns. The suite
