@@ -1375,3 +1375,36 @@ map/spawn-lane work - named rather than done under a natives commit.
 **console-command family in `src/F3/Commands.cpp`**, not to `ScriptNatives.cpp` - the user-era inventory that
 minted this batch mixed both families by address range. Recorded so the remaining rows get routed by kind
 instead of by address, and so nobody ports a console command with an arity gate it does not have.
+
+## Slice-B12 (WildKnight 01a1639b) — StartDialogue sized: the seam already has what it needs EXCEPT three things, and the action's own ctor reveals unaligned fields the port header approximates
+
+Recon for the port showed the queue side is NOT the obstacle: `MapEntitySpawn.cpp` already has
+`ClearActionQueue` (line 342) - so the flush `meth_0x54c440` performs is expressible today - and
+`EnqueueEntityAction(entity, action, kind)` with per-kind owner policy (line 238-276). What actually stands
+between batch B and `StartDialogue`:
+
+1. **The action's real field layout.** `GameActionInitiateDialogue::ctor_0x404b40` writes:
+   `gap5[8]=1` (+0xD), vftable `GameActionInitiateDialogue_Action_vftable_64815c`,
+   `HIBYTE(mbr_0x14)=1` (+0x17), `BYTE2(mbr_0x14)=0` (+0x16), `*gap19 = 0` - an **unaligned DWORD at +0x19** -
+   and `*(&mbr_0x1c + 2) = 0` - a second **unaligned dword at +0x1E**. The port header's `byte mbr_0x19` +
+   `dword mbr_0x1c` are an approximation that cannot hold those two stores without aliasing them wrongly, and
+   `StartDialogue` itself writes the target ENTITY pointer into the +0x19 dword (0x45a0e4) and then clears
+   `HIBYTE(mbr_0x14)` (0x45a0e7) - i.e. the native touches precisely the fields the header misrepresents. Needs
+   an explicit byte-array-plus-offset model (or a port-side named struct with the same extents), which is the
+   action-TU lane's call, not a natives TU's.
+2. **A dialogue kind in the seam**, with an owner-link policy decided (who is `this` for the pump: source entity
+   at +0x14? the shipped uniform store 0x550737 says the enqueuer).
+3. **The consumer.** The action's vft handler eventually opens the dialogue interface, and
+   `GameDialogueInterface` is unported - so even a correct enqueue is a no-op end to end today.
+
+Verdict: `StartDialogue` is blocked on an action-layout decision plus an era, not on a missing seam primitive -
+worth writing down because my first guess (needs a queue flush) was WRONG, and `ClearActionQueue` was already
+there at line 342. Filed rather than forced.
+
+**Leverage note for choosing the next target, from this tranche's blockers.** The INVENTORY era is the cheapest
+multi-row unblock in batch B: `GetWeaponRange` (0x45b620) needs `creature+0x168` -> `GameInventory`
++ `GameWeapon`; `IsItemEquipped` (0x45b750) needs the same inventory plus one AMX string helper (`sub_59AB20`,
+0x45b7cc); and `EquipItem` (0x45a580) / `UnequipItem` (0x45a6f0) sit behind the same door. Four rows on one
+container plus a string fetch, versus `StartDialogue` needing an action-layout decision AND the dialogue
+interface, and `AddCNPCToParty` needing the party class. Recommendation: take the inventory era next, starting
+with `sub_59AB20` because it is shared by every string-taking native in the batch, not just these two.
