@@ -247,3 +247,56 @@ same breath as the claim is not a hedge - it is a to-do with a known cost of one
 seconds to check and I shipped the prose first anyway, which is item 66's failure mode in its purest form:
 the plausible-looking decode goes in because it *explains* something, and the explanation is the reason nobody
 checks it.
+
+## B8: the idiom appeared a THIRD time - and this instance says the "delta" is a VFTABLE, which makes SetHP's read a shipped bug
+
+`GameServer::meth_0x46ecd0` (0x46ecd0, reached from the `OpenTask` native) computes its callee exactly like the
+other two sites:
+
+    if ( F3::global_cls_0x616328_0x70bd98 )
+        v2 = &global[2] + *( global[2].mbr_0x0 + 4 )     ; 0x46ece6
+    else
+        v2 = 0
+    v3 = (*(*v2 + 120))(v2)                              ; vft slot 30
+    v4 = __RTDynamicCast(v3, 0, &Journal, &GameJournal, 0)
+
+The third time this shape has shown up in one batch (`SetHP` 0x45b367-6d, the attitude pair 0x45aacf/0x45ab2f,
+here 0x46ece6) settles that it is a convention, not a compiler artifact. What settles WHICH object is the IDB's
+own label: the value at `+4` here is called `mbr_0x0` - a vftable - and the expression dereferences THAT
+vftable's slot 4 and adds the result to a base. A vftable slot 4 is a code address, so under the literal reading
+`base + codeptr + 0x1E0` cannot be a meaningful field address.
+
+Two ways out, and they are not equivalent:
+  (i) the IDA "vftable" name is wrong at that slot (it is a companion offset-table, so slot 4 is a small delta);
+  (ii) the name is right, in which case all three sites compute a garbage address and dereference it.
+
+Under (ii), `SetHP`/`AddHP`/`OpenTask`/`GetSquadAttitude` would each be reading through `(uintptr_t)entity +
+(function address) + 0x1E0` - memory that happens to be mapped in a 2 GB user address space, so it would not
+fault, and it would return a value that is whatever sits there. That is testable in one live read and nothing
+else: capture `[entity+4]` and `*([entity+4]+4)` on a real creature. If the second value is small (say, in the
+single/double digits) it is (i) and the idiom is base-plus-delta; if it is a code pointer inside a `.text` range
+it is (ii) and this is a shipped defect class, not a porting obstacle.
+
+Consequence for the port either way, and it is the reason this paragraph is written before the dump: batch B's
+two HP writers and the attitude pair stay unported. Under (i) I still need the associated object's identity;
+under (ii) the honest port is the bug's *observable* behavior, which cannot be described without the same dump.
+Neither branch is a reason to guess - and unlike the earlier framing, the question is now one read wide with a
+clean numeric discriminator, courtesy of JadeBear's Entity+0x1E0 lifecycle-state census (birth 5, `==7` at
+0x549030, five "Invalid state change" strings in `meth_0x5507f0`) killing the "it's a handle" reading outright.
+
+## Two more shipped stubs, both self-documenting (B8)
+
+- **`F3::PlayMusic` (0x45b9c0) is unimplemented in the shipping binary.** Arity 1, and the only thing it does
+  when the gate passes is report the literal string `"PlayMusic() unimplemented."` (0x45b9e4) and `return 0`.
+  No callee, no state, no side effect. Porting it is exact: report + 0. The comment must keep the shipped wording
+  - it is the engine's own admission, and it is the clearest evidence in this batch that the native table shipped
+  with holes scripts were expected to survive.
+- **`F3::GetWeaponCombo` (0x45a9f0)** - see slice B7: returns 0 on every path, discards its resolved value.
+- `OpenTask` (0x45b900) / `CloseTask` (0x45b940) / `AddEntry` (0x45b980) are a matched trio: arity 2, **no entity
+  resolve at all**, straight-through delegation to `GameServer::meth_0x46ecd0` / `meth_0x46ed30` / `meth_0x46ed90`
+  with `(params[1], params[2])`, then `return 1` **unconditionally** - so a script opening a task journal entry
+  gets success even when the callee's `global[0x70bd98]` is null and it did nothing. The journal path is
+  `RTTI Journal -> GameJournal` after vft slot 30, then `sub_46C7A0` + `GameServer::meth_0x46dad0` (the packet
+  send, same shape as the HP setter's). Port waits on the world-server singleton's slot-30 accessor and the
+  journal class; the unconditional `return 1` is itself a fact worth keeping - do not "improve" it into a
+  success-dependent return.
