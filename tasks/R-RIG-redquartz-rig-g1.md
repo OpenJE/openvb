@@ -130,6 +130,10 @@ rules the bar already met):
 PROOF OPTIONS (QuickNova's framing, both valid — SwiftOwl picks):
   (a) CADENCE-BASED — no src/ change: sink restore is visible as trace-line ordering against T-085's
       bypass-family shape; the run below is the whole protocol.
+      SEMANTICS LAW (SwiftOwl 01a16198, verbatim at their request): a cadence run shows ABSENCE OF
+      DISTURBANCE, not PRESENCE OF ARRIVAL. This is why (a)'s ceiling is 'runs clean on frames' and
+      why item5b stays parked: spending (b) before the arm is reachable would make a claim citable
+      past its evidence.
   (b) ONE CITED PROBE LINE — device lane adds a probe-conditional line at the sink call in the GATED
       build only (un-gated exe untouched, item-57 cited, gates green — BrightYak's ten-minute verb).
       Window shape then: the trace interleaves `[render] probe: <sink marker>` lines with cadence lines;
