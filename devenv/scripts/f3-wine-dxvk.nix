@@ -69,6 +69,14 @@ in {
       export WINEDLLOVERRIDES="''${WINEDLLOVERRIDES:-mscoree,mshtml=}"
       export WINEDEBUG="''${WINEDEBUG:--all}"
 
+      # Internal invariant: these two are nix-bound at build time. If they are ever empty, a
+      # mistyped name (recurrence #3 of this exact bug class, caught by RUNNING disarm) would
+      # otherwise fail somewhere in the middle of mutating a prefix instead of up front.
+      if [ -z "$DXVK_SRC" ] || [ -z "$WINE_SRC" ]; then
+        printf 'f3-wine-dxvk: internal error - source paths unresolved (DXVK_SRC=%q WINE_SRC=%q)\n' "$DXVK_SRC" "$WINE_SRC" >&2
+        exit 3
+      fi
+
       DLLS=(d3d8.dll d3d9.dll dxgi.dll)
       OVERRIDES=(d3d8 d3d9)   # dxgi stays unregistered ON PURPOSE (the working demo prefix has no dxgi line)
 
@@ -217,20 +225,38 @@ in {
             exit 1
           fi
         done
+        # RE-SEED, never plain-delete. JadeBear's battery (2026-10-22) proved the old
+        # remove-only version was a landmine: on Wine 11 the system32 copy IS the builtin - there
+        # is no fallback to the package - so after arm had overwritten them, disarm left the
+        # module GONE: LoadLibrary("d3d8.dll") -> err=126 ERROR_MOD_NOT_FOUND on a prefix the
+        # tool happily called CLEAN. And f3-reimpl-run only wineboots when system.reg is missing,
+        # so an initialized prefix never re-seeds itself: the next lane's boot breaks and looks
+        # exactly like the class d284880 just buried ("a binary the last session left broken"),
+        # with a clean gate history behind it. Restoring the package builtin makes CLEAN mean
+        # PRISTINE, byte-identical to what a fresh wineboot writes (item 68's own correction).
         for d in "''${DLLS[@]}"; do
           kind="$(dll_kind "$d")"
-          if [ "$kind" != ABSENT ]; then
-            # Only copies this tool's model can explain are removed; a pristine prefix's OWN builtin
-            # copies are Wine's layout, so disarm leaves them (it reverts OUR install, not Wine).
-            case "$kind" in
-              DXVK|UNKNOWN*)
-                "${pkgs.coreutils}/bin/rm" -f "$sys32/$d"; printf 'removed %-9s (%s)\n' "$d" "$kind" ;;
-              WINE-BUILTIN)
-                printf 'left %-11s (Wine ships this copy itself; disarm reverts OUR install, not Wine)\n' "$d" ;;
-              *)
-                printf 'left %-11s (%s)\n' "$d" "$kind" ;;
-            esac
+          if [ "$kind" = ABSENT ]; then
+            continue
           fi
+          if [ "$kind" = WINE-BUILTIN ]; then
+            printf 'left %-11s (Wine ships this copy itself; nothing of ours to revert)\n' "$d"
+            continue
+          fi
+          # Verify the replacement EXISTS before removing the thing it replaces: the first version
+          # of this block deleted, then looked, and on a typo'd path left the module gone - the exact
+          # err=126 state the re-seed exists to prevent, reproduced by the fix itself.
+          if [ ! -f ""$WINE_SRC"/$d" ]; then
+            printf 'f3-wine-dxvk: no package builtin at %s/$d - leaving %s (%s) in place rather than gutting the module\n' ""$WINE_SRC"" "$d" "$kind" >&2
+            continue
+          fi
+          "${pkgs.coreutils}/bin/rm" -f "$sys32/$d"
+          "${pkgs.coreutils}/bin/cp" -f ""$WINE_SRC"/$d" "$sys32/$d"
+          if [ "$(md5of "$sys32/$d")" != "$(builtin_md5 "$d")" ]; then
+            printf 'f3-wine-dxvk: re-seeded %s does not hash to the package builtin\n' "$d" >&2
+            exit 1
+          fi
+          printf 'reverted %-9s (%s -> Wine builtin %s)\n' "$d" "$kind" "$(md5of "$sys32/$d")"
         done
       }
 

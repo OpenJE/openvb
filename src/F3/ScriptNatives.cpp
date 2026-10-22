@@ -11,6 +11,10 @@
 #include <string.h>
 
 #include "F3/GameCreature.hpp"
+#include "F3/GameItem.hpp"
+#include "F3/GameUsableObject.hpp"
+#include "F3/GameContainer.hpp"
+#include "F3/GameDoor.hpp"
 #include "JE.hpp"
 
 namespace F3 {
@@ -30,7 +34,7 @@ namespace F3 {
 	struct RegistryEntry {
 		unsigned int hHandle;
 		JE::Entity *pEntity;
-		int nClass;      // ScriptNativeClass; the stand-in for what RTTI would decide
+		int nClass;      // ScriptNativeClass BITMASK; the stand-in for what RTTI would decide
 		int nUsed;
 	};
 
@@ -39,12 +43,12 @@ namespace F3 {
 
 		// PORT-SIDE helper: no shipped twin - the shipped list is maintained by the engine's own entity
 	// construction path (see the byte_70be0c walk at 0x54be10, which this table feeds). Insert only.
-void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, int nClass ) {
+void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, unsigned nClassMask ) {
 		int i;
 		for ( i = 0; i < s_registryCount; ++i ) {
 			if ( s_registry[ i ].nUsed && s_registry[ i ].pEntity == pEntity ) {
 				s_registry[ i ].hHandle = (unsigned int)hEntity;   // re-publish under a new handle
-				s_registry[ i ].nClass = nClass;
+				s_registry[ i ].nClass = (int)nClassMask;
 				return;
 			}
 		}
@@ -53,7 +57,7 @@ void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, int nCla
 		}
 		s_registry[ s_registryCount ].hHandle     = (unsigned int)hEntity;
 		s_registry[ s_registryCount ].pEntity     = pEntity;
-		s_registry[ s_registryCount ].nClass = nClass;
+		s_registry[ s_registryCount ].nClass = (int)nClassMask;
 		s_registry[ s_registryCount ].nUsed       = 1;
 		++s_registryCount;
 	} // ScriptNativeRegisterEntity
@@ -81,11 +85,11 @@ void ScriptNativeResetRegistry() {
 	// and Entity->GameEntity at 0x45b217 / 0x45b177 (the HP pair) - and because GameCreature derives
 	// from GameEntity the recorded nClass is an IS-A ladder: `nClass >= nClassNeeded` is the same
 	// decision the two TypeDescriptor pairs implement.
-	static int RegistryIsClass( JE::Entity *pEntity, int nClassNeeded ) {
+	static int RegistryIsClass( JE::Entity *pEntity, unsigned nClassNeeded ) {
 		int i;
 		for ( i = 0; i < s_registryCount; ++i ) {
 			if ( s_registry[ i ].nUsed && s_registry[ i ].pEntity == pEntity ) {
-				return s_registry[ i ].nClass >= nClassNeeded ? 1 : 0;
+				return ( (unsigned)s_registry[ i ].nClass & nClassNeeded ) != 0 ? 1 : 0;
 			}
 		}
 		return 0;
@@ -218,7 +222,7 @@ void ScriptNativeResetRegistry() {
 	// `(char*)obj + 0xBC` against these structs reads a DIFFERENT field than `obj->mbr_0xbc` does -
 	// which is exactly what this slice's first draft did, and the suite caught it (10 reds) rather
 	// than letting a green build hide it.
-	static JE::Entity *ResolveNativeEntity( int amx, int params_i, const char *pcFnName, int nClassNeeded,
+	static JE::Entity *ResolveNativeEntity( int amx, int params_i, const char *pcFnName, unsigned nClassNeeded,
 	                                        const char *pcResolveMsg, const char *pcCastMsg ) {
 		const unsigned *params = (const unsigned *)params_i;
 		JE::Entity *pEntity = 0;
@@ -335,16 +339,69 @@ void ScriptNativeResetRegistry() {
 		return GameEntityMaxHp( pEntity );
 	} // ScriptNative_GetMaxHP
 
+	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
+	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
+	int ScriptNative_GetItemType( int amx, int params ) {
+		GameItem *pItem = (GameItem *)ResolveNativeEntity( amx, params, "GetItemType",
+		                                                   F3::SNC_GAME_ITEM,
+		                                                   "GetItemType() - Unable to resolve requested entity.",
+		                                                   "GetItemType() - Entity is not an Item" );
+		if ( !pItem ) {
+			return 0;
+		}
+		return (int)pItem->mbr_0xa0;   // shipped: mov eax,[eax+0A0h] at 0x45b2c7
+	} // ScriptNative_GetItemType
+
+	// 0x45b440 - GetUsableObjectType: cast Entity->GameUsableObject (0x45b4a7), SAME field +0xA0
+	// (0x45b4c7). Shipped cast-failure line carries a typo and a grammar slip:
+	// "GetUsableObjectType() - Entity is not an usable ubject" - reproduced verbatim (T-022).
+	int ScriptNative_GetUsableObjectType( int amx, int params ) {
+		GameUsableObject *pUsable = (GameUsableObject *)ResolveNativeEntity( amx, params, "GetUsableObjectType",
+		                                                                     F3::SNC_GAME_USABLE,
+		                                                                     "GetUsableObjectType() - Unable to resolve requested entity.",
+		                                                                     "GetUsableObjectType() - Entity is not an usable ubject" );
+		if ( !pUsable ) {
+			return 0;
+		}
+		return (int)pUsable->mbr_0xa0;   // shipped: mov eax,[eax+0A0h] at 0x45b4c7
+	} // ScriptNative_GetUsableObjectType
+
+	// 0x45b570 - GetLockDC: the DUAL-CAST native. Shipped tries Entity->GameContainer (0x45b5d3) and,
+	// only if that fails, Entity->GameDoor (0x45b5fc), reading +0xC0 in either case (0x45b5dd/0x45b5e8) -
+	// one field on their common base GameUsableObject, which is why two casts do one job. The port models
+	// that as a single accept-set (CONTAINER|DOOR) rather than two ordered casts, and the third failure
+	// line names BOTH alternatives: "GetLockDC() entity passed in was neither a container nor a door."
+	// Note also its resolve-failure wording differs from the rest of the batch: "was unable to find the
+	// entity." (like GetPerkRank/IsItemEquipped) rather than "Unable to resolve requested entity.".
+	int ScriptNative_GetLockDC( int amx, int params ) {
+		GameUsableObject *pUsable = (GameUsableObject *)ResolveNativeEntity( amx, params, "GetLockDC",
+		                                                             F3::SNC_GAME_CONTAINER | F3::SNC_GAME_DOOR,
+		                                                             "GetLockDC() was unable to find the entity.",
+		                                                             "GetLockDC() entity passed in was neither a container nor a door." );
+		if ( !pUsable ) {
+			return 0;
+		}
+		// Read through the OWNER type, not the accepted one, and this is not style: GameContainer.hpp:16
+		// RE-DECLARES mbr_0xc0 although GameUsableObject.hpp:15 already owns it, and per item 69 each
+		// generated header is a name-sorted excerpt - so the two declarations sit at DIFFERENT port
+		// offsets and a container read via GameContainer* would disagree with a door read via its base.
+		// Shipped has one slot at one address (+0xC0); naming the owner is how the port keeps that true.
+		return (int)pUsable->mbr_0xc0;   // shipped: mov eax,[eax+0C0h] at 0x45b5dd / 0x45b5e8
+	} // ScriptNative_GetLockDC
+
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[7] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[10] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
 		{ "GetEthnicity",&ScriptNative_GetEthnicity,1 },   // 0x45afd0
 		{ "GetSubRace",  &ScriptNative_GetSubRace,  1 },   // 0x45b070
 		{ "GetCurrentHP",&ScriptNative_GetCurrentHP,1 },   // 0x45b1b0
-		{ "GetMaxHP",    &ScriptNative_GetMaxHP,    1 }    // 0x45b110
+		{ "GetMaxHP",    &ScriptNative_GetMaxHP,    1 },   // 0x45b110
+		{ "GetItemType", &ScriptNative_GetItemType, 1 },   // 0x45b240
+		{ "GetUsableObjectType", &ScriptNative_GetUsableObjectType, 1 }, // 0x45b440
+		{ "GetLockDC",   &ScriptNative_GetLockDC,   1 }    // 0x45b570
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

@@ -94,3 +94,21 @@ Byte-verbatim, all asserted by the port suite (T-022 identity):
 - `GameCreature::GetTotalSkill` default arm: `GameCreature::GetTotalSkill() - UNKNOWN SKILL: %d` (0x409830-era) -
   the only skill-name-leaking literal found so far; its numbers are still marked unverified in
   docs/f3/CreatureSkillAndPerkArrays.md.
+
+
+## Script-native batch B literals, tranche 2 (B6, 2026-10-22) - and one EA in my own earlier entry corrected
+
+- `GetItemType() - Entity is not an Item` (0x45b2b3) - **no trailing period**, unique in the batch.
+- `GetUsableObjectType() - Entity is not an usable ubject` (0x45b4b3-era) - shipped TYPO (`ubject`) plus the
+  "a/an" slip, both verbatim in the port.
+- Resolve-failure phrasing has (at least) THREE shapes across one family:
+  `Unable to resolve requested entity.` (most), `Unable to resolve the requested entity.` (GetLevel), and
+  `was unable to find the entity.` (GetLockDC 0x45b5b2-era, IsItemEquipped, GetPerkRank's mangled cousin).
+- GetLockDC's dual-cast line names both alternatives: `GetLockDC() entity passed in was neither a container nor
+  a door.` (0x45b608-era) - the only native literal so far that mentions two classes.
+
+**CORRECTION to my own entry above**: I cited GetPerkRank's copy-paste push as 0x45ab8e; the opcode starts at
+**0x45ab88** (`push offset 0x65e2a0`) - my EA landed on the displacement byte of the same instruction. JadeBear
+independently logged 0x5a95b0/0x551c4b as the same EA±1 class, so this is the third sample and the pattern is
+loud: a locator read out of pseudocode is ~1-in-10 likely to be inside its own instruction, so quote the
+disassembly's left-hand address or none at all.

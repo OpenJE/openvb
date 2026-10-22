@@ -1174,3 +1174,38 @@ attachment, which the spawn/map lane may want.
 
 Batch B stands at: 7 natives LIVE, 5 rows blocked (3 on the item-69 array/layout decision, 2 on the +4/+4 subject
 identity), all with named next probes. Nothing in this commit is a port - docs and ledger only.
+
+## Slice-B6 (WildKnight 01a1639b, 2026-10-22 ~12:3x) — type/DC family LIVE, class model becomes a BITMASK, and the suite caught item 69 biting inside MY OWN code
+
+Three more natives: `GetItemType` (0x45b240, `+0xA0` at 0x45b2c7), `GetUsableObjectType` (0x45b440, SAME `+0xA0`
+at 0x45b4c7, different class), `GetLockDC` (0x45b570 — the dual-cast native: `GameContainer` at 0x45b5d3, else
+`GameDoor` at 0x45b5fc, one slot `+0xC0` read at 0x45b5dd/0x45b5e8). Suite 35->**43 asserts**, table 7->10
+entries, gates re-run: run-all-tests 13 pass / 0 fail with `ScriptNatives=OK [43>=43]`, msvc-build rc=0.
+
+Two model changes the bytes forced:
+
+1. **The class ladder is now a bitmask.** `SNC_GAME_ENTITY/CREATURE/ITEM/USABLE/CONTAINER/DOOR` are bits and a
+   registration records the whole accepted set (a container = `CONTAINER|USABLE|ENTITY`), because the families are
+   SIBLINGS, not rungs - `GetItemType` must reject a `GameUsableObject` and vice versa (asserted both ways), while
+   `GetLockDC` must accept TWO of them. The linear `>=` ladder I introduced in B3 was right for exactly one pair
+   of classes and wrong everywhere else; better to have caught it at 10 rows than at 39.
+2. **Read a shared field through its OWNER type.** First draft read the DC slot via `GameContainer*`; the Door
+   assert went red. Cause: `GameUsableObject.hpp:15` declares `mbr_0xc0` AND `GameContainer.hpp:16` re-declares
+   the same-named member, and per item 69 each generated header is its own name-sorted excerpt - so the same
+   *shipped* slot sits at two different *port* offsets depending on which class you name it through. Shipped has
+   one address; the port needed the owner type to keep that true. Filed as an extension to item 69 with the third
+   consequence spelled out: a test that registers class A and writes the field through class B's name is silently
+   comparing two addresses, so a green dual-cast test proves nothing unless the write goes through the owner.
+
+Shipped telemetry banked (docs/notes/shipped-literals.md next time it's touched; recorded here so it is not lost):
+`GetItemType() - Entity is not an Item` has NO trailing period; `GetUsableObjectType() - Entity is not an usable
+ubject` carries a shipped TYPO ("ubject") plus an "a/an" slip; `GetLockDC` and friends in the "action" tier use the
+OTHER resolve wording — `was unable to find the entity.` rather than `Unable to resolve requested entity.` — so the
+batch has at least three distinct resolve-failure phrasings, all preserved verbatim in the port.
+
+Still open in batch B after this: the 2 HP writers (`+4/+4` subject identity, B4b/B5), the 3 array natives
+(item-69 layout decision), and the rest of the unread rows — plus `IsItemEquipped` (0x45b750) now read: it is the
+first STRING-argument native (uses `sub_59AB20` with a 0x80 buffer at 0x45b7cc), reaches the creature's inventory
+through `*(creature+360)`, casts `Inventory->GameInventory`, and probes via a `StringTree` lookup
+(`JE::StringTree::meth_0x401d20` + `GameInventory::meth_0x46a6c0`) with five distinct failure lines; it needs the
+AMX string-fetch helper and the inventory container, so it is queued rather than squeezed in.

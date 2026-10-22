@@ -77,6 +77,18 @@ namespace F3 {
 	int ScriptNative_GetCurrentHP( int amx, int params );  // 0x45b1b0
 	int ScriptNative_GetMaxHP( int amx, int params );      // 0x45b110
 
+	// ---- the type/DC family (batch B slice B6) -----------------------------------
+	// Same preamble, three DIFFERENT accepted classes, and the offsets are byte-verified
+	// (the pseudocode printed cell indices a third time: "40" == [eax+0A0h], "48" == +0xC0):
+	//   GetItemType           0x45b2c7 `mov eax,[eax+0A0h]`  cast Entity->GameItem
+	//   GetUsableObjectType   0x45b4c7 `mov eax,[eax+0A0h]`  cast Entity->GameUsableObject
+	//   GetLockDC             0x45b5dd / 0x45b5e8 `[+0C0h]`  cast CONTAINER, else DOOR
+	// +0xA0 is shared by two unrelated classes, i.e. a base-level type code, and +0xC0 lives on
+	// their common base GameUsableObject - which is why one field serves both GetLockDC branches.
+	int ScriptNative_GetItemType( int amx, int params );           // 0x45b240
+	int ScriptNative_GetUsableObjectType( int amx, int params );   // 0x45b440
+	int ScriptNative_GetLockDC( int amx, int params );             // 0x45b570
+
 	// ---- the shipped {name, fn} native table shape -------------------------------
 	// Shipped registers natives as arrays of {name, addr} consumed by the amx_Register era
 	// (0x5CCDE0, per-entry 0x5CCD60, miss err 19 / `mov ebp,0x13` @0x5CCE2E - see the
@@ -108,17 +120,24 @@ const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount );
 	// with no RTTI, so the shipped __RTDynamicCast(Entity->GameCreature) cannot run;
 	// nIsCreature is what that cast would have decided. MapEntitySpawn may adopt this
 	// registry when the real list lands - nothing here invents engine behavior.
-	// Which shipped concrete class the handle stands for. The natives cast through RTTI to
-	// DIFFERENT targets per family - the B1 getters cast Entity->GameCreature (0x45af9f and its four
-	// siblings), the HP pair cast Entity->GameEntity (0x45b217, 0x45b177) - and GameCreature derives
-	// from GameEntity, so the values are an IS-A ladder and comparison is >=.
+	// Which shipped concrete classes the handle satisfies. NOT a ladder: the families are SIBLINGS
+	// (GameCreature, GameItem, GameUsableObject, GameContainer, GameDoor all derive from
+	// Entity/GameEntity), and GetLockDC accepts TWO of them (GameContainer 0x45b5d3, else GameDoor
+	// 0x45b5fc) - so this is a bitmask of every class RTTI would have accepted, and registration lists
+	// the whole chain the object actually satisfies (a container is registered CONTAINER|USABLE|ENTITY).
+	// DEVIATION, named: the port links without RTTI, so the accepted-set is recorded at insert instead
+	// of being decided by the TypeDescriptor pair at each cast site.
 	enum ScriptNativeClass {
-		SNC_NONE = 0,
-		SNC_GAME_ENTITY = 1,
-		SNC_GAME_CREATURE = 2
+		SNC_NONE         = 0,
+		SNC_GAME_ENTITY  = 1 << 0,
+		SNC_GAME_CREATURE= 1 << 1,
+		SNC_GAME_ITEM    = 1 << 2,
+		SNC_GAME_USABLE  = 1 << 3,
+		SNC_GAME_CONTAINER = 1 << 4,
+		SNC_GAME_DOOR    = 1 << 5
 	};
 
-	void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, int nClass );
+	void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, unsigned nClassMask );
 	void ScriptNativeUnregisterEntity( JE::Entity *pEntity );
 
 	// Test/build helper: drop every registry entry (the shipped list has no such clear;

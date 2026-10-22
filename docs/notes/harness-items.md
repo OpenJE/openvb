@@ -1462,3 +1462,61 @@ Rules: (1) treat every hex in a generated member name as provenance, never as po
 access + per-line citation; (3) give field-mapping suites full-width distinct sentinels and a neighbour that
 must NOT be read; (4) when a green compile meets a red suite on a field access, the suite is describing the
 struct - go measure offsetof before you "fix" the test.
+
+
+### Item 69 EXTENSION (found while porting GetLockDC, same day): the same shipped slot can be RE-DECLARED by a derived header, and then the two names sit at different port offsets - so name the OWNER type
+
+`src/F3/GameUsableObject.hpp:15` declares `mbr_0xc0`, and `src/F3/GameContainer.hpp:16` declares `mbr_0xc0`
+AGAIN for the class that derives from it. In shipped bytes there is one slot at +0xC0 - `GetLockDC` reads it
+through both accepted casts (`GameContainer` 0x45b5d3, else `GameDoor` 0x45b5fc, same read at 0x45b5dd/0x45b5e8) -
+but in the PORT the two declarations land at different offsets, because each generated header is its own
+name-sorted excerpt. Symptom, caught by my own suite before any commit: a Door registered and written through
+its base read back as 0 through the derived name (and vice versa) - `FAIL: GetLockDC accepts a Door too`.
+
+That is item 69's mechanism with a second, nastier consequence: it is not only *derived-vs-shipped* offsets that
+disagree, it is *sibling names within the port* disagreeing about the same field, per class. Consequences for
+anyone touching these structs: (1) read and write a shared field through its OWNER type, never the accepted
+class - the code comment at `ScriptNative_GetLockDC` states this where a future reader will hit it;
+(2) when a header re-declares a base member, that header is the bug, and de-duplicating it is a layout-lane task
+this one can name but not unilaterally perform; (3) any test that registers an object as class A but writes a
+field through class B's name is silently testing two different addresses - so a passing dual-cast test proves
+nothing unless the write goes through the owner.
+
+Batch-B tally after this: 10 natives LIVE (5 B1 getters, HP pair, GetItemType/GetUsableObjectType/GetLockDC),
+suite 43 asserts, and the class model is now a BITMASK rather than a ladder because the accepted families are
+siblings - a container registers as CONTAINER|USABLE|ENTITY, which is exactly the set RTTI would have admitted.
+
+
+### Item 68 ADDENDUM 2 (same day): `disarm` was a landmine, my "fix" for it reproduced the landmine, and a silent probe nearly passed the whole battery
+
+JadeBear's second battery found the hole my own analysis named but did not close: on Wine 11 **there is no
+fallback to the package** - the `system32` copy *is* the module, so `disarm` deleting the DXVK dlls it had
+overwrote left a prefix where `LoadLibrary("d3d8.dll")` returns **err=126 ERROR_MOD_NOT_FOUND**, verdict still
+printing `CLEAN`. And `f3-reimpl-run` only wineboots when `system.reg` is absent, so an initialized prefix never
+heals itself. Net: a lane could disarm the shared prefix, leave a green verdict and a clean gate history behind
+it, and hand the next session exactly the "binary the last session left broken" ghost item 68 exists to kill.
+
+Three lessons, in descending embarrassment:
+
+1. **The fix reproduced the bug.** First version: `rm`, *then* look for the replacement - and it carried a
+   mistyped internal var (`''${wineX32}` instead of the bound `"$WINE_SRC"`), so the lookup failed **after**
+   the delete and the module was gone anyway. `set -u` caught it, but only because the command was executed.
+   Now: verify the source exists BEFORE removing anything, hash-check what was re-seeded, and assert both
+   internal paths at startup. **That is recurrence #3 of the same nix-vs-bash `${}` class in one day** - the
+   comment warning about it did not stop me from writing it again, which is the evidence that a convention is
+   not a guardrail. The guardrail that worked was `set -u` plus an executed leg.
+2. **Every subcommand of a multi-command script is a test surface.** `status` and `arm` were exercised when the
+   disarm re-seed was written; only `disarm` reached the new line, so a green battery leg 1-3 would have shipped
+   it. Rule: after editing a script with subcommands, run ALL of them, including the one you did not touch.
+3. **My instrument failed silently and looked like a result.** The `LoadLibrary` probe printed nothing on the
+   ARMED prefix - not a wine finding, a build error: it was missing `libgcc_s_dw2-1.dll` and wine exited 53
+   without my grep noticing. Rebuilt `-static`, then all three legs produced data: builtin present -> `err=0`;
+   gutted -> `err=126` (reproducing JadeBear's measurement independently); arm+disarm -> `err=0` again. An
+   empty output from a tool that can only answer with a line is a FAILURE OF THE TOOL, and treating it as
+   agreement is how a battery launders a nothing-run into a PASS.
+
+Scope correction accepted without argument: the REG-ERROR gate is a **startup-failure tripwire, not a
+persistence attestation** - wine 11 flushes hives via temp-file + rename, which needs no permission on the
+destination inode, so `chmod 000 user.reg` provably cannot exercise it (their leg 4 measured exactly that, and
+my own gate held: no verdict fabricated). `disarm` now ends in `DEFAULT-BUILTINS`, byte-identical to a fresh
+`wineboot -u`, which is what "clean resting state" should have meant from the start.
