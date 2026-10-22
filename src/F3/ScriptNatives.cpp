@@ -15,7 +15,7 @@
 #include "F3/GameItem.hpp"
 #include "F3/GameUsableObject.hpp"
 #include "F3/GameContainer.hpp"
-#include "F3/GameDoor.hpp"
+#include "F3/GameDoor.hpp"  // +0xBD lock byte (byte mbr_0xbd, GameDoor.hpp:14)
 #include "JE.hpp"
 
 namespace F3 {
@@ -427,6 +427,46 @@ void ScriptNativeResetRegistry() {
 		                      (int)pFrom->mbr_0x24 + (int)p[ 2 ] );
 	} // ScriptNative_AddHP
 
+	// 0x45b4e0 - IsLocked: DOOR only (0x45b53f), read at +0xBD with movzx (0x45b55f), and 0 on every
+	// failure path - so "unlocked" and "not a door" are indistinguishable to the script.
+	int ScriptNative_IsLocked( int amx, int params ) {
+		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, "IsLocked",
+		                                                   F3::SNC_GAME_DOOR,
+		                                                   "IsLocked() was unable to find the entity.",
+		                                                   "IsLocked() - Entity is not a door" );
+		if ( !pDoor ) {
+			return 0;
+		}
+		return (int)(unsigned char)pDoor->mbr_0xbd;   // shipped: movzx eax,byte ptr [eax+0BDh] at 0x45b55f
+	} // ScriptNative_IsLocked
+
+	// 0x45a1b0 - LockDoor: same gate, same DOOR-only cast (0x45a20f), then stores 1 (0x45a230) and
+	// returns 1. No packet, no broadcast, no event - unlike HP, locking a door is LOCAL state here.
+	int ScriptNative_LockDoor( int amx, int params ) {
+		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, "LockDoor",
+		                                                   F3::SNC_GAME_DOOR,
+		                                                   "LockDoor() was unable to find the entity.",
+		                                                   "LockDoor() - Entity is not a door" );
+		if ( !pDoor ) {
+			return 0;
+		}
+		pDoor->mbr_0xbd = 1;   // shipped: mov byte ptr [eax+0BDh],1 at 0x45a230
+		return 1;
+	} // ScriptNative_LockDoor
+
+	// 0x45a240 - UnlockDoor: the mirror image, storing 0 (0x45a2c0).
+	int ScriptNative_UnlockDoor( int amx, int params ) {
+		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, "UnlockDoor",
+		                                                   F3::SNC_GAME_DOOR,
+		                                                   "UnlockDoor() was unable to find the entity.",
+		                                                   "UnlockDoor() - Entity is not a door" );
+		if ( !pDoor ) {
+			return 0;
+		}
+		pDoor->mbr_0xbd = 0;   // shipped: mov byte ptr [eax+0BDh],0 at 0x45a2c0
+		return 1;
+	} // ScriptNative_UnlockDoor
+
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
@@ -479,7 +519,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[13] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[16] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -492,7 +532,10 @@ void ScriptNativeResetRegistry() {
 		{ "GetLockDC",   &ScriptNative_GetLockDC,   1 },   // 0x45b570
 		{ "PlayMusic",   &ScriptNative_PlayMusic,   1 },   // 0x45b9c0 - shipped stub, ported as a stub
 		{ "SetHP",       &ScriptNative_SetHP,       2 },   // 0x45b2e0
-		{ "AddHP",       &ScriptNative_AddHP,       2 }    // 0x45b390
+		{ "AddHP",       &ScriptNative_AddHP,       2 },   // 0x45b390
+		{ "LockDoor",    &ScriptNative_LockDoor,    1 },   // 0x45a1b0
+		{ "UnlockDoor",  &ScriptNative_UnlockDoor,  1 },   // 0x45a240
+		{ "IsLocked",    &ScriptNative_IsLocked,    1 }    // 0x45b4e0
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

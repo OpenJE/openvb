@@ -1292,3 +1292,38 @@ rows still blocked on the item-69 layout decision, the attitude pair waiting on 
 object (JadeBear located it: GameEntity's own ctor stamps `mbr_0x28` with the same idiom at 0x4679aa), and two
 documented shipped stubs. B4's two rows went from "subject unknown" to shipped in one sitting because the
 question was answered with a byte sequence instead of a guess.
+
+## Slice-B10 (WildKnight 01a1639b, 2026-10-22 ~14:2x) — the door-lock trio LIVE, and one byte reveals a shipped asymmetry
+
+Landed `LockDoor` (0x45a1b0), `UnlockDoor` (0x45a240), `IsLocked` (0x45b4e0): all arity 1, all cast
+Entity->GameDoor ONLY (0x45a20f / 0x45a29f / 0x45b53f), and the entire lock state is the byte at
+`GameDoor+0xBD` (store 1 / store 0 / `movzx` read at 0x45b55f). Suite 58 -> **69 asserts**, table 16 natives.
+
+Four facts the bytes gave up:
+
+1. **The asymmetry against `GetLockDC` is real and now asserted**: a `GameContainer` has a lock DC readable by
+   `GetLockDC` (0x45b570 accepts CONTAINER|DOOR through their common base) but CANNOT be locked, unlocked, or
+   `IsLocked`-ed, because those three are door-only. So "container lock DC" is data the script layer can read but
+   not act on through this family.
+2. **`IsLocked` zero-extends** (`movzx` at 0x45b55f), so a byte of 0xAB returns **171**, not -85 - asserted,
+   because the port's `byte` type plus a signed read would have been an easy silent divergence.
+3. **`IsLocked` cannot distinguish "unlocked" from "not a door" by value** - both are 0; only the report differs.
+   Recorded because a script that treats 0 as "unlocked, proceed" is also proceeding on a wrong entity class.
+4. **Locking a door is LOCAL state** - no packet, no broadcast, in pointed contrast to the HP writers two slices
+   ago, which broadcast id 88 per peer. Same "mutate entity" shape, opposite network contract; that difference is
+   a design fact about the shipped engine, not an oversight to normalize.
+
+Read and deliberately NOT ported (each with what it waits on):
+- `HideInterfaces` (0x45a100) - arity 0, calls `sub_46EDF0`, returns 1. Porting it now would be an empty shell with
+  a success return; waits on the GUI-hide routine.
+- `SetMoveMode` (0x45a140) - arity 3, uses `sub_59AA50` (an AMX object fetch) plus the `global_area_map_icons[0]
+  ->int_0x18` server-context guard and `meth_0x46ec70`; waits on the AMX object-reference helper.
+- `Protagonist` (0x45a960) - arity 0, and a third sighting of the same base-plus-delta idiom on the world-server
+  singleton (0x45a991) before vft slot 26 (104/4) and a `Party -> GameParty` cast. Its payoff is the best single
+  corroboration of B9 in this batch: on success it returns `*(entity + 476)` = **+0x1DC** - T-043's handle field,
+  delivered as a native's RESULT. Two shipped oddities banked with it: both failure paths say
+  `"Protagonist() ... Returning INVALID_ID."` while returning **0**, not an INVALID_ID sentinel; and the
+  GameParty member is read at `[party+5]` cells (= +0x14) with a null test before it.
+
+Gates after the change: `run-all-tests` (floor raised 58->69) and `msvc-build`, both re-run; `ScriptNatives.cpp`
+is compiled by both toolchains, not just mingw.

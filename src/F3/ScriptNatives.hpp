@@ -105,6 +105,16 @@ namespace F3 {
 	int ScriptNative_SetHP( int amx, int params );    // 0x45b2e0
 	int ScriptNative_AddHP( int amx, int params );    // 0x45b390
 
+	// ---- the door-lock trio (batch B slice B10) ---------------------------------
+	// ONE byte at GameDoor+0xBD is the whole lock state, and the three bodies differ only in what they
+	// do with it: IsLocked reads it with `movzx` (0x45b55f - a 0..255 return, NOT sign-extended),
+	// LockDoor stores 1 (0x45a230), UnlockDoor stores 0 (0x45a2c0). All three accept ONLY GameDoor,
+	// which is a real asymmetry against GetLockDC (0x45b570), whose DC field is read for CONTAINER as
+	// well as door: a container can have a lock DC but cannot be locked or unlocked by script.
+	int ScriptNative_IsLocked( int amx, int params );    // 0x45b4e0
+	int ScriptNative_LockDoor( int amx, int params );    // 0x45a1b0
+	int ScriptNative_UnlockDoor( int amx, int params );  // 0x45a240
+
 	int ScriptNative_GetItemType( int amx, int params );           // 0x45b240
 	int ScriptNative_GetUsableObjectType( int amx, int params );   // 0x45b440
 	int ScriptNative_GetLockDC( int amx, int params );             // 0x45b570
