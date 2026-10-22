@@ -304,9 +304,16 @@ def render_text(pe: Pe, digest: str, tables, notes=None):
     for base in tables:
         label = tables[base]["_label"]
         entries, term = tables[base]["entries"], tables[base]["terminated"]
+        nex = sum(1 for e in entries if e.get("gate") and e["gate"]["kind"] == "exact")
+        nmn = sum(1 for e in entries if e.get("gate") and e["gate"]["kind"] == "min")
         out += [f"## {label} @ {base:#x}",
                 f"entries={len(entries)}  terminator_{{0,0}}_found={term}  "
-                f"distinct_fns={len({e['fn_va'] for e in entries})}"]
+                f"distinct_fns={len({e['fn_va'] for e in entries})}",
+                f"gates: exact={nex} min={nmn} none={len(entries)-nex-nmn}  "
+                f"(found by global .text call-scan of {tables[base].get('_gate_sites_total','?')} "
+                f"call sites to 0x{GATE_EA:x}/0x{GATE_MIN_EA:x}; max entry->gate offset seen "
+                f"anywhere = +0x{tables[base].get('_max_gate_offset', 0):x}, so no site is "
+                f"attributed across a function boundary)"]
         widths = [max(len(str(e['idx'])) for e in entries),
                   max(len(e['name'] or '<none>') for e in entries)] if entries else (2, 8)
         wi, wn = widths
@@ -430,6 +437,94 @@ def gate_claim(pe: Pe, fn_va: int):
             continue
         i += 1
     return None
+
+
+
+def gate_sites(pe: Pe):
+    """Authoritative instrument: scan ALL of .text for `call <gate>` and return
+    {call_site_va: kind}. No window, no guessing - a native is gated iff a call site
+    falls inside it. Replaces the window heuristic, whose bound had to be asserted."""
+    sec = next((s for s in pe.sections if s["name"] == ".text"), None)
+    if sec is None:
+        raise BadPe("no .text section found")
+    base = pe.image_base + sec["va"]
+    data = pe.read(base, sec["rawsize"]) or b""
+    gates = {GATE_EA: "exact", GATE_MIN_EA: "min"}
+    out = {}
+    for i in range(len(data) - 5):
+        if data[i] == 0xE8:
+            t = base + i + 5 + struct.unpack("<i", data[i + 1:i + 5])[0]
+            if t in gates:
+                out[base + i] = gates[t]
+    return out
+
+
+def attribute_sites(pe: Pe, entries, sites):
+    """Attach the nearest-preceding native's gate call site to each entry. Returns the
+    max entry->site offset observed, which is the evidence that attribution is not bleed."""
+    ents = sorted({e["fn_va"] for e in entries})
+    owner = {}
+    for site, kind in sites.items():
+        best = None
+        for ea in ents:
+            if ea <= site:
+                best = ea if best is None or ea > best else best
+            else:
+                break
+        if best is not None and site - best not in owner:
+            owner.setdefault(best, []).append((site, kind))
+    mx = 0
+    for e in entries:
+        cand = owner.get(e["fn_va"])
+        if not cand:
+            e["gate"] = None
+            continue
+        site, kind = min(cand)
+        d = site - e["fn_va"]
+        mx = max(mx, d)
+        cells, name, name_va = decode_pushes(pe, e["fn_va"], site)
+        cleanup = stack_cleanup(pe, site)          # measured, not inferred from pushes
+        e["gate"] = {"kind": kind, "cells": cells, "name": name, "name_va": name_va,
+                     "at": d, "cleanup_bytes": cleanup, "args": (cleanup or 0) // 4}
+    return mx
+
+
+def stack_cleanup(pe: Pe, site: int):
+    """Bytes the caller removes after the gate call = 4 * argc. This is the only
+    trustworthy argc discriminator: counting pushes in the prologue over-counts, because
+    register pushes appear for unrelated reasons (167 exact rows would be mislabelled).
+    Measured here: the min gate returns 0x14 (5 args), the exact gate 0x10 (4 args)."""
+    for delta in range(5, 16):
+        b = pe.read(site + delta, 3)
+        if b and b[0] == 0x83 and b[1] == 0xC4:
+            return b[2]
+    b = pe.read(site + 5, 4)
+    if b and b[0] == 0x81 and b[1:3] == b"\xc4":
+        return int.from_bytes(b[2:4], "little")
+    return None
+
+
+def decode_pushes(pe: Pe, fn: int, site: int):
+    """Walk the body up to the gate call, tracking pushed immediates. cdecl reverses the
+    order, so the last pushes are the first args: name, cells, [out_actual], params, amx."""
+    b = pe.read(fn, site - fn + 5) or b""
+    stack = []
+    i = 0
+    while i < site - fn:
+        op = b[i]
+        if op == 0x68:
+            stack.append((0x68, int.from_bytes(b[i + 1:i + 5], "little"))); i += 5; continue
+        if op == 0x6a:
+            stack.append((0x6a, b[i + 1])); i += 2; continue
+        if op in (0x50, 0x51, 0x52, 0x53, 0x56, 0x57):
+            stack.append((op, None)); i += 1; continue
+        i += 1
+    # The gate's own args are the trailing pushes: [name, cells, (out|reg), params, amx].
+    win = stack[-5:] if len(stack) >= 5 else stack
+    imms = [v for t, v in win if t in (0x68, 0x6A)]
+    name_va = next((v for v in imms if pe.cstring(v)), None)
+    cells = next((v for t, v in win if t == 0x6A and v <= MAX_CELLS), None)
+    return cells, (pe.cstring(name_va) if name_va else None), name_va
 
 
 def annotate_gate_claims(pe: Pe, entries):
@@ -580,16 +675,17 @@ def load(exe: Path, want_vas, quiet=False):
     digest = sha256_of(pe.path)
     if digest != PINNED_SHA256 and not quiet:
         print(f"WARNING: {exe} sha256 {digest} != pinned {PINNED_SHA256}", file=sys.stderr)
+    sites = gate_sites(pe)
     tables = {}
     for va in want_vas:
         entries, term = walk_table(pe, va)
-        annotate_gate_claims(pe, entries)
-        tables[va] = {
-            "_label": DEFAULT_TABLES.get(va, f"table @ {va:#x}"),
-            "entries": entries,
-            "terminated": term,
-        }
-        if not term and not quiet:
+        tables[va] = {"_label": DEFAULT_TABLES.get(va, f"table @ {va:#x}"),
+                      "entries": entries, "terminated": term}
+    attribution_max = attribute_sites(pe, [e for t in tables.values() for e in t["entries"]], sites)
+    for va, t in tables.items():
+        t["_max_gate_offset"] = attribution_max
+        t["_gate_sites_total"] = len(sites)
+        if not t["terminated"] and not quiet:
             print(f"WARNING: table {va:#x} hit no {{0,0}} terminator within cap", file=sys.stderr)
     names = gate(pe, tables)
     return pe, digest, tables, names
@@ -622,13 +718,27 @@ def selftest(exe: Path):
     assert sorted(e["name"] for e in f3 if not e["gate"]) == [
         "AddJournalEntry", "AddQuestEntry", "CloseQuest", "OpenQuest"], "ungated set changed"
     eng = tables[0x6FFAF8]["entries"]
+    # --- corrected global census (instrument: whole-.text call-site scan, no window) ---
+    alle = [x for t in tables.values() for x in t["entries"]]
+    k = [ (x.get("gate") or {}).get("kind") for x in alle ]
+    assert (k.count("exact"), k.count("min"), k.count(None)) == (181, 6, 22), \
+        f"census moved: {k.count('exact')}/{k.count('min')}/{k.count(None)}"
+    assert sum(1 for x in alle if x.get("gate") and x["gate"]["name"] != x["name"]) == 20, \
+        "divergence count moved"
+    assert max(x["gate"]["at"] for x in alle if x.get("gate")) <= 0x40, \
+        "a gate call moved beyond +0x40: attribution may be crossing function boundaries"
+    # the cleanup-width discriminator, which is what actually separates the two gates
+    assert all(x["gate"]["args"] == 5 for x in alle
+               if x.get("gate") and x["gate"]["kind"] == "min"), "min gate arg count moved"
+    assert all(x["gate"]["args"] == 4 for x in alle
+               if x.get("gate") and x["gate"]["kind"] == "exact"), "exact gate arg count moved"
     mins = sorted(e["name"] for e in eng if e["gate"] and e["gate"]["kind"] == "min")
     assert mins == ["A_SendMessage", "A_SendMessageToSquad", "A_SendMessageToTeam",
                     "SendMessage", "SendMessageToSquad", "SendMessageToTeam"], f"min set: {mins}"
     assert all(e["gate"]["cells"] == 2 for e in eng if e["gate"] and e["gate"]["kind"] == "min")
     no_g = sorted(e["name"] for e in eng if not e["gate"])
-    assert no_g == ["Day", "GetTimeStamp", "Hour", "MessageArgCount", "Minute",
-                    "Month", "Second", "TransferItemToParty", "Year"], f"ungated engine: {no_g}"
+    assert no_g == ["Day", "Debug", "GetTimeStamp", "Hour", "MessageArgCount", "Minute",
+                    "Month", "Second", "Year"], f"ungated engine: {no_g}"
     # float lib must be exactly the float.inc family
     fl = distinct_names(tables[0x7004C0]["entries"])
     assert set(fl) == {"float", "floatstr", "floatmul", "floatdiv", "floatadd",

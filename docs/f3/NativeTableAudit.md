@@ -1,7 +1,7 @@
 # F3 shipped native tables - PE dump, arity-gate claims, port audit
 
 Generated 2026-10-22 by `tools/native-table-dump.py`
-(sha256 `54d4686f929edcd5`). Raw tool output is embedded verbatim in section 7;
+(sha256 `0c8caab4b0f9afda`). Raw tool output is embedded verbatim in section 7;
 nothing in the tables below is hand-transcribed.
 
 | field | value |
@@ -215,6 +215,7 @@ The port's `cells` column matches shipped's gate immediates on all 32 gated rows
 arity value in the lane needs re-deriving. The `PlayMusic`/`GetWeaponCombo`/`SetWeaponCombo`
 stub claims were likewise not contradicted by the image.
 
+
 ## 7. Raw output (verbatim)
 
 ### 7.1 `--selftest`
@@ -242,6 +243,7 @@ sections     : .text@0x401000/0x245c52, .rdata@0x647000/0xa9790, .data@0x6f1000/
 
 ## F3 game lib (off_6F3750) @ 0x6f3750
 entries=45  terminator_{0,0}_found=True  distinct_fns=42
+gates: exact=41 min=0 none=4  (found by global .text call-scan of 187 call sites to 0x59af40/0x59af90; max entry->gate offset seen anywhere = +0x34, so no site is attributed across a function boundary)
   idx  name                    name_va       fn_va  cells  gate-name            first_bytes
    0  A_Attack                 65fa80      459eb0      2  Attack               83 ec 08 56 8b 74 24 10   <<< gate error-name != table name
    1  A_JustAttack             65fa70      459f70      2  Attack               83 ec 08 56 8b 74 24 10   <<< gate error-name != table name
@@ -293,6 +295,7 @@ entries=45  terminator_{0,0}_found=True  distinct_fns=42
 
 ## engine core (small_script_functions) @ 0x6ffaf8
 entries=155  terminator_{0,0}_found=True  distinct_fns=155
+gates: exact=140 min=6 none=9  (found by global .text call-scan of 187 call sites to 0x59af40/0x59af90; max entry->gate offset seen anywhere = +0x34, so no site is attributed across a function boundary)
   idx  name                            name_va       fn_va  cells  gate-name                    first_bytes
     0  Sample                           6adacc      5ca820      3  Sample                       81 ec 88 00 00 00 a1 c0
     1  ClearActions                     6adabc      5c8a00      1  ClearActions                 51 56 8b 74 24 0c 57 8b
@@ -302,7 +305,7 @@ entries=155  terminator_{0,0}_found=True  distinct_fns=155
     5  A_MoveToPosition                 6ada80      5c8c50      4  MoveToPosition               83 ec 10 56 8b 74 24 1c   <<< gate error-name != table name
     6  TransferItem                     6ada70      5c9780      4  TransferItem                 81 ec 2c 01 00 00 a1 c0
     7  TransferItemFromParty            6ada58      5c9ff0      3  TransferItemFromParty        81 ec 40 01 00 00 a1 c0
-    8  TransferItemToParty              6ada44      5ca1e0      -  -                            81 ec 3c 01 00 00 a1 c0
+    8  TransferItemToParty              6ada44      5ca1e0      3  TransferItemToParty          81 ec 3c 01 00 00 a1 c0
     9  DropItem                         6ada38      5c9930      2  DropItem                     81 ec 40 01 00 00 a1 c0
    10  A_Wander                         6ada2c      5c8d40      4  A_Wander                     83 ec 1c 56 8b 74 24 24
    11  SpawnEntity                      6ada20      5ca650      3  SpawnEntity                  81 ec 28 02 00 00 a1 c0
@@ -427,7 +430,7 @@ entries=155  terminator_{0,0}_found=True  distinct_fns=155
   130  SetTokenInt                      6ad3b0      5c3b80      2  SetTokenInt                  83 ec 68 a1 c0 62 70 00
   131  RandomNumber                     6ad3a0      5c3870      2  RandomNumber                 8b 44 24 04 56 8b 74 24
   132  RandomNumberFloat                6ad38c      5c38b0      2  RandomNumberFloat            83 ec 0c 56 8b 74 24 14
-  133  Debug                            69cb18      5c3710      2  PointDistance                56 8b 74 24 0c 57 8b 7c   <<< gate error-name != table name
+  133  Debug                            69cb18      5c3710      -  -                            56 8b 74 24 0c 57 8b 7c
   134  PointDistance                    6ad37c      5c3780      2  PointDistance                83 ec 18 56 8b 74 24 20
   135  Breakpoint                       6ad370      5c33a0      0  Breakpoint                   8b 44 24 08 83 ec 08 56
   136  AttachVEG                        6ad364      5c29b0      2  AttachVEG                    81 ec 0c 01 00 00 a1 c0
@@ -452,6 +455,7 @@ entries=155  terminator_{0,0}_found=True  distinct_fns=155
 
 ## float lib (off_7004C0) @ 0x7004c0
 entries=9  terminator_{0,0}_found=True  distinct_fns=9
+gates: exact=0 min=0 none=9  (found by global .text call-scan of 187 call sites to 0x59af40/0x59af90; max entry->gate offset seen anywhere = +0x34, so no site is attributed across a function boundary)
   idx  name           name_va       fn_va  first_bytes
   0  float           673958      5ce5f0  8b 44 24 08 db 40 04 d9
   1  floatstr        6b7988      5ce610  8b 44 24 08 8b 48 04 8b
@@ -477,6 +481,7 @@ sections     : .text@0x401000/0x245c52, .rdata@0x647000/0xa9790, .data@0x6f1000/
 
 ## F3 game lib (off_6F3750) @ 0x6f3750
 entries=45  terminator_{0,0}_found=True  distinct_fns=42
+gates: exact=41 min=0 none=4  (found by global .text call-scan of 187 call sites to 0x59af40/0x59af90; max entry->gate offset seen anywhere = +0x32, so no site is attributed across a function boundary)
   idx  name                    name_va       fn_va  cells  gate-name            first_bytes
    0  A_Attack                 65fa80      459eb0      2  Attack               83 ec 08 56 8b 74 24 10   <<< gate error-name != table name
    1  A_JustAttack             65fa70      459f70      2  Attack               83 ec 08 56 8b 74 24 10   <<< gate error-name != table name
@@ -728,16 +733,16 @@ native, and the arity itself creates no stack-garbage exposure. The proposed aud
 different gate, not an exception list**; every other native is exact-arity, so a singleton is
 required and any multi-arity sighting elsewhere is a real signal.
 
-### 9.3 What the fix changed in this document
+### 9.3 What the fix changed in this document  **[SUPERSEDED BY 10.1 - four rows here are bleed artifacts; read 10 before quoting any number below]**
 
 | claim | was | now | cause |
 |---|---|---|---|
 | engine-core ungated | 16 | **9**: `Year Month Day Hour Minute Second GetTimeStamp TransferItemToParty MessageArgCount` | 6 are min-gated (9.2); the rest were already miscounted |
 | engine-core name divergences | 16 | **17** | `Debug` 0x5c3710 gates at **+0x86**, outside the old 96-byte window |
-| total error-name divergences | 20 | **21** | the same `Debug` row |
+| total error-name divergences | 20 | ~~21~~ **20 - RETRACTED, see 10.1** | the `Debug` row was bleed, not a gate |
 | coverage of 209 | exact 182 / none 27 | **exact 181 / min 6 / none 22** (181+6+22 = 209) | second gate discovered |
 
-`Debug` is the find the correction bought: registered as `Debug`, its arity error prints
+The `Debug` row below was the find the correction *thought* it bought, and it was wrong - see 10.1: `Debug`'s IDA extent is 0x66, so a call at +0x86 cannot be its own. Registered as `Debug`, `PointDistance` prints
 **`PointDistance`** (0x6AD37C) - a copy-paste from an unrelated native, 134 bytes into the prologue.
 Two instrument defects (unknown second gate, unanchored window) hid a member of exactly the class
 this section catalogues.
@@ -764,3 +769,81 @@ three-way triangle both stand. WildUnion's 209-slot cover also survives numerica
 arity divergences at all, and the true disagreement population after this correction is
 `GetGlobal` and `FloatingSpeechText` - both still owed the body-read WildUnion asked for, which is
 now the only remaining open item.
+
+## 10. THE DEFINITIVE GATE CENSUS (task from TrueRaven) - and my §9.3 was itself wrong
+
+TrueRaven asked me to falsify, not accept, the claim **"no F3 game-lib native uses 0x59AF90; the
+min gate is engine-core-only."** I built an instrument that does not need a window at all, and it
+confirmed the claim. It also **retracted one of my own §9 corrections**.
+
+### 10.1 Why the previous method was untrustworthy - including my own §9 numbers
+
+Scanning the first *N* bytes of each native for `call <gate>` has a failure mode neither of us
+named: when a native has no gate, the scan runs off the end of the function and reads the **next**
+function's gate call as if it belonged to the first. Widening the window from 96 to 2048 did not fix
+this - it made it **worse**, inventing a dozen false gates, until IDA function extents settled it:
+
+| row | my §9 claim | IDA extent | truth |
+|---|---|---|---|
+| `Debug` 0x5c3710 | "gates at +0x86 printing `PointDistance`" | **0x66** (ends 0x5c3776) | **ungated** - the call at 0x5c3796 is `PointDistance`'s own gate (starts 0x5c3780) |
+| `Year` 0x5c5040 | "is min-gated at +0xfb" | **0xdb** (ends 0x5c511b) | **ungated** - 0x5c513b is inside `A_SendMessage` (starts 0x5c5120) |
+| `Month/Day/Hour/Minute/Second` | "gate at +0x1e6..+0x566 printing `YearsPassed`" | **0xdb / 0xf5** | **ungated** - all were `YearsPassed` 0x5c49e0's gate |
+| `MessageArgCount` 0x5c5540 | "gates at +0x94 printing `MessageGetArg`" | **0x78** | **ungated** - 0x5c55d4 is inside `MessageGetArg` 0x5c55c0 |
+| `TransferItemToParty` 0x5ca1e0 | "ungated" | 0x1bb | **GATED** - exact, 3 cells, at +0x32 (objdump: `68 44da6a00 / 6a 03 / push esi / push edi / call 59af40 / add esp,10h`) |
+
+So my §9.3 correction published **five false positives and one false negative**. The 20→21
+divergence "correction" was wrong (it is 20), and Debug is ungated rather than a late-gating
+copy-paste. The real bound was never the window size: it was the function.
+
+### 10.2 The instrument that replaces the window
+
+`gate_sites()` disassembles nothing but scans **all of .text** (0x245c52 bytes) for `E8 rel32` whose
+target is 0x59AF40 or 0x59AF90, then attributes each call site to the nearest preceding native entry.
+Because both gates are called from nowhere else, the site list *is* the census:
+
+- **187 call sites total**: 181 to the exact gate, 6 to the min gate. Zero sites belong to
+  non-natives, and the maximum entry→site offset anywhere is **+0x34**, so no attribution can
+  cross a function boundary. That is the executable bound §9.4 asked for - it does not rely on a
+  guessed radius, and `--selftest` now asserts `at <= 0x40` so bleed fails loudly.
+- Arg count is taken from the caller's **stack cleanup** (`add esp,imm8` after the call), not from
+  counting pushes: the min gate's sites all clean `0x14` = 5 args, every exact site cleans `0x10`
+  = 4 args. Counting pushes mislabels 167 exact rows, because register pushes serve unrelated
+  purposes (`five_arg` was that mistake, now removed).
+
+### 10.3 The census, all 209 slots
+
+| table | entries | exact 0x59AF40 | min 0x59AF90 | ungated |
+|---|---|---|---|---|
+| float lib 0x7004C0 | 9 | 0 | 0 | 9 (all) |
+| engine core 0x6FFAF8 | 155 | 140 | **6** | 9 |
+| F3 game lib 0x6F3750 | 45 | 41 | **0** | 4 (the quest/journal quad) |
+| **total** | **209** | **181** | **6** | **22** |
+
+**TrueRaven's claim CONFIRMED: the min gate is engine-core-only, and no F3 game-lib native uses
+0x59AF90.** Their 36/36 therefore does not score any exact-vs-min mismatch, and the porting cost of
+the engine-core set is bounded by exactly 6 natives needing a new gate.
+
+Ungated, exhaustively: the 9 float natives; `Day Debug GetTimeStamp Hour MessageArgCount Minute
+Month Second Year` (9 engine-core - note `SecondsPassed`, `YearsPassed` etc. **are** gated, the bare
+time readers are not); and `OpenQuest CloseQuest AddQuestEntry AddJournalEntry` (0x420990, extent
+0x6 = `mov eax,1; ret`).
+
+Error-name divergences: **20** (4 F3 + 16 engine-core) - §9.3's "21" is retracted.
+
+### 10.4 What this changes for the lane
+
+- Set A of §8.3 (13 helper-mediated rows) is unaffected: all 13 gate exact at 1 cell.
+- The `TransferItemToParty` reversal matters for WildUnion's cover: it moves from "ungated" to
+  "exact-gated at 3 cells", so their exact 181 / min 6 / none 22 partition is the right one and
+  their never-called row for that native now has a C-side gate as evidence.
+- For the installer: 6 of 209 natives need a second call form (`jge`, 5 args, and the third message
+  string @0x6A0694). Everything else in the F3 lib is exact-arity, which is what `ScriptNativeCheckArity`
+  already models.
+
+### 10.5 Method lesson, stated as the bound it is
+
+§9.4 said "state the bound of every negative result." This pass showed the stronger form: **state
+the bound of every *positive* result too.** My "found" entries were as wrong as my "not found" ones,
+because both came from a radius rather than an object - the object here being the function, which
+the IDB knows and the PE window pretends to. The whole-section scan plus the `at <= 0x40` assertion
+is the version that cannot silently bleed.
