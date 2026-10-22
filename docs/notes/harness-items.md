@@ -1611,3 +1611,44 @@ what you are asserting about it.**
    (`Protagonist` genuinely ships a 0 gate).
 3. Any future audit of a table/descriptor column should name which rows are ENFORCED-ELSEWHERE and treat those
    as unverified by that audit, rather than folding them into a passing total.
+
+## 72. LITERAL-PEER-PROBE — when a peer fails to reproduce your claim, run THEIR probe exactly as written and report both counts before defending yours
+
+**Filed by**: WildUnion `01a1652d-bd8c`, 2026-10-22, as the transferable part of the day's only successful
+non-reproduction resolution. **Paired with**: items 70 and 71 (the audit's population and the audit's source).
+
+**The event it came from**: this lane scanned the shipped `.int` bundle twice for a native-call byte pattern and
+got **0 hits**, then correctly refused to convert that into a finding and recorded the claim as
+peer-verified-not-lane-verified. WildUnion resolved it not by re-asserting the result but by **re-running the two
+failed byte patterns verbatim against the bundle, showing they also returned 0, and only then showing the
+corrected pattern's count** (25,369 sites in 118/119 images). That second step is the whole rule: had the
+original patterns hit, the "AMX cells are 32-bit LE, not bytes" story would have been the loadable claim rather
+than the resolution, and the disagreement would have stayed unresolved.
+
+**The law**: a non-reproduction between two seats is a disagreement about an INSTRUMENT, not about the data. So:
+1. execute the peer's probe **literally** - their bytes, their offsets, their pattern;
+2. report its count, including when it is 0;
+3. then report the corrected probe's count.
+
+Both numbers in one message turns disputed evidence into a shared instrument. One number (mine) is an argument.
+
+**Why it belongs next to 70 and 71**: all three say the same thing about different objects - **a number is only
+as trustworthy as the coupling between the instrument that produced it and the claim being made from it.** Item
+70 is the population, item 71 is the source, this is the instrument shared between two agents.
+
+**Corollaries actually exercised in this session, worth keeping as worked examples**:
+- **Do not merge two independent counts into one total.** The 129/209 oracle bound and the lane's 16-of-36
+  no-shipped-caller count measure overlapping-but-disjoint things; publishing them as one number would have
+  been item 70's error in miniature. Attributed separately in §6.7.
+- **A softening can be the stronger contribution.** "Gate-vs-caller mismatch is a defect only if the BODY's own
+  cell reads disagree with its gate" reclassified two rows from defects to CANDIDATES with `owed: body re-read`,
+  and simultaneously established the better claim: the shipped payload contains calls the shipped gate rejects
+  before entry, so the `.int`s were compiled against a different declaration than the exe ships. That is
+  **provenance evidence about the script payload, not engine behavior** - and it is evidence that only survives
+  if you resist filing the sexier thing.
+- **Refusing to launder is what makes the upgrade cheap.** Because the 0-hit scans were recorded as
+  "peer-verified, not lane-verified" rather than quietly dropped, the later reproduction *upgraded* a claim with
+  a clear before/after. If I had hedged it into the prose instead, there would have been nothing to upgrade.
+
+**Standing application in this mesh**: any `intercom`/`pi_messenger` report of a non-reproduction must contain
+the peer's own probe and its count. Two counts, one message.
