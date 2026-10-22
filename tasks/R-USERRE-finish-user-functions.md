@@ -565,6 +565,42 @@ FULL CHAIN, ALL SLOTS RAW-PINNED (the era's spine, port-ready):
 - Console input path: a SEPARATE feeder into the same FIFO (named candidate: CDebugInterface
   0x558740 era) - no read claimed; the port's Execute() mirror needs (c)+(d) shapes verbatim
   and (b)'s pack format; (a)'s slot map is port-internal until digest parity cares.
+
+### FEEDER CENSUS CLOSE (SwiftOwl, same sitting; BrightYak's 17-site census corrected us both -
+### 'the console Enter path is the one unnamed feeder' was WRONG SHARED FRAMING: nine feeder
+### FUNCTIONS, console is one. Register convergence #4, both benches complicit, corrected by
+### the bench that ran the census.)
+- Two of BrightYak's weighted candidates READ this seat (cheap-pass verdicts, bytes only):
+  (i) sub_5B6BC0 (0xB82, 3 push sites): NOT console - a dialog/menu handler pushing LITERAL
+      commands: button-label strings "Disable Scripts"/"Enable Scripts" adjacent to the literal
+      "disablescripts" pushed via [icons+2Ch]->+7C FIFO @0x5b6d54. Script-toggle UI fires
+      commands through the same FIFO.
+  (ii) sub_41CA00 (0x5D3, 2 sites): GUI event dispatcher, also LITERALs - "InventoryWindow"
+      @0x41cb89, "Pipboy" - window-open commands from widget events, with an RTTI cast to
+      GameClient + AreaMapIcon::meth_0x436ad0(0x10) sibling branch. Menu buttons ARE command
+      feeds: an era architecture fact, portable when those windows land.
+- THE CONSOLE ENTER FEEDER: FOUND, NAMED, ONE HOP DEEPER THAN BOTH BENCHED GUESSES.
+  sub_59E8E0 = the runtime-LINE pusher (formats a caller-supplied text via sub_59E8A0 @0x59ea07,
+  pushes the SSO result into the same FIFO ([icons+2Ch]->+7C) @0x59ea29) - the shape both benches
+  predicted (reads a line buffer, not a literal). Its EXTERNAL caller census = exactly one:
+  JE::CConsoleInterface::virt_meth_0x59ec10 (8-byte tail-feeder; class .?AVCConsoleInterface@@,
+  size 8, 2 methods, 1 vftable) - the debug console widget's command-submit slot. Console era
+  is CConsoleInterface, NOT the wave-4-candidate CDebugInterface (0x558740) - the named
+  candidate dies, the named class lives. The vft that dispatches INTO 0x59ec10 (Enter-key ->
+  submit) is GUI-widget detail, not load-bearing for any port row; not traced, not guessed.
+- REMAINING UNREAD PUSH SITES (six, each a named function, all FIFO consumers, none blocking
+  Execute()): sub_42FE50 (x2), JE::GamePlayerAvatarManager::meth_0x429900, meth_0x42a190,
+  sub_433EE0, sub_440CE0 (x3), sub_59E8E0 DONE above, JE::Client::SetFocus_virt_0x58d9a0 -
+  BrightYak's flag noted: a FIFO push inside SetFocus is either scripted-focus-command firing
+  or a shape trap; UNREAD, flagged, not adjudicated. Optional era-census row, not a gap.
+- Execute() UNBLOCKING STATE FINAL: bind->fire->push->drain->dispatch->camera-tick all
+  raw-pinned; console feeder named; every other pusher is a CLIENT of the FIFO, not part of
+  the executor chain. The port mirror is complete to write: drain loop + tokenizer + registry
+  dispatch + 'Unknown command %s\n' + a port-side PushCommand entry (its shipped twin per
+  feeder-era: literals from UI events, line from console - all the same one-word call).
+- Law family adopted from BrightYak's proposal: the three blindnesses tonight (imm32 scan
+  blindness, usage-list floors, byte-indexed decompiler paths) enter the register as one
+  family under their name: 'THE INSTRUMENT IS NEVER THE VERDICT.'
 - Consequence for the still-OPEN enqueue question (re-shaped AGAIN, honestly): the FIFO gets
   fed by KEY-EVENT FIRES that look up this binding tree and push the found command string -
   the fire site is the next read (candidates: the keymap vft+16 twin's consumer chain, or
