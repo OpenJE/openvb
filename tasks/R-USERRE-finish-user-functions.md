@@ -1209,3 +1209,46 @@ first STRING-argument native (uses `sub_59AB20` with a 0x80 buffer at 0x45b7cc),
 through `*(creature+360)`, casts `Inventory->GameInventory`, and probes via a `StringTree` lookup
 (`JE::StringTree::meth_0x401d20` + `GameInventory::meth_0x46a6c0`) with five distinct failure lines; it needs the
 AMX string-fetch helper and the inventory container, so it is queued rather than squeezed in.
+
+## Slice-B7 (WildKnight 01a1639b, 2026-10-22 ~13:0x) — research tranche: one shipped STUB, one self-answer shortcut, and the idiom that reframes the SetHP paradox
+
+Three rows read, none ported (the first is portable in principle; it is not worth a commit until the helper it
+calls is understood, and it returns nothing either way).
+
+**1. `F3::GetWeaponCombo` (0x45a9f0) is a shipped stub that always returns 0.** Byte-verified, not pseudocode:
+after the arity gate (0x45aa04) it calls `sub_45B9F0(amx, params[1], &local_4)` (0x45aa1a), reports
+`"GetWeaponCombo() was unable to find the requested entity."` when that fails (0x45aa2c), and every path lands on
+`loc_45AA34` = `xor eax,eax; …; retn`. `local_4` — the resolved answer — is **never read**. So scripts calling
+this native get 0 no matter what, and any script logic that trusts a weapon-combo return value has been reading a
+constant for the whole life of the build. Porting it is trivial and must stay trivial: return 0, keep the error
+line, and do NOT "helpfully" return the resolved object.
+
+**2. `GetSquadAttitude` (0x45aa90) / `GetTeamAttitude` (0x45aaf0) answer the easy case before asking anyone.**
+Arity 2, no entity resolve at all, and the FIRST thing they do is
+`if (params[1] == params[2]) return 1;` (0x45aab2-0x45aaba, same at 0x45ab12-0x45ab1a) — an entity's attitude to
+itself is "same" by identity, not by table lookup. Otherwise:
+`GetWorldServerInstance_0x401150()` → the indirection below → vft slot **34** (136/4) for squad, **33** (132/4)
+for team → then `GameActionEquip::meth_0x5692e0` / `meth_0x56a240` take the two handles. Deferred: needs the
+world-server relationship object, those two virtuals, and the port's own server-side stance.
+
+**3. The idiom — and why it matters to B4b.** Both attitude bodies compute their callee object as
+
+    v4 = &WSI[1] + *( WSI[1].mbr_0x0 + 4 )        ; 0x45aacf / 0x45ab2f
+
+i.e. *take a value loaded from a slot at +4 of something, and add it to a base*. That is structurally the same
+shape SetHP uses three times in a row (`mov edx,[eax+4] ; mov edx,[edx+4] ; mov eax,[edx+eax+1E0h]`,
+0x45b367-0x45b36d). Two unrelated natives in the same batch doing it means it is **a deliberate engine indiom —
+a base-plus-delta addressing of an associated object — not a compiler artifact and not a vbtable quirk.** Which
+supports JadeBear's census conclusion from the other side: SetHP's `+0x1E0` is read off a DIFFERENT object than
+the entity, so the "is it self-referential" framing was always the wrong question, and my reading of the base
+register was the mistake. Their Entity+0x1E0 lifecycle-state finding (birth 5, `==7` at 0x549030, five "Invalid
+state change" strings in `meth_0x5507f0`) and this idiom are the same fact seen from a dump and from the code.
+
+**Also ruled out, cheaply and by name:** Entity's own ctor stores exactly ONE vftable (`Entity_DynamicObject_vftable_692084`
+at `[esi+0]`, 0x5513c8) and writes nothing to +4, so `[entity+4]` is not a second vftable installed by Entity —
+which was the leading static hypothesis for the displacement chain. Settling it needs one live read
+(`[entity+4]`, then `*([entity+4]+4)`), already requested from the session holding the lockstep tooling.
+
+Batch B tally: 10 LIVE, 3 read-whole-deferred (attitude pair: relationship object; weapon-combo: nothing to
+port), 5 blocked (3 arrays on the item-69 layout ask, 2 HP writers on the now-identified delta-idiom subject),
+and one shipped stub documented so nobody "fixes" it into returning something.
