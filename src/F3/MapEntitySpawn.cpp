@@ -435,11 +435,31 @@ namespace F3 {
 		// For GameEffectDamage this is not a branch that happens to be taken, it is the ONLY one:
 		// its wrapper sets +0xB unconditionally @0x45c6b3 BEFORE the gate @0x45c6b7, so the
 		// predicate always reads ready and the enqueue at 0x550701 is UNREACHABLE FOR DAMAGE.
-		// The deque is still live - but the traffic that fills it is not damage: the apply body
-		// enqueues GameActionDie through the named action funnel 0x550720 @0x45c626 (verified:
-		// `e8 f5 40 0f 00`), i.e. onto the +0x304 ACTION deque. Recorded so nobody concludes from
-		// the damage evidence alone that this container is dead code - and so Step 2 is drafted as
-		// SYNCHRONOUS PUSH-SIDE application, not as queueing damage.
+		// THE OPEN QUESTION IS NOW CLOSED (NiceTiger 79b6c81; re-verified here against the pinned
+		// exe, not pasted). CodeRefsTo(push_back 0x54ea00) = exactly THREE sites image-wide, with
+		// zero indirect enablers (no imm32 of that EA anywhere in .text, so the census is closed):
+		//   0x55070c -> +0x2E0 via THIS API (readiness-gated, so damage never satisfies it)
+		//   0x55072e -> +0x304 action seam (`lea ecx,[esi+304h]` @0x550728)
+		//   0x552692 -> +0x2E0 from DELTA-RECORD REPLAY, in JE::Entity::virt_meth_0x552420 = Entity
+		//     vft slot 10 @0x692084 (extent 0x33c), and this site has NO slot-0 readiness test:
+		//     factory `call [edx+28h]` @0x552664 -> assign-copy `call [eax+8]` @0x552676 (slot 2 =
+		//     0x45c0c0) -> stamp `call 0x55a3a0` @0x552682 -> `lea ecx,[esi+2e0h]` @0x55268c ->
+		//     push @0x552692 -> wake `call 0x54ef30` @0x552699. A replayed effect that is NOT ready
+		//     therefore sits pending, which is exactly the shape walk #1's skip-past branch (@0x54c63d
+		//     inc / @0x54c63e jmp) exists to serve. The container is live-code territory, fed by
+		//     net/replay rather than by the attack feeder.
+		// TWO CITE CORRECTIONS, both byte-checked here before repeating the finding:
+		//   (i) the gate is `call 0x5b4f30` + `test al,1` + `je 0x5526ab` @0x552644/0x55264b, NOT
+		//       0x5525d3. That address holds `8b 87 f0 02 00 00 85 c0` = mov eax,[edi+2F0h];
+		//       test eax,eax - the SOURCE deque's COUNT check. T-074 §2 carried the same off-by-0x71
+		//       cite, so it propagates unless corrected at the source.
+		//  (ii) "no fire-walk in the loop" is right; "no fire-ELIGIBLE call" is not. @0x5526a0 calls
+		//       meth_0x55af80, head `56 8b f1 8a 46 0a 84 c0 74 15` = a +0xA-gated [vft+0x1C]
+		//       predicate path, so a replayed entry can be reached immediately after the push
+		//       without waiting for a pump - the same push-side law damage obeys.
+		// PORT DEBT, named and era-blocked with the delta-record machinery: this is a SECOND +0x2E0
+		// writer the port eventually owes. Step 1 ports the container law only; the replay feeder is
+		// not implemented and is not invented here.
 		if ( pe.done0xB ) {
 			FirePendingEffect( target, &pe );
 			target->effectsFreed++;            // 0x55a570's [vft+0x0C](obj,1) deleting-dtor
