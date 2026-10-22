@@ -1,6 +1,6 @@
 ---
 status: in-progress
-assignee: BrightYak `01a16198-7b63-74d2-a895-a5fc6a051707` (R-USERRE-A sealed by coordinator QuickNova/LoudDragon 2026-10-22 03:2x; fresh claim, no inherited identity)
+assignee: SwiftOwl `01a16198-6cbb` (R-USERRE-A dispatched by QuickNova 2026-10-22 ~04:2x post-BrightYak-seal: "the board's biggest vacant seat"; resume = their ledger tail, first census delivered same-sitting as slice-4e) — predecessor: BrightYak `01a16198-7b63-74d2-a895-a5fc6a051707` (R-USERRE-A sealed by coordinator QuickNova/LoudDragon 2026-10-22 03:2x; fresh claim, no inherited identity)
 type: implementation (product code; batch A = 112 console-command ports, per-row recipe: port + EA-cite (item 57) + gate green)
 sequencing: A first (this claim); B/C/D follow per PARK lines R-USERRE-A/B
 ---
@@ -393,3 +393,72 @@ SESSION LEDGER: slice1 9e5698e / slice2 e7731d0 / 3a b69fca0 / 3b bedff55 / 3c 5
 (+ intermediate openje 9e/c2/f2/37a commits, all pushed) - 26/84 registered, gates green at every
 pointer, two self-corrections landed same-sitting. Resume: ledger tail above -> tree_b inserters
 census -> Gfx_Engine seam (toggle thunks + FOV view trio). -end-of-transmission (compaction imminent)
+
+
+## Slice-4e CENSUS CLOSED (SwiftOwl 01a16198, 2026-10-22) - tree_b inserters found, the
+"executor" attribution SUPERSEDED, and the REAL executor is FULLY read. Corrections relay-
+forward per register law; BrightYak's text above stands as the record of what was believed when.
+
+### 1. ModelCache tree_b is a MODEL CACHE. Not a command tree. (census, raw-verified this seat)
+- The tree at ModelCache+0x10/+0x14/+0x18 has EXACTLY ONE inserter in the image: sub_5857F0
+  @0x58598e via JE::StringTree::meth_0x585700 (insert-with-value; meth_0x585700's xref list is
+  that ONE site - IDB xrefs_to, complete, no truncation).
+- sub_5857F0 (0x228) READ VERBATIM: copy key -> sub_62B180 (lowercase) -> StringTree::
+  meth_0x545710 lower_bound + sub_433930 key-equal -> HIT: `mov edi,[eax+28h]` (VALUE LOAD -
+  no call of any kind) / MISS: operator new(0x34) -> cls_0x5638e0-family ctor sub_567010(name,
+  global dword byte_6FF0D8, 1, char) -> insert. THIS is get-or-create-by-lowercased-name, the
+  dtor (0x585b10) confirms the semantics by destruction: per node, dtor meth_0x567f50 + free
+  of the object at node+0x28 - "the cached models" (IDB's own dtor annotation agrees).
+- Wrapper sub_585A50: null-name guard -> core -> `mov [obj+28h], flagbyte` -> `call
+  sub_565760(obj, param)` - a fixed member call on the CACHED OBJECT, not a handler dispatch.
+- Sole callers: Entity::meth_0x54ca40 (-> wrapper) <- Entity::meth_0x54dc50. Model request path.
+- Ctor's decimal loop (0x585cf5-0x585dcd: _itoa "1","2",... -> meth_0x4339b0 lower_bound on the
+  +0x04 object, 0x38-node tree) probes the OTHER tree (VFX_Parameter-shaped) and STOPS at the
+  first miss - an entry COUNT scan; it inserts nothing anywhere.
+- CONSEQUENCE: slice-3d's "EXECUTOR INVOKE MECHANISM fully found: ... invokes *(node+0x28)
+  handler" and the FINAL read's "script commands execute against the ModelCache tree_b" are
+  REFUTED by the bytes above; `*(node+0x28)` never appears as a call in this chain (value slot
+  holds a 0x34-byte model object whose dtor the cache calls at teardown). No port code was
+  built on the attribution yet - zero blast radius. tree_b stays UNPORTED-by-this-row (it
+  belongs to the ModelCache era, not the console era).
+
+### 2. THE REAL EXECUTOR: cls_0x580ba0::meth_0x580ba0 - the console's shipped Execute twin.
+- Read verbatim (decompile this seat, 0x580ba0, 0x161 bytes): walks a queue of 28-byte command
+  strings (members mbr_0x8 begin / mbr_0xc end - the object is 16B, embedded at GameClient+124
+  (byte-indexed [124] in the pump's decompile)); per command: strcpy to a 256B local ->
+  sub_580B00(v17, &v13) TOKENIZER -> `v5 = sub_59F030(*Block)` FIRST-TOKEN LOOKUP ->
+  `if (v5) v5(&v13)` **HANDLER CALLED with the argv vector** -> miss branch logs
+  "Unknown command %s\n" (0x580c65) -> queue advance erases consumed strings (meth_0x401b20
+  shift loop + meth_0x4014b0 dtor steps).
+- Tokenizer sub_580B00: strtok (sub_61A7D1) against byte_671C60 = `db 20h` - a SINGLE SPACE,
+  no tabs - into a std::vector<char*> (sub_5457B0 push_back when room, sub_5807D0 realloc-grow
+  else); *Block = argv[0] = command name; &v13 (the vector head) is the handler's sole argument.
+- Lookup chain CLOSED: sub_59F030 copies the token -> sub_59EC80 = lower_bound (meth_0x545710)
+  + key-equal (sub_433930) on &F3::global_cls_0x4d8d70_0x70c668 -> returns node+0x28 VALUE
+  (0x59ecd6 `return v3[10]` = +0x28) or 0. The console registry's node+0x28 holds the HANDLER -
+  the +0x28 value slot does mean "callable" THERE, which is exactly where slice-3d's shape
+  belonged (ModelCache's node+0x28 holds a MODEL instead - same offset, different class of
+  value; the discriminator is which tree).   
+- Registry 0x70C668 consumer census COMPLETE (xrefs_to, all): RegisterCommand (2 data refs,
+  insert), sub_59EC80 (2 data refs, lookup), static-init 0x643f60 (ctor), atexit thunk 0x646b90
+  (dtor). Nothing else touches it. Driver call site: GameClient pump
+  virt_meth_0x45f000(+tail) @0x587fd5, per frame.
+
+### 3. PORT-LAW CONSEQUENCE for the Execute() decision (the dispatch's second task)
+- Execute() is NOT port-side value-add: the shipped twin EXISTS and is now fully read
+  (queue+drainer cls_0x580ba0 @GameClient+124, tokenizer sub_580B00 [SPACE-delimited, argv
+  vector, strtok semantics], dispatch sub_59F030->0x59EC80 [lower_bound + equal, value=+0x28],
+  miss-log "Unknown command %s\n"). The port must MIRROR it, cited, item-57 style - handler
+  contract: __cdecl(void* argvVector), argv[0]=lower?? NOTE: lookup is _stricmp-keyed (the
+  tree's compare policy) so handler matching is case-INSENSITIVE; the tokenizer does NOT
+  lowercase - the registry's case-insensitive keys do the work.
+- OPEN NEXT (named, not answered): the ENQUEUE side - who pushes command strings into the
+  GameClient+124 queue (console widget Enter path, era-guess CDebugInterface/GUI console;
+  the pushers define the queue element's 28-byte layout {string, +8, +C?}). Until read, the
+  port's queue is modeled as a vector<string> with the 28B stride NAMED-UNKNOWN.
+- Then: Execute() port lands in Commands.* with the drain-per-frame wiring (GameClient::Update
+  era from slice-1/2/3a) + the 58 remaining registrations proceed per the task's batches.
+
+GATES at this census commit: paper-only (task file); no src touched. Census method was
+xrefs_to/decompile on ida_original_f3 + F3.json class tables; every claim above carries its
+EA and can be re-dumped cold.
