@@ -2,7 +2,7 @@
 
 Rules (see tasks/README.md § Lane contract): every closed row names a PARK successor or goes on record DONE-NO-SUCCESSOR. Lanes pull from the top; coordinator assigns at checkpoint. Task files are created AT CLAIM — a PARK line is a scope, not a file.
 
-| R-CS-ANN | CSound epoch annotation batch (HappyStorm, self-named successor #1): R-CS §7.2-7.6 comments incl the [E1] on-object alias note at [sound+4] — 5-6 annotation targets, one sitting, comment-tier | **HappyStorm — PULLED** | writer seat free as of bd69842 |
+| ~~R-CS-ANN~~ **CLAIMED 8e46fb6 (relay accepted; wave = 8 §7 comment groups incl the [E1] alias note at its seed 0x4C8149, 6-vft inheritance set; §7.1 rename stays in the wave-3 bundle; R-ST pre-flight verbatim incl save-sync-before-first-comment)** | CSound epoch annotation batch (HappyStorm, self-named successor #1): R-CS §7.2-7.6 comments incl the [E1] on-object alias note at [sound+4] — 5-6 annotation targets, one sitting, comment-tier | **HappyStorm — PULLED** | writer seat free as of bd69842 |
 | ST-RENAME | StringTree artifact-pair RENAME (0x4B2DD0/0x56EE40 out of the prefix, into sub_/free — their comments tell the truth, their names still mislead): MINT-TIER, share-check pre-gated, belongs in wave-3 with R-INST's install edges + C-W2b residue | wave-3 bundle | HappyStorm successor #2 |
 
 ## READY NOW (no deps, no slot conflicts)
@@ -22,6 +22,9 @@ Rules (see tasks/README.md § Lane contract): every closed row names a PARK succ
 | R-S9 | Gfx_Engine top-5 follow-ons: s9 device-teardown twin ([this+0x894] loop), s101/102 private-texture-id chain, and the D3D8 slot-numbering UNASSERTED note from b5 — decode via the +0x40 MapFile obj | EpicRaven | offline/cache; share-check/field discipline as usual |
 
 | P-CMBT | COMBAT/ANIM-QUEUE PORT-DESIGN DOC (the T-013-port-design genre applied to the next era): raiser truth-table + TurnPrep clear identity (virt_meth_0x549090 + [ent+0x300] stamp) + transient-idle arm (already P-REV'd — verify alignment) + HOL ownership by unfinished-WORK + inbox-vs-deque damage deferral (T-074 @0x55a501) + state-7 gate byte [ent+0x1BC] + D-2 3+resident cap semantics + explicit-time records (+0x10 offset math, ×−1000) — ordered steps with per-step acceptance + gates, ZERO thinking cost at execution, device-decode LAST if applicable | design-only | **SwiftMoon — PULLED (third consecutive close = next pull)** |
+
+| P-CMBT | **DONE + BANKED to docs/f3/P-CMBT-combat-anim-port-design.md** — 6-step device-free-first design; raw catches on its OWN era (budget=+0x174 not +0x179; arm=+0x318 not the +0x2E0+0x34 arithmetic; raiser pair on the +0x304 walk tail); errata list §'errata' → T-079 batch 3 (2 doc items) + product comment item queued for the product lane; step 6 frozen pending T-067 BONUS-3 gate |
+| R-PORT-Q | inbox-era digest extension (qi= grammar + orig-capture record + d2-stress re-arm) | after product lane lands P-CMBT steps 1-2 |
 
 ## QUEUED (trigger-gated)
 | H-IDX | STANDING ROW (never closes): ea-index --check gate + refresh-on-drift, 'any idle hand, twenty minutes' — the freshness guarantee behind item 53 |
