@@ -69,6 +69,56 @@ Apply `[vft+0x2C]` = 0x45C140 (HP write @0x45c1a3, clamp `cur:=min` 0x4629C0, re
 `+0xAC/+0xAD` batch marks and the var_B1 residue) runs at FIRE time on the TARGET's walk #1 —
 earliest: the target's next pump (same frame iff the world pumps the target after the attacker).
 
+> **SLOT CORRECTION + SCHEDULE CORRECTION (NiceTiger `c1fdb7a`, independently re-derived from the PE at
+> TrueRaven's request before this line was touched — item 75's adoption rule).** Two of the cites above are
+> wrong, and they are wrong in *different* directions, so read both:
+>
+> 1. **The apply path is `[vft+0x28]` (slot 10), not `[vft+0x2C]`.** Slot 11 (+0x2C) of the effect vft is
+>    `0x404b70`, whose first byte is `c3` — a bare `retn`. The wrapper at **`0x45c6b0`** is the vft entry, and
+>    **`0x45c140` appears in no vft cell anywhere in the image**: it is reached only by the wrapper's
+>    tail-jmp `e9 76 fa ff ff`. (So "apply = 0x45C140" was right about the function and wrong about how the
+>    table reaches it.) The raw wrapper, byte by byte:
+>
+>        45c6b0 56 8b f1          push esi / mov esi,ecx
+>        45c6b3 c6 46 0b 01       mov byte [esi+0Bh],1   <-- ready set BEFORE anything else
+>        45c6b7 e8 64 5f 00 00    call 0x462620          <-- gate; can throw SEH
+>        45c6bc 84 c0 75 02 5e c3 test al,al / jnz / pop esi / retn
+>        45c6c3 8b ce 5e          mov ecx,esi / pop esi
+>        45c6c6 e9 76 fa ff ff    jmp 0x45c140           <-- tail-jmp into the apply body
+>
+> 2. **"Damage never queues" — so the sentence above claiming it "runs at FIRE time on the TARGET's walk #1"
+>    is wrong about the schedule for damage effects.** Because `[+0xB]` is set to 1 *unconditionally at
+>    0x45c6b3, before the gate even runs*, the ready test downstream always passes and the effect is
+>    inline-fired during the enqueue call; the `+0x2E0` enqueue path @0x550701 is **unreachable for
+>    GameEffectDamage**. The only other writers of byte +0xB are `0x55a460`'s false-predicate leg and
+>    `0x45c35f`, both of which also store 1 — no path leaves damage at 0.
+> 3. **The container is NOT dead code, though.** Real combat traffic reaches the queue by another route: a
+>    **lethal** hit enqueues `GameActionDie` through the named `0x550720` seam @`0x45c626`. So Step 1's
+>    skip-past/multi-entry behavior is exercised by **death**, and Step 2 must model **synchronous
+>    push-side effects**, not a drain. Say it that way in any acceptance note: an inbox that only ever sees
+>    damage is an inbox tested against traffic shipped cannot produce.
+> 4. **Step 2's blast radius is larger than "HP write."** Apply's target-side touch list (all cited in
+>    `docs/f3/P-CMBT-step2-feeder-evidence.md` §4): clamp-store `[tgt+0x24]` with **no lower bound** (negative
+>    HP is proven for this writer — the clamp hole's byte-level receipt), first-hit-and-survive-gated
+>    `QueueAnimEvent` (ids `0x21/0x22/0x25/0x26/0x28/0x29`, keyed on tgt-adj `+0x3A6` + var_B1 backhit),
+>    VEG by type/material with a **damage==0 GRAZE** path → `FX_HitRicochetMetal`, sound via `sub_48CD00`
+>    rolling `[eff+0xA8]`, a **SYNCHRONOUS `OnDamage` script invoke** (`sub_55A220` → `RunScript_54afe0`,
+>    4-cell block {clock base, src handle, damage, server} — a second script-by-name witness for gap 3, this
+>    one combat-side), a `GameServer::meth_0x46d020` broadcast (+0x1E0 field), and `GameActionDie`
+>    construction+seam-enqueue on lethality. Damage is **copied** per hit, not re-rolled: fresh factory call
+>    inside the per-hit loop (`[server vft+40](type 1)` @0x403851), stamped +0x9C/0xA0/0xA4/0xA8 by DIRECT
+>    movs from the hit entry @0x4038b3-0x4038d1; batch marks +0xAC (multi) / +0xAD (non-first) @0x4038e8-f7.
+>    Multi-hit attack = N objects, N pushes to the same resolved target.
+> 5. **Lock-step caution, and a new member of the B8 family.** Apply is SEH + `__security_cookie` + two
+>    jump tables + x87 — step counts will not match a naive port. And the gate at `0x462620` at the top of
+>    slot 10 **throws the shipped SEH exception "Invalid attempt to retrieve world server instance."** on a bad
+>    world-server flag, with a null-singleton leg at `0x46265d-64` that is the guarded-selection/unguarded-use
+>    idiom verbatim — the fourth known member of that family, now inside the damage path itself.
+>
+> **Left in place, not rewritten:** line 41's `finish/fire [vft+0x2C] @0x55a501` was NOT re-verified here.
+> That call site's object may be a different class from the effect vft, and a bare `retn` at slot 11 of THIS
+> vtable is not evidence about the other. Per item 73, that is an unverified neighbor, not a refutation.
+
 **Change:** the port's current direct-HP drain (GameActionAttack.cpp finisher, "Deviation: direct
 HP write" comment) becomes: finisher builds `PendingEffect{kDamage, actor, dmg, damageType}` per
 hit and `EnqueueEffect(target, …)`; the HP write, the ordered Apply chain (angle chain 0x45C243..,
