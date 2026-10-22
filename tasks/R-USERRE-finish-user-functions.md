@@ -1794,6 +1794,75 @@ Process, applied this time instead of learned again: `port-annot` was run BEFORE
 and both commit hashes below are re-emitted from git rather than typed from memory.
 
 
+## Slice-B22/B23/B24 (TrueRaven 01a1652d, 2026-10-22 ~20:00-21:30) — resumed from the PAUSED block: 27 → 36 natives, 196 → 243 asserts, and three of the lane's own claims corrected against bytes
+
+Resumed at the recorded resume point rather than from a summary; verified the tree first (table was 27,
+trio absent, ahead 64, only `tools/t052-drive.py` dirty and never staged), then worked the candidates in
+yield order. Each slice landed with bodies + EA cites + suite + docs and its own green gates.
+
+**B22 — the task trio** (0x45b900/0x45b940/0x45b980; table 27 → 30, suite 196 → 217). Three byte-identical
+24-instruction bodies differing only in the gate name and the delegate EA; the only batch-B family with
+**no entity resolve at all**; the return is `mov eax,1` with no test of the callee. The era behind the
+delegates was read end to end and recorded, not ported: singleton 0x70bd98 + vbptr base+delta + **vft slot
+30** (0x78 bytes = 120, not 30 cells) + `RTTI Journal -> GameJournal`; `sub_46C7A0`/`sub_46C840` are ONE
+upsert differing only in the state literal (**1** @0x46c7ee/0x46c805 vs **2** @0x46c88e/0x46c8a5);
+`sub_46C6C0` is insert-if-absent keyed on BOTH fields with `new(0xC)` where TaskStatus uses `new(0x10)`;
+tails are SEND packet **97/98/99** (@0x46db25 `61h`, 0x46dc05 `62h`, 0x46dce5 `63h`) — a different number
+space from JadeBear's RECV id-map, which answers a question that doc raises by omission.
+**TWO CORRECTIONS, both against this file's own text:** a null `0x70bd98` is NOT a silent no-op
+(`xor ecx,ecx` @0x46ecdc/0x46ed3c/0x46ed9c feeds `mov eax,[ecx]` @**0x46ecea/0x46ed4a/0x46edaa** — shipped
+FAULTS and never reaches its return), and the natives fault earlier still on a null manager
+(`mov ecx,[eax+18h]` @0x45b92e/0x45b96e/0x45b9ae, no test anywhere). The state that really does succeed
+while doing nothing is the failed cast (0x46ed06-08). `docs/f3/CreatureHpWriters.md` B8 corrected in place
+with the misreading left visible; `docs/f3/TaskJournalTrio.md` written.
+
+**B23 — the weapon-combo pair** (0x45a9f0/0x45aa40; table 30 → 32, suite 217 → 237). Both are
+resolve-and-discard stubs returning 0 on EVERY path; `SetWeaponCombo` is arity 2 and reads only params[1]
+(`mov ecx,[edi+4]` @0x45aa60 is the only cell load in the body) — the setter sets nothing. Shared callee
+`sub_45B9F0` resolves with the **active-check flag = 1** (0x45ba02), which is observable and asserted via
+the inactive-entity warning; failed cast and failed resolve produce the SAME line, asserted as
+indistinguishable rather than split into two messages shipped does not have. `docs/f3/WeaponComboStubs.md`.
+
+**B24 — the quest/journal alias quad** (table 32 → 36, suite 237 → 243). Read from the PE itself
+(`sha256 4652a3d0…3579b87`, python section-walk; independently verified by NiceTiger through IDA reads):
+shipped's F3 game-lib table @0x6F3750 is 45 `{name,fn}` pairs terminated by {0,0} at idx 45, and idx 41-44
+(OpenQuest/CloseQuest/AddQuestEntry/AddJournalEntry) all hold the SAME dword **0x420990** =
+`b8 01 00 00 00 c3` = `mov eax,1; ret`. Quest/journal scripting is hardcoded TRUE in the demo. Ported as
+ONE body under FOUR names: collapsing them would make three names unresolvable (shipped resolves BY NAME),
+splitting them would invent four things that are one. New sentinel `nExpectedCells = -1` = **no gate
+exists**, kept distinct from Protagonist's genuine 0 at index 25, with BOTH sides asserted. The table also
+confirms the B22/B23 rows' names and indices (idx 38/39/40 = the trio, 13/14 = the combo pair).
+
+**Gap 1 ANSWERED** (`docs/f3/NativeInstallerEvidence.md`): the table's only xref is
+`JE::Script_Small::Load_5a8880`, which registers THREE tables per script load (0x5a8ada / 0x5a8ae7 /
+0x5a8afe, each `param_3 = -1`) into that script's OWN AMX, and fails the entire load with
+`"Script_Small::Load() Unable to locate a matching function for a Native in: %s\n"` if any name misses. So
+the table's NAME SET is load-bearing: an installer cannot ship names the module does not declare, which is
+why FastNova's name audit is a prerequisite rather than a nicety. Pubvar tags decoded from the decimals by
+little-endian byte split: **MSLF / STAT / FQUE / FTBL**. That corrects the discovery note's "`myself`" — no
+tag spells that (it is MSLF, 0x464c534d), and `FQUE` was right; correction relayed. My own first draft
+hedged these as "pending a byte split" when the split was one command away — the hedge was the error.
+
+**Method notes worth carrying:** three falsification runs (B23: 2 mutations → the 2 expected reds; B24: 3
+mutations at once — alias→0, one name→"AddQuest", and a GATED row declaring 2 instead of 1 → the 4 expected
+reds including "every gated table row accepts the arity its own row declares", proving the recomputation
+loop bites rather than merely running), each restored with `grep -c MUTATION` = 0 and a re-run before
+committing. Every floor bump proven BOTH ways (green at N, ASSERT-FAIL at N+1) via `OPENVB_TEST_FLOOR`,
+because a floor nobody has seen fail is a decoration. `devenv/scripts/run-all-tests.nix` stays stale against
+the installed payload until a devenv reload and the gate says so itself — expected, not a defect.
+
+**Delegated rather than done alone** (user: three parallel sessions available): FastNova →
+`tools/native-table-dump.py` + `docs/f3/NativeTableAudit.md` (all three tables walked to their terminators,
+my 36 names audited against shipped's 45, no src edits); WildUnion → `docs/f3/NativeAbiEvidence.md` (the AMX
+native INVOCATION site, so gap 4's ABI mismatch becomes a byte-pinned call form instead of a design
+argument); NiceTiger → independent verification of the B22/B23/B24 claims plus an adversarial pass on the
+three whole-body claims (no-resolve / flag=1 / params[2]-unread) and a search for any path that survives a
+null 0x70bd98.
+
+**Batch B now 36 LIVE.** Status semantics UNCHANGED and still travel with the batch: **verified reversal
+with enforced behavior, NOT runtime parity** — nothing in B22-B24 changes what the running port does,
+because gaps 2-5 remain open.
+
 ## Status correction for the whole batch (WildKnight 01a1639b) — the natives are reversed and tested, but unreachable from the running port
 
 While scoping `StartDialogue` I found that nothing in the tree can call the 27 natives: `ScriptNativeGameCreatureTable`
@@ -1878,8 +1947,8 @@ hash or count with the listed command before acting on it.
 
 | item | value | how to confirm |
 |---|---|---|
-| batch B natives LIVE | **32**, table `s_gameCreatureNatives[32]` (27 at the pause; B22 added the task trio, B23 the weapon-combo pair) | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
-| suite | **237 asserts, 0 failures**; floor raised 196 → 217 → 237 in `devenv/scripts/run-all-tests.nix` | `run-all-tests` → `ScriptNatives=OK [237 asserts >= 237]` |
+| batch B natives LIVE | **36**, table `s_gameCreatureNatives[36]` (27 at the pause; B22 task trio, B23 weapon-combo pair, B24 quest/journal alias quad) | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
+| suite | **243 asserts, 0 failures**; floor raised 196 → 217 → 237 → 243 in `devenv/scripts/run-all-tests.nix` | `run-all-tests` → `ScriptNatives=OK [243 asserts >= 243]` |
 | gates at pause | run-all **13 pass / 0 fail** (incl. port-annot), `msvc-build` rc=0, cppcheck rc=0 | rerun; no dirty source behind them |
 | branch | `automated-reversing`, **ahead 60, UNPUSHED** (no push without a lane decision) | `git rev-list --count origin/automated-reversing..HEAD` |
 | dirty files | only `tools/t052-drive.py` (another owner's - never stage) | `git status --short` |
@@ -1958,7 +2027,7 @@ against a declared stand-in registry - read it that way, and say so in any relay
 
 - `docs/f3/ScriptNatives`-family notes: `CreatureHpAccessors.md`, `CreatureHpWriters.md`,
   `CreatureSkillAndPerkArrays.md`, `AmxStringParamFetch.md`, `InventoryEquipPaths.md`, `PartyAccessors.md`,
-  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`, `TaskJournalTrio.md` (B22: the trio, its era, the 97/98/99 send ids), `WeaponComboStubs.md` (B23: the resolve-and-discard pair)
+  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`, `TaskJournalTrio.md` (B22: the trio, its era, the 97/98/99 send ids), `WeaponComboStubs.md` (B23: the resolve-and-discard pair), `NativeInstallerEvidence.md` (gap 1 ANSWERED: three tables registered per script load, fail-fast on a missing name, pubvar tags MSLF/STAT/FQUE/FTBL)
 - `docs/notes/commit-citation-protocol.md` - two-database citation rules + the 247-token sweep (7 non-citations,
   `f2b3a1c` deliberately left unresolved as evidence)
 - `src/F3/ScriptNatives.{hpp,cpp}`, `src/F3/ScriptInventory.hpp`, `src/F3/ScriptParty.hpp`,

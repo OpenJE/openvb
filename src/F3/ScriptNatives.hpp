@@ -325,13 +325,33 @@ namespace F3 {
 	struct ScriptNativeEntry {
 		const char *pcName;
 		int (*fn)( int amx, int params );
-		int nExpectedCells;   // the param_3 the body passes to the arity gate
+		int nExpectedCells;   // the param_3 the body passes to the arity gate; -1 = THE BODY HAS NO GATE
 	};
 
-	// The five getters, in shipped EA order (0x45abe0, 0x45aeb0, 0x45af40, 0x45afd0, 0x45b070).
-	// Seven entries today: the five B1 getters plus GetCurrentHP/GetMaxHP (B3), in shipped
-// EA order. The HP pair cast to GameEntity, NOT GameCreature - the table does not encode
-// the class, the bodies do (the shipped RTTI site differs; see each body).
+	// ---- the quest/journal alias quad (batch B slice B24) ------------------------------------
+	// Shipped's F3 game-lib native table at 0x6F3750 (a {name-ptr, fn-ptr} array of 45 entries, read from
+	// the PE image itself rather than from any database listing) gives FOUR names - OpenQuest, CloseQuest,
+	// AddQuestEntry, AddJournalEntry (table idx 41-44) - whose fn slot holds the SAME dword 0x420990 in all
+	// four. That body is `b8 01 00 00 00 c3` = `mov eax,1; ret`: no gate, no params read, no ecx, no branch.
+	// So quest/journal scripting is hardcoded TRUE in the shipped demo, and these four are ALIASES of one
+	// function rather than four functions that agree. Ported as ONE body registered under FOUR names:
+	// collapsing them into one row would misrepresent the registration (shipped resolves natives BY NAME at
+	// the amx_Register era, 0x5ccd60 per-entry), and splitting them would invent four things that are one.
+	// nExpectedCells is -1, the "no gate" sentinel, and NOT 0: 0 belongs to Protagonist, which really does
+	// call the gate with param_3 = 0. Conflating the two would let a future installer register a gate that
+	// shipped never had.
+	// IDB NAMING WARNING: 0x420990 is ALSO GUI::Window vftable slot 74 (@0x66e4d4), and that is where the
+	// DB's `JE::GUI::Window::virt_meth_0x420990` label comes from - the body knows nothing about windows.
+	// Anchor these rows on the EA and the five bytes, not on the label.
+	int ScriptNative_QuestJournalAlias( int amx, int params );   // 0x420990, reached via table idx 41-44
+
+	// The getters begin in shipped EA order (0x45abe0, 0x45aeb0, 0x45af40, 0x45afd0, 0x45b070); later
+	// slices append in the order they were reversed, each row carrying its own shipped EA comment.
+	// THIRTY-SIX entries today: the five B1 getters, the HP pair, the type family, PlayMusic, the HP
+	// writers, the door trio, the attribute/array families, the item family, Protagonist + AddCNPCToParty,
+	// the task trio (B22), the weapon-combo pair (B23) and the quest/journal alias quad (B24). The HP pair
+	// cast to GameEntity, NOT GameCreature - the table does not encode the class, the bodies do (the shipped
+	// RTTI site differs; see each body).
 const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount );
 
 	// ---- port-side entity registry (the byte_70BE0C stand-in) ---------------------

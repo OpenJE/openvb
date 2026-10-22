@@ -390,6 +390,33 @@ void ScriptNativeResetRegistry() {
 		return GameEntityMaxHp( pEntity );
 	} // ScriptNative_GetMaxHP
 
+	// ---- the quest/journal alias quad (batch B slice B24) - ONE body, FOUR names -------------------
+	// Shipped's F3 game-lib native table (the {name, fn} array at 0x6F3750, read from the PE itself rather
+	// than from any database listing) holds FOUR entries - OpenQuest (idx 41), CloseQuest (42),
+	// AddQuestEntry (43), AddJournalEntry (44) - whose fn pointer is the SAME dword 0x420990 in all four
+	// slots. The body at 0x420990 is `b8 01 00 00 00 c3` = `mov eax,1; ret`: no arity gate, no params read,
+	// no ecx, no branch, no callee. So quest and journal scripting is a hardcoded TRUE in the shipped demo,
+	// and the four names are aliases of one function rather than four functions that happen to agree.
+	//
+	// NAMING WARNING carried with the EA: the IDB labels 0x420990 as `JE::GUI::Window::virt_meth_0x420990`
+	// because it is ALSO the last slot of a GUI::Window vftable (@0x66e4d4 slot 74). That is an artifact of
+	// how the DB names things from one usage; nothing about the body knows about windows. Anchor on the EA
+	// and the five bytes, not on the label.
+	//	
+	// PORT SHAPE, and why it looks the way it does: ONE body, FOUR table rows. Collapsing the four names
+	// into one row would misrepresent shipped's registration (a script calling `CloseQuest` resolves by
+	// NAME against the module's native list at 0x5ccd60-era, so all four names must exist to be findable),
+	// and giving them four bodies would invent four things that are one. So the rows share a pointer and
+	// each keeps its own name - the one place in this batch where the table is doing aliasing on purpose.
+	// nExpectedCells is -1 = SENTINEL "no gate exists", not "zero cells": a row that declared 0 would claim
+	// the body compares params[0]>>2 against 0, which it does not do at all. The suite probes these rows at
+	// several cell counts and asserts the arity message NEVER appears.
+	int ScriptNative_QuestJournalAlias( int amx, int params ) {
+		(void)amx;    // 0x420990 reads NOTHING: no gate, no cells, no entity, no singleton
+		(void)params;
+		return 1;     // 0x420995 `mov eax,1` - the only path in the function
+	} // ScriptNative_QuestJournalAlias
+
 	// ---- the weapon-combo pair (batch B slice B23) - two setters/getters that set and get nothing ----
 	// 0x45b9f0 - the resolve-and-cast the pair shares. Shipped shape, byte-verified:
 	//   45ba02 `call sub_59AEF0(amx, handle, &out, 1)`   - the ACTIVE CHECK IS ON (flag 1, not 0)
@@ -1265,7 +1292,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[32] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[36] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -1297,7 +1324,12 @@ void ScriptNativeResetRegistry() {
 		{ "CloseTask", &ScriptNative_CloseTask, 2 },   // 0x45b940
 		{ "AddEntry",  &ScriptNative_AddEntry,  2 },   // 0x45b980
 		{ "GetWeaponCombo", &ScriptNative_GetWeaponCombo, 1 },   // 0x45a9f0 - shipped stub: resolves, discards, returns 0
-		{ "SetWeaponCombo", &ScriptNative_SetWeaponCombo, 2 }    // 0x45aa40 - shipped stub: the 2nd cell is never read
+		{ "SetWeaponCombo", &ScriptNative_SetWeaponCombo, 2 },   // 0x45aa40 - shipped stub: the 2nd cell is never read
+		// The alias quad: four shipped NAMES, one shared FUNCTION (0x420990). -1 = no arity gate exists.
+		{ "OpenQuest",       &ScriptNative_QuestJournalAlias, -1 },   // table idx 41 -> 0x420990
+		{ "CloseQuest",      &ScriptNative_QuestJournalAlias, -1 },   // table idx 42 -> 0x420990
+		{ "AddQuestEntry",   &ScriptNative_QuestJournalAlias, -1 },   // table idx 43 -> 0x420990
+		{ "AddJournalEntry", &ScriptNative_QuestJournalAlias, -1 }    // table idx 44 -> 0x420990
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

@@ -1,5 +1,13 @@
 # Batch B's natives are reversed and tested, but nothing in the running port can call them (2026-10-22)
 
+> **COUNT REFRESH (TrueRaven, B24, same day):** this doc was written when the batch had 27 natives and a
+> 196-assert suite. It is now **36 natives / 243 asserts** (B22 task trio, B23 weapon-combo pair, B24
+> quest/journal alias quad). **Nothing in the four gaps or gap 5 below changed** - the additions are more
+> rows in the same unreachable table. Gap 1 also has its ANSWER now, in
+> `docs/f3/NativeInstallerEvidence.md`: shipped installs native tables from `JE::Script_Small::Load`
+> (0x5a8880), three tables per script load, fail-fast on any name that does not resolve. The counts inside
+> the text below are left at their original values because they are dated observations, not a live status.
+
 Found while scoping `StartDialogue`, and worth writing separately from the per-native notes because it is a
 statement about the **whole batch**, including the 27 rows already committed. Everything below is a
 `grep`/`sed` result against the tree, with the location named; nothing here is inferred from intent.
