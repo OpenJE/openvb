@@ -12,6 +12,7 @@
 
 #include "F3/GameCreature.hpp"
 #include "F3/ScriptInventory.hpp"
+#include "F3/ScriptParty.hpp"
 #include "F3/GameEntity.hpp"
 #include "F3/GameItem.hpp"
 #include "F3/GameUsableObject.hpp"
@@ -962,6 +963,75 @@ void ScriptNativeResetRegistry() {
 		return 1;
 	} // ScriptNative_EquipItem
 
+	// ---- the party seam ---------------------------------------------------------------------
+	// Stands in for the 0x70bd98 singleton plus its slot-26 Party accessor. Port global, matching the
+	// file's existing registry pattern rather than inventing a second mechanism.
+	static ScriptParty *s_pActiveParty = 0;
+
+	void ScriptNativeSetActiveParty( ScriptParty *pParty ) {
+		s_pActiveParty = pParty;
+	} // ScriptNativeSetActiveParty
+
+	class ScriptParty *ScriptNativeGetActiveParty() {
+		return s_pActiveParty;
+	} // ScriptNativeGetActiveParty
+
+	// 0x45a960 - Protagonist: arity 0, no entity argument - the ONLY batch-B native that returns a
+	// handle it did not resolve from a parameter. On success it returns the leader's own +0x1DC
+	// (bytes 8b 80 dc 01 00 00 at 0x45a9e0), which is the third era of the same field: Create stamps
+	// it, SetHP resolves through it, Protagonist RETURNS it.
+	//
+	// Both failure lines say "Returning INVALID_ID." and return 0 - not -1, not any sentinel the
+	// message implies. Kept exactly, because a script that tests the documented contract gets shipped
+	// behavior and a script that tests the message gets a surprise; the mismatch is the engine's, and
+	// a port that "returns INVALID_ID properly" would be a silent divergence in the other direction.
+	int ScriptNative_Protagonist( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+
+		if ( !ScriptNativeCheckArity( amx, p, 0, "Protagonist" ) ) {   // 0x45a97c
+			return 0;
+		}
+		// 0x45a985-0x45a9a5: shipped builds the party through the singleton and dereferences it with
+		// NO null test on the adjustment result, so a missing singleton is a crash. The port answers
+		// the cast-failure message instead - declared, not hidden, because it collapses two shipped
+		// states (no singleton / singleton that is not a GameParty) into one port state.
+		if ( s_pActiveParty == 0 || !s_pActiveParty->bIsGameParty ) {
+			ScriptNativeReportError( amx,
+				"Protagonist() could not find GameParty. Returning INVALID_ID." );
+			return 0;
+		}
+		if ( s_pActiveParty->pLeader == 0 ) {
+			ScriptNativeReportError( amx,
+				"Protagonist() Protagonist is NULL. Returning INVALID_ID." );
+			return 0;
+		}
+		// 0x45a9c7 reads the leader at GameParty+0x14, 0x45a9e0 the handle at Entity+0x1DC of it.
+		return (int)s_pActiveParty->pLeader->mbr_0x1dc;
+	} // ScriptNative_Protagonist
+
+	// 0x45a2d0 - AddCNPCToParty: arity 1, resolve (message says "entity", not "attacking"), then the
+	// same party access, then GameParty VFT SLOT 0 with the entity as the pushed argument (0x45a370:
+	// mov edx,[eax]; push entity; mov ecx,eax; call [edx]). The native's return value IS that call's
+	// return, so whatever policy the model carries becomes script-observable - which is why ScriptParty
+	// says plainly that "already a member" and "no room" are the only answers this call site proves.
+	int ScriptNative_AddCNPCToParty( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 1, "AddCNPCToParty" ) ) {   // 0x45a2ee
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {   // 0x45a2fc
+			ScriptNativeReportError( amx, "AddCNPCToParty() was unable to find the entity." );
+			return 0;
+		}
+		if ( s_pActiveParty == 0 || !s_pActiveParty->bIsGameParty ) {     // 0x45a323-0x45a351
+			ScriptNativeReportError( amx, "AddCNPCToParty() was unable to find the party." );
+			return 0;
+		}
+		return s_pActiveParty->Add( pEntity );
+	} // ScriptNative_AddCNPCToParty
+
 	// 0x45b620 - GetWeaponRange. Legs in shipped order; each cite is the instruction, not the print.
 	int ScriptNative_GetWeaponRange( int amx, int params ) {
 		const unsigned *p = (const unsigned *)params;
@@ -1069,7 +1139,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[25] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[27] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -1094,7 +1164,9 @@ void ScriptNativeResetRegistry() {
 		{ "IsItemEquipped", &ScriptNative_IsItemEquipped, 2 },   // 0x45b750
 		{ "UnequipItem", &ScriptNative_UnequipItem, 3 },         // 0x45a6f0
 		{ "GetWeaponRange", &ScriptNative_GetWeaponRange, 1 },   // 0x45b620
-		{ "EquipItem", &ScriptNative_EquipItem, 3 }              // 0x45a580
+		{ "EquipItem", &ScriptNative_EquipItem, 3 },             // 0x45a580
+		{ "Protagonist", &ScriptNative_Protagonist, 0 },         // 0x45a960
+		{ "AddCNPCToParty", &ScriptNative_AddCNPCToParty, 1 }    // 0x45a2d0
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

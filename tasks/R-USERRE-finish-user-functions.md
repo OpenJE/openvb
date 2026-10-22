@@ -1757,3 +1757,38 @@ Bonus from the same image read, now in the doc: it shows **two different failure
 slots 8/9 are the identical dword `0x469370` (alias), while 12/13 are adjacent-but-distinct `0x469400` /
 `0x469410` (near-duplicate). The alias punishes solo edits; the near-duplicate punishes assumed equality.
 Neither risk is visible in the IDB listing.
+
+## Slice-B21 (WildKnight 01a1639b) — the party door: Protagonist + AddCNPCToParty LIVE, 27 natives, 196 asserts, and the one field's third era
+
+Both rows landed on a single new stand-in (`src/F3/ScriptParty.hpp`, header-only, same shape as
+`ScriptInventory`), and the shared access path is now byte-pinned in `docs/f3/PartyAccessors.md`: the
+`0x70bd98` singleton → `call [edx+68h]` (vft slot 26, 0x45a9a5/0x45a343) → `Party -> GameParty` RTTI → leader at
+`+0x14` (0x45a9c7) → **handle at `+0x1DC`** (0x45a9e0, bytes `8b 80 dc 01 00 00`). That last load closes the
+loop on the band field: `Create` stamps it, `SetHP` resolves through it, `Protagonist` returns it - three
+subsystems, no shared code.
+
+Two findings that only exist because the pair was read together:
+
+- **The message lies about its return.** Both failure lines end `"Returning INVALID_ID."` (0x45a9bb/0x45a9d4)
+  and both return **0**; no sentinel ever reaches the script. Kept exactly and asserted as value AND byte-identical
+  message tail, because either "fix" - return a real INVALID_ID, or reword the line - diverges in one direction.
+- **A missing singleton is a crash, not a message.** Both sites set the adjustment to 0 when the global is null
+  and dereference it unconditionally at the slot-26 call, so the party-failure string describes only the cast
+  failure. The port answers that string for both states and says so - declared collapse #1. Collapse #2 is `Add`'s
+  `if (!pLeader) pLeader = pEntity`, a usability convenience these two call sites do nothing to prove.
+
+`AddCNPCToParty` also breaks the copy-paste streak: its resolve line says **"the entity"** (0x45a30e), not the
+"attacking entity" its inventory siblings use - so the copy-paste family is real but not universal, and the
+difference is asserted rather than assumed. Its payload is `GameParty` **vft slot 0** with the entity pushed
+(0x45a370: `mov edx,[eax]; push entity; mov ecx,eax; call [edx]`) and the native returns that call's value, so
+the model's add policy is directly script-visible: asserted as add → 1, duplicate → 0.
+
+Test-shape errors of mine, both caught by the suite before commit and worth the record because they are the
+quiet-observer family again: (1) I set `party.pLeader` on a local that was never made the ACTIVE party, so the
+native answered "no party" and the assert was measuring my wiring instead of the code; (2) I fed an arity-1
+native a TWO-cell block, so the gate fired first and the party message I was asserting could never have been
+produced. A missing precondition and a wrong-shaped input both present as "the code disagrees with me", which is
+exactly when a test is most convincing and least reliable.
+
+Process, applied this time instead of learned again: `port-annot` was run BEFORE queueing the gates (it passed),
+and both commit hashes below are re-emitted from git rather than typed from memory.

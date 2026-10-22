@@ -128,6 +128,20 @@ namespace F3 {
 	// of Equip and its era declared rather than hidden - see the body for the three named deviations.
 	int ScriptNative_EquipItem( int amx, int params );
 
+	// ---- the party seam + its two natives (batch B slice B21) -------------------------------
+	// Shipped reaches the party through the second world-server singleton (global 0x70bd98) with the
+	// base-plus-delta idiom, then vft slot 26 (`call [edx+68h]` at 0x45a9a5 / 0x45a343), then an RTTI
+	// Party -> GameParty. The port has no singleton and no GameParty, so the active party is set
+	// directly. One deviation is unavoidable and declared in the body: when there is NO party, shipped
+	// dereferences the null adjustment and CRASHES at both call sites - the message that looks like it
+	// covers "no party" actually belongs to the failed cast - so the port answers that message with 0
+	// instead of faulting, and says which shipped state it is collapsing.
+	void ScriptNativeSetActiveParty( class ScriptParty *pParty );
+	class ScriptParty *ScriptNativeGetActiveParty();
+
+	int ScriptNative_Protagonist( int amx, int params );      // 0x45a960
+	int ScriptNative_AddCNPCToParty( int amx, int params );   // 0x45a2d0
+
 	// 0x45b620 - GetWeaponRange: arity 1, and the deepest object chain in batch B so far. It mixes
 	// bases on purpose - the inventory comes from the PRE-CAST entity at +0x168 (same accessor as
 	// IsItemEquipped, three natives agree) while the fallback range pointer comes from the POST-CAST
