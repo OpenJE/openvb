@@ -105,3 +105,21 @@ Report to QuickNova at FIRST trace output with the exact repro line + which of t
   board service; entry point tools/rig-g1-run.sh; check $RIG_DIR/g1-runs.log for window identity;
   item 59 governs captures."
 - Queue stance: item-5 sink-proof window first, slice-2 acceptance proper second. Keeper standing by.
+
+## ITEM-5 WINDOW RECIPE (pre-armed; item 5 = JE/ActionAnim.cpp:44-47 stub-call restore, proven on frames)
+When SwiftOwl's ActionAnim restoration lands in openje + parent:
+1. `msvc-build` (fresh exe; item-60 fix makes cmake.toml edits actually regenerate — first build where
+   that matters for a sink-proof).
+2. Run the named entry point with a window-identity trace + gated capture:
+   `TIMEOUT_S=300 SCREENSHOT=1 CAPTURE_AT=8 TRACE2=item5-sinkproof.log tools/rig-g1-run.sh`
+   — the histogram-poll guarantees any kept g1-frame.png is POST-occlusion (item 59); rc=124 + trace
+   cadence ("presented frame N") is the device truth; the ledger line names the exact exe sha256 that
+   proved the completion on frames.
+3. Timing rationale for the 300 s budget: shipped-side ActionAnim inserts land mid-first-scripted-round
+   (T-056 funnel hits well before 120 s under clean stacks, T-067 12-min proof); DXVK removes the bink
+   wall for both exes, so the window is about SCRIPT time, not survival. Adjust per SwiftOwl's observed
+   instant; keeper suggestion only.
+4. If the sink-proof wants targeted PIXEL reads (not root capture): the magenta clear is the ONLY thing
+   slice-1 paints — anim effects render through the same device but the port has no sprite pipeline yet;
+   the frame-proof for item 5 is therefore trace-cadence + exe-identity + (if a debug verb exists in the
+   restored path) a Probe() line. Keeper will NOT invent new src/ hooks — that's the device lane's call.
