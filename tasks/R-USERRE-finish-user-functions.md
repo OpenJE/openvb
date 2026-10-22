@@ -1903,7 +1903,14 @@ against a declared stand-in registry - read it that way, and say so in any relay
    (stores at 0x4679b3/0x4679b8, zero readers). This is a spawn/openje lane decision, not a natives edit - the
    correction is already in `src/F3/MapEntitySpawn.hpp:115` so nobody builds a resolver on the wrong field.
 3. **Installer + ABI adapter + executable script path** - the four-part gap above; converting batch B from
-   test-consumer to observable behavior. Cross-lane by construction.
+   test-consumer to observable behavior. Cross-lane by construction. **No longer an invention problem:**
+   `discoveries/2025-10-22-server-packet-dispatch-idmap.md` (parent:b0998fc, JadeBear) maps case `0x51` (81) as
+   shipped's own script-by-name execution path - it resolves the entity's script with `GetScript_54aef0` and
+   invokes a NAMED entrypoint through two vft slots, a predicate `[script+16](script,"GetInfo")` then a call
+   `[script+24](script,"GetInfo",&out)` (string @0x667f58). So shipped already treats a script as a
+   named-entrypoint object, predicate-then-invoke: whoever takes this decision has a reference implementation to
+   mirror instead of a shape to devise, and the `NativeScriptFn` ABI question can be answered against that call
+   form rather than against taste.
 4. Era-blocked remainder: dialogue (`StartDialogue` needs the unaligned `+0x19/+0x1E` action dwords, a seam kind,
    and `GameDialogueInterface`), world server (attitude pair, task trio's journal), GUI hide (`HideInterfaces`
    0x45a100 → `sub_46EDF0`), AMX object-ref (`SetMoveMode` 0x45a140 → `sub_59AA50`), `EquipItem`'s skipped
