@@ -21,10 +21,10 @@ namespace F3 {
 		g_lcgSeeded = 1;
 	}
 
-	// sub_48CCC0 verbatim: lazily seed from the wall clock (seconds) on first use, advance the
-	// state, emit (state >> 8) & 0x7FFF. The advance happens BEFORE the emit, so the first draw
-	// of a process is a function of the seed rather than the seed itself. Arithmetic is on
-	// unsigned 32-bit, which wraps exactly like the shipped imul/add pair.
+	// 0x48CCC0 (sub_48CCC0) verbatim: lazily seed from the wall clock (seconds) on first use,
+	// advance the state, emit (state >> 8) & 0x7FFF. The advance happens BEFORE the emit, so the
+	// first draw of a process is a function of the seed rather than the seed itself. Arithmetic
+	// is on unsigned 32-bit, which wraps exactly like the shipped imul/add pair.
 	int ShippedRand() {
 		if ( !g_lcgSeeded ) {
 			SeedShippedRand( (unsigned int)time( NULL ) );
