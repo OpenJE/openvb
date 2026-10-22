@@ -337,6 +337,40 @@ COVERAGE-BEFORE-VERDICT):
 
     rg -aU '(?s)\x27\x00\x00\x00(.{4})\x7b\x00\x00\x00(.{4})' <image-code-region>   # then K=le32(g1)/4, ord=le32(g2)
 
+### 6.7 Global cross-join: 209 table entries × 115 called names (2026-10-22, second follow-up)
+
+Merged the caller-side census (§6.6) with FastNova's callee-side extraction
+(`tools/native-table-dump.py --json`, run read-only here; its `--selftest` gates green) across all
+three registered libs (45 + 155 + 9 = 209 name slots). The partition is exact (111+4+80+14=209):
+
+| bucket | n | meaning |
+|---|---|---|
+| AGREE | 111 | gate cells == unique caller `k/4` (13 of these are ungated float/time names where only the caller publishes) |
+| **DISAGREE** | **4** | see below |
+| gated, never called | 80 | C prologue is the only arity evidence (incl. GetLevel, SetHP, UnequipItem, Get/SetWeaponCombo, the Passed-family except SecondsPassed) |
+| ungated AND never called | 14 | zero evidence except the entry + stub: OpenQuest/CloseQuest/AddQuestEntry/AddJournalEntry (all → `return 1` @0x420990), TransferItemToParty, (A_)SendMessageToTeam/Squad variants, Year/Month/Day/Second, Debug, floatstr |
+
+The four DISAGREE rows, with site histograms — the first two are **shipped defect candidates that
+neither population shows alone**:
+
+* `GetGlobal` — gate 1, callers {1: 864, **2: 1**}. Exactly one demo-script call site publishes 2
+cells; in shipped that call always fails its own gate ("Expected 1 … but recieved 2", returns 0 —
+the gate at 0x59af4c → 0x59af63/0x59af70 message pair is byte-known). A live DOA typo sitting in
+the shipped payload.
+* `FloatingSpeechText` — gate 6, callers {3: **14**, 6: 211}. Fourteen sites declare 3 cells against
+a 6-cell gate: also permanently DOA in shipped. The sibling `A_FloatingSpeechText` (gate 6) is
+called with {6: 21} consistently — looks like the 3-arg variant was an earlier signature the demo\scripts were not fully migrated off. (Both readings are CENSUS+dump only; I did not re-read those
+two bodies' prologues beyond FastNova's extractor.)
+* `SendMessage` — ungated, callers {2: 1, 3: 6, 4: 80}; and `SendMessageToTeam` — ungated, callers
+{2: 1, 4: 5}. §6.6's note stands: with no gate and (per the dump) no params count read in the body,
+per-image declaration divergence is the working hypothesis; the multi-arity itself is NOT evidence
+of a bug, only of divergence — an ungated native facing k smaller than what its body reads would
+consume stack garbage, and nobody has yet counted that function's param reads.
+
+Method note for anyone re-deriving: caller-side name resolution goes through EACH image's own
+ordinal table ([image+0x24] stride 40), so one name can hide several ordinals across images; the
+join was done on names precisely because that is what both instruments can share.
+
 ## Appendix — verified AMX struct field map (all hex, each from instruction text)
 
 | field | evidence (instruction @ EA) | role |
