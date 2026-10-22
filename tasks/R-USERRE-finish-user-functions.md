@@ -215,3 +215,29 @@ Inventory: every `F3::`-named function in the live IDB (names anchored by EA per
 - `F3::StartAddress` @ 0x5909a0
 - `F3::TransformGrannyFileToLHS` @ 0x4a1e20
 - `F3::crt_run_static_ctors` @ 0x61898d
+
+
+## Slice-1 LEDGER (BrightYak, 2026-10-22) - CAMERA SET-FAMILY + REGISTRATION MACHINERY
+Landed (openje c2a2409 + parent, gates: msvc rc0 / run-all 10/10 app=124 / annot PASS 0-uncited / cppcheck 0):
+- Commands.cpp/hpp (new, src/F3): CommandCameraAzimuth 0x58b450, AzimuthInc 0x588360, AzimuthDec 0x5883a0,
+  AzimuthSpeed 0x58b4a0, Elevation 0x58b500, ElevationSpeed 0x58b550, Top 0x588400, TopDown 0x5883e0,
+  TiltUp 0x588580 (xor word cam+0xC2 bit 0x100 - NAME LIED, bytes said flag-toggle), TiltDown 0x5885a0 (bit 0x200).
+- JE/Client.cpp (new, openje): ctor_0x58e900 field-zero map (stores cited 0x58e92f-0x58ea36), tick stamp
+  0x58ea39, the 10 registrations LIVE + the FULL 84-command call-site EA table preserved as the slice TODO map.
+- JE/CameraControl.cpp (new, openje): setters 0x585ea0 (azimuth anim/instant), 0x586010 (elev clamp->anim),
+  0x585fd0 (elev instant, shipped arg-oddity ported VERBATIM); field rows 0xa4..0xf8 cited (export GAP, raw law).
+- Seam + accessors: Gfx_CamCtrl::set_pose_0x424670 (named-absence), Network::GetGameNetwork (0x5438fa mirror),
+  Network+0x2C RE-LABELED game-client (RTTI 0x43978a), Client::GetCamera (+0x84).
+- DEFECT-FIX x2: net/packet.hpp:36 + net/connection.hpp:81 typeless j-corrupted export decls -> well-formed
+  neutral names (cited); ~48 pattern sites REPORTED -> R-HEADERSAN minted (decb94a) after slice 2.
+- GATE REPAIR (coordinator ruling (a)): cmake.toml drift fixed - +JE/Gregorian.cpp, +JE/SpatialGrid.cpp
+  (openje); +src/F3/MapEntitySpawn.cpp, +src/F3/CombatManager.cpp, +src/F3/GameActionAttack.cpp,
+  +src/F3/CombatMath.cpp (F3); iterated on the real LNK2019 census (12 -> 2 -> 4 -> 0). cmkr bootstrap
+  never regenerates once build/CMakeCache.txt exists (cmkr.cmake:121 era) - regen via
+  build/_cmkr_v0.2.46/build/cmkr gen, NOT just re-running msvc-build. 2026 lesson for the harness.
+Slice 2 (next): camera tail (Distance 0x58b5b0/DistanceSpeed 0x58b600 setter 0x586140 READ, fields 0xac/0xe8..0xf8;
+ScrollSpeed 0x58b7d0 field 0x110 needs one re-read; scroll/zoom On/Off 0x588440-0x588520; Rotate/Tilt-era
+0x588540/0x588560; MouseRotate 0x5885c0/0x5885d0; ToggleConstraints 0x5885e0; Reset 0x58a7f0/SetTarget 0x58b6e0
+need byte_70BE0C entity-list walk + 0x54be10 resolver) + CameraDown 0x588420 + the EXECUTION dispatch trace.
+Slice 3 (device era, G1 warm): CameraFOV 0x58b660, Toggle* fullscreen/lighting/shadow..., AdapterInfo, VSync,
+SetDisplaymode - now testable against real device behavior.
