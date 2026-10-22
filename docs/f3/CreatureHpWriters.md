@@ -315,3 +315,53 @@ clean numeric discriminator, courtesy of JadeBear's Entity+0x1E0 lifecycle-state
   send, same shape as the HP setter's). Port waits on the world-server singleton's slot-30 accessor and the
   journal class; the unconditional `return 1` is itself a fact worth keeping - do not "improve" it into a
   success-dependent return.
+
+## RESOLVED - the operand IS the entity's own handle (JadeBear's static proof; the ctor confirms it independently)
+
+The live read turned out to be unnecessary: a vbtable entry is a compile-time constant in the image. JadeBear
+traced it (`GameEntity::ctor_0x4678a0` stores `mov dword ptr [esi+4], offset unk_666134` at 0x4678d4; the table's
+slot 4 is the delta 160), and the SAME constructor proves the arithmetic without any data read at all:
+
+    4678f5  mov ecx,[eax+4]                                  ; ecx = *(0x666134 + 4) = the delta
+    4678fd  mov dword ptr [ecx+esi+4], offset ??_7GameEntity@@6B@_0
+                                                            ; install the SECONDARY vftable at
+                                                            ;   esi + delta + 4  ==  Entity-base
+
+`Entity-base == this + delta + 4`. SetHP's read is `[this + delta + 0x1E0]`, i.e. **Entity-base + 0x1DC** -
+T-043's net-handle field. The `0x1E0` in the opcode is not an Entity-relative displacement at all: MSVC folded
+the 4-byte vbptr position into the disp32, so the ctor's `+4` convention and the codegen's baked-in `+4` differ
+by exactly that slot. Everything I documented above as a paradox was one convention shift, and my
+"code-address garbage" branch (ii) is dead: 0x666134 is a vbtable, not a vftable, which is also why IDA's
+`mbr_0x0` label said nothing - it means "member at offset 0".
+
+Identity: `meth_0x54be10` walks the global list comparing `*(entity+0x1DC)` (its 476 decimal) against the
+value, and `Entity::Create` 0x55190c stamps +0x1DC once with a unique handle, `UnpackState` restoring the same
+pair - so handle -> registry -> entity lands on the same object. **A borrowed handle is impossible**, and the
+map probe at 0x54be41 is only the miss path.
+
+## What the port does with that (B9): the round-trip is KEPT, because its failure is observable
+
+Faithfulness over convenience: `ScriptNative_SetHP`/`_AddHP` re-read the entity's own `mbr_0x1dc` and push it
+back through `ScriptNativeResolveEntity` rather than collapsing to one step, because the shipped form FAILS
+SILENTLY (return 0, no message) when that handle is not registered - a difference a suite can see. Asserted:
+
+- SetHP within range writes +0x24; above max caps to +0x20 (`0x4629ce`); **negative stores** (no floor,
+  `0x4629c9` is unconditional) - the hole is now test-enforced, not just commented;
+- unregistered own-handle -> `0`, and the HP field is **unchanged** (nothing written on the silent path);
+- `AddHP` is `current + N` (adds to the NEW current on a second call), clamps the **sum** to max and never the
+  delta, stays at max when already there, and can reach a negative via `AddHP(-25)`;
+- the identity leg itself is asserted: `resolve(entity's own handle) == that entity`.
+
+Deferred, named: the packet-88 broadcast (`meth_0x46d620` -> `GameServer::meth_0x5a0a00`'s per-peer fan-out) is
+not emitted, since the server era is unported. Until then HP is a LOCAL write, which is a real behavior
+difference for any future multiplayer parity work - stated here and in the source so nobody discovers it later.
+
+## Third instance of the sibling-redeclaration trap, found BY this port: `+0x1DC`, `+0x20`, `+0x24`
+
+The suite's first AddHP run wrote `orphan.mbr_0x20` / `orphan.mbr_0x1dc` through a `F3::GameItem` and the
+owner-typed native read them as 0 - `GameItem.hpp` re-declares the HP band AND `mbr_0x1dc`, at port offsets that
+are not `JE::Entity`'s. Same class as `GameContainer.hpp:16` vs `GameUsableObject.hpp:15` for `+0xC0`, now on its
+third sighting: the port's generated headers let the SAME shipped offset exist at several port addresses under
+different class names, and only the OWNER type names the real one. Test-side consequence worth remembering: a
+green suite can be writing one copy and reading another, so member access in these tests is owner-typed by rule,
+not by preference.

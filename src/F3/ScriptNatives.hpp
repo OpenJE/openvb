@@ -85,6 +85,26 @@ namespace F3 {
 	//   GetLockDC             0x45b5dd / 0x45b5e8 `[+0C0h]`  cast CONTAINER, else DOOR
 	// +0xA0 is shared by two unrelated classes, i.e. a base-level type code, and +0xC0 lives on
 	// their common base GameUsableObject - which is why one field serves both GetLockDC branches.
+	// 0x45b9c0 - PlayMusic: the engine's own admission of a hole in the native table. Arity 1, and the
+	// ONLY effect when the gate passes is reporting the shipped literal "PlayMusic() unimplemented."
+	// (0x45b9e4) and returning 0. No callee, no state, no side effect - so the faithful port is exact,
+	// and the wording is verbatim because it is evidence, not style (docs/f3/CreatureHpWriters.md B8).
+	int ScriptNative_PlayMusic( int amx, int params );           // 0x45b9c0
+
+	// ---- the HP writers (batch B slice B9) - unblocked by the +0x1E0 resolution --------------
+	// SetHP/AddHP do NOT write the entity the script named. Shipped: read the entity's OWN handle
+	// back out of the virtual-base slot (0x45b367-6d `mov edx,[eax+4]; mov edx,[edx+4];
+	// mov eax,[edx+eax+1E0h]` = Entity-base+0x1DC, T-043's handle field), then hand that handle to
+	// 0x46ee10, which re-resolves it, casts, and clamps. JadeBear proved the re-resolve is the identity
+	// round-trip (Create 0x55190c stamps +0x1DC once; the only other writer is UnpackState restoring the
+	// same pair), so the two-step is faithful but NOT decorative: the shipped form FAILS SILENTLY (no
+	// error string, return 0) when the handle is unregistered, and that failure is the port's job too.
+	// Clamp at 0x4629c0: upper cap at max (+0x20), NO lower bound. The packet-88 send at 0x46d620 is
+	// NAMED-deferred with the rest of the server era - so the return value here is shipped-faithful
+	// (1 on success, 0 on either silent failure) while the broadcast is not yet emitted.
+	int ScriptNative_SetHP( int amx, int params );    // 0x45b2e0
+	int ScriptNative_AddHP( int amx, int params );    // 0x45b390
+
 	int ScriptNative_GetItemType( int amx, int params );           // 0x45b240
 	int ScriptNative_GetUsableObjectType( int amx, int params );   // 0x45b440
 	int ScriptNative_GetLockDC( int amx, int params );             // 0x45b570

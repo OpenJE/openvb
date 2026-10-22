@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "F3/GameCreature.hpp"
+#include "F3/GameEntity.hpp"
 #include "F3/GameItem.hpp"
 #include "F3/GameUsableObject.hpp"
 #include "F3/GameContainer.hpp"
@@ -339,6 +340,89 @@ void ScriptNativeResetRegistry() {
 		return GameEntityMaxHp( pEntity );
 	} // ScriptNative_GetMaxHP
 
+	// 0x45b9c0 - PlayMusic. Shipped stub: gate, report, zero. Note the report happens when the arity
+	// gate PASSES (0x45b9d2 tests the gate and falls through to 0x45b9e4) - i.e. a well-formed call is
+	// the one that gets told it is unimplemented, and a malformed call gets the arity message instead.
+	int ScriptNative_PlayMusic( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		if ( ScriptNativeCheckArity( amx, p, 1, "PlayMusic" ) ) {   // 0x45b9d2
+			ScriptNativeReportError( amx, "PlayMusic() unimplemented." );   // 0x45b9e4
+		}
+		return 0;                                                   // 0x45b9ee - the only return
+	} // ScriptNative_PlayMusic
+
+	// 0x45b2e0 / 0x45b390 - the shared tail both writers run through 0x46ee10.
+	// Shipped leg order, cited: resolve(handle) 0x46ee19 -> null means return 0 with NO message
+	// (0x46ee40 path, silent) -> RTTI Entity->GameEntity 0x46ee34 -> clamp via 0x4629c0 (0x46ee4f,
+	// which stores value at +0x24 then caps it at +0x20) -> broadcast via 0x46d620 (0x46ee58, packet id
+	// 88 - DEFERRED here, named) -> return 1 (0x46ee62-era).
+	static int HpSetterChain( unsigned hHandle, int nValue ) {
+		JE::Entity *pTarget = 0;
+
+		if ( !ScriptNativeResolveEntity( 0, hHandle, &pTarget, 0 ) || !pTarget ) {
+			return 0;   // 0x46ee23: silent, exactly as shipped
+		}
+		if ( !RegistryIsClass( pTarget, F3::SNC_GAME_ENTITY ) ) {
+			return 0;   // 0x46ee3e: still silent - the cast failure carries no string either
+		}
+
+		F3::GameEntity *pEntity = (F3::GameEntity *)pTarget;
+		int nMax = (int)pEntity->mbr_0x20;                       // 0x4629c4
+		pEntity->mbr_0x24 = nValue;                              // 0x4629c9 (unconditional first)
+		if ( nValue > nMax ) {
+			pEntity->mbr_0x24 = nMax;                            // 0x4629ce: upper cap ONLY, no floor
+		}
+		// 0x46ee58 meth_0x46d620(handle, value) -> packet id 88 through GameServer::meth_0x5a0a00's
+		// per-peer fan-out. NAMED-DEFERRED: the server era is unported, so HP is currently written
+		// locally only. Do not "helpfully" log a substitute - the shipped call has no other effect.
+		return 1;
+	} // HpSetterChain
+
+	// 0x45b2e0 - SetHP: arity 2, resolve params[1] (active-check flag set), cast GameEntity, then the
+	// handle round-trip above with params[2] as the value.
+	int ScriptNative_SetHP( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "SetHP" ) ) {          // 0x45b2fe
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {  // 0x45b314
+			ScriptNativeReportError( amx, "SetHP() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_ENTITY ) ) {        // 0x45b347
+			ScriptNativeReportError( amx, "SetHP() - Entity ID does not belong to a GameEntity." );
+			return 0;
+		}
+		// 0x45b367-6d: read the entity's OWN handle out of the virtual-base slot (Entity-base+0x1DC)
+		// and pass THAT to the chain - the shipped code addresses the target by handle, not pointer.
+		return HpSetterChain( (unsigned)((JE::Entity *)pEntity)->mbr_0x1dc, (int)p[ 2 ] );
+	} // ScriptNative_SetHP
+
+	// 0x45b390 - AddHP: identical preamble; the value is computed as current + params[2] BEFORE the
+	// chain (0x45b3de reads [entity+0x24]), so shipped "add HP" is a set-to-computed, and the result is
+	// still capped once - it never caps the delta separately.
+	int ScriptNative_AddHP( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "AddHP" ) ) {           // 0x45b3ae
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {   // 0x45b3c4
+			ScriptNativeReportError( amx, "AddHP() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_ENTITY ) ) {         // 0x45b3f7
+			ScriptNativeReportError( amx, "AddHP() - Entity ID does not belong to a GameEntity." );
+			return 0;
+		}
+		F3::GameEntity *pFrom = (F3::GameEntity *)pEntity;
+		return HpSetterChain( (unsigned)pFrom->mbr_0x1dc,
+		                      (int)pFrom->mbr_0x24 + (int)p[ 2 ] );
+	} // ScriptNative_AddHP
+
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
@@ -391,7 +475,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[10] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[13] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -401,7 +485,10 @@ void ScriptNativeResetRegistry() {
 		{ "GetMaxHP",    &ScriptNative_GetMaxHP,    1 },   // 0x45b110
 		{ "GetItemType", &ScriptNative_GetItemType, 1 },   // 0x45b240
 		{ "GetUsableObjectType", &ScriptNative_GetUsableObjectType, 1 }, // 0x45b440
-		{ "GetLockDC",   &ScriptNative_GetLockDC,   1 }    // 0x45b570
+		{ "GetLockDC",   &ScriptNative_GetLockDC,   1 },   // 0x45b570
+		{ "PlayMusic",   &ScriptNative_PlayMusic,   1 },   // 0x45b9c0 - shipped stub, ported as a stub
+		{ "SetHP",       &ScriptNative_SetHP,       2 },   // 0x45b2e0
+		{ "AddHP",       &ScriptNative_AddHP,       2 }    // 0x45b390
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

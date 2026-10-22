@@ -1252,3 +1252,43 @@ which was the leading static hypothesis for the displacement chain. Settling it 
 Batch B tally: 10 LIVE, 3 read-whole-deferred (attitude pair: relationship object; weapon-combo: nothing to
 port), 5 blocked (3 arrays on the item-69 layout ask, 2 HP writers on the now-identified delta-idiom subject),
 and one shipped stub documented so nobody "fixes" it into returning something.
+
+## Slice-B9 (WildKnight 01a1639b, 2026-10-22 ~13:5x) — SetHP/AddHP UNBLOCKED and LIVE: the +0x1E0 paradox was a convention shift, and the round-trip is kept because its failure is observable
+
+JadeBear closed the blocker statically (a vbtable entry is a compile-time constant, so no live read was ever
+needed): `GameEntity::ctor_0x4678a0` stores `[esi+4] = 0x666134` at 0x4678d4, and the SAME ctor proves the
+arithmetic at 0x4678f5/0x4678fd - it installs the secondary vftable at `this + delta + 4`, which IS
+`Entity-base`. So SetHP's `[edx+eax+1E0h]` = Entity-base + 0x1DC = **T-043's handle field**, the `0x1E0` being
+`0x1DC + 4` with the vbptr position folded into the disp32. My branch (ii) ("code-address garbage") is dead, and
+so was the "borrowed handle" worry: `Create` 0x55190c stamps +0x1DC once and `UnpackState` restores the pair, so
+handle -> registry -> entity is the identity. Both readings were correct about their own halves - JadeBear's
+Entity+0x1E0 = ChangeState state, my base-plus-delta idiom - and the resolution is that the instruction's
+displacement was never Entity-relative.
+
+Landed: `ScriptNative_SetHP` (0x45b2e0) and `ScriptNative_AddHP` (0x45b390), suite 46 -> **58 asserts**, table
+13 natives, floor raised in the run-all row. Gates after the change: `run-all-tests` 13 pass / 0 fail with
+`ScriptNatives=OK [58 >= 58]`, `app-boot` 124, and `msvc-build` rc=0 with `ScriptNatives.cpp` compiled.
+
+Deliberate faithfulness calls, all asserted rather than commented:
+- **the round-trip is KEPT, not collapsed.** A one-step port would be equivalent on the success path but would
+  lose the shipped SILENT failure (0x46ee23/0x46ee3e return 0 with no error string) - so the native re-reads the
+  entity's own `mbr_0x1dc` and re-resolves it, and the suite proves both that it lands on the same object and
+  that an unregistered own-handle writes NOTHING.
+- the clamp's HOLE is now test-enforced in both writers: cap at `+0x20` only, negative values store as-is.
+- `AddHP` is `set to current + N`, clamping the **sum**, and a second call adds to the NEW current.
+- the packet-88 broadcast (`meth_0x46d620` -> `GameServer::meth_0x5a0a00` per-peer fan-out) is **named-deferred**
+  with the server era. Until that lands, HP is a LOCAL write - a real divergence for any multiplayer parity work,
+  written in the source and here so nobody rediscovers it from a diff.
+
+Third instance of item 69's sibling-redeclaration trap, caught by this very suite: `GameItem.hpp` re-declares
+`+0x1DC`, `+0x20` and `+0x24`, so the test's first writes went to different port addresses than the
+owner-typed native reads (`handle_slot=0`). Owner-typed member access is now a rule in these tests, not a
+preference - and note the debug detour that found it: my first repro printed `ptrmatch=0` as if resolve were
+broken, and the real cause was printf's unspecified argument evaluation order reading `pe` before the call.
+Measure the sequence, not the one-liner.
+
+Batch B after B9: **12 natives LIVE** (B1 five, HP pair, type/DC three, PlayMusic stub, SetHP/AddHP), 3 array
+rows still blocked on the item-69 layout decision, the attitude pair waiting on the world-server relationship
+object (JadeBear located it: GameEntity's own ctor stamps `mbr_0x28` with the same idiom at 0x4679aa), and two
+documented shipped stubs. B4's two rows went from "subject unknown" to shipped in one sitting because the
+question was answered with a byte sequence instead of a guess.
