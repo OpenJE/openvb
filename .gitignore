@@ -53,3 +53,4 @@ tools/*.exe
 tools/__pycache__/
 /sdk-*.obj
 *.obj
+.$$$
