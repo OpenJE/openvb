@@ -272,10 +272,25 @@ Two ways out, and they are not equivalent:
 
 Under (ii), `SetHP`/`AddHP`/`OpenTask`/`GetSquadAttitude` would each be reading through `(uintptr_t)entity +
 (function address) + 0x1E0` - memory that happens to be mapped in a 2 GB user address space, so it would not
-fault, and it would return a value that is whatever sits there. That is testable in one live read and nothing
-else: capture `[entity+4]` and `*([entity+4]+4)` on a real creature. If the second value is small (say, in the
-single/double digits) it is (i) and the idiom is base-plus-delta; if it is a code pointer inside a `.text` range
-it is (ii) and this is a shipped defect class, not a porting obstacle.
+fault, and it would return a value that is whatever sits there. Testable in one live read and nothing else:
+capture `[entity+4]` and `*([entity+4]+4)` on a real creature. Small integer => (i), base-plus-delta; a
+`.text` address => (ii), a shipped defect class rather than a porting obstacle.
+
+### CORRECTION to the two paragraphs above, before anyone quotes them
+
+I wrote that the IDB "calls the +4 value `mbr_0x0`, i.e. a vftable." That is my inference from a label, not a
+statement the IDB makes: **`mbr_0x0` only means "member at offset 0"** - it says nothing about whether the thing
+stored there is a vftable, a vbtable, or a plain pointer field. So branch (ii) was dressed up with more support
+than it has, and the branches are not equally weighted:
+
+- For `SetHP` specifically, `[entity+4]` is **not** Entity's vftable - `Entity::ctor_0x5513a0` installs exactly
+  one vftable at `[esi+0]` (`Entity_DynamicObject_vftable_692084`, 0x5513c8) and never writes `+4` (checked in
+  the ctor's first 30 instructions). Whatever lives at `+4`, it is not a second vftable placed there by Entity.
+- A vbtable-like companion table of small deltas is therefore the LEADING reading, and (ii) is the tail case the
+  live read exists to exclude - not a coin flip.
+
+The rest of the section stands: three sightings make the shape a convention, the discriminator is one live read,
+and the port stays parked until the associated object is identified.
 
 Consequence for the port either way, and it is the reason this paragraph is written before the dump: batch B's
 two HP writers and the attitude pair stay unported. Under (i) I still need the associated object's identity;
