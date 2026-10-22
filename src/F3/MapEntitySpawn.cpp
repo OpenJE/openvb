@@ -344,6 +344,8 @@ namespace F3 {
 		ClearActionQueue( e );
 		e->idleResident = SpawnedEntity::IdleResident();   // ctor defaults ARE the re-arm values
 		EnqueueEntityAction( e, &e->idleResident, 6 );     // slot 0 after the drain; links owner
+		// P-REV: the arm COMPLETES on the entity's next processed tick (0x5a9070 raw - see the
+		// IdleResident block); rebase is the insert-window's start, not a permanent occupant.
 	}
 
 	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch );
@@ -439,12 +441,19 @@ namespace F3 {
 				default:
 					break;      // ACTIVE
 			}
-			// FIFO: the original runs ONE active action per entity (head of its action
-			// queue; the step-aside Wait must gate the MoveTo behind it). Process the
-			// first non-empty slot only.
-			for ( int s = 0; s < 4 && !acted; ++s ) {
+			// The walk, P-REV shape (0x54c77c loop / 0x54c7f6 predicate / erase-and-ADVANCE):
+			// process the head; if it FINISHES this tick the shipped walk erases and
+			// CONTINUES to the next entry in the SAME frame (instant finishers - idle's
+			// 0x5a9070, self-finishing engine kinds - chain through one walk); a head that
+			// does NOT finish BREAKS the walk (head-of-line - the step-aside Wait gates the
+			// MoveTo behind it). Our fixed block must STAY head-packed for "first free slot"
+			// insert to equal the shipped deque's tail append, so a completion COMPACTS the
+			// array (shipped erase closes the ring; our holes would reorder FIFO and are a
+			// single-block modeling limit worth avoiding rather than documenting forever).
+			for ( int s = 0; s < 4; ) {
 				SpawnedEntity::ActionEntry& a = e->actions[s];
 				if ( a.kind == 0 ) {
+					++s;            // only reachable past the packed head (defensive)
 					continue;
 				}
 				acted = 1;
@@ -490,13 +499,13 @@ namespace F3 {
 						a.kind = 0; a.action = 0;   // static pool: no delete
 					}
 				} else if ( a.kind == 6 ) {
-					// T-071: the idle RESIDENT. Protocol-exact (sub_55A1C0): start runs once while
-					// the pending byte is set, update ticks every frame, the predicate (byte +0x18,
-					// getter 0x404b60) NEVER becomes true - the slot is not cleared, ever. That is
-					// what head-of-line blocking IS in the shipped pump, and the walk above already
-					// mirrors it: this is the first non-empty slot, the tick consumed nothing, and
-					// the branches behind it are not reached until a DRAIN (ClearActionQueue /
-					// RebaseOntoIdle) takes the resident out.
+					// The idle ARM, P-REV transient semantics (T-082 S1 refutation of the
+					// never-finishes reading - raw 0x5a9070 is `c6 41 18 01`, an unconditional
+					// write of the SAME byte predicate 0x404b60 reads). One runner call does
+					// start, update, and the walk's predicate retest (sub_55A1C0), so idle is
+					// processed, arms its observables, and erases in ONE tick; the loop then
+					// compacts and CONTINUES - entries behind the arm run in the same frame,
+					// exactly as the shipped walk does for instant finishers.
 					SpawnedEntity::IdleResident* ir =
 					    static_cast<SpawnedEntity::IdleResident*>( a.action );
 					if ( ir->startPending0x10 ) {
@@ -505,16 +514,25 @@ namespace F3 {
 							e->actionStartMs0x184 = ms;   // 0x548f90 store @0x548fa2/0x548fb8
 						}
 						// QueueAnimEvent_0x4673D0 pair: (ent, 9, 0) @0x40566d THEN (ent, 1,
-						// [resident+0x1C]) @0x40567a. The port seam is a single last-id field
-						// (no anim-layer reader yet - consumers checked this pass, T-071:
-						// writers only at GameActionAttack.cpp:312/378), so the observable is
-						// the LAST queued id, with both EAs cited rather than a silent 1.
+						// [arm+0x1C]) @0x40567a. The port seam is a single last-id field (no
+						// anim reader yet; consumers checked - writers only at
+						// GameActionAttack.cpp:312/378), so the observable is the LAST id,
+						// with both EAs cited rather than a silent 1.
 						e->queuedAnimEvent = 1;
 					}
-					ir->consumed0x16 = 1;           // update 0x5a9070 - the DIFFERENT byte, never
-					                              // the predicate: idle consumes no budget, never
-					                              // finishes, and stays head until drained
+					ir->done0x18 = 1;               // 0x5a9070 raw - the done byte itself,
+					                              // written unconditionally on this tick
+					a.kind = 0; a.action = 0;       // predicate retest in the same runner call
+					                              // reads done -> erase, and the walk continues
 				}
+				if ( a.kind != 0 ) {
+					break;              // unfinished head: the shipped 0x54c7f6 false-path break
+					                  // (head-of-line block) - behind THIS, nothing runs today
+				}
+				// finished: erase-and-advance, compaction keeps the block head-packed so the
+				// next entry runs in THIS walk (0x54c80a-0x54c819 erase then loop)
+				for ( int i = s; i < 3; ++i ) { e->actions[i] = e->actions[i + 1]; }
+				e->actions[3].kind = 0; e->actions[3].action = 0;
 			}
 			// T-048: the +0x319 RAISER, mirroring shipped `Entity::virt_meth_0x54c570`, whose
 			// complete writer set is closed (docs/f3/CombatTurnDispatch.md "+0x319 raiser"):
@@ -540,14 +558,12 @@ namespace F3 {
 			// RE-ENTRANCY, which the port does not model (row boundary; lockstep question routed
 			// by T-011). No rotation is invented here: the PathManager T-048 block pins BOTH
 			// the raise and the stable head.
-			if ( acted && actedSlot >= 0 && e->actions[ actedSlot ].kind != 0 &&
-			     e->actions[ actedSlot ].kind != 6 ) {
-				// ...AND NOT for the idle resident (T-071): the shipped raiser 0x54c833 sits on
-				// the ANIM-EVENT deque, not the action deque - a resident idle never raised it,
-				// and shipped rounds tick normally with the resident at head (the command-pump
-				// packets prove it). Letting the resident hold the latch would freeze our
-				// combat manager's skip-advance consumer (CombatManager.cpp:169) in a state
-				// shipped never reaches: the port's FIFO-slot analogy must not over-apply.
+			if ( acted && actedSlot >= 0 && e->actions[ actedSlot ].kind != 0 ) {
+				// P-REV note: T-071's `kind != 6` guard retires as VACUOUS, not reversed - with
+				// the transient reading (0x5a9070 raw) the idle branch ALWAYS clears its slot,
+				// so "slot still occupied after processing" can never be true of kind 6 here.
+				// The shipped raiser 0x54c833 sits on the ANIM-EVENT deque; WildZenith's T-085
+				// census confirmed idle can never be the not-finished head across frames.
 				e->actedLatch0x319 = 1;
 			}
 		}

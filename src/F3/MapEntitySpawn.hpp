@@ -139,51 +139,73 @@ namespace F3 {
 		// header). Caller-owned objects; slots auto-clear on completion/fetch.
 		//
 		// KIND NUMBERING - explicit mapping, NOT the shipped GameActionType values (T-071,
-		// choice documented per the row). The shipped factory F3::GameWorld::CreateGameAction_
-		// 0x46f290 dispatches: 0=GameActionDie(+0x1C=7) 1=GameActionIdle 2=GameActionMoveTo
-		// 3=GameActionPickUp 4=GameActionWander 5=GameActionWait 6/7=JE::World::CreateAction
-		// passthrough 8=GameActionFloatingSpeechText 9=GameActionEquip 10=GameActionUnequip
-		// 11=GameActionSetActiveWeapon (alloc sizes 0x20/0x24/0x48/0x30/0x44/0x24/0x34/0x30/
-		// 0x28/0x44 at 0x46f2xx-0x46f4c6). We CANNOT reuse those numbers: our empty-slot
-		// sentinel is 0 and shipped kind-0 is GameActionDie, and GameActionAttack is not a
-		// factory kind at all (direct-constructed by F3::Attack 0x459f33). The SHARED AXIS is
-		// the CLASS NAME, which the digest prints on both sides (ActionKindName here,
-		// [action+0x00] vft->F3.json name there). Mapping table (port kind -> shipped class):
-		//   1->GameActionMoveTo(2)  2->GameActionWait(5)  3->GameActionOperateDoor(6/7 engine)
-		//   4->GameActionAttack(native)  5->GameActionDie(0)  6->GameActionIdle(1)  0->empty
+		// choice documented per the row; P-REV corrected + extended against raw). The shipped
+		// F3 factory F3::GameWorld::CreateGameAction_0x46f290 dispatches via jump table
+		// 0x46F4FC (12 entries, read raw): kind 0=GameActionDie ALLOC 0x2C (@0x46f2b9 push;
+		// P-REV erratum fix - an earlier revision of this comment said 0x20, a number that had
+		// never been in any dumped frame: the push sits at the jump TARGET, one block before
+		// every window read that day), 1=GameActionIdle 0x24, 2=GameActionMoveTo 0x48,
+		// 3=GameActionPickUp 0x30, 4=GameActionWander 0x44, 5=GameActionWait 0x24,
+		// 6 AND 7 -> default @0x46f4dc = JE::World::CreateAction passthrough with the kind
+		// UNMODIFIED, 8=GameActionFloatingSpeechText 0x34, 9=GameActionEquip 0x30,
+		// 10=GameActionUnequip 0x28, 11=GameActionSetActiveWeapon 0x44. The engine-side twin
+		// (JE::World::CreateAction table @0x5450cc) shares the numbering (0=Die 0x1C, 6=Anim
+		// 0x28, 7=MESSAGE 0x34, 8=FATAL - T-080 raw): F3-side and engine-side kind values are
+		// IDENTICAL; the default path is the bridge. ActionMessage (engine kind 7) is NOT a
+		// ported kind - noted because it shares Idle's update stub (see below). We CANNOT
+		// reuse the numbers as ours: our empty-slot sentinel is 0 and shipped kind-0 is
+		// GameActionDie; GameActionAttack is not a factory kind at all (direct-constructed,
+		// F3::Attack 0x459f33). The SHARED AXIS is the CLASS NAME, which the digest prints on
+		// both sides (ActionKindName here, [action+0x00] vft->F3.json name there). Mapping
+		// table (port kind -> shipped class): 1->GameActionMoveTo(2) 2->GameActionWait(5)
+		// 3->GameActionOperateDoor(6/7 engine family) 4->GameActionAttack(native)
+		// 5->GameActionDie(0) 6->GameActionIdle(1) 0->empty.
+		// REGISTER NOTE (T-082 S6, banked gen-3): artifacts/F3.json vft slot maps are LOSSY
+		// MIRRORS - the shared protocol stubs at +0x04/+0x08/+0x0c/+0x14/+0x18 (0x404b60
+		// isDone, 0x404b70 cancel, 0x4010d0 getter, 0x5a9070 done-write update, 0x404bb0
+		// on-finish) appear in the raw tables of GameActionIdle 0x6497c4, ActionMessage
+		// 0x6a5f34 AND GameActionWait 0x64bc6c (idx4 differs: timed 0x5601d0), but the DB
+		// registers a shared stub under only ONE class - the one IDA analyzed first. Cite raw
+		// table dwords; a DB "slot unmapped" is silence, not absence.
 		struct ActionEntry { int kind; void* action; };
 		ActionEntry actions[4];
 
-		// The idle RESIDENT (T-070: discoveries/2025-10-21-t070-idle-resident-rootcause.md).
-		// Shipped entities live with a GameActionIdle at the deque head: the feeder
-		// Entity::SetInMap_0x551ba0 DRAINS the queue (meth_0x54c440 @0x551bbe), creates the
-		// idle via the factory case 1 (@0x551bde) and enqueues it through the funnel
-		// (@0x551be4); the Server stop-command packet rebases the same way (JE::Server::
-		// virt_meth_0x556ea0 case 0x3B: drain @0x55763b -> create(1) @0x557657 -> funnel
-		// @0x55765d). The resident NEVER finishes: its predicate is byte +0x18 (getter
-		// 0x404b60), zeroed by the shared ctor 0x56018d and written by nothing on the idle
-		// path (its update 0x5a9070 sets the DIFFERENT byte +0x16), so the pump
-		// (Entity::virt_meth_0x54c570) breaks on it every frame - head-of-line blocking that
-		// T-056 observed as "Attack never fired" (the script native enqueues WITHOUT a
-		// drain; command-pump packets drain first, cases 0x1A/0x3B/0x3C). Field names carry
-		// the shipped offsets they mirror (GameActionIdle size 0x21/alloc 0x24, ctor 0x4055f0).
+		// The idle ARM (T-070 + P-REV correction; history kept honest, not hidden): T-070/T-071
+		// ported this as a NEVER-FINISHING resident, and T-082 refuted that from raw bytes -
+		// the update stub 0x5a9070 is `c6 41 18 01` (mov byte [this+0x18],1 - the SAME
+		// predicate byte 0x404b60 reads and the ctor 0x56018d zeroes), NOT a +0x16 write;
+		// "+0x16" was an IDA BYTE2(mbr_int_0x14) RENDERING that never got raw-verified (the
+		// register's gen-4 in my own text). So idle is a ONE-TICK transient arm: the feeder
+		// Entity::SetInMap_0x551ba0 drains (@0x551bbe), creates (case 1 @0x551bde) and
+		// enqueues the arm (@0x551be4); the Server stop-packet rebases identically
+		// (virt_meth_0x556ea0 case 0x3B @0x55763b->@0x55765d). The first walk to process it
+		// runs start (activation: +0x184 world-ms stamp via 0x548f90, QueueAnimEvent 9-then-1
+		// via 0x4673d0 @0x40566d/@0x40567a), THEN update (sets done, consumes 0 ms), THEN the
+		// walk's own predicate retest - ALL inside one sub_55A1C0 call - so the entry erases
+		// and the walk CONTINUES to the next entry in the SAME frame. Steady-state +0x314
+		// EXCLUDES idle; it is observable only between rebase and next pump - exactly where
+		// T-056's funnel-bp sampling saw it (12/12 first inserts, insert-window reads). Run
+		// H's "Attack never fired" is therefore NOT idle blocking (RE-REOPEN queue, T-082:
+		// observation stands, mechanism unnamed, no guess). Field names carry the shipped
+		// offsets (GameActionIdle size 0x21/alloc 0x24, ctor 0x4055f0).
 		struct IdleResident {
 			// ONE construction per entity per rebase: the object is re-armed in place, which
 			// is what shipped achieves by allocating a fresh 0x24-byte object at 0x46f2ef.
-			IdleResident() : queued0x04(1), startPending0x10(1), consumed0x16(0),
+			IdleResident() : queued0x04(1), startPending0x10(1),
 			                 done0x18(0), owner0x14(0), state1Arg0x1C(0), stampOnce0x20(1) {}
 			unsigned char queued0x04;        // base ctor 0x560191 sets 1; getter 0x4010d0 reads it
-			unsigned char startPending0x10;  // base ctor 0x560184 sets 1; sub_55A1C0:20 clears+starts
-			unsigned char consumed0x16;      // update 0x5a9070 BYTE2(+0x14->+0x16): "ran at least once"
-			unsigned char done0x18;          // THE predicate byte (0x404b60) - stays 0 forever
+			unsigned char startPending0x10;  // base ctor 0x560184 sets 1; sub_55A1C0 clears before start
+			unsigned char done0x18;          // THE predicate byte (0x404b60) - set by update
+			                                 // 0x5a9070 on the arm's FIRST processed tick (P-REV)
 			void*    owner0x14;              // R4 uniform store, funnel 0x550737 *(action+0x14)=entity
 			int      state1Arg0x1C;          // ctor 0x4055fe zeroes; passed to the state-1 call
 			unsigned char stampOnce0x20;     // ctor 0x405605 sets 1; gates the +0x184 stamp
 		};
 		IdleResident idleResident;
-		// Entity+0x184 (stamp target of 0x548f90, store at 0x548fa2/0x548fb8 = current world ms
-		// from the world-sub vft[0]): armed by the resident's activation, read by nothing in
-		// the port yet - kept observable for the R5 live-confirm and the anim layer.
+		// Entity+0x184 (stamp target of 0x548f90, store at 0x548fa2/0x548fb8 = current world
+		// ms from the world-sub vft[0]) - armed by the idle arm's activation on its single
+		// tick; read by nothing in the port yet, kept observable for the R5 live-confirm +
+		// the anim layer.
 		int actionStartMs0x184;
 
 		// The mirror of shipped Entity+0x314 (see the field note above): how many action slots
@@ -290,19 +312,28 @@ namespace F3 {
 	enum { kActEmpty = 0, kActMoveTo = 1, kActWait = 2, kActOperateDoor = 3, kActAttack = 4,
 	       kActDie = 5, kActIdleResident = 6 };
 
-	// T-071: drain-whole-queue, the port mirror of JE::Entity::meth_0x54c440 (walk + erase +
-	// deldtor(action,1) each entry; head gets its [vft+8] cancel hook first - shipped idle
-	// answers it with ret 0 at 0x404b70). Shipped callers include the Server packet pump
-	// cases 0x1A/0x3B/0x3C/0x46, the idle feeder itself, the combat-round handler
-	// sub_45C140 @0x45c5c6, and the script natives ClearActions/Kill/TeleportParty.
+	// P-REV: drain-whole-queue of the ACTION deque, the port mirror of JE::Entity::
+	// meth_0x54c440 (walk + erase + deldtor(action,1) each entry; head gets its [vft+8]
+	// cancel hook first - the family stubs it with ret 0 at 0x404b70). Shipped callers:
+	// Server packet pump cases 0x1A/0x3B/0x3C/0x46, the idle feeder itself, the combat-round
+	// handler sub_45C140 @0x45c5c6, script natives ClearActions/Kill/TeleportParty.
+	// DO NOT cross the three drains (register gen-5, relay-swapped names, sites always right):
+	// ACTION deque (+0x304) = meth_0x54c440, this seam. EFFECT-TREE (+0x2E0) full drain =
+	// meth_0x54c390 (frames [ebp+0x2e0] @0x54c398, loop; caller entity-reset @0x5501a2) -
+	// and erasing THAT deque FIRES pending effects ([vft+0x2C] apply @0x55a501, T-074).
+	// MAILBOX (+0x37C) discard = meth_0x54b3f0 (single pop, NO loop, @0x54b3f3; caller
+	// @0x5501b0, T-080). The action drain applies nothing.
 	void ClearActionQueue( SpawnedEntity* e );
 
-	// T-071: drain-then-feed-idle, the port mirror of Entity::SetInMap_0x551ba0's rebase
+	// P-REV: drain-then-feed-idle, the port mirror of Entity::SetInMap_0x551ba0's rebase
 	// chain (drain @0x551bbe -> CreateGameAction(1) @0x551bde -> funnel enqueue @0x551be4)
 	// and of the stop-packet rebase (JE::Server::virt_meth_0x556ea0 case 0x3B). Places the
-	// never-finishing resident at slot 0 and links its owner (0x550737 analog). Activation
-	// observables (world-ms stamp + entity+0x184, QueueAnimEvent 9-then-1) fire on the
-	// resident's FIRST pump tick, mirroring the shipped start-pending byte (+0x10).
+	// freshly armed idle at slot 0 and links its owner (0x550737 analog). The arm's
+	// activation observables (world-ms stamp entity+0x184, QueueAnimEvent 9-then-1) fire on
+	// its FIRST processed pump tick (start-pending byte +0x10), and it COMPLETES in that
+	// same tick (P-REV correction: 0x5a9070 writes the done byte; the never-finishes reading
+	// was refuted raw in T-082) - so post-rebase the queue reads: idle visible ONLY in the
+	// insert window, gone from the first pump onward.
 	void RebaseOntoIdle( SpawnedEntity* e, unsigned int worldMs );
 
 	// The combat manager's per-turn dispatch target - the port's analogue of

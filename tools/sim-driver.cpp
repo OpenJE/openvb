@@ -186,7 +186,9 @@ int main( int argc, char** argv ) {
 			e.statMax = hp; e.statCur = hp;
 			e.entityState = F3::kStateActive;   // ACTIVE pumps (sess-11/12 switch)
 			registerEnt( &e );
-			// T-071: the harness's spawn IS the add-to-world edge. Shipped fires the idle
+			// P-REV: the harness's spawn IS the add-to-world edge (the arm it feeds COMPLETES
+			// on the next processed tick - 0x5a9070 raw; use `peek` to sample that window).
+			// Shipped fires the idle
 			// rebase from the net path that follows spawn (Entity::SetInMap_0x551ba0: drain
 			// @0x551bbe -> CreateGameAction(1) @0x551bde -> funnel @0x551be4, driven by the
 			// Server/Client pumps), and T-056 run H saw the result as GameActionIdle at the
@@ -314,7 +316,7 @@ int main( int argc, char** argv ) {
 			     ea->actions[2].kind != 0 && ea->actions[3].kind != 0 ) {
 				// deviation D-2, now INCLUDING the resident: 3 orders + resident fill the
 				// first block; a shipped deque grows past it, our port refuses - fail loudly
-				fprintf( stderr, "SIM-DRIVER FAIL line %d: entity %s queue block full (D-2 refusal; 3 orders + resident)\n", lineno, a );
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: entity %s queue block full (D-2 refusal; 3 orders + unpumped idle arm)\n", lineno, a );
 				rc = 1; break;
 			}
 			F3::AttackModeRecord m = F3::GameActionAttack::MakeUnarmedMode( dmin, dmax, 1, tohit );
@@ -358,6 +360,17 @@ int main( int argc, char** argv ) {
 			if ( !g_digest ) { fprintf( stderr, "SIM-DRIVER FAIL: cannot open digest %s\n", path ); rc = 1; break; }
 			F3::Sim::Sources src; src.combat = &g_cm; src.paths = g_pm;
 			F3::Sim::WriteHeader( g_digest, src );
+		} else if ( strcmp( verb, "peek" ) == 0 ) {
+			// P-REV: sample the CURRENT state without ticking - the insert window. Shipped
+			// R3/R4b samples live at the funnel bp (between enqueue and the walk), so pairing
+			// the transient idle arm (0x5a9070: completes first tick) needs the same sampling
+			// instant. The frame number is consumed to keep numbering strictly increasing.
+			if ( g_digest ) {
+				F3::Sim::Sources src; src.combat = &g_cm; src.paths = g_pm;
+				F3::Sim::WriteFrame( g_digest, src, g_frame, (unsigned)g_clockMs,
+				                     (unsigned)( g_clockMs / 1000u ), 0, 0 );
+				++g_frame;
+			}
 		} else if ( strcmp( verb, "end" ) == 0 ) {
 			if ( g_digest ) {
 				fprintf( g_digest, "# END frames=%u every=1 clockMs=%lu\n", g_frame, g_clockMs );

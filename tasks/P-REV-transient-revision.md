@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: landed (gates green on this payload; transient arm + walk-continue + register folds)
 assignee: KeenStorm (PULL per contract from tasks/PARK.md top row; dispatched relay to LoudDragon)
 type: implementation (product code, submodule-first, full gate law incl. msvc — headers move)
 depends: T-082 §1-§8 (the transient verdict), T-080 (shared-pool stub, Message kind 7), T-070/T-071 (the port being revised), WildZenith gen-5 confirmation

@@ -196,3 +196,29 @@ Recorded per the stated-rather-than-hidden rule.
 Fourth nail (unstaffed, testable in archives or any boot): dump a spawn-to-first-order timeline.
 Any entity whose FIRST funnel insert is a REAL order instead of Idle proves the native beat the
 rebase in the pre-join window - completing the presentation-sites census from the other side.
+
+
+## P-REV: the idle ARM is transient (correction of the T-071 section above)
+
+T-082 refuted the never-finishing reading from raw bytes and P-REV landed the correction
+(discoveries/2025-10-21-t082-digest-fields-re-audit.md S1-S8; three independent raw confirmations:
+mine, T-080's, T-085's). Load-bearing facts, replacing the "resident" wording above where it
+spoke to lifetime (the KIND, the rebase sites, the owner store, the activation observables, and
+the protocol slots all STAND):
+
+- `0x5a9070` (vft +0x14 update of GameActionIdle 0x6497c4 AND ActionMessage 0x6a5f34 - a shared
+  pool stub) is `c6 41 18 01`: it writes the DONE byte +0x18 that the predicate getter 0x404b60
+  reads. Wait's update 0x5601d0 sets the same byte at due-time; idle's setter is unconditional.
+- Consequence: the arm is processed, activates (stamp + QueueAnimEvent pair), and erases in ONE
+  walk; the walk then COMPACTS and CONTINUES to the next entry in the same frame
+  (0x54c80a-0x54c819 erase-and-advance). Steady-state Entity+0x314 EXCLUDES idle.
+- The +0x319 raiser exclusion for kind 6 retired with it: an always-completing branch can never
+  be "processed not finished", so no guard is needed (T-085's raiser census found idle at neither
+  0x54c833 site across frames).
+- The digest `ak=GameActionIdle` line is now an INSERT-WINDOW sample (use the sim-driver `peek`
+  verb, which writes a frame without ticking); tools/scripts/t071-r3-pair.txt re-armed to show
+  it. R3 state-agreement with T-056 holds at the funnel-bp sampling instant, which is where
+  shipped itself sampled.
+- Run H's "Attack never fired" is NOT explained by idle blocking under this model - it stands as
+  an observation with named unverified candidates (T-082 RE-REOPEN queue). No HOL claim for idle
+  survives here; the legitimate head-of-line owner is an UNFINISHED order (the Wait family).

@@ -1,13 +1,24 @@
-# T-071 R3 STATE-AGREEMENT pair script: frames printed BEFORE any command, so
-# the digest shows the spawn rebase exactly where T-056 R3/R4b read it (first insert,
-# head slot, count 1). The shipped side of the pair: q=1, slot0 class GameActionIdle
-# (vft 0x6497C4) on 12/12 entities. Ours below. Then a `push` (the F3::Attack native
-# shape, NO drain) demonstrates head-of-line blocking: q grows to 2 and NEVER advances
-# - the same state run H observed as "Attack never fired".
+# T-071 / P-REV R3 STATE-AGREEMENT pair script.
+# The shipped R3/R4b samples live AT THE FUNNEL BP - the INSERT WINDOW. P-REV corrected the
+# port's idle to the shipped transient arm (0x5a9070 raw = unconditional done-write; T-082 S1):
+# the arm is observable between rebase and the next processed tick, and NEVER as a steady state.
+# The `peek` verb (P-REV) samples exactly that window: frame WITHOUT ticking.
+# Pair table (both sides at the same sampling instant):
+#   shipped (T-056 run H, bp 0x550720): first insert q=1, slot0 class GameActionIdle (0x6497C4)
+#   ours    (peek below):               q=1, ak=GameActionIdle/-/-/-          <- STATE agreement
+#   ours post-run (steady):             q=0 - the arm completed its one tick (P-REV; the old
+#                                       resident-forever reading was refuted, NOT patched blind)
+#   ours after native push + peek:      q=1 ak=GameActionAttack (empty queue C-1 family: the
+#                                       native fires - run H's never-fired observation stays
+#                                       un-explained by idle per T-082 RE-REOPEN; this script
+#                      		                  does NOT claim to model it)
 digest /tmp/t071-r3.digest
 spawn sentinel 0 20.0 0.0 0.0 45
-run 3 16
+peek
 spawn intruder 1 20.4 0.0 0.0 30
+peek
+run 2 16
 push sentinel intruder 2 2 0 0
+peek
 run 12 16
 end

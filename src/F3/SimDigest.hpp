@@ -141,9 +141,13 @@ namespace F3 {
 			case 3:  return "GameActionOperateDoor";
 			case 4:  return "GameActionAttack";
 			case 5:  return "GameActionDie";
-			case 6:  return "GameActionIdle";   // T-071 resident; the shipped factory name for
-			                                   // case 1 (0x46f290), NOT our numbering - see the
-			                                   // mapping table at SpawnedEntity::ActionEntry
+			case 6:  return "GameActionIdle";   // T-071/P-REV idle ARM: the shipped factory
+			                                   // name for case 1 (0x46f290), NOT our numbering -
+			                                   // see the mapping table at SpawnedEntity::ActionEntry.
+			                                   // Transient since P-REV (0x5a9070 done-write):
+			                                   // a frame showing this name caught the walk
+			                                   // between rebase and processing - the insert
+			                                   // window, not a steady state.
 			default: return "UNKNOWN_KIND";   // never a silent name
 			}
 		}

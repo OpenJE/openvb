@@ -8,8 +8,10 @@
 # COMMAND-PUMP shape (drain-then-issue, virt_meth_0x556ea0 cases 0x1A/0x3C - it can
 # never accumulate), so the accumulator is `push`, the honest SCRIPT-NATIVE shape
 # (F3::Attack 0x459f5d enqueues without draining). Spawn rebases onto the idle
-# resident, so the first block holds 3 orders + resident: refusal on the 4th push.
-# Depth math changed from "5 orders" to "4 orders (3 + resident wall)" - the SAME
+# ARM (P-REV: transient - it occupies slot 0 only until the first processed tick, and this
+# script pushes before any run, so the arm is still unpumped): the first block holds 3 orders
+# + unpumped arm, so refusal lands on the 4th push.
+# Depth math changed from "5 orders" to "4 orders (3 + unpumped-arm wall)" - the SAME
 # D-2 fact under T-070's re-expression (discoveries/2025-10-21-t070 §4).
 digest /tmp/d2-stress.digest
 spawn brute  0 20.0 0.0 0.0 45
