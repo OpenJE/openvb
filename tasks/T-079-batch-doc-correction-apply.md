@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: JadeBear `01a1639b`-peer (pulled 2026-10-22 ~10:4x from the coordinator-maintained T-079 row; seat's coordinator was dark at claim — relay sent, no contest; predecessor applies: T-078 dispositions + item 48 landed by coordinator at fb3d03f)
 type: docs-apply ONLY (zero IDB writes, zero src/, zero prefix boot; annotate-never-rewrite law)
 depends: T-072 deliverable (the per-file errata LIST — discoveries/2025-10-21-t072-doc-errata-sweep.md), T-081 §5 re-key table (paste-ready), T-082 §6 corpus rule, T-057/T-064 composition proof for I1
@@ -92,8 +92,48 @@ depends: T-072 deliverable (the per-file errata LIST — discoveries/2025-10-21-
   EA±1 class (predicates located at opcode starts 0x5a95af/0x551c4a); the class does NOT
   generalize — 0x54be33 matched exactly at its cited EA. Same-day amendment to my OWN D12 line
   when B2 (70b4549) moved the gate 12/0 -> 13/0 six hours after I quoted the mesh report.
-- [ ] batch 5 (pending flips / DONE marks)
-- [ ] close: coverage statement + relay
+- [x] **batch 5 LANDED** — four dead pendings flipped with authority-cites (session34 host-chain +
+  the small-accessor trio named — WorldMap `0x545490`, Party `0x5452B0`; C-21 getter census: bare
+  2-insn getter, three sites, NO SecondsPerRound consumer, budget inputs at `meth_0x5A94A0`;
+  session14 + T-085 X1 driver chain, caller census complete @0x545e0d), one pending (ESS::Init
+  wiring) checked for a closer across discoveries/ + docs/, NOT found, explicitly kept open.
+- [x] **CLOSE (2026-10-22)** — coverage statement below.
+
+## Coverage statement (row close)
+
+Every item of the T-079 scope as stated in the README row and the sweep's §9 is now applied:
+
+- §4 docs/f3 errata: 15 hit files, correction/annotation blocks landed across batches 1/3/4
+  (S1-4, P1-4, O1-4, W1-2, Gr1-6 [Gr6 pre-landed at fb3d03f], E1-4, C2-C3 [+C minor folded into
+  the batch-3 re-attribution], N1-4, ST1-3, GS1-3, GP1, WY1-2, T1-4, A1, GI1). Honest opens
+  preserved, named-not-guessed: N5 (Routed-questions 3/4), T2/T5 (0x70B200 runtime writer,
+  device-gated steps), GS2 `[Globals]` residual (flagged as needing a named bonus-read slot, it
+  is on no boot list), WY param_1 shape inference, the two-key-policy law (T-062) restated only
+  where the batch text cites it.
+- §5 DEFERRED-NOTES: D1-D13 fully covered between the coordinator's pre-existing block (whose
+  bullets re-map to sweep D1/D2/D4/D3/D11/D9 — decoded in my batch-3 header) and my batch-3 block
+  (D5/D6/D7/D8/D10/D12/D13) + batch-5 pending flips.
+- §9.3 I1: 8/8 stubs carry the shared composition line (batch 2).
+- §9.4 routings (F2->KeenStorm, F3->T-078) were executed by the coordinator before this claim;
+  recorded for coverage, no action owed here.
+- Verify-at-apply ran on EVERY raw claim pasted: 30+ EA re-reads from `$OPENVB_ORIG_EXE` (own
+  PE parser, image base 0x400000) + one independent E8 census (exactly 33 ctor sites) + one
+  frozen-export re-check (cls_0x50db20 embeds). Catches produced by the pass: (1)
+  WorldTickPump.md:205 inline-comment contradiction missed by the sweep's W-list — logged in the
+  WTP block, not rewritten; (2) sweep §3 locators `0x5a95b0`/`0x551c4b` sit ONE byte into their
+  instructions (the known EA±1 class) — opcode starts `0x5a95af`/`0x551c4a` cited instead, while
+  `0x54be33` matched exactly at its cited EA (class noted, not generalized); (3) my own D12 quote
+  went stale within the same day (B2 `70b4549` -> 13/0) — amended same-session; (4) a D-bullet
+  off-by-one in my own batch-3 header — caught pre-commit (gen-1 for this lane).
+- Zero IDB writes, zero src/, zero prefix boots, zero README table edits (relayed instead);
+  WildKnight's files (ScriptNatives.*, tools/t052-drive.py, f3-wine-dxvk.nix, run-all-tests rows,
+  modules/openje) never entered any `git add` of this lane — every commit path-scoped.
+
+SUCCESSOR (lane contract): the apply pass consumed the sweep; no code/doc row remains from it.
+Two named residuals for the next coordinator's PARK: (a) GS2 `[Globals]` key-vs-section residual
+needs a bonus-read slot on the next boot list — it is on none; (b) `MapEntitySpawn.cpp` ~:556
+attribution amendment (P-CMBT item 3) — product-lane work, already routed in the batch-3 block
+text and meshed to WildKnight.
 
 ## Cliff bank
 Resume at the first unchecked batch; per-batch commit with the verification receipts.
