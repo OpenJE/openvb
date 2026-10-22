@@ -857,7 +857,7 @@ is a bus payload, not a registered command — census note for the cursor lane).
 ## Law-#6 triage DONE (same sitting, pre-wave-4): GetGlobal/SetGlobal = REAL SEH4 BODIES
 - both decompile-fails de-thunked: in-function SEH4 heads (5-push), NOT split thunks;
   bodies read COMPLETE by disasm (168+137 insns) and filed verbatim:
-  discoveries/2026-10-22-getglobal-setglobal-seh-triage.md (per-step EA tables).
+  discoveries/2025-10-22-getglobal-setglobal-seh-triage.md (per-step EA tables).
 - Shared shape: argc guard -> 'Usage:' echo via [client+0x88] sink -> GAME-object
   (0x70BD98, cls_0x616328) slot-27 (+0x6C) name->handle -> sub_5A9D50 is-registered.
   Get: miss echo 'Global variable <%s> not registered.'; hit meth_0x5A9E60 toInt +
