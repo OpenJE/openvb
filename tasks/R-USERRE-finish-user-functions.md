@@ -614,3 +614,33 @@ FULL CHAIN, ALL SLOTS RAW-PINNED (the era's spine, port-ready):
   set it to that table's GameHotKeys range; RTTI adjacency noted, no claim built on it.
 - Gates: paper-only again (this file, only); vft tables read via ida_original_f3 disasm of
   0x69fd34/0x6647f4, methods decompiled whole; every EA re-dumpable cold.
+
+
+## Slice-5: Execute() LANDS (SwiftOwl, 2026-10-22 ~05:2x) - mirror + handler ABI correction
+
+- src/F3/Commands.{cpp,hpp}: PushCommand (sub_580D10 counterpart) + ExecutePendingCommands
+  (cls_0x580ba0::meth_0x580ba0 counterpart) - full chain cited in-file (256B copy local
+  @0x580c20, strtok vs ' ' @byte_671C60, FindValue=0x5ACE40 for the 0x59F030->0x59EC80 lookup,
+  dispatch shape 0x580c46-0x580c4d, miss 'Unknown command %s\n' @0x580c65, drain-then-camera
+  ORDER law @0x587fd5/0x587fda). Pump CALL POSITION named-absent (GameClient pump has no port
+  TU yet) - the successor who ports virt_meth_0x45f000 calls the drain at that position.
+- ABI CORRECTION (drove every __stdcall->__cdecl retag: 29+29 Commands, 38 Client.cpp, F3.hpp,
+  F3.cpp): shipped dispatch is push/call/add esp,4 - CALLER cleanup, handlers bare retn
+  (CommandCameraDown @0x588435). With __stdcall, any executor pushing argv at a void() handler
+  mis-cleans by 4 bytes per call - caught BEFORE the first dispatch existed, zero blast radius.
+- Two documented deviations, both on UB paths (slice-1 guard precedent): >255 lines truncate
+  (shipped strcpy smashes), all-space lines skip (shipped derefs empty vector).
+- Gates: msvc TRUE_RC=0 (openje.lib + F3.exe relinked), run-all 11/0 app=124, port-annot GATE
+  PASS stock 0/392 (the two new defs cited in-file).
+- RIG DEFECT FOUND IN-PASS (filed to keeper+coordinator, NOT silently patched): the item-60
+  cmkr-regen block (ad6c494, 2026-10-22 00:08) has never executed successfully: its cached
+  binary build/_cmkr_v*/build/cmkr is a LINUX ELF (mtime Jul 15), the container wine is i386-
+  only, and upstream cmkr releases ship PE32+ only - wine rejects both ('File not found' /
+  'Bad EXE format'). All post-midnight msvc-build greens ran via the pre-activation installed
+  PATH (T-049's own note: 'activation = coordinator re-up call, not performed'); my print-dev-
+  env re-eval activated the new script tonight and the block failed on first-ever real run.
+  Mitigation applied: cache dir moved to /tmp/disabled-cmkr-cache-20261022 (restore or fix per
+  keeper), restoring the known-good pre-item-60 flow - item 60's GUARD IS NOW INACTIVE: until
+  it's fixed right, cmake.toml edits silently no-op AGAIN. Every cmake.toml touch between now
+  and the fix must be manually verified against CMakeLists.txt. The regen design needs a host-
+  native cmkr leg (ELF in, wine out) - named for rework, not guessed at a fix.

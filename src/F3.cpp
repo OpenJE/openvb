@@ -397,7 +397,7 @@ namespace F3 {
 		if ( const char* digestPath = getenv( "OPENVB_SIM_DIGEST" ) ) {
 			if ( digestPath[0] ) { JE::Host::EnableSimDigest( digestPath ); }
 		}
-		F3::RegisterCommand("quit", reinterpret_cast<void (__stdcall *)()>(F3::Quit));
+		F3::RegisterCommand("quit", reinterpret_cast<void (__cdecl *)()>(F3::Quit));
 		while ( ProcessMessagesAndUpdateTime() ) {
 			F3::GameStateLoop();
 		}
@@ -439,7 +439,7 @@ namespace F3 {
 	}
 
 	// 0x433930
-	static bool __stdcall sub_433930( int param1, int param2 ) {
+	static bool __cdecl sub_433930( int param1, int param2 ) {
 		tracing::instrument( tracing::LOCATION, "param1=0x%p, param2=0x%p", param1, param2 );
 
 		const char* str2;
@@ -492,7 +492,7 @@ namespace F3 {
 	//                      node's value slot at node+0x28; the clone/insert path is folded into
 	//                      InsertOrGet here)
 	//   0x59f6bd           if (capacity >= 0x10) free(heap buffer)
-	void RegisterCommand( const char* ArgList, void (__stdcall *func_ptr)() ) {
+	void RegisterCommand( const char* ArgList, void (__cdecl *func_ptr)() ) {
 		tracing::instrument( tracing::LOCATION, "ArgList=%s", ArgList );
 
 		// tempString in SSO state, mirroring 0x59f5fc-0x59f60c (object word, buffer[0], size, capacity).

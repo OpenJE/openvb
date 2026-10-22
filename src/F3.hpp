@@ -104,7 +104,7 @@ namespace F3 {
 	// 0x5ACD60
 	void* Startup();
 	// 0x59F5D0
-	void RegisterCommand(const char* ArgList, void (__stdcall *func_ptr)());
+	void RegisterCommand(const char* ArgList, void (__cdecl *func_ptr)());
 	// 0x5ACDE0
 	void GameStateLoop();
 	// 0x56AF60

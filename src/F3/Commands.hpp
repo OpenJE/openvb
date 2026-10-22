@@ -23,48 +23,48 @@ namespace F3 {
 	// Names are the user-era IDB claims; EAs are the contract (item 50 law).
 
 	// @0x58b450  "CameraAzimuth <deg>" -> CameraControl::set_azimuth (0x585ea0)
-	void __stdcall CommandCameraAzimuth(unsigned int argv);
+	void __cdecl CommandCameraAzimuth(unsigned int argv);
 	// @0x588360  "CameraAzimuthInc"  : cur_degrees*rad2deg*0.02222 + 1.0, *45 -> set_azimuth
-	void __stdcall CommandCameraAzimuthInc();
+	void __cdecl CommandCameraAzimuthInc();
 	// @0x5883a0  "CameraAzimuthDec"  : same delta minus 45.0 -> set_azimuth
-	void __stdcall CommandCameraAzimuthDec();
+	void __cdecl CommandCameraAzimuthDec();
 	// @0x58b4a0  "CameraAzimuthSpeed <f>" : set camera+0xc8; echo via client+0x88 print (unported)
-	void __stdcall CommandCameraAzimuthSpeed(unsigned int argv);
+	void __cdecl CommandCameraAzimuthSpeed(unsigned int argv);
 
 	// @0x58b500  "CameraElevation <deg>" -> CameraControl meth_0x586010 (clamped animated set)
-	void __stdcall CommandCameraElevation(unsigned int argv);
+	void __cdecl CommandCameraElevation(unsigned int argv);
 	// @0x58b550  "CameraElevationSpeed <f>" : set camera+0xd8
-	void __stdcall CommandCameraElevationSpeed(unsigned int argv);
+	void __cdecl CommandCameraElevationSpeed(unsigned int argv);
 
 	// @0x588400  "CameraTop"   : sub_5862f0(cam, 1) -> meth_0x586010(90.0) (animated top-down)
-	void __stdcall CommandCameraTop();
+	void __cdecl CommandCameraTop();
 	// @0x5883e0  "CameraTopDown": CONFIRMED raw 0x5883e0 body (sub_5862f0(cam,0) shape)
-	void __stdcall CommandCameraTopDown();
+	void __cdecl CommandCameraTopDown();
 	// @0x588580  "CameraTiltUp"   : TOGGLE camera word mbr_0xc2 bit 0x100 (0x58858e: xor 0x100)
-	void __stdcall CommandCameraTiltUp();
+	void __cdecl CommandCameraTiltUp();
 	// @0x5885a0  "CameraTiltDown" : TOGGLE camera word mbr_0xc2 bit 0x200 (0x5885ae: xor 0x200)
-	void __stdcall CommandCameraTiltDown();
+	void __cdecl CommandCameraTiltDown();
 
 	// Slice 2 - camera tail (all raw-read, registrations land in JE::Client::ctor):
-	void __stdcall CommandCameraDistance(unsigned int argv);        // @0x58b5b0 -> setter 0x586140
-	void __stdcall CommandCameraDistanceSpeed(unsigned int argv);   // @0x58b600 (collides on cam+0xF8, documented)
-	void __stdcall CommandCameraScrollLeft_On();                    // @0x588440  ... Off pairs:
-	void __stdcall CommandCameraScrollRight_On();                   // @0x588450
-	void __stdcall CommandCameraScrollUp_On();                      // @0x588460
-	void __stdcall CommandCameraScrollDown_On();                    // @0x588470
-	void __stdcall CommandCameraScrollLeft_Off();                   // @0x588480
-	void __stdcall CommandCameraScrollRight_Off();                  // @0x588490
-	void __stdcall CommandCameraScrollUp_Off();                     // @0x5884a0
-	void __stdcall CommandCameraScrollDown_Off();                   // @0x5884b0
-	void __stdcall CommandCameraZoomIn_On();                        // @0x5884c0
-	void __stdcall CommandCameraZoomIn_Off();                       // @0x5884e0
-	void __stdcall CommandCameraZoomOut_On();                       // @0x588500
-	void __stdcall CommandCameraZoomOut_Off();                      // @0x588520
-	void __stdcall CommandCameraRotateLeft();                       // @0x588540
-	void __stdcall CommandCameraRotateRight();                      // @0x588560
-	void __stdcall CommandCameraDown();                             // @0x588420 -> animated elev 0.0
-	void __stdcall CommandCameraScrollSpeed(unsigned int argv);     // @0x58b7d0 (slice 3 unblocked)
-	void __stdcall CommandCameraFOV(unsigned int argv);             // @0x58b660 (slice 3 unblocked; view-half named-unported)
+	void __cdecl CommandCameraDistance(unsigned int argv);        // @0x58b5b0 -> setter 0x586140
+	void __cdecl CommandCameraDistanceSpeed(unsigned int argv);   // @0x58b600 (collides on cam+0xF8, documented)
+	void __cdecl CommandCameraScrollLeft_On();                    // @0x588440  ... Off pairs:
+	void __cdecl CommandCameraScrollRight_On();                   // @0x588450
+	void __cdecl CommandCameraScrollUp_On();                      // @0x588460
+	void __cdecl CommandCameraScrollDown_On();                    // @0x588470
+	void __cdecl CommandCameraScrollLeft_Off();                   // @0x588480
+	void __cdecl CommandCameraScrollRight_Off();                  // @0x588490
+	void __cdecl CommandCameraScrollUp_Off();                     // @0x5884a0
+	void __cdecl CommandCameraScrollDown_Off();                   // @0x5884b0
+	void __cdecl CommandCameraZoomIn_On();                        // @0x5884c0
+	void __cdecl CommandCameraZoomIn_Off();                       // @0x5884e0
+	void __cdecl CommandCameraZoomOut_On();                       // @0x588500
+	void __cdecl CommandCameraZoomOut_Off();                      // @0x588520
+	void __cdecl CommandCameraRotateLeft();                       // @0x588540
+	void __cdecl CommandCameraRotateRight();                      // @0x588560
+	void __cdecl CommandCameraDown();                             // @0x588420 -> animated elev 0.0
+	void __cdecl CommandCameraScrollSpeed(unsigned int argv);     // @0x58b7d0 (slice 3 unblocked)
+	void __cdecl CommandCameraFOV(unsigned int argv);             // @0x58b660 (slice 3 unblocked; view-half named-unported)
 
 	// DEFERRED (honest cuts, each cited; slice-1 list kept current):
 	//  CommandCameraFOV @0x58b660  - needs the JE::Gfx_Engine singleton (global 0x707CE4,
@@ -74,6 +74,16 @@ namespace F3 {
 	//    byte_70BE0C walk + entity +0x1DC/+0x1E8 handles + GameActionEquip::meth_0x54be10 resolver.
 	//  Scroll/Zoom/MouseRotate/Rotate families (0x588440-0x5885d0) - scroll-target members ride
 	//    the same engine/entity chain; census in slice 1 notes, port in slice 2.
+
+	// Command FIFO, R-USERRE-A Execute() mirror (see Commands.cpp for the full shipped chain
+	// and EAs): PushCommand feeds the queue (sub_580D10 counterpart - hotkey fire, console
+	// submit, UI feeds all push through this one shape); ExecutePendingCommands drains and
+	// dispatches it (cls_0x580ba0::meth_0x580ba0 counterpart: space-tokenize, registry
+	// FindValue, __cdecl call with the argv cell-vector head pushed, miss logs
+	// "Unknown command %s\n" @0x580c65). Pump call position NAMED-ABSENT until the
+	// GameClient pump TU lands: 0x587fd5, immediately before the camera tick @0x587fda.
+	void PushCommand( const char* line );
+	void ExecutePendingCommands();
 
 } // namespace F3
 
