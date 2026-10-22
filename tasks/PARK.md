@@ -9,7 +9,7 @@ Rules (see tasks/README.md § Lane contract): every closed row names a PARK succ
 | Q-W2 | WRITER WAVE-2: T-084 tier-1 — 182 mints across 22 hosts (term-field keyed, share-check-PASS pre-gated; batches by host OK) | TrueCastle (CalmRaven's first-in -> wave-3 on return) | writer slot free since wave-1 close |
 | R-VFM | VFX_FormatManager anatomy: load/parse method chain (cls_0x4fd780::dtor-is-load case), .veg spec conformance vs van-buren docs, VFM size ≥56 live-vs-export erratum | SwiftMoon | read-only; continues their atlas-kit |
 | ~~R-CS~~ **CLAIMED 97dcc8b — HappyStorm, in progress** (E1-holder-end cross-note folded: what [csound+0x4] stores answers the R1-alias-vs-R2-theft question from the census side — first PARK pull generating an arbitration feed on day one) | CSound class census | scope locked in task file |
-| R-AMX | AMX-natives -> queue-surface map: which script natives touch WHICH of the four queues (SendMessage trio done in T-080; the Queue_* family 267-site feeders grouped natively?) | WildZenith | read-only; completes their atlas consumer-side |
+| ~~R-AMX~~ **CLAIMED 7de33f4 — WildZenith, in progress** (scope adds a CONFLICT SETTLEMENT: T-070's 'SendMessage x3 among 0x550720 callers' vs T-080's 'trio pushes mailbox DIRECT via sub_54EE60' — dual-path or loose label, xrefs decide; + completeness METHOD for the native table must be stated, item-41 style) | AMX-natives -> queue-surface map | as filed |
 | R-S9 | Gfx_Engine top-5 follow-ons: s9 device-teardown twin ([this+0x894] loop), s101/102 private-texture-id chain, and the D3D8 slot-numbering UNASSERTED note from b5 — decode via the +0x40 MapFile obj | EpicRaven | offline/cache; share-check/field discipline as usual |
 
 ## QUEUED (trigger-gated)
