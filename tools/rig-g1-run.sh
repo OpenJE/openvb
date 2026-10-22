@@ -161,6 +161,16 @@ fi
 
 # ── 4. the named run (G1 repro) ───────────────────────────────────────────────
 TRACE2="${TRACE2:-g1-trace.log}"
+# KEEPER LEDGER: the board's exe is a moving target (lanes rebuild build/F3.exe constantly —
+# one literally vanished mid-window at 23:55). Every rig window records the HEAD + exe hash it
+# ran, so a verdict can never be quoted against bytes it didn't see.
+{
+    printf 'run-window %s | head=%s | exe=%s | sha256=%s\n' \
+        "$(date -u +%FT%TZ)" \
+        "$(git -C "$(dirname "$0")/.." rev-parse --short HEAD 2>/dev/null || echo NO-GIT)" \
+        "$EXE" \
+        "$(sha256sum "$EXE" 2>/dev/null | cut -d' ' -f1 || echo MISSING)"
+} >> "$RIG_DIR/g1-runs.log"
 WIN_TRACE="Z:$(echo "$RIG_DIR/$TRACE2" | sed 's#/#\\#g')"
 say "run: exe=$EXE timeout=${TIMEOUT_S}s trace=$RIG_DIR/$TRACE2 rc->g1-rc.txt"
 ( cd "$RUN_CWD" && \
@@ -175,7 +185,24 @@ RUNPID=$!
 if [ "${SCREENSHOT:-0}" = 1 ]; then
     sleep "${CAPTURE_AT:-20}"
     if command -v import >/dev/null 2>&1; then
-        DISPLAY=":${DISPLAY_NUM}" import -window root "$RIG_DIR/g1-frame.png" && say "captured $RIG_DIR/g1-frame.png at T+${CAPTURE_AT:-20}s"
+        # KEEPER LAW GATE (item 59): a black root capture can coexist with a HEALTHY device —
+        # the intro movie occludes the magenta clear early in boot (cold run: black@T+45s,
+        # magenta@T+8s). Poll the capture until the dominant pixel is magenta (wall truth) or
+        # tries run out — a kept g1-frame.png is then guaranteed post-occlusion, never a false FAIL.
+        tries=0
+        CAPTURE_TRIES_N="${CAPTURE_TRIES:-6}"
+        until DISPLAY=":${DISPLAY_NUM}" import -window root "$RIG_DIR/g1-frame.png" 2>/dev/null \
+              && convert "$RIG_DIR/g1-frame.png" -format %c histogram:info:- 2>/dev/null | sort -rn | head -1 | grep -q '(255,0,255)' \
+              || [ "$tries" -ge "$CAPTURE_TRIES_N" ]; do
+            tries=$((tries+1)); sleep "${CAPTURE_GAP:-5}"
+        done
+        if [ "$tries" = 0 ]; then
+            say "captured $RIG_DIR/g1-frame.png at T+${CAPTURE_AT:-20}s (magenta-dominant, first try)"
+        elif [ "$tries" -ge "$CAPTURE_TRIES_N" ] && ! convert "$RIG_DIR/g1-frame.png" -format %c histogram:info:- 2>/dev/null | sort -rn | head -1 | grep -q '(255,0,255)'; then
+            say "WARN: kept capture is NOT magenta-dominant after $tries tries — device trace is still the truth; wall may be mid-intro (keeper law, item 59)"
+        else
+            say "captured $RIG_DIR/g1-frame.png after $tries re-tries (intro occlusion cleared)"
+        fi
     else
         say "no ImageMagick `import` on PATH — skipping capture"
     fi
