@@ -77,7 +77,8 @@ namespace F3 {
 			undefined4 meth_0x460400();
 			undefined4 meth_0x460500();
 			undefined4 meth_0x4605e0();
-			void ctor_0x460b30();
+			void ctor_0x460b30();                 // legacy zero-arg form -> calls the port form
+			void ctor_0x460b30( ushort port );    // shipped @0x460b30 (F3::GameClient.cpp)
 			undefined4 virt_meth_0x4613d0();
 			undefined4 virt_meth_0x461470();
 			undefined4 virt_meth_0x461530();

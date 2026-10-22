@@ -110,7 +110,7 @@ in {
         "GUILoading|modules/openje/tests/je/GUILoading/GUILoading.cpp|$JE/GUI/InterfaceFile.cpp $JE/GUI/SkinDefaults.cpp $JE/GUI/SkinFragments.cpp $JE/GUI/SkinTable.cpp $JE/ResourceSystem.cpp $JE/Resources.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/VFX_Parameter.cpp $JE/Common/Chunk.cpp $JE/Subsystem.cpp $JE/World.cpp $JE/PathManager.cpp $JE/Gregorian.cpp $JE/Action.cpp $SRC|116"
         "SpawnMove|modules/openje/tests/je/ActionMoveTo/SpawnMove.cpp|src/F3/MapEntitySpawn.cpp src/F3/GameActionMoveTo.cpp src/F3/GameActionAttack.cpp src/F3/CombatMath.cpp $JE/Scripting.cpp $JE/Action.cpp $JE/ActionMoveTo.cpp $JE/PathManager.cpp $JE/Map.cpp $JE/SpatialGrid.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $JE/Resources.cpp $JE/Subsystem.cpp $SRC $JE/World.cpp $JE/Gregorian.cpp src/F3/GamePathManager.cpp|80"
         "CombatMath|modules/openje/tests/je/CombatMath/CombatMath.cpp|src/F3/CombatMath.cpp $SRC|43"
-        "Commands|modules/openje/tests/je/Commands/Commands.cpp|src/F3/Commands.cpp src/F3/CommandRegistry.cpp $JE/cls_0x4d8d70.cpp $JE/cls_0x50db20.cpp $JE/Network.cpp $JE/Client.cpp $JE/CameraControl.cpp $JE/Subsystem.cpp $JE/VFX_Parameter.cpp $SRC|16"
+        "Commands|modules/openje/tests/je/Commands/Commands.cpp|src/F3/Commands.cpp src/F3/CommandRegistry.cpp src/F3/GameClient.cpp $JE/DialogueManager.cpp $JE/cls_0x4d8d70.cpp $JE/cls_0x50db20.cpp $JE/Network.cpp $JE/Client.cpp $JE/CameraControl.cpp $JE/Subsystem.cpp $JE/VFX_Parameter.cpp $SRC|16"
       )
 
       # ---- stale-table guard ---------------------------------------------------------------
