@@ -148,3 +148,29 @@ only; 0x4C6BA0's ctor use stores [this+0xD4] before any visible write of +0xD4 �
 observation for the writer's re-read, no invented semantics; cls_0x52E2E0/cls_0x539xxx cluster
 member tables not fully drawn (census scoped to the CSound/CSoundFile trees, the clusters are the
 jumplist containers around them). Zero writes anywhere; reservations: task file + this doc.
+
+## 9. [E2] CLOSED the same way — second-by-product of this census (T-086 flip-list now 100% adjudicated)
+
+The remaining T-086 escalation asked whether `JE::CDebugInterface::meth_0x558190`'s two Client
+holder fields (+0x8C @0x58F0F0, +0x90 @0x58F138) were one-class-two-slots (S1) or theft (S2).
+Offline store-site trace, same technique as §6:
+
+- Both slots are written from **the same expression**: `call *0xA0(%edx)` (Client vft 0x69C814
+  slot 40) → `mov %eax,0x8c(%esi)` @0x58F0CF and → `mov %eax,0x90(%esi)` @0x58F114, inside
+  `JE::Client::virt_meth_0x58F010` (T-017's lazy UI-cluster bootstrap — same function, two calls).
+- Slot 40 = `JE::Client::virt_meth_0x58BE40`, whose body: `push $0xf8` → `call 0x4A7680` (alloc
+  wrapper) → **`call 0x558740` = the image's ONLY `CDebugInterface::ctor` site** (1/1, per the same
+  resolved-call census), constructing with the name string **"Debug"** (@0x69CB18). Export
+  `cls_0x558740` size 245 ⇄ heap 0xF8 = 248 — consistent.
+- Both consumers then size the windows differently (0x1A4×0x6E vs 0x1A4×0x12C pushes) — two
+  Debug windows of one class, e.g. console + log.
+
+**VERDICT: S1 holds — one host class, TWO instances of CDebugInterface from its own factory slot;
+slot-count ≠ class-plurality (the slots-vs-class identity axis named at escalation).** The
+0x558190 membership claim is untouched; the CDebugInterface band (T-055's applied 7) stands;
+**no flip, no rename, annotation-tier note only** for the writer wave: comment at 0x58F0CF/0x58F114
+"Client holds TWO CDebugInterface instances (factory slot *0xA0 = 0x58BE40, sole ctor site
+0x58BEC1, name 'Debug') — the [E2] two-holder-fields reading is slots, not rival classes".
+T-086 flip-list final state: [E1] CLOSED (cached alias, §6); [E2] CLOSED (this section). Five
+band-level SHARINGS all decoded, zero retractions — the ledger is fully green with the two
+per-fn escalations answered inside one census lane.
