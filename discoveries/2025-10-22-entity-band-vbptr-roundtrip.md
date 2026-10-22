@@ -395,3 +395,45 @@ discarded real commits - the collapse was itself the error):
    rather than the check's coverage.
 6. A documented phantom stays unresolved (f2b3a1c in the protocol doc is evidence, not
    dirt - scrubbing it would be covering up, not correcting).
+
+## Addendum 10 — hazard #5: the IDB vftable LISTING is an excerpt (verified against my own tool)
+
+WildKnight's B20 claim re-run through this lane's tooling before adoption, true with two
+refinements. `f3_vftable_index(GameInventory)` returns ELEVEN entries (0-5, 10, 11, 13,
+14, 15 - his "10 of 16" undercounted his own enumeration by one: costume #12, counting by
+hand) and omits slots 6, 7, 12 - the load-bearing ones. Reading 16 dwords at image
+0x666754: slot 6 = 0x55fda0 (EquipItem's name finder), 7 = 0x55fe20, 12 = 0x469400.
+DETECTOR REFINEMENT: the tool's own JSON carries `"length": 16` while listing 11 -
+truncated listings self-report; compare entries-present against the length field before
+concluding "the entry doesn't exist." Rule: a database listing is an EXCERPT, not a census;
+membership claims go to the image bytes.
+
+Second-artifact confirmation of today's slot adjudication, straight off the table dwords:
+14 = 0x46be40 (Equip), 15 = 0x46b350 (Unequip), 10 = 0x46a860 (six-cell scan) - the
+[edx+38h]/[edx+3Ch] pair now stands verified from TWO independent artifacts (call-site
+bytes and table contents).
+
+ALIAS vs NEAR-DUPLICATE, both present in one table: slots 8 AND 9 are the SAME dword
+(0x469370) - an alias; whoever "fixes one half" fixes nothing or breaks both. Slots 12/13
+(0x469400/0x469410) are 16 bytes apart - near-duplicates that are NOT interchangeable.
+One table, both failure modes: identical targets demand shared edits; adjacent targets
+demand separate care.
+
+Three-way case rule CONFIRMED end to end: IsItemEquipped _stricmp (0x46a777); EquipItem's
+finder (slot 6, JE::Inventory::virt_meth_0x55fda0) _stricmp at 0x55fdef; UnequipItem's
+named-slot path strcmp (0x45a8e7). So "SNIPER RIFLE" equips into slot 1 and the identical
+string is REFUSED at unequip, leaving it on - shipped, asserted as a pair; unifying the
+comparators is a behavior change wearing a cleanup costume.
+
+TEST SHAPE, new for the suite (and the honest completion of the observer rule): ASSERTING
+SILENCE AS SILENCE - unknown-name lookups in all three item natives print nothing, and
+re-equip refusal (0x46be8b) logs only to the unported sink (0x46be97); the suite checks
+the capture is EMPTY, not just that the return is 0, because a value-only assert cannot
+distinguish "silent" from "reported something else." An assert that can only see one of
+two quiet states is itself a quiet observer. Trilogy now: observers fail loud; tests
+declare what they cannot distinguish; silence gets asserted as a state.
+
+Relay hygiene working both sides for the first time: parent:f42dc48 resolves in the parent
+store, openje:f6e7579 in the submodule - both re-emitted from git at writing time, both
+qualifier-correct. Batch B era-block map (party / dialogue / GUI-hide+console / AMX-object
+ref / server / two stubs) recorded; item family complete and internally consistent.
