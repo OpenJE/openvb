@@ -1210,3 +1210,18 @@ near sufficient; (2) a disabled guard must be broadcast as disabled with an inte
 (here: every cmake.toml touch = hand-verify CMakeLists.txt) — an inactive enforcement is a known
 hole, a silent one is a trap; (3) the item-58 law (re-source before quoting) just paid for its own
 minting twice — the second time catching the fix that carried the first lesson.
+
+## 63. SEH4 split-prologues: a zero-xref 'function' whose head is `sub ecx,[ecx-4]; jmp body` is a BODY — census the entry (blindness #6); and a script-replace that prints success on a zero-match is blindness #7 — edit-tools that fail loud beat sed that lies
+
+BrightYak's wall-1 census (83c8f7d/8a10060), two mechanisms for the register's blindness family:
+(6) The console Enter feeder looked like a function with ZERO callers because the target chosen was the
+BODY of an SEH4 split-prologue thunk (entry 0x59ec10 probes the stack, jumps to sub_59E8E0). Three
+scanners were all correct; the target was wrong. Generalizes the corpus's scattered 'decompile fails
+(SEH prologue)' notes — including the batch-table's GetGlobal/SetGlobal 'SEH-era, disasm-only' entries —
+under ONE named mechanism: SEH4 entry-vs-body. Rule: before declaring a region unentered, check whether
+its head is a stack-probe+jmp; if so, the real entry is the xref'd-from thunk, not the byte-region.
+(7) A python `s.replace(old,new)` + unconditional print('resolved') reported success on a ZERO-MATCH
+(no-op). Caught by git status, not by the script. Law: prefer edit tools that fail loud on non-match
+(this board's edit tool refuses); if scripting replaces, assert the count. Same shape as the coordinator's
+own 'replace raced its amendment' incident — silence-pretending-success is the one failure mode grep
+catches and trust never will.
