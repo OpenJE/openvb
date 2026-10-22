@@ -2,6 +2,9 @@
 
 Rules (see tasks/README.md § Lane contract): every closed row names a PARK successor or goes on record DONE-NO-SUCCESSOR. Lanes pull from the top; coordinator assigns at checkpoint. Task files are created AT CLAIM — a PARK line is a scope, not a file.
 
+| R-CS-ANN | CSound epoch annotation batch (HappyStorm, self-named successor #1): R-CS §7.2-7.6 comments incl the [E1] on-object alias note at [sound+4] — 5-6 annotation targets, one sitting, comment-tier | **HappyStorm — PULLED** | writer seat free as of bd69842 |
+| ST-RENAME | StringTree artifact-pair RENAME (0x4B2DD0/0x56EE40 out of the prefix, into sub_/free — their comments tell the truth, their names still mislead): MINT-TIER, share-check pre-gated, belongs in wave-3 with R-INST's install edges + C-W2b residue | wave-3 bundle | HappyStorm successor #2 |
+
 ## READY NOW (no deps, no slot conflicts)
 | id | scope | lane-fit | notes |
 |----|-------|----------|-------|
