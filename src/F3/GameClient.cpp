@@ -50,9 +50,12 @@ namespace F3 {
 		//   0x460c74 ForceEntityStep     @0x460720  entity walk era
 		//   0x460c83 OptionsWindow       @0x45eb70  GUI window era
 		//   0x460c92 TestAnim            @0x460920  animation era
-		//   0x460ca1 ToggleRain          @0x4606c0  weather flag era (GameClient member)
-		//   0x460cb0 ToggleSnow          @0x4606d0  weather flag era
-		//   0x460cbf ToggleWind           @0x4606e0  weather flag era
+		//   0x460ca1 ToggleRain          @0x4606c0  ERRATUM (7b pre-scan): NOT a member flag -
+		//                            the wrapper calls GameClient::meth_0x4601f0, which BUILDS
+		//                            a net::packet (ctor 0x45f300), sets type 110 (@0x460242)
+		//                            and SENDS via meth_0x59c4f0(this, packet, 1) - a NET
+		//                            BROADCAST. Snow @0x4602a0 and Wind @0x460350 are the same
+		//                            shape (packet era, gated behind netcode + client boot).
 
 		// The four commands the SHIPPED build registers at the shared empty override (retn
 		// @0x404b70) - registered, resolvable, dispatchable, observable NO-OP. Porting them

@@ -780,3 +780,33 @@ is a bus payload, not a registered command — census note for the cursor lane).
   integrity table OK (payload holds new row), annot GATE PASS stock 0/401, cppcheck clean.
 - Slice-7 order ahead: pump virt_meth_0x45f000 (installs the ExecutePendingCommands position),
   weather trio handlers, then whatever the pump unlocks first.
+
+## Slice-7b PRE-SCAN (SwiftOwl, same sitting): pump mapped whole - and it is NOT next.
+- virt_meth_0x45f000 (0x45f000 + extended tail 0x587ee0-0x588097) read COMPLETE and mapped
+  call-by-call. Order with dependency names (raw slots re-pinned per 4e law):
+  head ACTION-CONTAINER check ([client+0x28]->+0x44/+0x48 walk, entity+0x40 write) ->
+  net::client::virt_meth_0x59d2d0 NET PUMP -> INPUT EVENT QUEUE [client+0x78] vft+8 poll loop
+  (per event: state-copy to client+0xC4.. fields on type==2; +0x74 object vft+16 consume;
+  +0xA4 vft+28 + vft[0]+200 guards; HOTKEYS FIRE sub_599720([client+0x80]) @0x587fa0 ->
+  GUI-ALIVE query JE::GUI::Manager::meth_0x4b2c10(&0x707E48) -> vft+0xD0 dispatch ->
+  CONSOLE DRAIN cls_0x580ba0([client+0x7C]) @0x587fd5 -> CAMERA TICK 0x5869c0([client+0x84])
+  -> +0xA4/+0xA8 vft+16 ticks -> cls_0x5b4f50::meth_0x5b5ae0(+0xB4) -> +0x74 vft+4 ->
+  vft+0xD4(0) -> TIMER TRIO @0x70BD98 era (state==3: JE_TickMilliseconds -> mbr->vft[0](ms),
+  vft+20, vft+24 gated by +0x108/+0x109) -> +0x74 vft+8 -> sub_590860 tail.
+- VERDICT: the pump is a WIRE, not a subsystem - every segment names an object the port does
+  not yet construct (action container, net::client pump, event queue +0x78, audio/timer trio
+  0x70BD98, +0xA4/A8/B4 objects, vft+0xD0/D4 overrides, sub_590860). Porting it now would
+  fabricate a hollow skeleton with 12 named-absent guards - the register's rule beats the
+  schedule: the CONSOLE CHAIN's remaining two wires (client CONSTRUCTION + feeder body path
+  [[net]+0x2C]+0x7C) both gate on the NET-BOOT era: F3::GameClient is never instantiated in
+  port (its factory virt_meth_0x45dfd0 and the +0x2C install sites are the named gaps).
+- ORDER PROPOSED: slice-7c = NET-BOOT era (GameNetwork::Tick's local-server path already
+  ports; open client creation + install + FIFO/GHH construction) -> THEN the pump lands as a
+  real wire over real objects -> weather trio + Connect/Disconnect + pump-wired Execute all
+  inherit from it. Until 7c, the console era stays exactly as honest as 7a left it: 34
+  registrations live, executor fully driven by the suite, pump position cited and waiting.
+- ERRATUM LANDED IN-CODE (GameClient.cpp gated-comments): weather trio was labeled 'member
+  flag era (GameClient member)' from shape-reading - the bodies read this pre-scan are
+  net::packet broadcasts (type 110 @0x460242 via client send 0x59c4f0). Label corrected to
+  PROVEN with EAs. Third instance of the register's own law biting this seat: shape words
+  ('weather flag') replaced by body bytes, caught before any port code used the guess.
