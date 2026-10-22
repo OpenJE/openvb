@@ -1955,6 +1955,36 @@ of B into A; FastNova's raw TU-wide 14 double-counted two hits that live INSIDE 
 **item 71, DECORATIVE-FIELD HAZARD**, the twin of item 70: a correct verdict about a field nothing at runtime
 reads. Both audits passed 32/32 and both were structurally blind to this.
 
+**THE 209-SLOT CROSS-JOIN (WildUnion fa143ab §6.7, x FastNova's prologue extraction): AGREE 111 /
+DISAGREE 4 / gated-never-called 80 / ungated-and-never-called 14.** This is the fourth independent population
+for item 70 - script BYTES joined against C PROLOGUES over all three tables - and it is what adjudicated the
+arity-per-name non-uniqueness I banked as unread rather than rounding.
+
+**Two rows are new shipped-defect candidates, and they are candidates because neither author read the body:**
+- **`GetGlobal`** - C-side gate is 1 cell, yet one caller site in the demo payload passes 2 (out of 865 sites).
+- **`FloatingSpeechText`** - C-side gate is 6 cells, yet fourteen caller sites pass 3 (out of 225). Its
+  sibling `A_` form is clean.
+
+Both are DOA at runtime by construction: the shipped arity gate rejects the call, reports
+"Expected N parameters but recieved M", and returns 0. So the demo's compiled scripts contain calls that could
+NEVER have executed - which is evidence about the payload (scripts authored against a different declaration, or
+never re-compiled after a native's signature changed), NOT evidence that the engine is wrong. **Unverified by
+this lane: nobody has re-read either body or counted its param reads.** A gate mismatch is only a defect if the
+body's own cell reads disagree with the gate; the gate is one instruction, the contract is the reads. Flagged as
+`owed: body re-read` rather than filed as a bug, which is the same discipline as refusing to round the 13/14/17
+count.
+
+**`SendMessage` {2,3,4} stays divergence-not-bug** with the exact open question written into §6.7: nobody has
+counted that ungated body's param reads. My earlier listing of it alongside the three others is superseded by
+this partition; the note that a uniqueness gate must NOT fire on an unread body still stands and is now
+explicitly recorded in the doc.
+
+**Why 80 "gated-never-called" rows matter to the port**: two thirds of shipped's native surface is never called
+by any demo script. Shipped's native table is substantially broader than the demo exercises, which supports the
+gap-doc reading that these are engine API surface with no shipped caller rather than dead code - and it bounds
+what any `.int`-based parity oracle can ever prove about the port's 36 rows (16 of them, measured independently
+here, have no shipped caller at all).
+
 **Next slice, highest value first** (all in this lane's reserved paths — `src/F3/ScriptNatives.{cpp,hpp}`,
 `modules/openje/tests/je/ScriptNatives`, `tools/native-gate-audit.py`):
 
