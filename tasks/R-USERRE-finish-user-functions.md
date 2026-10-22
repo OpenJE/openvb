@@ -1988,15 +1988,24 @@ here, have no shipped caller at all).
 **Unassigned, named, and NOT claimed by either seat** (WildUnion deliberately leaving them unclaimed: "the
 worst outcome for this lane would be two half-seats both assuming the other re-read the prologue"). Each is
 ~5 instructions of a re-read:
-- **`GetGlobal`** - caller-side arity histogram **{1: 864, 2: 1}** against a C-side gate of 1. The lone 2-cell
-  site is the DOA candidate.
-- **`FloatingSpeechText`** - histogram **{3: 14, 6: 211}** against a C-side gate of 6. The fourteen 3-cell sites
-  are the DOA candidate; sibling `A_` form is clean.
-- Both `fn_va`s resolve straight from `tools/native-table-dump.py --json` joined to §6.7's histograms. Resolving
-  either row needs only the BODY's cell reads counted against its own gate - the item-71 discriminator.
-- **The helper parameterisation** (one line): make `ResolveNativeEntity` take the cell count so set A's 13 rows
-  stop carrying a decorative `nExpectedCells`. `HideInterfaces`' shipped arity **0** is the case that will bite
-  first, and 0 is a real value, not the `-1` "no gate exists" sentinel.
+- ~~`GetGlobal` / `FloatingSpeechText` body-reads~~ **CLOSED AS NOT-A-BUG by WildUnion (ea5722f, §6.10)**, via
+  the item-71 discriminator (count the BODY's cell reads against its own gate):
+  `GetGlobal` 0x5c8000 reads exactly one cell (`mov ecx,[edi+4]` @0x5c8040, gate `push 1` @0x5c8029) -> gate 1
+  == contract 1, so the lone 2-cell caller is pre-migration payload (its shape fits SetGlobal's (name,value)
+  family) that is DOA at the gate. `FloatingSpeechText` 0x5c25e0 reads cells 1..6 exactly (@0x5c2649-56,
+  handed to meth_0x554d30 @0x5c2672) -> gate 6 == contract 6, which **refutes** the stale-gate alternative I
+  raised: a stale gate would leave the body reading 3, and it reads 6. Fourteen 3-cell sites are archaeology,
+  211 are live.
+  **BOARD CONSEQUENCE: the DISAGREE bucket is now EMPTY of engine bugs** - 4 in, 2 resolved as min-gate
+  legality, 2 closed as gate==contract-with-stale-callers. No shipped native row anywhere has bytes disagreeing
+  with themselves. And the calibration that matters for the decision record: DOA evidence for signature
+  migration is **15 call sites across two natives**, not systemic payload rot - the majority population is the
+  live one in both rows.
+- **The helper parameterisation** (the ONLY src-touching job left; parked with TrueRaven at the context cliff
+  because `reserve` cannot be released from this seat): make `ResolveNativeEntity` take the cell count **and the
+  comparison kind** so set A's 13 rows stop carrying a decorative `nExpectedCells`. `HideInterfaces`' shipped
+  arity **0** bites first, and 0 is a real value, not the `-1` "no gate exists" sentinel. Needs a fresh seat
+  seated on `src/F3/ScriptNatives.{cpp,hpp}` + `modules/openje/tests/je/ScriptNatives`, then full gates.
 
 **TWO-GATE LAW (FastNova 248f842; verified from instruction text here)**: shipped has TWO arity gates -
 `0x59AF40` EXACT (`cmp/je`, 4 args) and `0x59AF90` MINIMUM (`cmp/jge` @0x59afa7, 5 args with `&out_actual`
