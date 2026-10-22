@@ -35,6 +35,9 @@ namespace F3 {
 		}
 	}
 
+	// Shipped insertion: Combat::AddToList 0x5A9810 — walk-dedupe (returns on match, no insert),
+	// then insert + deferred GUI refresh via cls_0x401b00::meth_0x401DD0(manager+0x18, 1)
+	// (CombatTurnDispatch.md). Port splits that into this pure-insert + JoinCombat's dedupe.
 	void CombatManager::AddToTurns( SpawnedEntity* e ) {
 		tracing::instrument( tracing::LOCATION, "" );
 		if ( !e ) {
@@ -58,6 +61,9 @@ namespace F3 {
 		++count_;
 	}
 
+	// No shipped single-fn counterpart: node removal appears INLINE in the shipped rollback path
+	// (JoinCombat removes the node it just inserted, CombatTurnDispatch.md L188 note); insertion
+	// anchor 0x5A9810 above. This is the port's extracted unlink.
 	void CombatManager::RemoveFromTurns( SpawnedEntity* e ) {
 		tracing::instrument( tracing::LOCATION, "" );
 		if ( !head_ ) {
