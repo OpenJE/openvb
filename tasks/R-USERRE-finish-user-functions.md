@@ -1792,3 +1792,29 @@ exactly when a test is most convincing and least reliable.
 
 Process, applied this time instead of learned again: `port-annot` was run BEFORE queueing the gates (it passed),
 and both commit hashes below are re-emitted from git rather than typed from memory.
+
+
+## Status correction for the whole batch (WildKnight 01a1639b) — the natives are reversed and tested, but unreachable from the running port
+
+While scoping `StartDialogue` I found that nothing in the tree can call the 27 natives: `ScriptNativeGameCreatureTable`
+(`src/F3/ScriptNatives.cpp:1172`) has no callers outside the suite; `JE::RegisterNativeScript` is called only by
+a test (`modules/openje/tests/je/Scripting/Scripting.cpp:39`) despite its own header comment promising "F3 game
+script installation"; `JE::Script::Run` has no product callers; and the port's native typedef is
+`int(*)(Mover*, a2, a3, a4)` (`Scripting.hpp:18`) while shipped natives are `__cdecl(int amx, int params)`.
+On top of that the port has two unrelated entity representations - `JE::Entity : DynamicObject` (what my
+registry stores) and `JE::Mover`, from which the live `SpawnedEntity` descends and whose only lookup is by NAME
+PREFIX (`MapEntitySpawn.hpp:397`), with no handle bridge.
+
+Consequences written up in `docs/f3/NativeWiringGaps.md`, including the distinction I should have drawn earlier:
+batch B's remaining rows are either **era-blocked** (behavior not fully read) or **wiring-blocked** (behavior
+fully read, port cannot act on it - `StartDialogue`, `Attack`, `JustAttack`, `ReloadWeapon`, all of which touch
+the action queue). And the honest status line for the committed work: verified reversal with enforced behavior,
+**not runtime parity** - no commit in this batch changes what the running port does. That was already implied by
+the stand-in-registry deviation, but implying is not stating, and my own summaries could have been read as
+parity claims.
+
+Deliberately not done here: a handle→`SpawnedEntity` bridge or an ABI adapter invented inside the natives TU.
+It would make the split look solved while hiding which world is authoritative - the same error as silently
+mapping shipped's null-deref to a friendly message, except with no declared collapse to point at. The installer
+plus an executable script path is the cheapest step that turns this batch from a test consumer into observable
+behavior, and it belongs to the openje/spawn lanes as a decision.
