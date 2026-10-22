@@ -69,3 +69,28 @@ Tool: tools/r-inst-deriv.py (md5-pinned, selftests S1-S3 in-code, --run74 regene
 Feed: obj/t087q/rinst-74-feed.txt (75 verdict lines incl legend). Base data: t064-postdump
 (cluster identity), qw2-wave2a-poststate (current labels), pinned flow cache. Key sites cited
 inline: World embed 0x548bfa/0x548bea; Manager _Tree 0x4b56cc; T2b family 0x564d3c.
+
+## 4. RETIREMENT NOTE (post-review, same day — LoudDragon's Q-W2b message)
+
+EpicRaven's committed hosts-mode regen covered the full 74 — the derivor's necessity FOR THAT BATCH
+is disproved; R-INST retires to notes. Standing findings that survive the tool's retirement:
+- **S1 answer (banked)**: +0x118 = ONE component class (cls_0x569f10 family), embedded ONLY by
+  JE::World; zero Client embed-votes; doc's Client/World split = caller-mode artifact; wave-2a's
+  minted Client field-load rows vindicated; +0x108 trio (cls_0x56ae70) same shape.
+- **Install-degree rule**: by-value `this+disp` embed edges CONSTITUTE host membership; heap-factory
+  edges SUGGEST only until a [owner+disp] store corroborates; generic init helpers (0x56E0B0: 49
+  hosts; 0x4C6640 multi-host) must never be demanded unique-host — S2/S3 assert edge-recovery.
+- **Collision-9 machine story**: 11-25 install hosts per cluster = shared machinery — §3's annotate
+  disposition confirmed independently of the derivor question.
+- **S4 heap-factory tier**: shipped EXPERIMENTAL, non-gating, NOT-PROVEN — the fixed-window chain
+  scan fails the real 0x58BE40 sequence (factory call 92B before ctor site, callee-saved esi hop;
+  window widened, still unmatched — matcher needs per-byte-chain rewrite, deliberately NOT attempted
+  post-retirement). R-ST's own [C] decode (slot-40 factory 0x58BE40, stores 0x58F0CF/0x58F114) is
+  the ground truth the reactivation test must hit.
+- **Reactivation line (held)**: one EA outside the 74 that fails the committed hosts-mode regen
+  reactivates this tool — candidate under verification at retirement time: 0x558740 (CDebugInterface
+  ctor, heap-factory shape). If committed regen already names it (via R-ST's factory decode), the
+  line stays holstered.
+- Wave-4 note: four ADOPT-BY-INSTALL rows possibly unique to this feed (manifest decides; wave-3
+  may absorb).
+Tool final state: gates S1-S3 green, S4 advisory, committed as the retirement artifact.

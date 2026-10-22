@@ -169,3 +169,25 @@ queue's proof lived in an unshipped half of its own recipe. FIX LANDED: the deri
 BANKED as `ecx-flow.py hosts` mode (host-prefixed terminal-field keys, per-cls band exclusion,
 gated like every mode); every §2 row regenerates cold from the command above. No bytes changed,
 no verdicts moved — only the recipe got its missing half.
+
+### AMENDMENT 3 (T-088 arbitration, wave-2b gate material)
+§2-vs-§3 KEY-COLLISION — named, per item-52 pre-flight: the colliding class is the helper-epoch
+pair **cls_0x40cc80 / cls_0x401b00 (+cls_0x515040, cls_0x4dff90 as §3 keys)**; nine fn-level keys
+where a §2 MINT row and a §3 foreign-annotation overlap (list + per-row verdicts in
+`discoveries/wavedumps/qw2-arbitration-class2.txt`, regenerator embedded per row):
+0x515040, 0x5150C0, 0x515580, 0x515D50 (ParticleSystem/Gfx_ParticleSystem), 0x4A5720, 0x4A5A10
+(AnimMesh), 0x436410 (GameActionEquip), 0x52CC70 (Gregorian), 0x523450 (Skin). Resolution rule now
+part of this doc's contract: **fn-level STRONG key (embed±field / heap-ctor / global-pin) wins the
+MINT; the §3 class annotation stands for the epoch's REMAINING members (item-51 rule-2
+coexistence)** — 3 STRONG-mint, 4 weak-key (band-confirm-or-annotate at writer discretion), 2 §3-stands.
+Class-(1) full disposition (65 derivation-gap rows): 52 MINT-CONFIRMED, 13 RE-HOSTED (each RE-HOST
+is doc-host carrying only consumer-shape keys while a sibling host carries the terminal field —
+e.g. the six JE::Client rows re-host to JE::World @+0x108/@+0x118, install-site evidence at
+World::ctor_0x548a80 sites 0x548beA/0x548bf5 — TrueCastle's +0x118 regression case, resolved),
+0 FOREIGN-flip. Table: discoveries/wavedumps/qw2-arbitration-class1.txt.
+Provenance note for R-INST scoping: every one of the 65+9 rows regenerates from the COMMITTED
+`hosts` mode; the gaps that made wave-2b's regen miss were (a) band-parameter not recorded per row
+(now: live-cls band is the convention, hosts header says so), (b) top-4 key truncation hiding
+lower-position doc-hosts (now top-8), (c) holder-key preference unspoken (now stated above).
+No new edge class is required for these 74 rows — R-INST's spec should shrink to the convention
+notes or retire.
