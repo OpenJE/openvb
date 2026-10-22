@@ -1915,6 +1915,27 @@ against a declared stand-in registry - read it that way, and say so in any relay
    and `GameDialogueInterface`), world server (attitude pair, task trio's journal), GUI hide (`HideInterfaces`
    0x45a100 → `sub_46EDF0`), AMX object-ref (`SetMoveMode` 0x45a140 → `sub_59AA50`), `EquipItem`'s skipped
    effects/stance era, two documented stubs (`PlayMusic`, `GetWeaponCombo`).
+   The same id-map shrinks part of this: packet cases **73** (InitiateDialogue - builds the action, stores the
+   target at gap19, clears `HIBYTE(mbr_0x14)`, funnels through the named seam 0x550720), **90** (ReloadWeapon) and
+   **91** (Attack, the table's largest action at 0xC8) are the SERVER twins of the wiring-blocked natives, so
+   natives and packets converge on one queue and the dialogue row's shape is cited end to end.
+5. Two pointers from the id-map, recorded as pointers rather than tasks:
+   - **Entity type field = `+0x15C`** (348): `3` = GameDoor, `4`/`1` = container-family (case 0x4E) - named by the
+     dispatch table where the census never did. **Checked and closed at the pause point (read-only, no code owed):**
+     `GetItemType` (0x45b240) casts Entity->GameItem and returns `*(item+0x148)`, touching no `+0x15C`, so the
+     discriminator and the item-type value are DIFFERENT fields and the ported `GetItemType` /
+     `GetUsableObjectType` model stands. Kept as a closed note, not deleted, because "the census never named it"
+     is a real finding and the next reader should not re-derive that the two are unrelated.
+   - **`+0x1DC` is a packet-payload citizen**: cases 95/96 pass it into fan-outs (`meth_0x46d110` / `0x46d260`) and
+     into field +32 of action blocks - independent support for the slot-9 net-client reading and for the (b)
+     verdict on the handle fork.
+
+> **Correction to commit `0875a75` itself:** its message claimed all of the above was recorded in the file, but
+> only candidate 3 actually landed - the second `str.replace` had a non-matching anchor and no assertion, so it
+> silently no-op'd. Caught by grepping for `+0x15C` in HEAD and finding nothing. This is the same failure class the
+> whole session has been cataloguing, now committed to a *file* rather than a chat: a message describing content
+> that the edit did not apply. Rule applied hereafter: assert the anchor count before writing, and after writing,
+> grep the new string back out of the file - which is exactly how the gap was found.
 
 ## Durable artifacts this lane produced (paths, not prose)
 
