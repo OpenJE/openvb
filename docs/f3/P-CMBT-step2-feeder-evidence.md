@@ -190,3 +190,66 @@ target-adjusted subobject, called at three sites with a consistent reading of "a
   unreproducible shipped faults.
 - The damage path REUSES the null singleton the B8 law covers: `0x46265d-64` is guarded selection +
   unguarded use, so "null 0x70bd98 during combat apply" faults too, same family as the trio.
+
+## 7. WITNESS #2 for gap 3 — the OnDamage sync-invoke chain, decomposed
+
+TrueRaven asked for the OnDamage leg as a second script-by-name witness; here it is end to end, raw bytes.
+
+**Call site (inside apply):**
+
+```
+45c561: lea  edx,[esp+var_70]     ; &out-ish cell
+45c565: push edx
+45c566: push 4                    ; arg count
+45c56c: push ecx                  ; &arg block {eff+0x90 base, src handle, damage, server obj}
+45c56d: push offset "OnDamage"    ; NAME
+45c572: push eax                  ; adjusted target subobject
+45c573: mov  ecx, esi             ; this = effect
+45c575: call sub_55A220           ; 5-arg reorder thunk
+```
+
+`0x55a220` (read whole, 9 instructions) is a pure argument reorder: it calls
+`JE::Entity::RunScript_54afe0(this = adjusted target, "OnDamage", 4, &block, &out)`.
+
+**RunScript_54afe0 (read whole `0x54afe0-0x54b047`):**
+
+```
+54aff3: server-flag test -> 54b00f: _CxxThrowException("Entity::RunScript() method may only be called by the server.")
+54b016: call Entity::GetScript_54aef0
+54b01b: test eax, eax / jz -> return 0            ; no script => SILENT 0, no message
+54b02c: mov  ecx,[esi+2BCh]                        ; the cached SCRIPT OBJECT, Entity+0x2BC
+54b032: mov  edx,[ecx]                             ; its vft
+54b03f..43: push name/count/block/out             ; FOUR args forwarded verbatim
+54b044: call dword ptr [edx+14h]                   ; SCRIPT VFT SLOT 5 (byte +20)
+```
+
+**GetScript_54aef0 (read whole `0x54aef0-0x54afd7`)** adds the resolver law the typedef decision needs:
+- `[esi+0x2C0]` = load-failure latch (checked first, cached-miss returns 0 fast);
+- name string is an SSO at `Entity+0x2A4` (capacity field `+0x2B8`, the `10h` test at `0x54af41`);
+- the script is fetched by SERVER OBJECT: `0x54af28 call GetWorldServerInstance_0x401150` then
+  `0x54af38: call [server_vft+24]` with arg `[entity+0x1DCh]` — the slot-9 SCRIPT HANDLE — stored to
+  `+0x2BC` at `0x54af3b`; so the script is resolved BY HANDLE from the same singleton the natives trail
+  (B8 family) and cached on the entity;
+- load failure logs `"Entity::GetScript() Unable to load script..."` via `LogDebugString_0x497120`
+  (another shipped literal for T-022), latches `+0x2C0=1`, nulls `+0x2BC`, returns 0.
+
+**What this adds over the case-0x51 witness (`0x46d...`, predicate `[script+16]` then invoke
+`[script+24]` with out):** the OnDamage path uses slot **5 (+0x14)** with a COUNTED arg block and NO
+existence predicate — the two shipped call-sites of the script-by-name interface therefore exercise
+THREE distinct slots (+16 exists?, +20 fire-and-forget, +24 call-with-out) of ONE object shape:
+`(script resolved by handle from server singleton) -> vft(name, argc, cells[, out])`. Shipped treats
+entity scripts as named-entrypoint objects in exactly one consistent ABI, used by both the net dispatch
+and the combat apply path, synchronously, server-only (both entry paths throw on the same world-server
+flag — `0x54aff3` here, the recv-patch era there).
+
+Absence bound per item 73: within `0x54afe0-0x54b047` there is NO test of any script-result value (the
+return of `[vft+14]` is passed straight out as RunScript's al — apply ignores it entirely @0x45c57a
+reloads `[esi+48h]` next), so the OnDamage invoke is fire-and-forget by construction, verified by the
+absence of any consumer of eax between `0x54b044` and the `retn`.
+
+Port-facing consequence for the typedef call: `NativeScriptFn = int(*)(Mover*, a2,a3,a4)` matches NEITHER
+side of either witness — shipped has (a) natives as `__cdecl(amx, params)` (45-entry table) and (b) script
+entrypoints as `vft(name, argc, cells[, out])` on a handle-resolved script object. A port modeling script
+execution must pick (b)'s shape; the OnDamage chain is the combat-side proof that (b) is live code, not
+just a network-packet curiosity. Script-vft exact class identity and slot 0/+4/+0Ch handler semantics
+(used by GetScript's load path) are named-deferred — not needed for the witness.
