@@ -68,6 +68,47 @@ and by the same argument `Attack` (0x459f5d), `JustAttack` (0x45a025), `ReloadWe
 ported faithfully from this side of the split, because the handle in hand names an object in a world the queue
 does not live in.
 
+## Gap 4 has a second half: shipped has TWO script shapes, and the port's typedef matches neither
+(NiceTiger `0cfb22a` §7; every number below re-derived from the PE at adoption time, per item 75)
+
+Gap 4 as first written was about the **native** ABI, and it is settled: `sub_5CC4F0` pushes params then amx,
+`call eax`, `add esp,8` - shape (a) `int __cdecl(int amx, int params)`. The pass that produced the OnDamage
+witness shows a second shape the typedef conversation keeps collapsing into the first:
+
+| shape | form | evidence |
+|---|---|---|
+| **(a) native** | `int __cdecl(int amx, int params)`, `params[0]` = block size in BYTES | dispatch `sub_5CC4F0`: `push edx`(params) @0x5cc50b, `push esi`(amx) @0x5cc50c, `call eax`, `add esp,8` |
+| **(b) script entrypoint** | `vft(slot)(name, argc, cells[, &out])` on a script object fetched per entity | `call [edx+0x14]` @0x54b044 - slot 5, args `(name, 4, block, out)` forwarded verbatim |
+
+Three call sites, **one object shape, live from both sides of the engine**:
+- net-dispatch case 0x51: predicate `[script+16]`, invoke-with-out `[script+24]` (JadeBear's id-map)
+- combat apply: `[script_vft+0x14]` @0x54b044, **no predicate at all**, and its return is **unconsumed** -
+  verified as an absence with a bound: apply's next instruction is `8b 46 48` `mov eax,[esi+0x48]` @0x45c57a,
+  a full reload, and nothing reads `eax` between the call and the return. **Fire-and-forget is structural,
+  not inferred.**
+- the script object itself is **fetched by handle**: `call [edx+0x24]` @0x54af38 - i.e. **36 bytes = slot 9** -
+  on `GetWorldServerInstance_0x401150`, applied to `entity+0x1DC`.
+
+That last point closes a loop this doc opened: slot 9 was already the census's script-handle slot (what
+`Entity::Create` stamps at 0x55190c and what the resolver compares). It is now also the accessor by which a
+script is *looked up*, so the same singleton slot both defines and retrieves the handle, from the combat side
+as well as the spawn side. Two independent derivations (this PE read and NiceTiger's IDB walk) agree on slot 9.
+
+**NOTATION TRAP, recorded because it is the lane's most-recurring one**: the fetch is `+0x24` **hex** = 36
+**bytes** = slot **9**. "`vft+24`" written without a base is therefore ambiguous in exactly the way that has
+bit this batch repeatedly (cells-vs-bytes at 0x45ac5f, 0x46ece6, 0x54b044, and our own
+`MapEntitySpawn.hpp:115 "(vft[8])"` label). Write `+0x24` or "slot 9", never "+24".
+
+**Consequence for the port, quotable at the decision**: `NativeScriptFn` is
+`int (*)(Mover*, int a2, int a3, int a4)` (`Scripting.hpp:18`), which matches **neither** (a) nor (b). Fixing
+gap 4 for the natives (typedef to `(amx, params)`) does NOT give the port script *execution*: that needs shape
+(b) - a per-entity script object plus `(name, argc, cells[, out])` dispatch - and the two must not be fused
+into one function-pointer type. Also named-deferred, not guessed: the script object's exact class identity, and
+slots 0/+4/+0xC of its vft (`GetScript`'s own `[vft+4](script, &name, 1)` @0x54af5f looks like an exists/attach
+probe on the freshly fetched script; not chased). And `0x54aff3` throws the shipped SEH message "Entity::RunScript()
+method may only be called by the server." behind the same world-server flag guard as `0x462620` - the
+guarded-selection/unguarded-use family now has a fifth member, inside the script-invoke path.
+
 ## What that means for batch B's status, stated plainly
 
 - The 27 natives are **verified reversal with enforced behavior**, and their suite (196 asserts) is real:
