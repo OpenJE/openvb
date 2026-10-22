@@ -54,3 +54,23 @@ PROVEN string-order or an explicit still-unproven verdict per field; vft slot ta
 ## References
 R-VFM §2-4; T-073 §2a; harness items 41/42/43/44/49 + 8c; `discoveries/2025-10-21-t057-...md`
 (COL/TD composition proof pattern); van-buren §3.2 (type table — my conformance yardstick).
+
+## Notes (SwiftMoon, research-complete 2026-10-21)
+Gate 5/5 (getter-edge bytes, both schema constants, table head incl. the pooled-"" sighting,
+sig literals, PI vft raw-walk) before any new classification. DELIVERED: (1) ParameterInfo FULL
+MAP — base VFX_Parameter + 2 strings @+0x34/+0x50 + THREE nested VFX_Parameter subobjects
+@+0x6C/+0xA4/+0xDC with flag bytes between (span 0x111=273 = export size AGREES — no-erratum
+register again; 0x114 = padded stride); VFX_Parameter = {vft 0x673A20 single-slot, name string
+@+0x04, three −1 value-cache dwords +0x20/24/28, +0x2C/30}. T-073's "4 basic_strings" wording
+refined (correction-forward; all their data re-confirmed). (2) APPLICATOR OWNERSHIP resolved:
+0x5011A0+0x4FA3C0 = VFX_ParameterHolder (vft 0x67390C [2]=0x4F9D40 — the very count-reader R-VFM's
+block-checker calls); 0x501340 = VFX_VEG::vft-slot-2 (zero e8 callers BECAUSE it's dispatch-only —
+reachability via table cell); 0x502010 scale + 0x50208C block-check caller INSIDE VFX_VEG::load
+(vft-slot-1 0x501FA0, ret+pad tail 0x502118) — Gfx_D3D band ruled out by containment. Live value
+block = new(0xC){byte Loop, f32 Min, f32 Max}. Consumer chain closed: VFM→VFX_VEG::load→
+VFX_VEGInstance (0x48EF71 getter, 0x48F054 apply)→Holder. (3) 0x4F9A00: ZERO cells + zero e8/e9
+image-wide = statically unreferenced dead variant (0x4F9960 is the live one); limit stated.
+(4) UPGRADE to R-VFM §4: and al,0xDC is the ENCODER (neg/sbb/and → 0x00/0xDC), engine PRODUCES
+the spec's bool wire byte — conformance claim strengthened. Buckets: full named; 2 FINAL-unknowns
+printed (value-cache dword roles; 0x28-row element map). Successor proposed: R-VEG-E (value-cache
+semantics + row anatomy + 0x500F90 emit family). Deliverable LEFT DIRTY; read-only honored.
