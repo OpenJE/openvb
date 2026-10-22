@@ -21,17 +21,21 @@ def pe(path):
     dd = opt + (96 if magic == 0x10b else 112)
     ed_rva = struct.unpack('<I', d[dd+0:dd+4])[0]
     iid_rva = struct.unpack('<I', d[dd+8:dd+12])[0]
+    if nsecs > 96 or d[:2] != b'MZ':
+        raise ValueError("not a sane PE (refusing to allocate against garbage headers)")
     shdr = opt + sizeopt
-    vma2raw, secs = {}, []
+    secs = []
     for i in range(nsecs):
         o = shdr + i*40
         name = d[o:o+8].rstrip(b'\0').decode(errors='replace')
         vs, va, raw, ro = struct.unpack('<IIII', d[o+8:o+24])
-        secs.append((name, va, vs, raw, ro))
         if ro:
-            for k in range(max(vs, raw)):
-                vma2raw.setdefault(va+k, ro+k)
-    def off(rva): return vma2raw.get(rva)
+            secs.append((va, max(vs, raw), ro))
+    def off(rva):
+        for va, span, ro in secs:
+            if va <= rva < va + span:
+                return ro + (rva - va)
+        return None
     def cstr(o):
         e = d.index(b'\0', o); return d[o:e].decode(errors='replace')
 
