@@ -1866,3 +1866,76 @@ the DB (`0x667dd4`/`0x6927bc` slot-26 candidates refute themselves against the o
 0x49 constructs `GameActionInitiateDialogue` and funnels through 0x550720), weapon/reload packet cases 0x64/0x65
 as siblings of SetHP's id 88, and weather-VFX cases 0x6A-0x70. Header comment only; no behavior change;
 annot gate PASS; the header parses standalone.
+
+---
+
+# PAUSED 2026-10-22 (~17:3x) — resume point for this lane
+
+Snapshot taken at the user's stop. Everything below is re-emitted from the tree, not from memory; verify any
+hash or count with the listed command before acting on it.
+
+## Where the lane stands
+
+| item | value | how to confirm |
+|---|---|---|
+| batch B natives LIVE | **27**, table `s_gameCreatureNatives[27]` | `grep -n "s_gameCreatureNatives\[" src/F3/ScriptNatives.cpp` |
+| suite | **196 asserts, 0 failures** | `run-all-tests` → `ScriptNatives=OK [196 >= 196]` |
+| gates at pause | run-all **13 pass / 0 fail** (incl. port-annot), `msvc-build` rc=0, cppcheck rc=0 | rerun; no dirty source behind them |
+| branch | `automated-reversing`, **ahead 60, UNPUSHED** (no push without a lane decision) | `git rev-list --count origin/automated-reversing..HEAD` |
+| dirty files | only `tools/t052-drive.py` (another owner's - never stage) | `git status --short` |
+| last commits | parent `d9d23db` (netId correction), `4db02ca` (two-slot census), `0432d9f` (wiring gaps), `0475e8f` → `openje:62b17c7` | `git log --oneline -6`; `git ls-tree HEAD modules/openje` |
+
+## Status semantics - the line that must travel with this batch
+
+**Verified reversal with enforced behavior, NOT runtime parity.** No batch-B commit changes what the running
+port does: the native table has no installer, the script registry installer is test-only, `JE::Script::Run` has
+no product callers, and the port's `NativeScriptFn` ABI differs from shipped `__cdecl(amx, params)`. All five
+gaps, with line citations, are in `docs/f3/NativeWiringGaps.md`. "27 LIVE" means 27 reversed, ported, and tested
+against a declared stand-in registry - read it that way, and say so in any relay.
+
+## Resume candidates, in the order that yields most per unit of work
+
+1. **Task trio** - `OpenTask` 0x45b900, `CloseTask` 0x45b940, `AddEntry` 0x45b980. Arity 2, delegate to unported
+   `GameServer::meth_0x46ecd0/0x46ed30/0x46ed90`, and **return 1 unconditionally** even when the singleton is null
+   (B8 finding). Three rows, no other-lane decision needed; journal write named-deferred.
+2. **The handle field the port is missing** - `Entity+0x1DC` (slot 9 of the adjusted `global_0x70bd98` singleton)
+   has no port-side counterpart; `SpawnedEntity.netId` models `GameEntity+0x28`, which is **write-only** as shipped
+   (stores at 0x4679b3/0x4679b8, zero readers). This is a spawn/openje lane decision, not a natives edit - the
+   correction is already in `src/F3/MapEntitySpawn.hpp:115` so nobody builds a resolver on the wrong field.
+3. **Installer + ABI adapter + executable script path** - the four-part gap above; converting batch B from
+   test-consumer to observable behavior. Cross-lane by construction.
+4. Era-blocked remainder: dialogue (`StartDialogue` needs the unaligned `+0x19/+0x1E` action dwords, a seam kind,
+   and `GameDialogueInterface`), world server (attitude pair, task trio's journal), GUI hide (`HideInterfaces`
+   0x45a100 → `sub_46EDF0`), AMX object-ref (`SetMoveMode` 0x45a140 → `sub_59AA50`), `EquipItem`'s skipped
+   effects/stance era, two documented stubs (`PlayMusic`, `GetWeaponCombo`).
+
+## Durable artifacts this lane produced (paths, not prose)
+
+- `docs/f3/ScriptNatives`-family notes: `CreatureHpAccessors.md`, `CreatureHpWriters.md`,
+  `CreatureSkillAndPerkArrays.md`, `AmxStringParamFetch.md`, `InventoryEquipPaths.md`, `PartyAccessors.md`,
+  `GfxEntityOverlayApply.md`, `NativeWiringGaps.md`
+- `docs/notes/commit-citation-protocol.md` - two-database citation rules + the 247-token sweep (7 non-citations,
+  `f2b3a1c` deliberately left unresolved as evidence)
+- `src/F3/ScriptNatives.{hpp,cpp}`, `src/F3/ScriptInventory.hpp`, `src/F3/ScriptParty.hpp`,
+  `src/F3/GameCreature.hpp` (appended bands + inventory + weapon fields), suite in
+  `modules/openje/tests/je/ScriptNatives/`
+- `docs/notes/harness-items.md` items 67-69; shipped literals ledger entries for the space quirk,
+  "attacking entity", the `GetPosition`/`EquipItem` copy-pastes, and `INVALID_ID`
+
+## Peer lane
+
+JadeBear (`01a163e9`) holds the docs/discovery lane and owes nothing here; they were about to write the
+`0x46dd70` packet id-map as a discoveries file at my request. Cross-lane claims this session were all verified
+against the artifact before landing in either direction - keep that habit, including for claims that support a
+conclusion you already agree with.
+
+## Standing rules this lane learned the hard way (each cost a real red or a wrong claim)
+
+1. Re-emit from the artifact: offsets by instruction text, constants by stored bits, vft slots by call bytes,
+   hashes by `git`, counts programmatically, sets by recomputation - never from memory or prose.
+2. Owner-typed member access, always, in this tree's generated headers.
+3. Observers must fail loud; declare what a test cannot distinguish instead of covering it.
+4. Keep shipped defects verbatim (spaces, copy-pastes, lying messages, wildcard-that-returns-0) and assert them.
+5. Declared collapse beats silent mapping; a port does not earn credit for reproducing a crash.
+6. Check linkage before believing a runtime verdict - silence is not a sample.
+7. A database listing is an excerpt: empty listing is not proof of absence, and `length` fields confess truncation.
