@@ -1081,3 +1081,22 @@ Rules:
 3. Terminal-field keying in shared tools makes real axes visible for free: the Client+0x118 vs
    World+0x118 collision is 'two rows by design' in the fixed mode — a derivation that cannot tell
    them apart was always going to look like disagreement somewhere else.
+
+## 52. Intersection-with-proof includes the queue's own sections — a doc that mints in §2 what §3
+annotates FOREIGN is self-contradiction, and band preflight is where it dies
+
+TrueCastle, wave-2a (Q-W2), 2026-10-21. The GO said 107 applied-eligible; 99 actually ran. Nine rows
+died at PER-BAND PREFLIGHT, not at ruling time: T-084 §2 mints fns whose LIVE cls_ key sits under §3's
+foreign-annotation class keys (0x515040 was the pre-declared instance — the doc admitted ONE; the band
+gate found its eight siblings: 0x52cc70/0x5150c0/0x515580/0x515d50/0x4a5720/0x4a5a10/0x436410/0x523450).
+'Intersection-with-proof' applied to a self-contradicting source yields HOLD, never mint; the 9 joined
+the Gate-A 65 into one 74-row arbitration list, each with a per-row reason — none silently minted,
+none silently dropped.
+
+Rules:
+1. A queue doc's later sections are INPUTS to its earlier queues: run the collision check (key-set
+   intersection of mint-list vs annotate-list) BEFORE apply, per band, against the LIVE dump.
+2. Pre-declared exceptions tell you the CLASS exists; they do not bound it. One admitted instance =
+   assume siblings until a sweep says otherwise.
+3. The honest subtraction is the deliverable: report APPLIED 99 / GO 107 with the nine reasons, rather
+   than back-fitting the ruling to the outcome or 'fixing' the doc's §3 to match §2.
