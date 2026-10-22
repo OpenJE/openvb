@@ -144,3 +144,37 @@ SetHP chain's `+4/+4` deserves its own short doc instead of being folded into th
 What this sitting produced anyway, and is solid: the clamp semantics (upper only, no floor), AddHP =
 set-to-current+N, the packet-88 broadcast path, the silent failure legs, and the refutation of a plausible
 reading that would have shipped a bug.
+
+## WHY the subject cannot be ported yet - and it is the SAME wall as the array natives (item 69)
+
+`artifacts/F3.json` says `JE::Entity` embeds **`JE::DynamicObject` at +0x0 with size 984 (0x3D8)**. So the
+offsets this file has been arguing about - +0x1DC (the handle, T-043) and +0x1E0 (the 1/2/3/6/7-tested field) -
+are both *inside the DynamicObject span*, and `Entity`'s own fields start after 0x3D8. SetHP's chain is:
+
+    mov edx,[entity+4]      ; slot 4 of the object = the SECOND vftptr/vbtable (DynamicObject's +0 is vftptr)
+    mov edx,[edx+4]         ; that table's slot 4 = a displacement, if it is a vbtable
+    mov eax,[edx+entity+1E0h]  ; the field at (virtual-base-adjusted entity) + 0x1E0
+
+That is a **layout-relative computation**: it is only interpretable if the object's real subobject geometry is
+known - which vftable sits at +4, what its slot 4 holds, and what the virtual-base displacement is. Two
+consequences, and they are the honest end of this thread:
+
+1. The enum reading and the handle reading are NOT both about the same addressable slot: `entity+0x1E0` (what
+   the two virtuals compare against 1/2/3/6/7) and `*(vbtable+4) + entity + 0x1E0` coincide only if the
+   displacement is 0. Assuming 0 is exactly the kind of "plausible reading" that ships a wrong-entity write.
+2. The port structurally CANNOT express this today, for the reason item 69 documents: the port's generated
+   headers are name-sorted excerpts (`offsetof(GameCreature, mbr_0xbc) = 0x4B4` where shipped is 0xBC,
+   `sizeof` 1252 where shipped is 3036), and they carry no vbtable geometry at all - no subobject spans, no
+   displacement slots. There is no expression in the port that means "the +0x1E0 field of the virtual base".
+
+So SetHP/AddHP and the three array natives are blocked by ONE prerequisite, not two: **the port needs a
+shipped-ordered GameEntity/GameCreature layout with real subobject extents (and array members)**, after which
+the array reads are `obj->perks[i]` and the setter subject becomes an expressible, checkable thing. That is a
+header-owner lane decision with a blast radius beyond this batch, so it is filed as the batch's dependency
+rather than taken unilaterally inside a natives TU - and it is why 5 of the remaining batch-B rows are parked
+on a single, nameable piece of work instead of on five separate mysteries.
+
+Minimum viable version, if the layout decision is deferred: give `GameCreature`/`Entity` the two arrays as
+sized `int[]` members (perk 0x114 band, base-skill 0xE0 band - lengths still unknown and NOT to be guessed) and
+a `vbnested` accessor note; that unblocks the three array natives without pretending to model virtual bases, and
+leaves SetHP/AddHP honestly waiting.

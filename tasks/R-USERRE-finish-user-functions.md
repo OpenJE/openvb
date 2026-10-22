@@ -1130,3 +1130,26 @@ type code and the `+4/+4` chain gets its own short doc rather than another parag
 The sitting still banked real facts regardless: clamp is upper-only (no floor - HP goes negative), AddHP is
 set-to-current+N, HP writes broadcast as packet id 88 through GameServer::meth_0x5a0a00's per-peer fan-out, and
 the setter chain fails SILENTLY (no string), unlike the natives.
+
+
+### B4c - the two blockers turned out to be ONE: batch B's remaining rows all wait on a shipped-ordered entity layout
+
+`artifacts/F3.json` records `JE::Entity` embedding **`JE::DynamicObject` at +0x0, size 984 (0x3D8)** - so
++0x1DC and +0x1E0 are both INSIDE the DynamicObject span, and SetHP's `[entity+4] -> [+4] -> [+entity+1E0h]` is
+a **virtual-base displacement**, not a plain field read. It is interpretable only with the real subobject
+geometry (which table is at +4, what its slot 4 holds, what the displacement is), and the coincidence "enum slot
+== handle slot" requires the displacement to be 0 - which is exactly the assumption that would ship a
+wrong-entity HP write.
+
+The port cannot express it: per item 69 the generated headers are name-sorted excerpts with no subobject spans
+and no vbtable at all. So the three array natives (perk +0x114, base-skill +0xE0) and the two HP writers are
+parked on **one prerequisite** - a shipped-ordered GameEntity/GameCreature layout with sized array members - not
+on five separate mysteries. Filed as the batch's dependency (header-owner lane, blast radius beyond batch B)
+rather than taken inside a natives TU; the minimum viable version that unblocks the arrays without pretending
+to model virtual bases is written up in docs/f3/CreatureHpWriters.md (arrays as real `int[]`, lengths still
+UNKNOWN and not to be guessed), leaving SetHP/AddHP honestly waiting.
+
+Batch B final shape for this sitting: **7 natives LIVE** (+ the three shared helpers every later row needs),
+**5 rows blocked on the layout decision with a named minimum fix**, and the HP setters documented down to the
+instruction where the ambiguity actually lives. Everything deferred is deferred on a *question*, with the cheap
+answer-path named - not on effort.
