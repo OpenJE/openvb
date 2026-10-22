@@ -1167,3 +1167,19 @@ a screenshot and declared a working rig broken.
    template's pair was never a manual install; seed dir stays as harmless insurance, header rewritten
    to evidence). A tool's documentation ages at the speed of its assumptions — the cold bootstrap
    re-tested them all at once.
+
+## 60. CMKR_SKIP_GENERATION=ON means cmake.toml edits are SILENTLY IGNORED — regeneration is now explicit in msvc-build (item 60 fix, from BrightYak's hour)
+
+BrightYak's link-defect hunt (slice-1 relay, 2026-10-22), mechanism found in their own commit message: the
+cmkr bootstrap in CMakeLists.txt no-ops once build/CMakeCache.txt exists, and msvc-build.nix passes
+-DCMKR_SKIP_GENERATION=ON — so the 12 unresolved externals sat UNSEEN for days: mingw test rows carry
+their own per-row source lists (all green), while the MSVC link had been configuring a stale CMakeLists
+forever. Two of their runs 'changed nothing' before the mechanism surfaced.
+Fix now IN the tool (devenv/scripts/msvc-build.nix, this era): when build/_cmkr_v*/build/cmkr exists,
+msvc-build copies it to cmkr_gen.exe, runs `cmkr gen` explicitly (offline) BEFORE configure, and exits 1
+if gen fails. Rules: (1) cmake.toml edits take effect at the next msvc-build with no manual step;
+(2) `gen` rewrites CMakeLists.txt in the working tree — commit it WITH the cmake.toml change, both trees
+or neither; (3) a per-row-source mingw suite can NEVER catch link drift — any test grid that restates
+sources is a second source of truth to be reconciled, and 'green tests + red link' is the signature;
+(4) RedQuartz's run-identity ledger pairs with this perfectly: builds move under verdicts, so verdicts
+now name their bytes. The sleep wasn't laziness — it was a skip-generation flag nobody re-read.
