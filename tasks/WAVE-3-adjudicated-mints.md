@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: HappyStorm `01a16092-41cf-7127-936b-377a304178a4` (WAVE-3 SEATED 9346a5f — sole IDB writer; TrueCastle rest preserved, wave-4 named for their wake)
 type: WRITER WAVE — MINT tier (renames; T2 moves — forecast before apply, measured after)
 depends: EpicRaven's committed class tables (qw2-arbitration-class1/2.txt, 2086aef/d2eb76a), R-CS §7.1, R-ST successor #2, TrueCastle feed (rinst-install-deriv.md)
@@ -38,3 +38,6 @@ gate 6/6 first -> save-sync before first rename (live==disk) -> band-batches (pe
 regen-recheck + share-check per row -> rename via MCP `rename` -> read-back per EA -> per-batch
 checkpoint save -> END save + postdump -> T2 measured vs forecast, delta reconciled to the row list
 -> ledger as recovery source (full name+EA table) -> relay + row flips.
+
+## Close evidence (this commit)
+50 renames (44 class-1 confirms+rehosts after 1 stale-row drop + 4 c2 strong + 2 std-tier + 1 CMusic), 34 comments (10 install-cited rehosts, 3 WEAK consumer verdicts, 21 HOLD-with-cites), T2 1892->1847 EXACT reconciliation, chain 00:56:49/00:57:22/00:58:16/00:59:02Z, dumps banked. Three flags banked (stale row, count drift table-authoritative, feed-unique excluded). Successors: 21-row values-era chase batch, table refresh for wave-4, feed-unique on cross-check.
