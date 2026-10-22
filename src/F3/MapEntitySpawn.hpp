@@ -112,8 +112,33 @@ namespace F3 {
 		                    // HP itself stays in statMax/statCur (GENT +0x20/+0x24).
 		int   regCol;         // occupancy-grid registration cell (-1 = unregistered)
 		int   regRow;
-		int   netId;        // GameEntity mbr_0x28: world-server-assigned serial (vft[8]);
-		                    // 0 in client/editor contexts per ctor 0x4678B3 evidence
+		int   netId;        // MODELS GameEntity+0x28, stamped in GameEntity::ctor_0x4678a0 from the
+		                  // world-server singleton's adjusted object: `call dword ptr [eax+8]` at
+		                  // 0x4679b0 (that is BYTE 8 = vftable SLOT 2 - the old "(vft[8])" note was
+		                  // exactly the cells-vs-bytes ambiguity this project has been cataloguing,
+		                  // and it reads as slot 8) then `mov [esi+28h],eax` at 0x4679b3, with the
+		                  // else-branch store `mov [esi+28h],ebx` at 0x4679b8 (the "0 in client/editor
+		                  // contexts" case).
+		                  //
+		                  // CORRECTION (2026-10-22, per docs/f3/NativeWiringGaps.md): the member has
+		                  // TWO usages in the shipped image and BOTH ARE WRITES - the member census
+		                  // returns 0x4679b3 and 0x4679b8, no reader at all. So +0x28 is a write-only
+		                  // residue as shipped, and the label above must not be read as "the entity's
+		                  // network id for script purposes".
+		                  //
+		                  // The field that actually serves that role is Entity+0x1DC, stamped in the
+		                  // Create path from SLOT 9 of the SAME singleton (`call [eax+36]` @0x55190c;
+		                  // GetWorldServerInstance_0x401150 returns global_0x70bd98 + 1 @0x40118a) and
+		                  // read by the handle resolver (compares *(entity+476)), by SetHP's chain
+		                  // (0x45b36d) and by Protagonist (0x45a9e0), plus two mirrors at
+		                  // (+0x168 obj)+4 @0x55192a and map-icons+228 @0x551a60.
+		                  //
+		                  // CONSEQUENCE for this port: netId is fine as a locally generated serial
+		                  // (NextNetId at MapEntitySpawn.cpp:781, consumed by trace/log sites such as
+		                  // GameActionAttack.cpp:322), but a handle-keyed lookup for SCRIPT natives
+		                  // must not be built on it. That lookup needs a field with +0x1DC semantics,
+		                  // stamped at spawn the way Create stamps it - which is why the natives'
+		                  // registry stays a declared stand-in rather than silently keying on netId.
 		// GENT block (discovery session 3 §1): 6 u32 f1..f6 -> GameEntity+0x08..0x1C, then
 		// (version>=1) max/cur -> +0x20/+0x24 with cur>max clamped to max. Flat storage:
 		int   gentF[6];       // GameEntity+0x08..+0x1C (ctor defaults 0,0,0,0,4,0)

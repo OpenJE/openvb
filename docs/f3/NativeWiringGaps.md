@@ -107,9 +107,29 @@ The script-facing handle is unambiguously the **slot-9** value: it is what the r
 So a resolver keyed on `netId` is keyed on the field the port labels to **slot 2**, which nothing here proves
 equals the slot-9 handle.
 
-**Consequence for the cheap-unlock estimate:** "twelve lines and a scan" is optimistic by one design step.
-Either (a) slots 2 and 9 are the same number in the shipped build - which is an empirical question, settled by
-one runtime sample of an entity's `+0x28` against its `+0x1DC`, or by reading the two slot bodies - or (b) they
-are different ids, in which case the port is missing the script-handle field entirely and needs it populated at
-spawn the way `Create` does it before any natives-side lookup can be honest. Naming it as (a)-or-(b) rather than
-assuming either is the whole point: the tempting version of this finding was "the key is already there."
+**Resolved to (b), statically - by JadeBear, verified independently here, and it retires the live read as a
+blocker.** The member census settles it without a debugger: `GameEntity+0x28` has **two usages in the shipped
+image and both are writes** - `mov [esi+28h],eax` (0x4679b3, the success branch) and `mov [esi+28h],ebx`
+(0x4679b8, the client/editor branch storing the else value) - with **no reader anywhere**. A field nothing in
+the exe reads is not the script handle by consumer definition, so the port's `netId` label needed a correction
+rather than a bridge, and it now carries one in `src/F3/MapEntitySpawn.hpp:115` (including the old `(vft[8])`
+note, which was the cells-vs-bytes ambiguity sitting in OUR OWN comment: byte 8 is **slot 2**).
+
+`Entity+0x1DC` is the opposite shape: reads by the handle resolver (comparing `*(entity+476)`), by SetHP's
+chain (0x45b36d), by Protagonist (0x45a9e0), plus the two mirrors above. Precision note, applied to a peer's
+number this time rather than to my own: the "nine consumers" figure does not reproduce as a single list - the
+DB records 7 usages against `JE::Entity`'s own member and attributes the native/resolver sites to other class
+keys, so the count depends on class attribution. What is verified is the ASYMMETRY (reads on one, writes only
+on the other), and that is what the design call rests on - a good example of checking the claim that supports
+a conclusion you agree with.
+
+So the unlock is unchanged in shape but honest in cost: a spawn-stamped field with `+0x1DC` semantics (or a
+mirror into the natives' registry), not a `netId` scan - and the decision no longer waits on a run.
+
+Census bonus from inside the same negative result, credited to JadeBear: the singleton's slot 26 is not a
+server packet dispatch - `0x667dd4` slot 26 (`0x46dd70`) and `0x6927bc` slot 26 (`0x556ea0`) refute themselves
+against the observed Party-returning behavior, which means the singleton's real class is **unattributed** in
+the DB. Inside `0x46dd70` sits an id-map worth its own pass: case `0x49` (73) constructs
+`GameActionInitiateDialogue` and funnels through the T-030 seam `0x550720` - the server-side twin of
+`StartDialogue`, which gives a wiring-blocked row its counterpart - cases `0x64`/`0x65` build packets for the
+weapon/reload family (siblings of SetHP's id 88), and `0x6A`-`0x70` attach the demo's rain/snow/wind VFX.

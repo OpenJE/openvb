@@ -1842,3 +1842,27 @@ field entirely and must populate it at spawn the way `Create` does before a nati
 
 The tempting version of this finding was "the key is already there." It is the tempting version that gets
 checked.
+
+
+### The fork resolved to (b) without a run - and the correction landed in our own header
+
+JadeBear settled `+0x28` vs `+0x1DC` statically; I verified it before editing: `f3_member_index GameEntity
+mbr_0x28` returns exactly two usages, **0x4679b3 and 0x4679b8, both stores** (`mov [esi+28h],eax` on the
+map-icon-flag branch, `mov [esi+28h],ebx` on the else branch), zero readers. A shipped field nobody reads is
+not the script handle by consumer definition. `Entity+0x1DC` is read by the resolver, SetHP, and Protagonist,
+with two mirrors. So `src/F3/MapEntitySpawn.hpp:115` now carries that correction, plus a fix to its own
+`(vft[8])` note - byte 8 is **slot 2**, and that cells-vs-bytes ambiguity was living in OUR comment, not just in
+the decompiler's output.
+
+Precision applied outward for once: their "nine consumers" figure doesn't reproduce as one list - the DB gives 7
+usages on `JE::Entity`'s own member and attributes the native/resolver sites to other class keys, so the count
+depends on class attribution. What the decision rests on is the asymmetry (reads vs writes-only), which is
+verified. Checking the claim that supports a conclusion you already agree with is the same discipline, one step
+earlier.
+
+Also credited to them, from inside the same negative result: the singleton's real class is **unattributed** in
+the DB (`0x667dd4`/`0x6927bc` slot-26 candidates refute themselves against the observed Party behavior), and
+`0x46dd70` turns out to be a packet-dispatch id-map containing the **server-side twin of StartDialogue** (case
+0x49 constructs `GameActionInitiateDialogue` and funnels through 0x550720), weapon/reload packet cases 0x64/0x65
+as siblings of SetHP's id 88, and weather-VFX cases 0x6A-0x70. Header comment only; no behavior change;
+annot gate PASS; the header parses standalone.
