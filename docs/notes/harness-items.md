@@ -1520,3 +1520,45 @@ persistence attestation** - wine 11 flushes hives via temp-file + rename, which 
 destination inode, so `chmod 000 user.reg` provably cannot exercise it (their leg 4 measured exactly that, and
 my own gate held: no verdict fabricated). `disarm` now ends in `DEFAULT-BUILTINS`, byte-identical to a fresh
 `wineboot -u`, which is what "clean resting state" should have meant from the start.
+
+## 70. COVERAGE-BEFORE-VERDICT — an audit must prove its own denominator from an INDEPENDENT source, or "0 findings" means "0 rows parsed"
+
+**Filed by**: TrueRaven `01a1652d` + ruling by NiceTiger `01a1652d-a87f`, 2026-10-22, from the same sitting
+that produced item 66's class one layer up.
+
+**Trigger**: the two-name law (docs/f3/NativeInstallerEvidence.md §5b) made "is `UnequipItem` really the only
+ported row whose gate name differs from its registered name?" an open question about MY table. I answered it
+with a one-off python audit. My first attempt reported **0 divergences** while parsing **32** of 36 rows; my
+second reported **0 divergences** while parsing **0** rows. Both were whitespace bugs in the row regex. Neither
+was a green — both were an unexecuted check wearing a green's clothes, and each printed a number that made the
+other look verified.
+
+**The law**: an audit must (1) print its denominator, and (2) derive the expected population from a
+representation that shares **no failure path** with the parse being audited. Asserting `parsed == expected`
+where `expected` is itself read out of the same parse is not a guard: one bug satisfies both sides and the
+vacuous green reconstitutes at the assertion level.
+
+**Why it is NOT just "observers must fail loud" (rule 3)**: fail-loud governs a TEST's behavior when the WORLD
+diverges. This governs a TOOL's behavior when IT diverges from its own population. Same failure shape as rule 7
+("an empty listing is not proof of absence") applied one level up: to your own instrument.
+
+**Implemented**: `tools/native-gate-audit.py` compares each ported body's `ScriptNativeCheckArity(amx, p,
+cells, "name")` against what the shipped native pushes at its own EA (`68 <name-ptr>; 6a <cells>` before
+`call 0x59AF40`), and refuses to render any verdict unless three counts from three different places agree:
+
+    coverage: {'declarator_count': 36, 'suite_asserted_count': 36, 'parsed_rows': 36, 'ok': True}
+
+declarator = `s_gameCreatureNatives[36]` in the TU; suite_asserted = `check( nCount == 36` in the submodule's
+test; parsed_rows = the regex. Different files, different syntax, written by different slices — no shared bug.
+`--selftest` proves the gate fires by feeding it a deliberately wrong denominator, and a mutation
+(port passes `"CloseQuest"` where shipped pushes `"CloseTask"`) yields exit 1 with a named row.
+
+**Corollary this item also carries**: the audit's first run reported a FALSE finding on `UnequipItem` — my
+check asserted "port differs from shipped" for a row whose defect lives in SHIPPED. The port passing
+`"EquipItem"` is CORRECT mirror behavior (0x45a6f0 pushes exactly that). So the tool now checks the inverse as
+well: if shipped's gate name ever STOPS differing, the kept defect was silently "fixed" and the evidence is
+gone — that is a red, not a green. A kept defect needs a guard on both sides of its absence.
+
+**Standing application**: any new audit/recompute tool in this repo prints its denominator and cross-checks it
+against an independent representation before it is allowed to say anything. When that is impossible, say
+"coverage unproven" in the verdict line rather than quoting a clean number.
