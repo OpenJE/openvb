@@ -53,3 +53,18 @@ as recovery source); row flips for T-084 tier-1 board state via relay; census li
 after (start: LIVE BASE measured at claim, not byhost-2026-10-21-era); [DISCOVERY-BATCH ready]
 at close. Regeneration deltas vs the archived doc (rows dropped at Gate A, folded at Gate B)
 are BOOKED LOUDLY, not silently.
+
+## Gate A result (executed pre-ruling, 2026-10-21)
+STOP-AND-MESSAGE FIRED: 65 HOLD rows > 15 threshold. Full decomposition banked at
+discoveries/wavedumps/qw2-gateA-{queue-split,regen-full}.txt (commit 9afc531):
+- 107 WAVE-ELIGIBLE rows / 21 hosts (doc-host == regen-host under caller-mode+transitivity,
+  shape-safe <=1 view/holder, incl. 6 Gate-B Manager folds cited per T-075 §1/§8).
+- 65 HOLD: (a) ~20 real-class divergences for arbitration; (b) ~20 SHAPING embed-rows awaiting
+  install-mode derivation; (c) weak-root host rows per T-084's own note.
+- ROOT CAUSE of 94-row doc divergence: T-084's host derivation ran through an UNBANKED
+  holder-INSTALL driver (sweep2 host= column is not reproducible from banked tools); shared
+  field offsets (Client+0x118 vs World+0x118) make caller-mode provably blind on install rows.
+  Re-banking that derivation converts HOLD-(b) rows; requested via relay.
+- Churn: rows already minted by wave-1 (0x4903E0 family) book APPLIED-PRIOR, never re-minted.
+- Zero IDB writes since wave-1 final save (mtime 23:43:17) pending coordinator GO/WAIT ruling.
+
