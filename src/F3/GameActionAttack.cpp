@@ -150,6 +150,9 @@ namespace F3 {
 		}
 	}
 
+	// Shipped pump is GameActionAttack::OnServerUpdate 0x404320 (finisher 0x403770, called from
+	// it — attack-state-machine doc); this Update maps the same per-frame machine onto the port's
+	// action-queue seam (T-030 funnel 0x550720 era).
 	int GameActionAttack::Update( unsigned gameMs ) {
 		tracing::instrument( tracing::LOCATION, "ms=%u", gameMs );
 		if ( finished ) {
@@ -339,6 +342,9 @@ namespace F3 {
 		}
 		return 0;
 	}
+	// No shipped single-fn counterpart: port extraction of the VFX .veg pick table — switch on
+	// [effect+0xA0] (damage type 0..5) x [effect+0xA4] (material), literals shipped, per
+	// discoveries/2025-10-20-session7-effect-pipeline-and-damage-apply.md §3 step 6 (L75).
 	const char* SelectHitVeg( int damageType, int material, int dmg ) {
 		// session 7 §3 step 6 table (+0xA0 switch, +0xA4 sub-cases)
 		switch ( damageType ) {
