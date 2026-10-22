@@ -212,3 +212,38 @@ the octree to `Entity::meth_0x568140` - with a `meth_0x54dc50(string at entity+0
 `LOBYTE(entity+0x164)` one-shot latch around the whole thing. That is a fresh, cited path from the entity's
 string-ish band (+0x21C/+0x22C/+0x230, SSO-shaped: capacity test `< 0x10` at 0x54dedd) into map/octree
 attachment - noted here because it turned up under a probe aimed at something else, and it should not be lost.
+
+## RETRACTION (same sitting, one probe later): the "0.05f / 0.055f" reading above is NOT supported - param_3 flows as an INT, and the real float slot is elsewhere
+
+I opened the callee to check the claim I had explicitly marked "verify before quoting", and it does not verify.
+
+`sub_563D30` (0x563d30) is `__userpurge (int *this@<ecx>, double a2@<st0>, param_1..param_4)` and forwards
+param_3/param_4 **as integers** into `cls_0x49cc40::meth_0x4a0dd0` (0x4a0dd0), which forwards them again into
+`sub_49D8A0`. Two things follow:
+
+1. **There is already a floating-point slot and it is not param_3** - `a2@<st0>` is a genuine `double` travelling
+   on the x87 stack through both frames. A float encoded in an int-shaped parameter next to a real float
+   parameter is the less likely reading, not the textbook one I asserted.
+2. **param_3 is a CONSTANT while param_4 VARIES**, which is backwards for my (size, colour) story. Independent
+   hardcodes: 0x563db0 uses `(1028443341, -16711681)`, 0x4a0f30 uses `(1028443341, -65536)`, 0x54df81 uses
+   `(1029785518, -65536)`. param_3 recurs as 0x3D4CCCCD across two different sites that differ only in param_4 -
+   so param_3 behaves like a stable key/colour and param_4 like the varying channel. Nothing about them has the
+   signature of "same scale, two colours".
+
+So: 0x3D4CCCCD *is* the bit pattern of 0.05f and 0x3D6147AE *is* 0.055f - that part is arithmetic, not opinion -
+but calling them floats here was a **pattern-match inference presented with more confidence than the evidence
+carried**, and it sat in a document two paragraphs under a "verify" caveat I wrote for myself. The caveat is not
+the defence; opening the callee was. Verdict: **param_3/param_4 are unresolved integer parameters of a
+GUI/model-cache traversal** (`g_model_cache->count_0x1C`, a red-black tree built via `JE_RbTree_InitSentinel_0x56e0b0`
++ `sub_433760` inserts, iterating `mbr_0xbc`/`mbr_0x80` containers, then `qmemcpy(byte_707DB0, *(v18+4), 0x40)`).
+Quoting any numeric meaning for them - float, colour, or flag - is on hold until `sub_49D8A0` is read.
+
+**What does NOT change**: `Entity+0x1E0` is still a small-integer MODE field (tested against 1,2,3,5,6,7 at four
+sites, serialized by `UnpackState_54e690`, zero-init in the ctor), and `SetHP`'s `+0x1E0` fetch still cannot be
+the entity's own handle. The B5 conclusion stands on the comparisons alone, not on my misreading of the constants.
+
+**The lesson, filed against myself and not against the board**: a "verify before quoting" caveat written in the
+same breath as the claim is not a hedge - it is a to-do with a known cost of one tool call. The claim cost 30
+seconds to check and I shipped the prose first anyway, which is item 66's failure mode in its purest form:
+the plausible-looking decode goes in because it *explains* something, and the explanation is the reason nobody
+checks it.
