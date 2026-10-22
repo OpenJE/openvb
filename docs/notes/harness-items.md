@@ -1061,3 +1061,23 @@ GUI::Manager COL->TD geometry) before believing any negative the new bounds prod
 Rule: a zero-hit walker is a scanner verdict first, a target verdict second — the item-35 ladder
 applies to BOUNDS exactly as it applies to PATTERNS; section headers are loader claims, link-time
 layouts can exceed them.
+
+## 51. A queue ships with its recipe, or it ships half-done
+
+EpicRaven + TrueCastle, wave-2 pre-flight (665e7cc), 2026-10-21. T-084's 323-row mint queue was
+banked WITH its doc but the host-derivation script was a heredoc — never committed. The queue was
+therefore re-derivable for ~258 rows and *un-provable* for ~65: not wrong, just unrepeatable, and an
+unrepeatable queue gets re-litigated at apply time by whoever's brave enough to hold the pen. Fix
+shape (all landed): derivation RULE as committed tool mode (`ecx-flow.py hosts --cls X --dump <postdump>`),
+provenance failure stated plainly IN the queue doc (AMENDMENT 2, no softening), HOLD list regenerable
+verbatim from committed code.
+
+Rules:
+1. Any artifact whose rows carry derived claims ships the derivor (code > recipe prose > nothing;
+   recipe prose decays the moment the session ends).
+2. Apply-time filters that DISAGREE with a queue are evidence about the queue's machinery, not
+   automatically about its rows — TrueCastle's intersection-with-proof ('my filter is weaker, the
+   doc may be right') is the honest direction; 'the machine disagrees, therefore the doc lies' is not.
+3. Terminal-field keying in shared tools makes real axes visible for free: the Client+0x118 vs
+   World+0x118 collision is 'two rows by design' in the fixed mode — a derivation that cannot tell
+   them apart was always going to look like disagreement somewhere else.

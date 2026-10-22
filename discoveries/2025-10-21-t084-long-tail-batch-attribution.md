@@ -149,11 +149,23 @@ CRT initializer fragments). FINAL-anonymous = absence-of-presence PROVEN, not sh
 323 mint-queued + 82 foreign-annotated + 171 proven-final + **801 LIVE/DELEG weak-evidence**
 (callers known via field-load/plain-this edges; construction/embed evidence ABSENT — 'used-by',
 not 'owned-by', at tool strength). That 801 is the residual workload for the NEXT evidence class;
-per-fn detail is regenerable exactly: the sweep = per-class `share-check` + `families` over the
-t064-postdump `cls_` grouping (recipe in the tool docstring; same pinned build reproduces it).
+per-fn detail is regenerable exactly by the BANKED derivor: `tools/ecx-flow.py hosts --cls <cls>
+--dump discoveries/wavedumps/t064-postdump.json` (hosts mode, commit after this doc: the
+derivation RULE = LIVE/DELEG pool per fn with per-cls band exclusion, host = caller's live-IDB
+class via name rsplit('::'), key = (hostClass, terminal-field) — Client+0x118 vs World+0x118
+are two rows by design; T-084 §2 queues are this mode's output, and TrueCastle's wave-2b HOLD
+list is reproducible from it verbatim).
 T-063's 'workload number, not ignorance number' honored literally: ignorance in the long tail is
 now 0 un-named-but-knowable fns; 801 know-USED, 29+142 proven ownerless-in-this-image.
 
 Writer-slot throttle note (row asks for it): 323 mints + ~120 annotation classes is wave-sized;
 recommend T-073/075 closures land first, then T-084 tier-1 (182 fns across 22 hosts) as the next
 single writer load, tier-2 + foreign/ISO annotations batched behind. Queue held cheaply here.
+
+### AMENDMENT 2 (TrueCastle wave-2 pre-flight, ruling 665e7cc — honest provenance note)
+The §2 host column was produced by a per-class sweep script that was NOT committed with this
+doc (heredoc-only; regeneration from committed modes missed ~65 rows). Root cause accepted: the
+queue's proof lived in an unshipped half of its own recipe. FIX LANDED: the derivation is now
+BANKED as `ecx-flow.py hosts` mode (host-prefixed terminal-field keys, per-cls band exclusion,
+gated like every mode); every §2 row regenerates cold from the command above. No bytes changed,
+no verdicts moved — only the recipe got its missing half.
