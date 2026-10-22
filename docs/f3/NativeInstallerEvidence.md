@@ -128,18 +128,43 @@ Standing rule 7 again, in a new costume: a listing built by a filter is an excer
 filter's own criterion is part of the claim. The table at 0x6F3750 — read from bytes — is the authority for
 "which natives does the F3 game lib expose", not a symbol query.
 
-### 5b. Registered name vs gate ArgList — two different names for one native
+### 5b. Registered name vs gate ArgList - TWO fields, and they disagree on 20 natives
 
-Shipped registers `A_Attack`, `A_JustAttack` and `A_ReloadWeapon`, but the ARITY GATE inside each body passes
-the unprefixed name: 0x459ed0-era pushes `"Attack"`, and the failure lines read
-`"Attack() was unable to find the attacking entity."` / `"...the target entity."`. So the prefix is the
-REGISTRATION name and the bare word is the MESSAGE name.
+Shipped registers `A_Attack` but the body pushes `"Attack"` into the arity gate (0x459ed0-era), and the failure
+lines read `"Attack() was unable to find the attacking entity."` / `"..the target entity."`. The prefix is the
+REGISTRATION name; the bare word is the MESSAGE name.
 
-Consequence for whoever ports those three: the table row must key on the `A_` name (that is what a script
-resolves against at 0x5ccd60-era), while the arity-gate string must stay the bare word, because that is what
-the shipped error prints. Getting either one right and the other wrong would be a new defect with the smell of
-faithfulness. No such row exists in the port yet, so nothing is broken today; the note is to stop a future
-port from choosing one name for both jobs.
+**This is a law, not a curiosity - from FastNova's image-wide pass, byte-verified: registration name and
+arity-error name are two independent fields that DIVERGE ON 20 NATIVES across the three tables.** The prologue
+shape that makes it decidable is `push name-ptr; push cells; push reg; push reg; call 0x59AF40`, and that
+name-ptr is a separate `.rdata` string, NOT the table's name pointer.
+
+| registered as | arity error prints | evidence |
+|---|---|---|
+| `A_Attack` / `A_JustAttack` | `"Attack"` (both) | first 22 bytes identical **displacement and all**, 0xC0 apart; they diverge only past the gate, where ENTITY messages are name-specific while the ARITY message is not. Two bodies, one shared arity string - NOT one native with a flag |
+| `A_ReloadWeapon` | `"ReloadWeapon"` | 0x45a380, cells 1 |
+| `UnequipItem` | `"EquipItem"` | 0x45a580 / 0x45a6f0 both reach the gate at +0x32 with `68 f4 db 65 00` + `6a 03` - **already ported faithfully**, kept at `ScriptNatives.cpp:1024` ("SHIPPED: wrong name") |
+| `DecGlobal` | `"IncGlobal"` | 0x5c8200 / 0x5c8360 push the SAME 0x6AD81C |
+| `GetSquadID` + `GetSquadRank` | `"GetSquad"` | both push 0x6B4BC4 - a name in NO table, so the arity string is not even a valid native name |
+| `GetSquadMEmber` | `"GetSquadMember"` | the capital-E typo is in the REGISTERED name (scripts must call it that) while the error prints the correct spelling - so "sic" marks the WIRED spelling, not the pretty one |
+| 16 more, engine core | various | `A_MoveToEntity`->"MoveToEntity", `A_Kill`->"Kill", `GetNavPointCount`->"GetNavpointCount" (CASE drift), `SetWorldMapAreaVisible`->"WorldMapSetAreaVisible" (WORD ORDER), `FloatingDamageText`->"AddFloatingDamageText" |
+
+Three shapes of divergence, not one bug: **prefix stripped** (the `A_` family), **one string shared between two
+natives** (Inc/DecGlobal, GetSquad*, Attack/JustAttack), **string re-cased or reordered** (GetNavpointCount,
+WorldMapSetAreaVisible). The third is exactly what a "just strip the prefix" rule would miss.
+
+Port implication, concrete: `ScriptNativeEntry` carries ONE name today. The faithful model needs the
+registration name in the row and the error name at the gate call - the port already does this by hand for
+`UnequipItem`, so the pattern exists; what it lacks is the stated rule that a row may legitimately need both,
+plus an audit of all 36 rows against this table rather than trusting that only UnequipItem diverges. FastNova's
+tool checks the port's `cells` column against the shipped gate immediate on all 32 gated rows (0 mismatches)
+and confirms the 4 `cells = -1` rows are exactly the 4 shipped ungated natives - the arity half is byte-right,
+the name half is open work.
+
+Two facts from the same pass that foreclose whole classes of speculation: counts walked to terminators are
+**9 + 155 + 45 = 209**, and **no name and no fn value appears in two tables**, so shipped's registration order
+never shadows. A flat port table cannot introduce a shadowing bug - there is no shipped shadowing behavior to
+reproduce.
 
 ### 5c. Entry EAs vs inner-site EAs
 
@@ -152,9 +177,20 @@ the doc. It does not — one is an entry, the other an interior site.
 
 ## 6. What this does NOT settle
 
-- **The native ABI (gap 4).** Load registers; it does not show the call form. That needs the OP_NATIVE
-  handler in the exec loop — WildUnion's pass. No claim here about `(amx, params)` vs the port's
-  `(Mover*, a2, a3, a4)` beyond what the natives' own bodies already prove (they take amx/params).
+- ~~The native ABI (gap 4)~~ **CLOSED while this doc was being written.** See `docs/f3/NativeAbiEvidence.md`
+  (WildUnion) and gap 4 of `docs/f3/NativeWiringGaps.md`, where the dispatch is re-verified from bytes: the
+  default native handler `sub_5CC4F0` pushes params @0x5cc50b, then amx @0x5cc50c, `call eax` @0x5cc517,
+  `add esp,8` — two cdecl args, **amx first**, return into PRI, and the error channel `[amx+0x84]` cleared
+  before the call and read after. So shipped's form is `int __cdecl(int amx, int params)` proven at the call
+  site; batch B's 36 natives already match it, and what does not match is the port's own `NativeScriptFn`
+  typedef. Three more installer facts from that pass, recorded here because they change the design: dispatch
+  indexes the **image's own** native table (image+0x24/0x28, stride 40, entry+0 = fn, entry+4 = the script's
+  name), so the three C arrays are merge SOURCES at load and never a dispatch table; the load-time merge
+  IGNORES the first two results and only the third gates the load (err 19); and a product path to Load EXISTS
+  in shipped — dialogue start (`BeginDialogue_55edb0` → vft slot 1 @0x55ee53), entity script loader
+  (`sub_55F3E0` → `call [edx+4]` @0x55f4de), `JE::DialogueCall` itself (only direct call @0x5c3e15), and
+  `JE::World::virt_meth_0x544b80`'s Script_Small slot 5 (`0x5a5a90`, the "OnUpdate" runner @0x5a5b25). So
+  gaps 2/3 are "the port lacks callers", not "the engine has no caller concept".
 - **Whether anything in the port should call Load today.** The port has no AMX module table, no .int
   loading path in product code, and `JE::Script::Run` still has no product callers (gap 2/3 unchanged).
   This doc narrows the design space; it does not license inventing a loader.

@@ -27,11 +27,27 @@ statement about the **whole batch**, including the 27 rows already committed. Ev
    code (`grep -rn "Scripting::Run\|\.Run(" src modules --include=*.cpp` finds none), and no product path loads a
    `.int` (`src/F3.cpp` matches for `.int` are an unrelated VFX parameter struct at :649/:664/:677). The
    `GUILoading` suite loads GUI `.int` files in a test, so the loader exists; the executor does not.
-4. **The ABI does not match.** `NativeScriptFn` is `int (*)(struct Mover *self, int a2, int a3, int a4)`
-   (`Scripting.hpp:18`), while every shipped native - and every ported one in batch B - is
-   `int __cdecl (int amx, int params)` with `params[0]` as the parameter-block byte count and `amx+0x2C` the
-   script line. Installing the table is therefore not a loop over entries: it needs an adapter, a typedef change
-   in the openje lane, or a decision that both shapes exist.
+4. **The ABI does not match - now SETTLED BY THE CALL SITE, not by argument** (WildUnion,
+   `docs/f3/NativeAbiEvidence.md`; dispatch re-verified here). Shipped's native form is
+   `int __cdecl(int amx, int params)`, proven in the AMX default native handler `sub_5CC4F0`:
+
+       5cc508 mov  eax,[ecx+eax]      ; fn = image native table[ordinal+0], stride 40
+       5cc50b push edx                ; edx = params  <- pushed FIRST  = second argument
+       5cc50c push esi                ; esi = amx     <- pushed SECOND = first argument
+       5cc50d mov  dword[esi+84h],0   ; error channel cleared BEFORE the call
+       5cc517 call eax
+       5cc51d add  esp,8              ; exactly TWO args, caller-cleaned -> __cdecl
+       5cc520 mov  [ecx],eax          ; return value -> PRI
+       5cc522 mov  eax,[esi+84h]      ; the native's error code, read AFTER
+
+   `NativeScriptFn` is `int (*)(struct Mover *self, int a2, int a3, int a4)` (`Scripting.hpp:18`), while every
+   shipped native - and every ported one in batch B - is `int __cdecl (int amx, int params)` with `params[0]`
+   as the parameter-block byte count and `amx+0x2C` the script line. So the mismatch is between the PORT'S
+   OWN TYPEDEF and the engine, not between the port's natives and shipped: batch B already matches shipped.
+   Installing the table is therefore not a loop over entries - it needs the typedef corrected in the openje
+   lane, or two coexisting native forms - and that decision now rests on a cited push order rather than on
+   inference. A second witness, free: `JE::DialogueCall`'s own prototype (`__cdecl f(int, _DWORD*)`,
+   `push n=2` + gate at 0x5c3c52).
 
 ## A fifth gap that is the one `StartDialogue` actually died on
 

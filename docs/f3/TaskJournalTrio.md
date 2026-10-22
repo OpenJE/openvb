@@ -49,20 +49,39 @@ non-faulting no-op is the failed cast. A null server does not "do nothing", it d
 
 ### 2a. And the trio's missing tests are a shipped ASYMMETRY, not shipped's style
 
-The obvious objection to §2 — "this engine just doesn't null-check, that's the house style" — is falsifiable,
-and it is false. `DisplayStringRef` (0x45a410, arity 4, gate name at 0x45a427) walks the SAME subsystem-manager
-global and tests every hop after the first, with a DISTINCT message for each:
+The obvious objection to §2 — "this engine just doesn't null-check, that's house style" — is falsifiable,
+and it is false. `DisplayStringRef` (0x45a410, arity 4 via `push 4` @0x45a42c, gate name @0x45a427) walks the
+SAME subsystem-manager global and tests every hop after the first, with a DISTINCT message per hop. Four
+failure hops, four push sites, four strings — verified by NiceTiger over the whole body 0x45a410-0x45a57f and
+re-checked here instruction by instruction:
 
     45a444 mov eax, ds:F3::global_area_map_icons     ; the global's VALUE, still untested
     45a449 mov eax, [eax+2Ch]                        ; client
-    45a44c xor ecx, ecx / cmp eax, ecx / jnz         ; TESTED
-    45a452 push "DisplayStringRef() couldn't find client."            (string @0x65dad8)
+    45a44c xor ecx, ecx / 45a44e cmp eax, ecx / jnz  ; HOP 1 tested (pointer-cmp)
+    45a452 push "DisplayStringRef() couldn't find client."                    (@0x65dad8)
     45a475 mov eax, [eax+0A0h]                       ; interfaces
-    45a47b cmp eax, ecx / jnz                        ; TESTED
-    45a47f push "DisplayStringRef() couldn't find interfaces."        (@0x65daa8)
+    45a47b cmp eax, ecx / jnz                        ; HOP 2 tested (pointer-cmp)
+    45a47f push "DisplayStringRef() couldn't find interfaces."                (@0x65daa8)
     45a4a2 mov esi, [eax+0Ch]                        ; feedback interface
-    45a4a5 cmp esi, ecx                              ; TESTED again, and two more messages exist:
-                                                     ; "...couldn't find string ref." (@0x65da40)
+    45a4a5 cmp esi, ecx / 45a4a7 jnz                 ; HOP 3 tested (pointer-cmp)
+    45a4a9 push "DisplayStringRef() couldn't find feedback interface."        (@0x65da70)
+    45a4cc mov edx,[edi+4] ... 45a4e5 call sub_56C280 ; string-ref lookup on params[1], size field set to 0Fh
+    45a4ed test al, al / 45a4ef jnz                  ; HOP 4 tested, and NOT a pointer-cmp: a BOOL return
+    45a4f1 push "DisplayStringRef() couldn't find string ref."                (@0x65da40)
+
+The first draft of this section listed THREE addresses while asserting "four messages", and framed every hop as
+a `cmp eax,ecx`. Both imprecision is NiceTiger's catch, and the second matters more than a missing line: three
+hops are null-comparisons and the fourth is `test al,al` on a boolean, so the law is **"a TESTED hop gets a
+named message; an UNTESTED hop crashes"** — not "every hop is pointer-compared", which would send a future
+reader hunting for a `cmp` that is not there. The asymmetry, which is the actual finding, survives intact.
+
+Two more things worth pinning for whoever returns here: every failure path is `xor eax,eax` followed by the
+cookie check — this native carries `__security_cookie` (xor @0x45a418, each return is
+`jmp __security_check_cookie`) while the task trio's natives do NOT, so different step counts per return in a
+future lock-step are not divergence — and the SUCCESS path (`mov eax,1` @0x45a569) reads params[2..4]
+(`[edi+8]`/`[edi+0Ch]`/`[edi+10h]` @0x45a530-3b), builds a StringTree from `byte_64D7D8` (0x401d20) plus a
+`cls_0x50db20` ctor (0x4e1900), and calls `cls_0x434f70::meth_0x434b70` on the feedback interface in esi. Pure
+GUI plumbing, which is precisely why this row is era-blocked rather than cheap.
 
 Three things fall out of that, and they matter more than the original §2 claim did:
 
