@@ -99,8 +99,8 @@ it post-push, because shipped doesn't either.
 hit list (`v8` walking `*v3->gap11`, `0x40381e..0x403910`) contains BOTH the factory call and the push:
 
 ```
-403851: mov     eax, [v9 server vft]; call [eax+40](server, 1)   ; FACTORY: create effect, type 1
-40385b: call ___RTDynamicCast(Effect -> GameEffectDamage)
+403842: mov edx,[edi server vft]; call [edx+28h](server, 1)  ; FACTORY: create effect, type 1 (slot 10)
+403856: call ___RTDynamicCast(Effect -> GameEffectDamage)     ; edi = raw effect, ebp = cast
 403866: call meth_0x55a360          ; [effect+0x10] = source handle
 403870/403880/40388d/40389a/4038a5: call meth_0x55a3e0(idx, val) ; param window [eff+0x28+4*idx], idx 1,2,0,3
 4038ae: call meth_0x55a420(1)       ; [eff+0x38] = 1 (propagates to +0x1C children)
@@ -115,7 +115,9 @@ hit list (`v8` walking `*v3->gap11`, `0x40381e..0x403910`) contains BOTH the fac
 403906: call JE::Entity::meth_0x5506c0(local_10, v10)   ; PUSH to target
 ```
 
-- **One `GameEffectDamage` per hit-list entry**, freshly created each iteration — so a multi-hit attack
+- **One `GameEffectDamage` per hit-list entry**, freshly created each iteration (`call [edx+28h]` =
+  server slot 10, +0x28 — NOT the decompiler's decimal "+40", which was the same notation trap in my
+  first draft of this section) so a multi-hit attack
   creates N objects and pushes N times to the SAME resolved target (`local_10 = 0x54be10(handle)` @0x40379e).
 - The +39/40/41/42 the decompiler printed for the +0x9C..+0xA8 stores is a char*-arithmetic artifact;
   the RAW bytes (`mov [ebp+9Ch]` etc.) are quoted above. Rule 1 again: cite instruction text.
