@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: HappyStorm `01a16092-41cf-7127-936b-377a304178a4` (PULL per coordinator order 20:29, dispatched by LoudDragon `01a15f82` — writer seat, sole IDB writer for the wave duration)
 type: WRITER WAVE (annotation tier — comments ONLY, zero renames, T2 delta 0 by construction)
 depends: Q-W2a close (90a653e — gate lifted), T-059 split queue, T-086 §4.1/§4.2 decodes, R-CS §9 store-site notes
@@ -58,3 +58,10 @@ T-059 amendment. NO rename (annotation wave; any rename is a future MINT decisio
 - R-CS §7.2-7.6 comments = CSound epoch wave, not one of the three named queues — relayed as
   candidate wave-2 annotation batch, not applied here.
 - T-059's 'residual ~104 pads over 19 band members' caution — census-wording level, no IDB site.
+
+## Acceptance evidence (CLOSED abaf6b5)
+- Gate selftest 6/6 @ md5 `a68c22f3…` BEFORE writes; IDB save-synced (00:33:21Z) before first comment; live==disk proven.
+- [A] T-059 pair: VERIFIED already annotated (full item-43 texts incl. the ~104-pad caution) — closed as satisfied, NO double-stamp (verify-then-annotate caught a would-be duplicate on the first probe).
+- [B]/[C] 6 comments landed: 0x4C0190 / 0x4A5BE0 / 0x58BE40 / 0x58F010 (head, per ratified T-060 containment rule) + 0x58F0CF / 0x58F114 (instr-level pointers); get_cmt read-back 6/6 live.
+- Comments-only purity: 10,173 fns pre==post, name-diff 0, **T2 (startswith cls_) 1892 -> 1892 delta 0 by construction**; end save 00:34:53Z, dumps rst-predump/rst-postdump banked.
+- Successor line in ledger: R-CS-ANN batch (§7.2-7.6), StringTree artifact-pair RENAME decision (mint-tier, share-check pre-gated), wave-3 install-mode interlock cite. PARK R-ST row relay -> done (coordinator side).
