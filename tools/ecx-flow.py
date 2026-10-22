@@ -57,6 +57,9 @@ Usage:
   tools/ecx-flow.py families --cls cls_0x50dbb0  # per-entry LIVE/DELEG/PAD/ISO census
   tools/ecx-flow.py cases                        # the three T-054 registered cases
   tools/ecx-flow.py share-check --addrs 0x434250,0x434120  # item-44 rule-1 pre-queue
+  tools/ecx-flow.py hosts --cls cls_0x55bb10 --dump discoveries/wavedumps/t064-postdump.json
+      # banked T-084 queue derivation: (hostClass, terminal-field) per fn; band
+      # exclusion is per --cls run (same semantics as the T-084 sweep)
                                                              # gate; exit 1 = SHARING/BLOCKED
   tools/ecx-flow.py global 0x707e48
 Exit codes: 0 ok, 1 self-test red / data missing / share-check BLOCKED, 2 inputs missing.
@@ -1186,6 +1189,86 @@ class Model(object):
             overall = "PASS"
         return overall, details
 
+    def hosts_report(self, band_eas, label, ea2live=None):
+        """T-084 queue derivation, banked (hosts mode): per candidate fn, pool =
+        LIVE external edges + transitive DELEG chain; HOST = caller's live IDB class
+        (name rsplit '::'), aggregated by (host, terminal-field). This is the exact
+        rule the T-084 sweep used; reproduce with:
+            hosts --cls cls_0xX --dump discoveries/wavedumps/tNNN-postdump.json
+        Embed rows are keyed by (hostClass, +field) — same field offset under two
+        hosts (Client+0x118 vs World+0x118) are two rows by design."""
+        band = set(band_eas)
+        ext = collections.defaultdict(list)
+        callers = collections.defaultdict(set)
+        for e in self.edges:
+            if e["kind"].startswith("alloc") or e["target"] not in band:
+                continue
+            o = self.owner_of(e["site"])
+            if o in band and o != e["target"]:
+                callers[e["target"]].add(o)
+            elif o not in band:
+                ext[e["target"]].append(e)
+        L = []
+        P = L.append
+        P("== hosts %s: banked T-084 queue derivation (%d fns) ==" % (label, len(band)))
+        for E in sorted(band):
+            pool = list(ext.get(E, []))
+            route = "LIVE"
+            if not pool:
+                seen = set()
+                st = [E]
+                up = []
+                while st:
+                    x = st.pop()
+                    for c in callers.get(x, ()):
+                        if c not in seen:
+                            seen.add(c)
+                            st.append(c)
+                            up += ext.get(c, [])
+                pool = up
+                route = "DELEG" if up else "ISO"
+            # terminal-field key per edge
+            agg = collections.defaultdict(list)
+            for e in pool:
+                h = self.host_cls(e["owner"], ea2live)
+                ce = flatten(deser(e["ecx"]))
+                if ce and ce[0] == "plus" and ce[1]:
+                    b = ce[1]
+                    if b[0] == "inecx":
+                        fkey = "%s @+0x%X" % (h, ce[2] & 0xFFFFFFFF)
+                    elif b[0] == "addr":
+                        fkey = "%s &0x%X+d" % (h, b[1])
+                    else:
+                        fkey = "%s embed?" % h
+                elif ce and ce[0] == "heap":
+                    fkey = "%s heap-ctor" % h
+                elif ce and ce[0] == "addr":
+                    fkey = "%s &0x%X(pin)" % (h, ce[1])
+                elif ce and ce[0] == "contents":
+                    fkey = "%s *[0x%X](slot)" % (h, ce[1])
+                elif ce and ce[0] in ("deref",):
+                    fkey = "%s field-load" % h
+                elif ce and ce[0] == "inecx":
+                    fkey = "%s plain-this" % h
+                else:
+                    fkey = "%s other" % h
+                agg[fkey].append(e["site"])
+            tops = sorted(agg.items(), key=lambda kv: -len(kv[1]))[:4]
+            P("  0x%-7X %-5s %s" % (E, route,
+               ", ".join("%s x%d @%s" % (k, len(v), hex(v[0])) for k, v in tops) if tops else "-"))
+        return "\n".join(L)
+
+    def host_cls(self, owner_start, ea2live=None):
+        if ea2live:
+            nm = ea2live.get(hex(owner_start), "")
+        else:
+            nm = self.ea2cls.get(owner_start, ("", ""))[0]
+        if not nm:
+            return "sub_%X" % owner_start
+        if nm.startswith("cls_") or nm.startswith("sub_"):
+            return nm.split("::")[0]
+        return nm.rsplit("::", 1)[0]
+
     def share_check_report(self, cand_eas, label):
         overall, det = self.share_check(cand_eas)
         L = []
@@ -1711,7 +1794,8 @@ def resolve_cls_eas(m, cls):
 def main():
     ap = argparse.ArgumentParser(prog="ecx-flow.py")
     ap.add_argument("mode", choices=["selftest", "band", "global", "cases", "families",
-                                     "pads", "share-check"])
+                                     "pads", "share-check", "hosts"])
+    ap.add_argument("--dump", help="live-name census: discoveries/wavedumps/tNNN-postdump.json")
     ap.add_argument("--cls")
     ap.add_argument("--addrs")
     ap.add_argument("--label", default=None)
@@ -1732,7 +1816,27 @@ def main():
         return 0 if selftest(m) else 1
 
     gate_ok = selftest(m) if args.mode in (
-        "band", "global", "cases", "families", "pads", "share-check") else True
+        "band", "global", "cases", "families", "pads", "share-check", "hosts") else True
+
+    if args.mode == "hosts":
+        if not gate_ok and not args.allow_red:
+            print("\nGATE RED (item 35) -- hosts report suppressed.")
+            return 1
+        if args.cls:
+            eas = resolve_cls_eas(m, args.cls)
+            label = args.cls
+        elif args.addrs:
+            eas = [int(x, 16) for x in args.addrs.split(",")]
+            label = args.label or "set"
+        else:
+            print("hosts mode needs --cls or --addrs")
+            return 2
+        ea2live = None
+        if args.dump:
+            dd = json.load(open(args.dump))
+            ea2live = dict(zip(dd["ea"], dd["name"]))
+        print(m.hosts_report(eas, label, ea2live))
+        return 0
 
     if args.mode == "share-check":
         if not gate_ok and not args.allow_red:
