@@ -587,15 +587,15 @@ helper-mediated set is **13** rows, not 17 (`ResolveNativeEntity(` appears in ex
 the other entity-resolving native group calls `ScriptNativeResolveEntity(` directly under its own
 gate - 12 of those, zero overlap, which is likely where 17 came from).
 
-`ResolveNativeEntity` hardcodes the arity it checks:
+`ResolveNativeEntity` hardcodes the arity it checks (the 13 rows in set **A** of 8.3):
 
 ```c
 if ( !ScriptNativeCheckArity( amx, params, 1, pcFnName ) ) {   // 0x59af54-era gate
 ```
 
-So on those 13 rows the **enforcing** cell count is the helper's literal `1`, not the table's `n`
-column. All 13 are shipped-arity-1 (checked against the gate immediates in 7.2), so nothing is wrong
-today. The structural point is what matters:
+So on those **13** rows (set A of 8.3) the **enforcing** cell count is the helper's literal `1`, not
+the table's `n` column. All 13 are shipped-arity-1 (checked against the gate immediates in 7.2), so
+nothing is wrong today. The structural point is what matters:
 
 | a PE audit of the `n` column proves | a PE audit of the `n` column cannot prove |
 |---|---|
@@ -644,3 +644,44 @@ callee-side prologue extraction:
 
 Caller and callee agree wherever both exist. The float lib having no gate while the caller still
 publishes `4*arity` is consistent: arity for that family is checked engine-side, not per-native.
+
+### 8.3 The 13 / 12 / 7 partition, closed (resolving the 13-vs-17-vs-14 discrepancy)
+
+Three numbers were in play for the same denominator. All three are correct measurements of
+**different questions**, and the 5-row remainder was an artifact of adding two of them:
+
+| set | count | what it measures |
+|---|---|---|
+| **A** helper-mediated | **13** | bodies containing `ResolveNativeEntity( amx, params,` - the rows where the enforcing literal is the helper's `1` |
+| **B** direct-gate, own resolve | **12** | bodies containing `if ( !ScriptNativeResolveEntity( amx,` **that are not in A**: `AddCNPToParty AddHP EquipItem GetBaseSkill GetDerivedAttribute GetPerkRank GetPrimaryAttribute GetTotalSkill GetWeaponRange IsItemEquipped SetHP UnequipItem` |
+| **C** direct-gate, neither resolver | **7** | `AddEntry CloseTask GetWeaponCombo OpenTask PlayMusic Protagonist SetWeaponCombo` |
+| **A + B + C** | **32** | every gated row, no overlap (A n B = empty) |
+
+Why the earlier counts differed:
+
+- **17** folded A with part of B (both are "uses a helper" in prose, but only A's arity is
+  decorative; B's gate literal is in the body and therefore load-bearing).
+- **14** is a raw grep of `if ( !ScriptNativeResolveEntity( amx,` across the whole TU, and 2 of
+  those 14 hits are **not native bodies at all** - line 284 is inside `ResolveNativeEntity`
+  itself and line 436 is inside `ResolveGameEntityForCombo`. So 14 = 12 real + 2 helper-internal.
+  The next seat should attribute each grep hit to its enclosing function before treating it as a
+  row count; a TU-wide grep counts call sites, not natives.
+
+The classification that actually matters for the hazard is **A only (13)**. B and C gates live in
+their own body, so their `cells` column and their enforcing literal are the same token - folding a
+shipped-arity-2 native into B or C is safe, folding one into A is not.
+
+### 8.4 Three-way triangle on the gated rows: 32/32
+
+Because A's column is decorative, the honest check is not "column vs shipped" but
+**column == runtime literal == shipped prologue**, per row:
+
+- table `n` column == what the body's gate path enforces (helper `1` for A, body literal for B/C):
+  **32/32**
+- that enforced value == shipped's `6a <cells>` immediate: **32/32**
+- the name the port passes == shipped's `68 <name-ptr>` string: **32/32** (including UnequipItem
+  correctly passing `"EquipItem"`)
+
+So the port is right on every gated row today, and the only standing risk is architectural: a new
+row entering set A inherits a hardcoded 1 while the audit keeps reporting green.
+
