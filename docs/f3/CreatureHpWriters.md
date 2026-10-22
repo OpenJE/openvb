@@ -178,3 +178,37 @@ Minimum viable version, if the layout decision is deferred: give `GameCreature`/
 sized `int[]` members (perk 0x114 band, base-skill 0xE0 band - lengths still unknown and NOT to be guessed) and
 a `vbnested` accessor note; that unblocks the three array natives without pretending to model virtual bases, and
 leaves SetHP/AddHP honestly waiting.
+
+## B5 (named probe executed): `virt_meth_0x54dea0` confirms the enum AND shows what it drives - two pseudocode ints are FLOATS
+
+The probe this file asked for ran. `JE::Entity::virt_meth_0x54dea0` (0x54dea0, 0x106 bytes) reads the same
+`Entity+0x1E0` slot at 0x54df73 and compares it against **5**, choosing between two calls:
+
+    sub_563D30(handle, a2, 0, 1, 1029785518, -65536)     ; when +0x1E0 == 5 and *(entity+0x368) != 1
+    sub_563D30(handle, a2, 0, 0, 1028443341, -16711681)  ; otherwise
+
+Decoding the two "integer" literals is the actual news, because the decompiler prints them as ints:
+
+    1029785518 = 0x3D6147AE -> float 0.055f
+    1028443341 = 0x3D4CCCCD -> float 0.05f
+       -65536  = 0xFFFF0000 ; color-shaped (opaque red in ARGB order)
+   -16711681   = 0xFF00FFFF ; color-shaped (opaque cyan/yellow-ish depending on channel order)
+
+So this is an **overlay/marker draw with a size and a colour**, and the entity's +0x1E0 mode decides which of
+the two: mode 5 gets 0.055 and one colour, everything else 0.05 and another. That is consistent with everything
+else measured here - a small-integer STATE/MODE field (now seen tested against **1, 2, 3, 5, 6, 7** across four
+sites), serialized by `UnpackState_54e690`, zero-initialized in `ctor_0x5513a0`, and driving presentation
+behaviour rather than identity. It reinforces, decisively, that **`SetHP`'s `+0x1E0` operand cannot be the
+entity's own handle**, and that the `+4/+4` chain must be putting a different object in the base register.
+
+Caveat kept on purpose: the float reading of 0x3D4CCCCD/0x3D6147AE is textbook float-bits-as-DWORD rendering and
+the colour shapes are unambiguous, but this sitting did not open `sub_563D30` to confirm the parameter types.
+The claim is therefore "these are almost certainly (size, colour) - verify in sub_563D30 before quoting the
+0.05/0.055 values in product code". The MODE conclusion does not depend on it.
+
+Also visible in this function, for whoever owns the map/octree lane: the body resolves a Map through
+`sub_401130()` + `[mbr_0x0 + 84](v5)` with `v5 = *(entity+0x22C)`, then `JE::Map::GetOctree_56d960`, and feeds
+the octree to `Entity::meth_0x568140` - with a `meth_0x54dc50(string at entity+0x21C, 0)` call before it and a
+`LOBYTE(entity+0x164)` one-shot latch around the whole thing. That is a fresh, cited path from the entity's
+string-ish band (+0x21C/+0x22C/+0x230, SSO-shaped: capacity test `< 0x10` at 0x54dedd) into map/octree
+attachment - noted here because it turned up under a probe aimed at something else, and it should not be lost.

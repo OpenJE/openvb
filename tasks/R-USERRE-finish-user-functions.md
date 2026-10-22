@@ -1153,3 +1153,24 @@ Batch B final shape for this sitting: **7 natives LIVE** (+ the three shared hel
 **5 rows blocked on the layout decision with a named minimum fix**, and the HP setters documented down to the
 instruction where the ambiguity actually lives. Everything deferred is deferred on a *question*, with the cheap
 answer-path named - not on effort.
+
+
+### B5 - the named probe ran, the enum is confirmed a fourth way, and two "ints" in the pseudocode are floats
+
+`Entity::virt_meth_0x54dea0` (0x54dea0) tests `Entity+0x1E0` against **5** (0x54df73) and picks between two
+`sub_563D30` overlay calls whose trailing literals the decompiler prints as integers: **1029785518 = 0x3D6147AE
+= 0.055f** and **1028443341 = 0x3D4CCCCD = 0.05f**, with **0xFFFF0000** / **0xFF00FFFF** colour-shaped partners.
+So +0x1E0 is a presentation/state MODE (now seen tested against 1,2,3,5,6,7 across four sites, serialized by
+UnpackState_54e690, zero-init in ctor_0x5513a0) - which kills the last comforting reading of SetHP's operand:
+whatever `[edx+eax+1E0h]` fetches, it is not this entity's handle, and the `+4/+4` chain lands on a DIFFERENT
+object. SetHP/AddHP stay unported; the blocker is now "identify the object the +4/+4 chain produces", with the
+float claim flagged unverified-in-sub_563D30 rather than asserted.
+
+Bonus for the map lane, found under a probe aimed elsewhere and written down so it isn't lost: the same body
+resolves a Map via `sub_401130()` -> `[mbr_0x0+84](*(entity+0x22C))` -> `JE::Map::GetOctree_56d960` ->
+`Entity::meth_0x568140(octree)`, guarded by a one-shot byte latch at entity+0x164 and fed by an SSO-shaped string
+at +0x21C (capacity test `< 0x10` at 0x54dedd, size slot +0x230). Cited path from the string band into octree
+attachment, which the spawn/map lane may want.
+
+Batch B stands at: 7 natives LIVE, 5 rows blocked (3 on the item-69 array/layout decision, 2 on the +4/+4 subject
+identity), all with named next probes. Nothing in this commit is a port - docs and ledger only.
