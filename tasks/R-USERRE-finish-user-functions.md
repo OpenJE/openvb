@@ -1458,3 +1458,58 @@ Note the default case's OTHER behavior for the record: unknown derived index (>1
 That sink is unported, so the port keeps the value (0) and does NOT emit the line - named-deferred like the
 packet-88 broadcast, and deliberately NOT routed through `ScriptNativeReportError`, because shipped does not
 write the script error string here and conflating the two sinks would be an invention.
+
+## Slice-B14 (WildKnight 01a1639b, 2026-10-22 ~15:5x) — the array trio is UNBLOCKED (the blocker was a framing error), 21 natives live, and my headline claim from B13 turned out to be an artifact of my own transcription
+
+Two things happened in this slice, and the second is the more important.
+
+**The trio landed.** `GetPerkRank` (0x45ab50), `GetBaseSkill` (0x45ad90), `GetTotalSkill` (0x45ae20) are LIVE -
+suite 92 -> **119 asserts**, table **21 natives**. The B4-era note said these needed a layout decision from the
+header owner because turning `mbr_0xe0`/`mbr_0x114` into arrays would shift later port offsets. True only for a
+MID-LIST edit; B13's append-at-the-end shape sidesteps the whole question. Both band sizes came out of the code,
+each confirmed twice: skills = 13 (`(0x114-0xE0)/4` and `cmp edx,0Ch` in the switch = cases 0..12), perks = 13
+(the ctor's `memset(<mbr_0x114>, 0, 0x34)` at 0x40d277). Four facts bought along the way:
+
+- **The bands are ADJACENT, which makes out-of-range skill indexes an ALIAS, not a fault.** `GetTotalSkill`
+  calls the base-skill accessor BEFORE its switch (0x409837), so skill 13 reads perk rank 0 and returns it
+  unchanged; skill 14 reads perk rank 1. Modelled as ONE 26-int array (`statBands_0xE0`, skills [0..12], perks
+  [13..25]) precisely so that behavior stays defined and assertable instead of undefined and untestable - the
+  two separate arrays I first wrote would have made a real shipped behavior invisible.
+- **`GetPerkRank`'s resolve-failure line is a shipped COPY-PASTE**: it prints
+  `"GetPosition() was unable to find the requested entity."` (0x45ab8e) while its own arity gate names it
+  `GetPerkRank`. Preserved verbatim under T-022 and asserted, so nobody "fixes" it into a divergence.
+- **The `Entity ID` / `EntityID` space splits the creature-native family 2-with / 3-without**: with space =
+  `GetPrimaryAttribute`, `GetPerkRank`; without = `GetDerivedAttribute`, `GetBaseSkill`, `GetTotalSkill`.
+  Five natives, one sentence, two spellings.
+- **Charisma is used** - by skills (3x for barter/persuasion, 2x in deception), not by the derived switch. B13's
+  "a hole in the switch" is a hole in ONE consumer, not an unused field. And claim 4 from the old parked list is
+  settled: the firearms/melee arm is `mov esi,32h`, a REAL +50 immediate with no attribute load at all.
+
+**Then my headline finding was disproved, by the method I had just written down.** B13 claimed derived HP comes
+out one LOW at every exact divisor of 6000 (AP=30 -> 199), stated as a shipped law in a commit message, a doc
+section, and a ping. JadeBear read the constant's BYTES from the image: the stored double at `0x64D590` is
+`3F25D867C3ECE2A5` - the nearest double to `1/6000`, which sits BELOW it - while IDA's pseudocode prints
+`0.0001666666666666667`, which parses one ulp ABOVE. I had typed the print. My table is reproduced exactly by
+simulating the engine with IDA's printed decimal, which is why it looked like a discovered law: it was a
+measurement of my own transcription, and the error's sign was inverted. I confirmed the bits myself, straight
+from `$OPENVB_ORIG_EXE` (.rdata at file offset for VA 0x64D590), independent of both our IDA readings - and in
+doing so hit the mapping trap myself: section headers carry RVAs, so `0x64D590` must be reduced by the image
+base `0x400000`, and my first attempt "found" a section that returned `9.69e-312`.
+
+Third pseudocode hazard in this file, and the nastest: **it survives testing**. 15 of 16 AP values agree between
+the two constants; only the exact divisors of 6000 differ. A suite that probes interesting round numbers is
+exactly the instrument that cannot see it. Constants are adjudicated against stored BITS, like offsets and
+addresses - now written in the source comment, not just the doc.
+
+**And the residual is genuinely unknown, which is the honest end-state.** With the right bits, the reciprocal is
+`>= 6000/AP`, so the answer is `6000/AP` or one HIGHER - never one lower, which is what my retracted claim
+asserted. But the LAST bit at exact divisors depends on intermediate width, and I measured that rather than
+arguing it: **inside one binary, the shipped-shaped path returns 199 for AP=30 while `1.0/(30.0*k)` returns 200.**
+Same compiler, same constant, different expression shape. So the suite now asserts the bound, this build's pin,
+and the ulp relation - and hands the last bit to lockstep with a concrete experiment (agility 0 -> AP 20 -> read
+HIT_POINTS: 300 means double-rounded intermediates, 299 means 80-bit kept, anything else means the constant was
+read wrong after all). `docs/f3/CreatureSkillAndPerkArrays.md` carries the retraction in full, including the
+chain of error, because a corrected claim without its path is only half the value.
+
+Batch B after B14/B15: **21 natives LIVE**, 3 array rows retired from "blocked on layout", remaining blockers
+concentrated in the inventory/party/dialogue eras plus the AMX string fetch trunk (`b8d91b9`).

@@ -121,6 +121,26 @@ namespace F3 {
 	int ScriptNative_UnlockDoor( int amx, int params );  // 0x45a240
 
 	int ScriptNative_GetItemType( int amx, int params );           // 0x45b240
+	// The shipped Skill enum, values read off GetTotalSkill's jump table (cmp edx,0Ch at 0x40983e =
+	// cases 0..12). The PAIRS whose bodies are identical (0/1, 3/4, 6/7, 10/11) carry the IDB's names;
+	// which member of a pair is which is not distinguishable from the code and does not matter, since
+	// they share one formula - recorded as an enum so the switch's grouping stays visible.
+	enum Skill {
+		SNC_SKILL_FIREARMS = 0,
+		SNC_SKILL_MELEE = 1,
+		SNC_SKILL_UNARMED = 2,
+		SNC_SKILL_BARTER = 3,
+		SNC_SKILL_PERSUASION = 4,
+		SNC_SKILL_DECEPTION = 5,
+		SNC_SKILL_MECHANICS = 6,
+		SNC_SKILL_MEDIC = 7,
+		SNC_SKILL_OUTDOORSMAN = 8,
+		SNC_SKILL_SCIENCE = 9,
+		SNC_SKILL_SNEAK = 10,
+		SNC_SKILL_SECURITY = 11,
+		SNC_SKILL_STEAL = 12
+	};
+
 	// The shipped DerivedAttribute enum, value order taken from the switch's jump table
 	// (cmp eax,0Eh at 0x409a67 = 15 cases, 0..0xE). Names are the IDB's. Kept as an enum because the
 	// native's parameter IS one of these and because the resistance trio (9/10/11) shares one body -
@@ -150,6 +170,18 @@ namespace F3 {
 	// is the same preamble but delegates to GameCreature::GetDerivedAttribute 0x409a60, a 15-case
 	// (cmp eax,0Eh) switch over the primary band. Both live in this file; the switch is ported as a
 	// static helper so its formulas have one home and the native keeps shipped order.
+	// ---- the array trio (batch B slice B14) - the two int[] bands + the skill rule --------------
+	// GetPerkRank (0x45ab50), GetBaseSkill (0x45ad90) and GetTotalSkill (0x45ae20) all share the
+	// preamble and end in an INDEXED read. Two things about them are shipped facts a port would
+	// "fix" if left to taste: (1) GetPerkRank's resolve-failure line is a COPY-PASTE from another
+	// native - it prints "GetPosition() was unable to find the requested entity." while named
+	// GetPerkRank (0x45ab8e) - and (2) the cast-failure sentences split 2-2 on the space:
+	// GetPerkRank/GetPrimaryAttribute say "Entity ID", GetBaseSkill/GetTotalSkill/GetDerivedAttribute
+	// say "EntityID". Both preserved, both asserted.
+	int ScriptNative_GetPerkRank( int amx, int params );       // 0x45ab50
+	int ScriptNative_GetBaseSkill( int amx, int params );      // 0x45ad90
+	int ScriptNative_GetTotalSkill( int amx, int params );     // 0x45ae20
+
 	int ScriptNative_GetPrimaryAttribute( int amx, int params );    // 0x45ac70
 	int ScriptNative_GetDerivedAttribute( int amx, int params );    // 0x45ad00
 

@@ -16,10 +16,48 @@ label is an IDB artifact of the same shape as the `GameActionEquip` attributions
 `mov ecx,eax`), so the accessor is `GameCreature::BaseSkill(int)` living at +0xE0.
 
 Lengths are NOT established by these two reads (no bounds test exists in either native - a script can pass any
-index and the shipped code will read out of the array happily, which is itself worth knowing for parity). The
-`GetTotalSkill` switch below implies >= 18 skill slots; perk count is open. Do not encode a guessed size.
+index and the shipped code will read out of the array happily, which is itself worth knowing for parity).
+[Later, in B14: the count is 13 and 13, from the perk band's start offset, the switch's `cmp edx,0Ch`, and the
+ctor's two `memset` sizes - see RESOLVED above. The worry expressed here that `GetTotalSkill` implied >= 18
+skill slots was wrong: the switch has exactly 13 cases and its default arm handles anything above, including
+the perk band's memory.]
 
-## Why these two rows are NOT ported yet (named blocker, not a punt)
+## RESOLVED in B14 - the blocker was a framing error, and the sizes came out of the code
+
+The section below said these rows needed a LAYOUT DECISION from the header's owner lane, because making
+`mbr_0xe0`/`mbr_0x114` real arrays would move every later member's port offset. That was true only for a
+mid-list edit. B13 established the safe shape - **append the band at the end of the struct** - so no existing
+member shifts, and the port models the band as a real array whose shipped offset lives in the comment, not in
+`offsetof`. Both natives are LIVE with 115 asserts, and the two band sizes came from the code rather than from
+a guess:
+
+| band | size | evidence (two independent counts each) |
+|---|---|---|
+| base skills `+0xE0` | **13** | the perk band starts at `+0x114`, and `(0x114-0xE0)/4 = 13`; `GetTotalSkill`'s switch is `cmp edx,0Ch` = cases 0..12 |
+| perk ranks `+0x114` | **13** | `GameCreature::ctor_0x40d010` clears it with `memset(<mbr_0x114>, 0, 0x34)` at 0x40d277 = 13 dwords |
+
+The bands are **adjacent**, and that has a consequence worth more than the sizes: `GetTotalSkill` calls the
+base-skill accessor BEFORE its switch (0x409837), so skill index 13 does not read a nonexistent slot and fall
+through to the default - it reads **perk rank 0** and returns it unchanged. Index 14 returns perk rank 1. That
+is a reproducible out-of-range ALIAS, not a crash, and modelling the two bands as separate C++ arrays would
+have made it undefined behavior and therefore untestable. They are one 26-int array
+(`statBands_0xE0[26]`, `[0..12]` skills, `[13..25]` perks) precisely so the alias stays defined and asserted:
+
+    GetTotalSkill(13) == 23   // == perk rank 0 of the test creature
+    GetTotalSkill(14) == 24   // == perk rank 1
+    GetBaseSkill(13)  == 23   // the same alias with no formula involved - pure band overlap
+
+Two shipped quirks from the same three reads, preserved and asserted rather than corrected:
+
+1. **`GetPerkRank`'s resolve-failure message is a copy-paste from another native**: it prints
+   `"GetPosition() was unable to find the requested entity."` at 0x45ab8e while its arity gate says
+   `GetPerkRank`. Wrong in the shipped exe, wrong in the port, byte-exact in both.
+2. **The `Entity ID` / `EntityID` space splits the family 2-with / 3-without**: `GetPrimaryAttribute` and
+   `GetPerkRank` use the space; `GetDerivedAttribute`, `GetBaseSkill`, `GetTotalSkill` do not. Five natives,
+   one sentence, two spellings - which is why the assertion is on the tail of the formatted message and not on
+   a normalized string.
+
+## Why these two rows are NOT ported yet (named blocker, not a punt)  [SUPERSEDED - see RESOLVED above]
 
 `src/F3/GameCreature.hpp` carries the first dword of each band as a plain member (`mbr_0xe0`, `mbr_0x114`), and
 per item 69 those members' POSITIONS in the port struct are not their shipped offsets (offsetof(mbr_0xbc)=0x4B4
@@ -29,7 +67,38 @@ therefore requires making `mbr_0xe0` and `mbr_0x114` real `int[]` members (or gi
 GameCreature), which is a LAYOUT DECISION for the header's owner lane, not a private edit inside a natives TU.
 Filed as B4's prerequisite with the two candidate shapes; B3 ports the scalar HP pair instead and says so.
 
-## GetTotalSkill is where the skill->attribute formulas live (read from PSEUDOCODE, unverified)
+## GetTotalSkill's four named claims - ALL ANSWERED, and the fourth one was a real constant
+
+[Amended in B14. The section below was written from pseudocode with its numbers explicitly unproven and a
+four-item verification list. Every item is now closed against instruction text:]
+
+1. **Each case's arithmetic** - byte-verified, and the arms are exactly what the pseudocode rendered. With EAs:
+   cases 0/1 `mov esi,32h` (+50, 0x40988f); case 2 `[ecx+768h] + 2*[ecx+760h]` (0x4098f2); cases 3/4
+   `[ecx+76Ch]` with `lea esi,[ecx+ecx*2]` (3x, 0x409850); case 5 `[ecx+76Ch] + 2*[ecx+770h]`... read as
+   `mov eax,[ecx+76Ch]; mov ecx,[ecx+770h]; lea esi,[ecx+eax*2]` = intelligence + 2*charisma (0x409861);
+   cases 6/7 `[ecx+764h] + 2*[ecx+770h]` = perception + 2*intelligence (0x409878); case 8 `[ecx+768h] +
+   2*[ecx+764h]` = endurance + 2*perception (0x40989c); case 9 `3*[ecx+770h]` (0x4098b3); cases 10/11
+   `[ecx+774h] + 2*[ecx+764h]` = agility + 2*perception (0x4098c4); case 12 `[ecx+764h] + 2*[ecx+774h]` =
+   perception + 2*agility (0x4098db). Note case 5's register reuse: the second `mov ecx,...` OVERWRITES the
+   base register, so the pseudocode's operand order is easy to misread as `charisma + 2*intelligence` - the
+   `lea` decides it, which is why the arm is asserted with values that break that symmetry (cha 9, int 5:
+   `5 + 18 = 23`, not `9 + 10 = 19`).
+2. **Which skill value maps to which case** - the switch is `cmp edx,0Ch` over 0..12 with ten jump targets, and
+   four of them serve TWO values each (0/1, 3/4, 6/7, 10/11). So the mapping is established for every case, but
+   WITHIN a pair the two names are indistinguishable from the code - both get one body. Recorded as an enum in
+   `ScriptNatives.hpp` with that limitation stated, because "which of the pair is which" is not knowable here
+   and pretending otherwise would be a fake precision.
+3. **The attribute offsets in bytes** - `+0x760` strength, `+0x764` perception, `+0x768` endurance, `+0x76c`
+   charisma, `+0x770` intelligence, `+0x774` agility, all as literal disp32s in the arms above. This is also the
+   second, independent confirmation of B13's primary band (same offsets, different function).
+4. **Whether the Firearms/Melee arm is really a constant** - YES: `mov esi,32h` is an immediate 50 with NO
+   attribute load in that arm at all, unlike every other case which loads from `0x760..0x774`. So combat skills
+   get a flat +50 rather than an attribute bonus, and that is a design fact, not a decompiler artifact. It was
+   the one claim here that could have been a mis-scaled term; it is not.
+
+Original text, kept because the reasoning was the point:
+
+`GetTotalSkill is where the skill->attribute formulas live (read from PSEUDOCODE, unverified)`
 
 `F3::GetTotalSkill` (0x45ae20) is the same preamble + `GameCreature::GetTotalSkill_409830(this, skill=params[2])`.
 That callee (0x409830) is the engine's skill-total rule: base skill plus a weighted attribute combination, with
@@ -63,37 +132,57 @@ Two things the band itself gave, both now asserted (92 asserts in `ScriptNatives
    field 0x84 bytes away, so the derived switch straddles two different regions of the creature. The
    IDB's own hedged name is the only clue to what that field is; it is recorded as-is, not renamed.
 
-### The artifact: `HIT_POINTS` is a multiply-then-reciprocal, and it lands one low at every exact divisor
+### RETRACTED: the "systematic off-by-one-low at divisors" was MY constant, not the engine's
 
-Case 14 is not a field. It re-enters the function for `ACTION_POINTS`, then:
+The claim above, written in B13 and repeated in a commit message and two ping messages, said derived HP comes
+out one LOW at every exact divisor of 6000 (AP=20 -> 299, 30 -> 199). It is **wrong about the engine**. The
+chain of error, kept in full because each link is a distinct trap:
 
-    409b19  fild  [esp+4+derived_attribute]   ; AP as a float
-    409b1d  fmul  ds:dbl_64D590               ; * (1/6000), a stored DOUBLE
-    409b23  fcom  ds:dbl_64D588               ; compare with 0.0
-    409b30  fld   ds:dbl_64D580               ; 1.0
-    409b36  fdiv  st, st(1)                   ; 1.0 / (AP/6000)
-    409b3c  call  __ftol2                     ; TRUNCATE toward zero
+1. I read the constant from IDA's pseudocode text: `fmul ds:dbl_64D590` rendered as `0.0001666666666666667`,
+   and I typed that decimal into the port.
+2. The stored double at VA `0x64D590` (.rdata) is qword **`3F25D867C3ECE2A5`** = `0x1.5d867c3ece2a5p-13` = the
+   NEAREST double to `1/6000`, which lies **below** `1/6000`. IDA's 17-digit print parses **one ulp ABOVE** it.
+   So my literal was high by one ulp while the engine's is low - the error's SIGN was inverted, and with it the
+   direction of every divisor result.
+3. My table was then reproduced EXACTLY by simulating the engine's arithmetic with IDA's printed decimal
+   (`{1:5999, 6:999, 12:499, 20:299, 30:199}`), which is why it looked like a discovered law: it was a
+   measurement of my own transcription. JadeBear caught this by reading the bits, not the print.
 
-`1/6000` is not representable in binary, so `AP * const` lands slightly **above** `AP/6000`, its
-reciprocal lands slightly **below** `6000/AP`, and truncation drops the fraction. Measured against the
-port's mirrored arithmetic for every AP from 1 to 40, the result is one LOW whenever `6000/AP` is an
-exact integer:
+So: **constants are adjudicated against stored BITS, exactly like offsets and addresses.** This is the third
+distinct pseudocode-rendering hazard this file has recorded (cell-vs-byte offsets, `mbr_0x0` as a positional
+name, and now a decimal print off by one ulp), and it is the worst of the three because it survives almost all
+testing: 15 of 16 AP values agree perfectly between the two constants, and only the exact divisors of 6000
+expose the difference. A test suite that probes "interesting" values is exactly the thing that cannot see it.
 
-| AP | obvious `6000/AP` | shipped formula |
-|---|---|---|
-| 1 | 6000 | **5999** |
-| 6 | 1000 | **999** |
-| 12 | 500 | **499** |
-| 20 | 300 | **299** |
-| 30 | 200 | **199** |
-| 7 | 857.14 | 857 (agrees - no exact integer to lose) |
+### What is actually provable statically, and what only lockstep can settle
 
-Three consequences worth writing down:
+With the correct bits, `AP * const <= AP/6000`, so the reciprocal is `>= 6000/AP` and the int conversion
+(`__ftol2`, 0x409b3c) yields `6000/AP` or higher - **never one below it**. The old claim violated that bound.
 
-- **A "cleaner" implementation diverges in the most common cases.** Writing `6000 / AP` would be wrong at
-  AP=20 (the base agility-0 human value), AP=30, AP=12 - i.e. at exactly the round numbers a test would
-  pick. The mirror is only two extra lines and it is the difference between matching the engine and
-  matching the formula.
+What static bytes do NOT settle is the LAST bit at exact divisors, because that depends on how wide an
+intermediate the compiler keeps between `FMUL`, `FDIV` and the conversion. This was measured in the port, not
+argued: **in one binary, the shipped-shaped path returns 199 for AP=30 while the identical-value expression
+`1.0 / (30.0 * k)` returns 200.** Same compiler, same constant, different expression shape. So the suite asserts
+(i) the bound `>= 6000/AP - 1`, (ii) this build's value as a pin, and (iii) the ulp relation between the print
+and the bits - and it does NOT claim to know the engine's last bit.
+
+The lockstep experiment, ready for whoever has the trace: a creature with `agility_0x774 == 0` has AP = 20
+(ACTION_POINTS is itself `agility + 20`, and HIT_POINTS re-enters for it). Read `GetDerivedAttribute(HIT_POINTS)`
+in the original:
+
+| observed | meaning |
+|---|---|
+| 300 | MSVC rounded the intermediates to double, like the direct expression - the port's shipped-shaped path needs a store-point tweak |
+| 299 | MSVC kept 80-bit intermediates, like the port's x87 path - the port is already right and the bound assert is the whole story |
+
+Either answer is useful and neither is a surprise; what would be a surprise is anything outside
+`{299, 300}`, which would mean the constant was read wrong after all.
+
+Consequences that survived the retraction:
+
+- **Mirror the shipped SHAPE, and pin the constant's BITS.** The two-step multiply-then-recipical is right
+  (the bytes show it); the input was wrong (the print, not the image). Both halves are needed - a faithful
+  shape with a transcribed constant reproduces a law that never existed.
 - **The zero-AP case is 1000, not a divide-by-zero** (`0x409b4c`), and 1000 is not on the curve: AP=0 gives
   the *largest* derived HP in the range. Any HP-recovery design that assumed monotonicity in AP is wrong
   about shipped.

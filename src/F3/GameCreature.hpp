@@ -81,6 +81,26 @@ namespace F3 {
 			// EVASION reads this SEPARATE field at +0x7FC, not the band - the IDB's own name says
 			// "maybe_agility", so the derived switch's EVASION case does not alias agility_0x774.
 			int maybe_agility_0x7fc;
+		// ---- the base-skill and perk-rank bands (slice B14), as ONE adjacent pair ----------------
+		// Sized by EVIDENCE, not by a guess, and both sizes agree twice over:
+		//   baseSkills: the band runs +0xE0..+0x114, because the perk band starts at +0x114
+		//               (GetPerkRank 0x45abd2 `mov eax,[eax+ecx*4+114h]`), giving (0x114-0xE0)/4
+		//               = 13 ints - and GetTotalSkill's switch has EXACTLY 13 cases
+		//               (cmp edx,0Ch at 0x40983e). Two independent counts, same answer.
+		//   perkRanks:  GameCreature::ctor_0x40d010 zero-clears this band with
+		//               `memset(<mbr_0x114>, 0, 0x34)` (0x40d277; the IDB attributes usage
+		//               0x40d279 to mbr_0x114) = 13 ints.
+		// Neither native bounds-checks the index, so these sizes describe the DATA, not a guard:
+		// shipped happily reads past them. Appended at the end like the primary band, for the same
+		// item-69 reason - inserting mid-list would move every later member's PORT offset.
+			// ONE backing array, not two, and that is deliberate: shipped lays the bands out ADJACENT
+			// (skills +0xE0..+0x114, perks +0x114..+0x148), so an out-of-range SKILL index does not
+			// fault - it reads the PERK band. GetTotalSkill calls the base-skill accessor BEFORE its
+			// switch (0x409837), so skill index 13 returns perk rank 0 unchanged, and index 14 perk
+			// rank 1, etc. Modelling them as two separate arrays would make that shipped behavior
+			// undefined behavior in C++ and quietly untestable; one array keeps it defined and
+			// observable. SKILL_AT / PERK_AT below are the readable spellings of the two halves.
+			int statBands_0xE0[ 26 ];   // [0..12] = base skills at +0xE0, [13..25] = perk ranks at +0x114
 		//: Methods
 			void ctor_0x40d010();
 			undefined4 virt_meth_0x40d300();

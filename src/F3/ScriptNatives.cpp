@@ -524,12 +524,26 @@ void ScriptNativeResetRegistry() {
 			case SNC_DA_THROWING_RANGE:                           // 0x409b08: 3 * [ecx+760h]
 				return 3 * pC->strength_0x760;
 			case SNC_DA_HIT_POINTS: {                             // 0x409b1d: reciprocal of AP/6000
+				// THE CONSTANT IS READ FROM THE IMAGE, NOT FROM THE PSEUDOCODE. Stored double at
+				// VA 0x64D590 (.rdata) = qword 3F25D867C3ECE2A5 = 0x1.5d867c3ece2a5p-13, the NEAREST
+				// double to 1/6000, which sits BELOW it. IDA prints the value as
+				// "0.0001666666666666667", and that decimal literal is ONE ULP ABOVE the stored
+				// constant - typing the print instead of the bits inverted the sign of the error and
+				// made every exact divisor of 6000 come out one LOW (AP=20 -> 299, 30 -> 199). That
+				// off-by-one was MY artifact, never the engine's - see
+				// docs/f3/CreatureSkillAndPerkArrays.md for the retraction. What is settled: the
+				// reciprocal is >= 6000/AP, so the answer is 6000/AP or one HIGHER, never one lower.
+				// What is NOT settled statically: the last bit at exact divisors, because it depends
+				// on intermediate width - measured in this very binary, the shipped-shaped path gives
+				// 199 at AP=30 while 1.0/(30.0*k) gives 200. Lockstep decides; the suite asserts the
+				// bound plus this build's pin rather than pretending to know the engine's rounding.
 				const double ap = (double)CreatureDerivedAttribute( pC, SNC_DA_ACTION_POINTS );
-				const double scaled = ap * 0.0001666666666666667;
+				const double kOneOver6000 = 1.0 / 6000.0;        // bits 3F25D867C3ECE2A5 @0x64D590
+				const double scaled = ap * kOneOver6000;         // 0x409b1d fmul ds:dbl_64D590
 				if ( scaled == 0.0 ) {
 					return 1000;                                 // 0x409b4c: the zero case is 1000
 				}
-				return (int)(1.0 / scaled);
+				return (int)(1.0 / scaled);                      // 0x409b36/0x409b3c fdiv + __ftol2
 			}
 			default:
 				// shipped: JE::LogDebugString_0x497120("GameCreature::GetDerivedAttribute() - Unknown
@@ -585,6 +599,121 @@ void ScriptNativeResetRegistry() {
 		}
 		return CreatureDerivedAttribute( (const GameCreature *)pEntity, (int)p[ 2 ] );
 	} // ScriptNative_GetDerivedAttribute
+
+	// 0x409824 / 0x409820 - GameCreature::BaseSkill(int): three instructions, `mov eax,[ecx+eax*4+0E0h]`
+	// + `retn 4`. The cls_0x409820 label is the same IDB attribution artifact as GameActionEquip: the
+	// `this` is a GameCreature, cast and passed unchanged by GetBaseSkill at 0x45adef/0x45ae13.
+	static int CreatureBaseSkill( const GameCreature *pC, int nSkill ) {
+		return pC->statBands_0xE0[ nSkill ];   // +0xE0..+0x110 = the 13 skills (0x409824)
+	} // CreatureBaseSkill
+
+	// 0x409830 - GameCreature::GetTotalSkill: base + a 13-case attribute formula. Every arm below is
+	// the shipped lea/mov sequence with its EA, byte-checked against the jump table rather than the
+	// pseudocode. Note the shape: the "weighted attribute" arms always total THREE attribute points
+	// (1x + 2x) EXCEPT firearms/melee, which add a flat +50 instead, and science/barter-persuasion
+	// which use a single attribute 3x. The default arm returns the BASE UNCHANGED and logs via
+	// JE::LogDebugString_0x497120 - that sink is unported (named-deferred, same as the derived
+	// default), so the value is faithful and the line is not emitted.
+	static int CreatureTotalSkill( const GameCreature *pC, int nSkill ) {
+		const int nBase = CreatureBaseSkill( pC, nSkill );   // 0x409837
+
+		switch ( nSkill ) {
+			case SNC_SKILL_FIREARMS:                        // 0x40988f: cases 0,1 -> mov esi,50
+			case SNC_SKILL_MELEE:
+				return nBase + 50;
+			case SNC_SKILL_UNARMED:                         // 0x4098f2: [768h] + 2*[760h]
+				return pC->endurance_0x768 + 2 * pC->strength_0x760 + nBase;
+			case SNC_SKILL_BARTER:                          // 0x409850: cases 3,4 -> 3*[76Ch]
+			case SNC_SKILL_PERSUASION:
+				return 3 * pC->charisma_0x76c + nBase;
+			case SNC_SKILL_DECEPTION:                       // 0x409861: [770h] + 2*[76Ch]
+				return pC->intelligence_0x770 + 2 * pC->charisma_0x76c + nBase;
+			case SNC_SKILL_MECHANICS:                       // 0x409878: cases 6,7 -> [764h]+2*[770h]
+			case SNC_SKILL_MEDIC:
+				return pC->perception_0x764 + 2 * pC->intelligence_0x770 + nBase;
+			case SNC_SKILL_OUTDOORSMAN:                    // 0x40989c: [768h] + 2*[764h]
+				return pC->endurance_0x768 + 2 * pC->perception_0x764 + nBase;
+			case SNC_SKILL_SCIENCE:                        // 0x4098b3: 3*[770h]
+				return 3 * pC->intelligence_0x770 + nBase;
+			case SNC_SKILL_SNEAK:                          // 0x4098c4: cases 10,11 -> [774h]+2*[764h]
+			case SNC_SKILL_SECURITY:
+				return pC->agility_0x774 + 2 * pC->perception_0x764 + nBase;
+			case SNC_SKILL_STEAL:                          // 0x4098db: [764h] + 2*[774h]
+				return pC->perception_0x764 + 2 * pC->agility_0x774 + nBase;
+			default:
+				return nBase;   // 0x409917: base unchanged (plus the unported debug log)
+		}
+	} // CreatureTotalSkill
+
+	// 0x45ab50 - GetPerkRank. SHIPPED COPY-PASTE PRESERVED VERBATIM: its resolve-failure line is
+	// "GetPosition() was unable to find the requested entity." (0x45ab8e) - a different native's name
+	// in GetPerkRank's message. T-022 says byte-identical, so it stays wrong exactly as shipped, and
+	// the suite asserts it so nobody "corrects" it into a divergence.
+	int ScriptNative_GetPerkRank( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "GetPerkRank" ) ) {   // 0x45ab6e
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) { // 0x45ab7c
+			ScriptNativeReportError( amx, "GetPosition() was unable to find the requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {     // 0x45abaf
+			ScriptNativeReportError( amx,
+				"GetPerkRank() - Entity ID does not belong to a game creature." );   // WITH space
+			return 0;
+		}
+		const GameCreature *pC = (const GameCreature *)pEntity;
+		// 0x45abd2 indexes perks off +0x114, which in the port's merged band is offset 13. The
+		// shipped code has NO bounds test, and because the bands are adjacent an out-of-range PERK
+		// index reads whatever follows +0x148 in the creature - unmodeled past the merged array, and
+		// stated rather than papered over.
+		return pC->statBands_0xE0[ 13 + (int)p[ 2 ] ];
+	} // ScriptNative_GetPerkRank
+
+	// 0x45ad90 - GetBaseSkill: same preamble, "EntityID" WITHOUT the space, then the three-instruction
+	// accessor at 0x409824.
+	int ScriptNative_GetBaseSkill( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "GetBaseSkill" ) ) {   // 0x45adae
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {  // 0x45adbc
+			ScriptNativeReportError( amx, "GetBaseSkill() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {      // 0x45adef
+			ScriptNativeReportError( amx,
+				"GetBaseSkill() - EntityID does not belong to a game creature." );   // NO space
+			return 0;
+		}
+		return CreatureBaseSkill( (const GameCreature *)pEntity, (int)p[ 2 ] );
+	} // ScriptNative_GetBaseSkill
+
+	// 0x45ae20 - GetTotalSkill: the third sibling, "EntityID" without the space, delegating to the
+	// 13-case formula above.
+	int ScriptNative_GetTotalSkill( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "GetTotalSkill" ) ) {   // 0x45ae3e
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {  // 0x45ae4c
+			ScriptNativeReportError( amx, "GetTotalSkill() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {      // 0x45ae7f
+			ScriptNativeReportError( amx,
+				"GetTotalSkill() - EntityID does not belong to a game creature." );   // NO space
+			return 0;
+		}
+		return CreatureTotalSkill( (const GameCreature *)pEntity, (int)p[ 2 ] );
+	} // ScriptNative_GetTotalSkill
 
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
@@ -643,7 +772,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[18] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[21] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -661,7 +790,10 @@ void ScriptNativeResetRegistry() {
 		{ "UnlockDoor",  &ScriptNative_UnlockDoor,  1 },   // 0x45a240
 		{ "IsLocked",    &ScriptNative_IsLocked,    1 },   // 0x45b4e0
 		{ "GetPrimaryAttribute", &ScriptNative_GetPrimaryAttribute, 2 },   // 0x45ac70
-		{ "GetDerivedAttribute", &ScriptNative_GetDerivedAttribute, 2 }    // 0x45ad00
+		{ "GetDerivedAttribute", &ScriptNative_GetDerivedAttribute, 2 },   // 0x45ad00
+		{ "GetPerkRank",  &ScriptNative_GetPerkRank,   2 },   // 0x45ab50
+		{ "GetBaseSkill", &ScriptNative_GetBaseSkill,  2 },   // 0x45ad90
+		{ "GetTotalSkill", &ScriptNative_GetTotalSkill, 2 }   // 0x45ae20
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {
