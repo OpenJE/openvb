@@ -1818,3 +1818,27 @@ It would make the split look solved while hiding which world is authoritative - 
 mapping shipped's null-deref to a friendly message, except with no declared collapse to point at. The installer
 plus an executable script path is the cheapest step that turns this batch from a test consumer into observable
 behavior, and it belongs to the openje/spawn lanes as a decision.
+
+
+### Gap-5 refinement, after a peer proposed the bridge was already there
+
+Claim checked: "`SpawnedEntity.netId` is the same dword the census closed on (`+0x1DC`), so the resolver is a
+dozen lines." It is not established, and the shipped stamping sites say the port labels the field to a
+*different slot*: `MapEntitySpawn.hpp:115` documents `netId` as **GameEntity mbr_0x28**, and 0x28 is written in
+`GameEntity::ctor_0x4678a0` from **WSI vb SLOT 2** (`call [eax+8]` @0x4679b0 -> `mov [esi+28h],eax` @0x4679b3),
+gated on the area-map-icon flag. `Entity+0x1DC` is written in the Create-era site 0x55190c from **SLOT 9**
+(`call [eax+36]`), and mirrored into the `+0x168` object at `+4` (0x55192a) and map-icons`+228` (0x551a60).
+`GetWorldServerInstance_0x401150` returns `global_0x70bd98 + 1` (0x4118a->0x40118a), so both come from ONE
+server object - and the census of that object is now three slots: **2** (-> `+0x28`, what the port calls netId),
+**9** (-> `+0x1DC`, the script handle: resolver compares 476, SetHP resolves through it, Protagonist returns it),
+**26** (-> the `Party`, Protagonist/AddCNPC).
+
+So a `netId`-keyed resolver keys on the slot-2 value, which nothing here proves equals the slot-9 handle. Two
+possibilities, named rather than picked: (a) they are the same number at runtime - settled by one sample of an
+entity's `+0x28` vs `+0x1DC`, or by reading both slot bodies (the DB has no vftable for the singleton's class:
+`f3_vftable_index cls_0x616328` and `f3_address_lookup 0x70bd98` both return empty, so it is a runtime or
+xref-walk question, not a listing question); or (b) they differ, in which case the port lacks the script-handle
+field entirely and must populate it at spawn the way `Create` does before a natives-side lookup can be honest.
+
+The tempting version of this finding was "the key is already there." It is the tempting version that gets
+checked.

@@ -69,3 +69,47 @@ with no declared collapse to point at.
 Cheapest real behavior-parity step, if the coordinator wants one: gaps 1-4 together - an installer plus an
 executable script path - because every native already reversed becomes observable the day they close, and the
 test suite becomes a regression net instead of the only consumer of the work.
+
+## Refinement of gap 5 (same day, after a peer proposed the bridge was free): the two worlds do NOT provably share a key
+
+The suggestion was that `SpawnedEntity.netId` already carries the handle the natives speak, so a resolver is a
+dozen-line scan. Checking the shipped stamping sites says otherwise, and the difference decides what the
+resolver must key on.
+
+**The port's own label.** `src/F3/MapEntitySpawn.hpp:115` documents `netId` as
+"**GameEntity mbr_0x28**: world-server-assigned serial (vft[8])" - not as `Entity+0x1DC`.
+
+**What `GameEntity+0x28` actually is** (bytes, `GameEntity::ctor_0x4678a0`, gated on the area-map-icon flag bit 0):
+
+    46799f  call GetWorldServerInstance_0x401150
+    4679a4  mov ecx,[eax+4]        ; delta table
+    4679a7  mov edx,[ecx+4]        ; the delta
+    4679aa  lea ecx,[edx+eax+4]    ; the virtual-base subobject
+    4679ae  mov eax,[ecx]          ; its vftable
+    4679b0  call dword ptr [eax+8] ; SLOT 2
+    4679b3  mov [esi+28h], eax     ; -> GameEntity+0x28
+
+**What `Entity+0x1DC` is** (`Entity::Create`-era at 0x5518f7): the same adjustment shape, then
+`mov [a1+1DCh], eax` after `call [eax+36]` - **slot 9** - and Create mirrors that value into the `+0x168`
+object at `+4` (0x55192a) and into `global_area_map_icons[0]->int_0x2c + 228` (0x551a60).
+
+**And they are the same object:** `GetWorldServerInstance_0x401150` returns `global_0x70bd98 + 1` (0x40118a).
+Which yields a three-slot census of one server singleton, every site byte-verified:
+
+| slot | call bytes | where used | what it yields |
+|---|---|---|---|
+| 2 | `[eax+8]` @0x4679b0 | GameEntity ctor | the value stored at `GameEntity+0x28` - what the PORT calls `netId` |
+| 9 | `[eax+36]` @0x55190c | Entity::Create | the handle stored at `Entity+0x1DC`, mirrored to `(+0x168 obj)+4` and map-icons`+228` |
+| 26 | `[edx+68h]` @0x45a9a5 / 0x45a343 | Protagonist, AddCNPCToParty | the `Party` object |
+
+The script-facing handle is unambiguously the **slot-9** value: it is what the resolver compares
+(`*(entity+476)` = `+0x1DC`, in `meth_0x54be10`), what `SetHP` resolves through, and what `Protagonist` returns.
+So a resolver keyed on `netId` is keyed on the field the port labels to **slot 2**, which nothing here proves
+equals the slot-9 handle.
+
+**Consequence for the cheap-unlock estimate:** "twelve lines and a scan" is optimistic by one design step.
+Either (a) slots 2 and 9 are the same number in the shipped build - which is an empirical question, settled by
+one runtime sample of an entity's `+0x28` against its `+0x1DC`, or by reading the two slot bodies - or (b) they
+are different ids, in which case the port is missing the script-handle field entirely and needs it populated at
+spawn the way `Create` does it before any natives-side lookup can be honest. Naming it as (a)-or-(b) rather than
+assuming either is the whole point: the tempting version of this finding was "the key is already there."
