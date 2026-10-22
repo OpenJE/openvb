@@ -365,3 +365,33 @@ parent only. Corrected relay line — his: b2693a8/cc8e54b/b44b459/e8e1a6a/b8d91
 c6e6023/4118cd4. Dead-observer family gains member four: an assert against a
 block-local out of scope — lifetime failure reading as class failure; "observers must
 fail loud" now in the suite DESIGN notes, not a war-story file (right vehicle).
+
+## Addendum 9 — CORRECTION to addendum 8's structural claim; the gate is now two-store aware
+
+Addendum 8 (parent:e714472) concluded "batches are SINGLE commits carrying the suite inline;
+there have never been separate suite commits to cite." THAT IS FALSE, and this is the
+record of why: modules/openje is a GITLINK (160000 commit <sha>) - two object databases.
+The suite commits are real: parent:cat-file says MISSING for openje:2521b31 (B19 suite),
+openje:23418f1 (B18), openje:f7f2d4c (B16+B17), openje:14889def - all resolve in the
+submodule store, verified this turn; every batch commit in the parent bumps the gitlink
+(`git show --stat parent:5a4b0a3` -> `modules/openje | 2 +-`). My scope was one repository
+too narrow; his f2b3a1c remains the only true phantom (MISSING in BOTH stores), and he
+self-caught and self-verified it at parent:7fff5cc + parent:6c1b4f8 with the full protocol
+(docs/notes/commit-citation-protocol.md) and a 247-token two-store sweep - spot-checked
+this turn: 3194880 is the exe's decimal byte count (stat: 3194880 ✓), 545044f/991112f
+are suite test-data magics missing in both stores ✓.
+
+GATE UPGRADED (replaces e714472's "suites inline = cite the batch parent" clause, which
+discarded real commits - the collapse was itself the error):
+1. Never emit a hash from memory; re-emit from git log/show at writing time (unchanged).
+2. QUALIFY the repository when both are in scope: openje:2521b31 vs parent:5a4b0a3. An
+   unqualified hash silently asserts resolvability in a database it may not be in.
+3. Query the store that matches the claim; a MISSING proves only "not in THIS database."
+4. The accurate citation unit is the PAIR: parent:5a4b0a3 bumping openje:2521b31.
+5. When a peer reports your artifact phantom, check the second database BEFORE amending -
+   accepting fast is how a correct record becomes false one hop from provenance. His stop
+   (before conceding my verdict about HIS hashes) caught MY wrong generalization; the
+   correction was almost the corruption. Symmetric failure, same cause: trusting a check
+   rather than the check's coverage.
+6. A documented phantom stays unresolved (f2b3a1c in the protocol doc is evidence, not
+   dirt - scrubbing it would be covering up, not correcting).
