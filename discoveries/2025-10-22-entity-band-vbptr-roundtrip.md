@@ -147,3 +147,40 @@ new angles (his suite `b2c3931`-era, 69 asserts, 13/0):
   0x70bd98 = party-side (slot 26 -> Party; Protagonist 0x45a991, AddCNPC 0x45a32f),
   0x401150 = map-icon side (attitude pair, GameEntity ctor mbr_0x28). When the registry
   era names them, name them SEPARATELY.
+
+## Batch-B gate census (2025-10-22) — call-shape router validated 16/16
+
+Fixed-window scans BLEED (first pass gave false resolve/error hits into neighbors for 9
+rows; extents from the function table are mandatory). Within true extents, arity gate
+(0x59AF40) is present in 15/15 natives and absent in CommandInventoryWindow -> WildKnight's
+signature-shape reclassification of the Command* rows is CONFIRMED by independent means
+(__usercall did not lie). Max arity offset observed: 0x32 (EquipItem/UnequipItem fat
+prologues with security cookie). Presence/absence of the other two gates is SEMANTIC, not
+routing: resolve=0x59AEF0 iff the native takes an entity ID; error=0x59AD20 iff it prints.
+
+| row (size)                     | arity | resolve | error | notes |
+|--------------------------------|-------|---------|-------|-------|
+| HideInterfaces 0x45a100 (0x34) | 0x11  | -       | -     | silent |
+| SetMoveMode 0x45a140 (0x68)    | 0x14  | -       | -     | silent |
+| StartDialogue 0x45a040 (0xc0)  | 0x16  | 0x2e    | 0x40  | full trio |
+| AddCNPCToParty 0x45a2d0 (0xa9) | 0x14  | 0x2c    | 0x3e  | |
+| OpenTask 0x45b900 (0x3e)       | 0x12  | -       | -     | silent |
+| CloseTask 0x45b940 (0x3e)      | 0x12  | -       | -     | silent |
+| AddEntry 0x45b980 (0x3e)       | 0x12  | -       | -     | silent |
+| GetWeaponCombo 0x45a9f0 (0x4a) | 0x14  | -       | 0x3c  | own resolver sub_45B9F0; shipped stub |
+| Protagonist 0x45a960 (0x88)    | 0x12  | -       | 0x5b  | NO entity arg - party via global 0x70bd98 |
+| GetSquadAttitude 0x45aa90 (0x59)| 0x12 | -       | -     | silent, self-check return 1 |
+| GetTeamAttitude 0x45aaf0 (0x59)| 0x12  | -       | -     | silent |
+| EquipItem 0x45a580 (0x163)     | 0x32  | 0x4a    | 0x5c  | STRING-TAKER #2: sub_59AB20@0x45a5f7, arity 3 (entity, name, slot) |
+| UnequipItem 0x45a6f0 (0x270)   | 0x32  | 0x4e    | 0x60  | full trio, fat prologue |
+| GetPrimaryAttribute 0x45ac70   | 0x14  | 0x2c    | 0x3e  | GameCreature; returns *(GC+0x760 + idx-by-param) - item-69 era |
+| GetDerivedAttribute 0x45ad00   | 0x14  | 0x2c    | 0x3e  | GameCreature; delegates GC::GetDerivedAttribute 0x409a60 - item-69 era |
+| CommandInventoryWindow 0x45eac0 (0xa2) | NONE | -     | -     | __stdcall(), zero args, GUI plumbing via area_map_icons[0]->int_0x2c - NON-NATIVE CONFIRMED |
+
+EquipItem internals (INVENTORY-era trunk data): resolve -> GameCreature cast -> inventory
+ptr via IDA-cell-90 = +0x168 (same pre-cast accessor as GWR/IIE) -> Inventory->GameInventory
+cast -> StringTree prep (meth_0x401d20) -> GameInventory vft[+24] find-by-name ->
+vft[+56](item, slot, 1) equip. Verbatim quirk: sibling error strings differ by a space -
+"Entity ID does not belong" (Primary) vs "EntityID does not belong" (Derived); keep both.
+Also: CommandInventoryWindow uses the base-plus-delta codegen shape itself
+(`v2 + *(v2->vft[1])`) - the vb-adjust idiom is program-wide, not a server-singleton quirk.
