@@ -129,6 +129,8 @@ namespace F3 {
 	//   type >= 6 -> sizeByte >= 0xA  (10)
 	// The RTTI check would null a non-GameEntity and fault on the load; the unchecked read is
 	// faithful to that.
+	// Shipped gate: slot[3] of the 0x45BA90 mover-gate vft table (file note above); body mirrors
+	// its per-mover-type clearance reads exactly (class enum at entity+0x18, RTTI-checked load).
 	bool GamePathManager::EntityGate(byte sizeByte, void* entity) {
 		tracing::instrument( tracing::LOCATION, "" );
 
