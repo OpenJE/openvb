@@ -328,7 +328,14 @@ namespace F3 {
 	struct ScriptNativeEntry {
 		const char *pcName;
 		int (*fn)( int amx, int params );
-		int nExpectedCells;   // the param_3 the body passes to the arity gate; -1 = THE BODY HAS NO GATE
+		// The cell count shipped pushes into the arity gate's param_3 immediate (gate 0x59AF40 exact;
+		// -1 = THE BODY HAS NO GATE, the quest/journal sentinel; 0 is a REAL arity - Protagonist).
+		// Load-bearing on every row: gated bodies pass the same literal to their gate call, either
+		// directly (ScriptNativeCheckArity) or per-row through ResolveNativeEntity's nCells argument
+		// (the helper mediating the 13 one-cell rows hardcodes 1 no more - item 71). tools/
+		// native-gate-audit.py cross-checks table declaration, body literal, and shipped immediate
+		// per row; a decorative column now fails the audit instead of the eye.
+		int nExpectedCells;
 	};
 
 	// ---- the quest/journal alias quad (batch B slice B24) ------------------------------------

@@ -265,6 +265,27 @@ void ScriptNativeResetRegistry() {
 	// Resolve + creature-cast, exactly the shared middle of all five bodies. Returns the creature
 	// pointer, or 0 after reporting (the shipped bodies all fail closed with `xor eax,eax`).
 	//
+	// nCells is the ROW'S OWN arity literal - the cell count shipped pushes into its gate immediate -
+	// passed at each call site and equal to the table's nExpectedCells for that row. It was a
+	// hardcoded 1 inside this helper until the set-A parameterisation (harness item 71: with the
+	// literal hidden here, the table column was DECORATIVE on all 13 helper-mediated rows and no
+	// audit could see their enforcement). Behavior is unchanged: all 13 rows gate exact at 1 cell
+	// in shipped, and the suite proves it (zero changed outcomes); the fix removes the accident.
+	//
+	// GATE KIND, stated so nobody "completes" this: shipped has a SECOND gate - 0x59AF90 MINIMUM
+	// (cmp/jge @0x59afa7, 5 args with an &out_actual, add esp,14h, "Expected at least %d parameters
+	// but recieved %d."). NO F3 game-lib native uses it (FastNova 21886c1 census: the six min-gated
+	// are all engine-core SendMessage-family, none ported into this table). So this helper is
+	// EXACT-KIND ONLY BY EVIDENCE, not by omission: if a min-gated native is ever ported, it needs
+	// a NEW gate function (jge semantics, the out-param, the third message string) - "at least" is
+	// not a spelling borrowable from the exact gate, and faking it with the exact form would let a
+	// legal 3- or 4-cell SendMessage call fail a gate shipped admits. Do not parameterise kind in
+	// here; add the second form beside it when a row needs it.
+	//
+	// nCells == 0 is a REAL arity (Protagonist gates at 0 cells in shipped) and must never be
+	// conflated with the table's -1 SENTINEL ("no gate exists", the quest/journal alias quad).
+	// This helper is for gated rows only; a -1 row has no business calling it.
+	//
 	// WHY THE GETTERS BELOW USE NAMED MEMBERS RATHER THAN SHIPPED DISPLACEMENTS - a finding worth
 	// the board's attention: the generated src/F3/*.hpp headers are name-SORTED excerpts, so the hex
 	// in a member name cites the ORIGINAL layout and is NOT a position in the port. Measured on this
@@ -273,12 +294,12 @@ void ScriptNativeResetRegistry() {
 	// `(char*)obj + 0xBC` against these structs reads a DIFFERENT field than `obj->mbr_0xbc` does -
 	// which is exactly what this slice's first draft did, and the suite caught it (10 reds) rather
 	// than letting a green build hide it.
-	static JE::Entity *ResolveNativeEntity( int amx, int params_i, const char *pcFnName, unsigned nClassNeeded,
+	static JE::Entity *ResolveNativeEntity( int amx, int params_i, int nCells, const char *pcFnName, unsigned nClassNeeded,
 	                                        const char *pcResolveMsg, const char *pcCastMsg ) {
 		const unsigned *params = (const unsigned *)params_i;
 		JE::Entity *pEntity = 0;
 
-		if ( !ScriptNativeCheckArity( amx, params, 1, pcFnName ) ) {   // 0x59af54-era gate
+		if ( !ScriptNativeCheckArity( amx, params, nCells, pcFnName ) ) {   // 0x59AF40-era exact gate
 			return 0;
 		}
 		if ( !ScriptNativeResolveEntity( amx, params[ 1 ], &pEntity, 1 ) ) {
@@ -297,7 +318,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45abe0 - GetLevel: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read . Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetLevel( int amx, int params ) {
-		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetLevel", F3::SNC_GAME_CREATURE,
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, 1, "GetLevel", F3::SNC_GAME_CREATURE,
 		                                                "GetLevel() - Unable to resolve the requested entity.",
 		                                                "GetLevel() - Entity ID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -309,7 +330,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45aeb0 - GetRace: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45af2f `eax+0C8h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetRace( int amx, int params ) {
-		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetRace", F3::SNC_GAME_CREATURE,
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, 1, "GetRace", F3::SNC_GAME_CREATURE,
 		                                                "GetRace() - Unable to resolve requested entity.",
 		                                                "GetRace() - EntityID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -321,7 +342,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45af40 - GetGender: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45afbf `eax+0D0h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetGender( int amx, int params ) {
-		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetGender", F3::SNC_GAME_CREATURE,
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, 1, "GetGender", F3::SNC_GAME_CREATURE,
 		                                                "GetGender() - Unable to resolve requested entity.",
 		                                                "GetGender() - EntityID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -333,7 +354,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45afd0 - GetEthnicity: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45b057 `eax+0D4h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetEthnicity( int amx, int params ) {
-		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetEthnicity", F3::SNC_GAME_CREATURE,
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, 1, "GetEthnicity", F3::SNC_GAME_CREATURE,
 		                                                "GetEthnicity() - Unable to resolve requested entity.",
 		                                                "GetEthnicity() - EntityID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -345,7 +366,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45b070 - GetSubRace: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45b0f7 `eax+0D8h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetSubRace( int amx, int params ) {
-		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetSubRace", F3::SNC_GAME_CREATURE,
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, 1, "GetSubRace", F3::SNC_GAME_CREATURE,
 		                                                "GetSubRace() - Unable to resolve requested entity.",
 		                                                "GetSubRace() - Entity ID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -357,7 +378,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45b1b0 - GetCurrentHP: arity 1, resolve, cast Entity->GameEntity (0x45b217), then
 	// 0x45b237 `mov eax,[eax+24h]`. Shipped offset +0x24 (port: the named member).
 	int ScriptNative_GetCurrentHP( int amx, int params ) {
-		GameEntity *pEntity = (GameEntity *)ResolveNativeEntity( amx, params, "GetCurrentHP",
+		GameEntity *pEntity = (GameEntity *)ResolveNativeEntity( amx, params, 1, "GetCurrentHP",
 		                                                         F3::SNC_GAME_ENTITY,
 		                                                         "GetCurrentHP() - Unable to resolve requested entity.",
 		                                                         "GetCurrentHP() - Entity ID does not belong to a GameEntity." );
@@ -380,7 +401,7 @@ void ScriptNativeResetRegistry() {
 	} // GameEntityMaxHp
 
 	int ScriptNative_GetMaxHP( int amx, int params ) {
-		GameEntity *pEntity = (GameEntity *)ResolveNativeEntity( amx, params, "GetMaxHP",
+		GameEntity *pEntity = (GameEntity *)ResolveNativeEntity( amx, params, 1, "GetMaxHP",
 		                                                         F3::SNC_GAME_ENTITY,
 		                                                         "GetMaxHP() - Unable to resolve requested entity.",
 		                                                         "GetMaxHP() - Entity ID does not belong to a GameEntity." );
@@ -634,7 +655,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45b4e0 - IsLocked: DOOR only (0x45b53f), read at +0xBD with movzx (0x45b55f), and 0 on every
 	// failure path - so "unlocked" and "not a door" are indistinguishable to the script.
 	int ScriptNative_IsLocked( int amx, int params ) {
-		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, "IsLocked",
+		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, 1, "IsLocked",
 		                                                   F3::SNC_GAME_DOOR,
 		                                                   "IsLocked() was unable to find the entity.",
 		                                                   "IsLocked() - Entity is not a door" );
@@ -647,7 +668,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45a1b0 - LockDoor: same gate, same DOOR-only cast (0x45a20f), then stores 1 (0x45a230) and
 	// returns 1. No packet, no broadcast, no event - unlike HP, locking a door is LOCAL state here.
 	int ScriptNative_LockDoor( int amx, int params ) {
-		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, "LockDoor",
+		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, 1, "LockDoor",
 		                                                   F3::SNC_GAME_DOOR,
 		                                                   "LockDoor() was unable to find the entity.",
 		                                                   "LockDoor() - Entity is not a door" );
@@ -660,7 +681,7 @@ void ScriptNativeResetRegistry() {
 
 	// 0x45a240 - UnlockDoor: the mirror image, storing 0 (0x45a2c0).
 	int ScriptNative_UnlockDoor( int amx, int params ) {
-		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, "UnlockDoor",
+		GameDoor *pDoor = (GameDoor *)ResolveNativeEntity( amx, params, 1, "UnlockDoor",
 		                                                   F3::SNC_GAME_DOOR,
 		                                                   "UnlockDoor() was unable to find the entity.",
 		                                                   "UnlockDoor() - Entity is not a door" );
@@ -1243,7 +1264,7 @@ void ScriptNativeResetRegistry() {
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
-		GameItem *pItem = (GameItem *)ResolveNativeEntity( amx, params, "GetItemType",
+		GameItem *pItem = (GameItem *)ResolveNativeEntity( amx, params, 1, "GetItemType",
 		                                                   F3::SNC_GAME_ITEM,
 		                                                   "GetItemType() - Unable to resolve requested entity.",
 		                                                   "GetItemType() - Entity is not an Item" );
@@ -1257,7 +1278,7 @@ void ScriptNativeResetRegistry() {
 	// (0x45b4c7). Shipped cast-failure line carries a typo and a grammar slip:
 	// "GetUsableObjectType() - Entity is not an usable ubject" - reproduced verbatim (T-022).
 	int ScriptNative_GetUsableObjectType( int amx, int params ) {
-		GameUsableObject *pUsable = (GameUsableObject *)ResolveNativeEntity( amx, params, "GetUsableObjectType",
+		GameUsableObject *pUsable = (GameUsableObject *)ResolveNativeEntity( amx, params, 1, "GetUsableObjectType",
 		                                                                     F3::SNC_GAME_USABLE,
 		                                                                     "GetUsableObjectType() - Unable to resolve requested entity.",
 		                                                                     "GetUsableObjectType() - Entity is not an usable ubject" );
@@ -1275,7 +1296,7 @@ void ScriptNativeResetRegistry() {
 	// Note also its resolve-failure wording differs from the rest of the batch: "was unable to find the
 	// entity." (like GetPerkRank/IsItemEquipped) rather than "Unable to resolve requested entity.".
 	int ScriptNative_GetLockDC( int amx, int params ) {
-		GameUsableObject *pUsable = (GameUsableObject *)ResolveNativeEntity( amx, params, "GetLockDC",
+		GameUsableObject *pUsable = (GameUsableObject *)ResolveNativeEntity( amx, params, 1, "GetLockDC",
 		                                                             F3::SNC_GAME_CONTAINER | F3::SNC_GAME_DOOR,
 		                                                             "GetLockDC() was unable to find the entity.",
 		                                                             "GetLockDC() entity passed in was neither a container nor a door." );

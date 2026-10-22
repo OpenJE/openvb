@@ -176,6 +176,11 @@ DECL = re.compile(r"s_gameCreatureNatives\[(\d+)\]")
 SUITE_COUNT = re.compile(r"check\(\s*nCount\s*==\s*(\d+)")
 CHECK_ARITY = re.compile(r'ScriptNativeCheckArity\(\s*amx,\s*\w+,\s*(\d+)\s*,\s*"([^"]+)"')
 RESOLVE_HELPER = re.compile(r'ResolveNativeEntity\(\s*amx,\s*\w+,\s*"([^"]+)"')
+# The parameterised helper form (post item-71 fix): the row's OWN cell literal precedes the name, so
+# enforcement is visible per row. Kept BESIDE RESOLVE_HELPER, not replacing it: if the literal ever
+# moves back into the helper body, the legacy regex matches again and the decorative warning
+# re-appears. The tripwire is the pair, not either half.
+RESOLVE_PARAM = re.compile(r'ResolveNativeEntity\(\s*amx,\s*\w+,\s*(\d+)\s*,\s*"([^"]+)"')
 HELPER_CELLS = re.compile(r'ScriptNativeCheckArity\(\s*amx,\s*params,\s*(\d+)\s*,\s*pcFnName')
 
 
@@ -194,9 +199,13 @@ def parse_port_rows(text):
         gate = None
         if body:
             ca = CHECK_ARITY.search(body.group(1))
+            rp = RESOLVE_PARAM.search(body.group(1))
             rh = RESOLVE_HELPER.search(body.group(1))
             if ca:
                 gate = {"name": ca.group(2), "cells": int(ca.group(1)), "via": "direct"}
+            elif rp:
+                gate = {"name": rp.group(2), "cells": int(rp.group(1)),
+                        "via": "ResolveNativeEntity-parameterised"}
             elif rh:
                 hc = HELPER_CELLS.search(text)
                 gate = {"name": rh.group(1), "cells": int(hc.group(1)) if hc else None,
@@ -262,11 +271,12 @@ def audit(pe, tu_text, suite_text):
                              % (ea, r["cells"])))
             continue
         checked += 1
-        # ENFORCEMENT-BEFORE-VERDICT (harness item 71): a row whose gate lives in a SHARED HELPER has no
-        # enforcing literal in its own body, so the table's declared `cells` column is DECORATIVE on it - the
-        # helper hardcodes its own value. Report those separately instead of folding them into a passing
-        # total, because a match here only proves the declaration is honest about shipped, not that the port
-        # enforces it. Fix for the class: parameterise ResolveNativeEntity by cell count.
+        # ENFORCEMENT-BEFORE-VERDICT (harness item 71): a row whose gate lives in a SHARED HELPER with
+        # the count hardcoded there has no enforcing literal in its own body, so the table's declared
+        # `cells` column is DECORATIVE on it - the helper hardcodes its own value. CLASS FIXED in the
+        # src (ResolveNativeEntity now takes nCells per row; the parameterised form parses as ENFORCED
+        # above). This branch survives DELIBERATELY as the regression tripwire: if a literal ever
+        # migrates back into the helper, via reverts to "ResolveNativeEntity" and the warning re-fires.
         if r["cells"] >= 0 and pg.get("via") == "ResolveNativeEntity":
             enforced_elsewhere.append(
                 (r["name"], sg["name"], sg["cells"], pg["cells"],
@@ -345,6 +355,16 @@ def selftest():
     # the extent cap is what prevents it.
     # 3. a known cell count from a helper-mediated native.
     assert shipped_gate(pe, 0x45abe0)["cells"] == 1, "GetLevel cells != 1"
+    # 3b. the item-71 fix must be VISIBLE: the 13 set-A rows parse as parameterised (cells from their
+    # own call sites) and NONE may remain in the decorative bucket. If the helper ever re-hardcodes,
+    # enforced_in_helper_only refills and this assert fires.
+    cov3, v3 = audit(pe, Path(TU).read_text(), 'check( nCount == 36, "x" );')
+    assert v3 and v3["enforced_in_helper_only"] == [], \
+        "set-A rows are decorative again: %s" % [x[0] for x in v3["enforced_in_helper_only"]]
+    pars = [r for r in parse_port_rows(Path(TU).read_text())
+            if (r.get("gate") or {}).get("via") == "ResolveNativeEntity-parameterised"]
+    assert len(pars) == 13 and all(r["gate"]["cells"] == r["cells"] == 1 for r in pars), \
+        "expected 13 parameterised one-cell rows, got %s" % [(r["name"], r["gate"]) for r in pars]
     # 4. COVERAGE-BEFORE-VERDICT must actually fire: feed it a suite text with a wrong number.
     tu = TU.read_text()
     cov, verdict = audit(pe, tu, "check( nCount == 999, \"x\" );")
