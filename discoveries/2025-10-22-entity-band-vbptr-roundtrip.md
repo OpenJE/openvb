@@ -257,3 +257,37 @@ exe, the obvious simplification IS the semantics. WildKnight's port producing 19
 pin is a THIRD (mixed) shape in the port, and dump-its-intermediates (sequenced printf of
 t-bits and r-bits) will name it. If port pins 199 and lockstep exe shows 300, the pin is
 codifying port!=exe; break it now, not in the run.
+
+## Addendum 6 — B16 internals verified; the MIXED width is the third shape (corrects my absolutism)
+
+WildKnight's ac88048 mechanism, verified bit-for-bit at relay time:
+  k = 0x3F25D867C3ECE2A5 (compiler 1.0/6000.0 == image constant - input was RIGHT);
+  s = fl_dbl(30*k) = 0x3F747AE147AE147B — BYTE-IDENTICAL to fl_dbl(0.005), whose own error
+  lands ABOVE exact 1/200: the below-ness of the real product (~1.7e-19) is smaller than
+  half-ulp (~2.2e-19) at that scale, so narrowing to double INVERTS the error direction.
+  Then r = 1/s: at double -> exactly 200.0 (0x4069000000000000); consumed at 80-bit ->
+  199.9999999999999958 -> truncate -> 199. Pure-double = 200, pure-extended = 200,
+  MIXED (product narrowed, division wide) = 199. My addendum-4/5 claim "at the correct
+  constant truncation can NEVER drop" was scoped to pure widths and stated as absolute -
+  the mixed chain is precisely the "else" I said couldn't exist. Ownership: his measurement
+  found it, my framing missed it. The EXE is pure-wide (no real store between FMUL and the
+  register-direct __ftol2) so the lockstep pins stand: 6000//AP + 1000 at 0.
+  Negative side pinned with opposite-direction care: AP=-7 -> -857.14... -> toward-zero
+  int = -857; floor would give -858. C++ int conversion matches __ftol2's truncation; an
+  integer port must use division semantics, not floor, on negatives.
+
+B16 observables, all verified in the image:
+  - sub_59AB20 (AMX string fetch) = !sub_5CE350 && !sub_5CE3F0 && LEN < BUFSIZE &&
+    sub_5CE510(dst,src)==0: the `<` is STRICT (13-into-13 rejects) and short-circuit
+    ordering guarantees the buffer is untouched on every failure. sub_5CE510 returns 0 on
+    BOTH branches (0x5ce556, 0x5ce572) - no decode-error path exists to imitate.
+  - GameInventory::meth_0x46a6c0 find-loop compares names with _stricmp at the exact cited
+    0x46a777 - case-insensitive match is literal, not convention.
+  - GameInventory::virt_meth_0x46a860 is the equippedness test: do-loop over cells +0x14
+    through +0x2C with `while (v3 < 6)` at 0x46a8cc - SIX slots, membership, returning a
+    char flag. (Attribution query: the "slot-10 find" he credits as making six "evidence
+    not convention" is not in this session's lane output - the six is proven by v3<6
+    regardless; whoever's number it is, cite the artifact.)
+  Process rule hardened (second sample today): a bit-dump printing NOTHING with rc=53 is
+  the loader dying before main (missing -static), not a program crash - check linkage
+  before believing any runtime verdict (WildKnight hit it, JadeBear hit it on the d3d8 probe).
