@@ -168,6 +168,9 @@ namespace F3 {
             return UpdateWindow( global_window );
 		}
 
+        // No shipped fn counterpart to cite: the shipped client's window proc lives in its own
+        // WinMain era (0x56B810 file-level, T-045 tick clock); this proc is the port's message
+        // subset (WM_CLOSE/WM_ACTIVATEAPP/WM_SETCURSOR handling per the Display RE notes).
         static LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam ) {
             if ( hwnd != global_window )
                 return DefWindowProcA(hwnd, msg, wparam, lparam);
