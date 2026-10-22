@@ -180,6 +180,12 @@ RESOLVE_HELPER = re.compile(r'ResolveNativeEntity\(\s*amx,\s*\w+,\s*"([^"]+)"')
 # enforcement is visible per row. Kept BESIDE RESOLVE_HELPER, not replacing it: if the literal ever
 # moves back into the helper body, the legacy regex matches again and the decorative warning
 # re-appears. The tripwire is the pair, not either half.
+# BOUNDARY OF THE GUARD (asymmetry, stated because the assumption is what this lane keeps unpicking):
+# the pair guards against RE-HIDING a literal in the helper. It does NOT forbid a NEW row written in
+# the old hardcoded style - such a row parses via=ResolveNativeEntity and lands in the DECORATIVE
+# warning, loud, which is acceptable precisely because loud is not silent: the failure mode is a
+# warning nobody should ignore, not a false green. The pair DETECTS the old shape; it does not
+# prevent it. Do not read "kept as tripwire" as "the legacy form cannot pass".
 RESOLVE_PARAM = re.compile(r'ResolveNativeEntity\(\s*amx,\s*\w+,\s*(\d+)\s*,\s*"([^"]+)"')
 HELPER_CELLS = re.compile(r'ScriptNativeCheckArity\(\s*amx,\s*params,\s*(\d+)\s*,\s*pcFnName')
 
@@ -277,6 +283,8 @@ def audit(pe, tu_text, suite_text):
         # src (ResolveNativeEntity now takes nCells per row; the parameterised form parses as ENFORCED
         # above). This branch survives DELIBERATELY as the regression tripwire: if a literal ever
         # migrates back into the helper, via reverts to "ResolveNativeEntity" and the warning re-fires.
+        # (Guard boundary: this pair DETECTS the old shape, it does not prevent a new row being
+        # written in it - such a row fails LOUD as decorative. See RESOLVE_PARAM's header comment.)
         if r["cells"] >= 0 and pg.get("via") == "ResolveNativeEntity":
             enforced_elsewhere.append(
                 (r["name"], sg["name"], sg["cells"], pg["cells"],
