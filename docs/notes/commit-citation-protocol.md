@@ -50,3 +50,21 @@ is not a contradiction about the commits; it is a missing field in the citation.
 
 parent: `b2693a8 cc8e54b b44b459 e8e1a6a b8d91b9 a63fffc 9e11a57 ac88048 968343e 5a4b0a3`
 openje: `1489def f7f2d4c 23418f1 2521b31`
+
+## Sweep of every 7-hex token in this tree (run 2026-10-22)
+
+247 unique tokens across `docs/`, `tasks/`, and `modules/openje/tests/`, resolved against BOTH object
+databases. Unresolved came to exactly seven, and none is a commit citation:
+
+| token | why it does not resolve |
+|---|---|
+| `1000000`, `1664525`, `3194880`, `3456789` | decimal literals (buffer sizes, LCG constants, the exe's byte count) |
+| `545044f`, `991112f` | test-data magic values in the suite, not hashes |
+| `f2b3a1c` | the phantom from this file, cited **as** a phantom in the narrative and the ledger |
+
+Everything else resolves in the parent or the submodule. Two notes on method, because a sweep that returns
+"clean" is only as good as its filter: a seven-hex-digit token is ambiguous by nature - `3194880` is both a valid
+hex string and the shipped exe's size - so the check is "does it resolve as an object in one of the two stores,
+and is it being used as a commit", not "does it fail". And a documented phantom must STAY unresolved: rewriting
+`f2b3a1c` out of the prose would delete the evidence for the rule, which is the difference between a correction
+and a cover-up. If this file is ever re-swept, expect that token and don't "fix" it.
