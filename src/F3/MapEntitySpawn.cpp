@@ -581,8 +581,21 @@ namespace F3 {
 			// The slot-DROP path above deliberately does NOT clear: shipped leaves the latch as
 			// the EARLIER branch decided; the only zeros anywhere near it are TurnPrep 0x549094
 			// (ported at CombatManager.cpp:113, state-5 nodes only) and the ctor 0x5515ff. The
-			// sibling byte stores at 0x54c85d/0x54c86d (`+0x2E0+0x34`) belong to the unmodeled
-			// animated-event deque and are NOT replicated. With the store live the manager's
+			// sibling byte stores at 0x54c85d/0x54c86d belong to THE RAISER'S OWN
+			// exhausted-with-budget pair on this same action walk, not to the animated-event
+			// deque - attribution AMENDED per T-085 §4 E1-E3 (docs only, the decision below is
+			// unchanged): E1 0x54c845-51 is the precondition (head null = deque exhausted AND
+			// [ent+0x174] budget remained); E2 0x54c86d is `movb $1,[ent+0x318]` (arm) on the
+			// FIRST exhausted-with-budget occurrence; E3 0x54c85d + 0x54c864 clears +0x318 and
+			// sets +0x319 on the SECOND consecutive occurrence - i.e. "twice in a row with budget
+			// left", which is the raiser's own double-occurrence detector. My earlier line called
+			// them `+0x2E0+0x34` deque traffic because the old +0x2E0 = animated-event-deque
+			// reading was still load-bearing here; T-074/T-085 settled +0x2E0 as the EFFECT INBOX
+			// and the anim deque as +0x1A8, so that arithmetic is retired too.
+			// NOT replicated either way, and for the honest reason now: the pair needs a budget
+			// counter ([ent+0x174], decremented only by this walk at 0x54c7e7) that the port does
+			// not model - see the no-invention note above, which stands untouched.
+			// With the store live the manager's
 			// skip-advance (0x5a955d -> 0x5a9572) becomes reachable exactly as shipped - through
 			// RE-ENTRANCY, which the port does not model (row boundary; lockstep question routed
 			// by T-011). No rotation is invented here: the PathManager T-048 block pins BOTH
