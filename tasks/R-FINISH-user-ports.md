@@ -1,6 +1,6 @@
 ---
-status: seated
-assignee: KeenStorm (product lane — all edits are src/ + modules/openje; slices sequenced AFTER M-001 slice 2, each independently committable)
+status: seated (post-OOM re-issue)
+assignee: SwiftOwl `01a16198-6cbb` (QuickNova dispatch ece5726: "SwiftOwl now ALSO takes R-FINISH — they hold the fenced tail, the submodule chain, and the checker"; predecessor seat KeenStorm died mid-renderer-era, all its landed work stands)
 type: product completion (finish user-started functions; every fact needed is ALREADY in discoveries/)
 ---
 
@@ -49,6 +49,33 @@ completion also lands the function's EA citation.
   CombatManager.hpp:116 + GameWorld.cpp:58 "the OLD C-23 placeholder … retired here" (retired = done),
   GameActionAttack.cpp:295, MapEntitySpawn.cpp:285, src/F3.cpp:70, src/F3.hpp:63, EngineStringSystem.hpp:14,
   cls_0x4d8d70.cpp:112's static-init note. These are the corpus's named-absences speaking correctly.
+
+## Item closes (SwiftOwl 01a16198, this seat)
+- **9 DONE** (openje ab93890 / bump 09ae5b0): ctor comment swept to the IDB-verified construction
+  (0x49c62e-0x49c69f, band name resource_cache_0x12c from the IDB itself); the 9 fenced defs cited
+  at completion. THE 9 SELF-DELETED EXACTLY AS PROMISED — campaign gap 0/356 at that point.
+- **4 DONE** (openje ef086dc / bump ac67e6a): clock() placeholders -> Host::TickMilliseconds
+  (0x56AF50, modeled source as used @0x563196/0x563199); the shipped RETURN SPLIT recovered from
+  the body and implemented verbatim (enter-4 tick @0x54556a-0x545573, leave-4 elapsed
+  @0x545585-0x54558b, other -> PRE-transition state @0x545516/0x54558e); callerless verified by
+  grep, header contract extended.
+- **6 DONE** (openje b77597c / bump c9de63b): no standalone Action::ctor EXISTS (method census
+  over .?AUAction@@); base init inlined as the LAST write mbr_0x4=1 in all four sampled derived
+  ctors (0x5a9252/0x55fb21/0x560191/0x5a9018) -> base constructs to 1, repairing the silent
+  zero-drift in derived classes that never re-wrote the flag; +0x34 alternative ruled out by the
+  same dumps (base subobject = vftptr+flag, 8B). Test upgraded to the byte-shape assert.
+- **7 DONE** (openje + bump, this commit): THREE targets, TWO real. 7a cls_0x50db20.cpp:67 —
+  0x401940 decompiled: it is the REAL resize/shrink helper (_Xlen guard @0x40194d, shrink-to-inline
+  @0x40199d-0x4019c9, growth via realloc primitive meth_0x401510 @0x401967/0x401980, whose own
+  shape is @0x401532-0x4015e7); the `return 0` lie REMOVED delete-with-cite per
+  GameActionAttack.hpp:61's own rule, hpp declarations kept labelled UNPORTED. 7b
+  ActionMoveTo.hpp:18 reworded from "full JE::Entity stub" to the named reality (Entity.hpp,
+  base vft 0x692084 pump-at-+0xC8). 7c **ERRATUM**: cls_0x4d8d70.cpp:112 is NOT a COMPLETABLE
+  target — line 112 is a brace; the static-init note it means lives at :116-117 and the same
+  task file's NARRATIVE section correctly rules it "speaking correctly" (deliberate
+  not-reproduced, cited). COMPLETABLE-vs-NARRATIVE collision recorded here; treated as NARRATIVE.
+- Gates per close, freshly re-sourced (item 58): run-all 11/0 + port-annot GATE PASS + msvc rc0
+  (public headers touched). The annot gate policed items 4/6/7 as they landed — self-consistent.
 
 ## Acceptance
 Items 1–9 each: a commit with the function modeled/cited + unit or digest gate green + the marker line
