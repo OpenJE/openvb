@@ -356,3 +356,21 @@ NEXT (slice 3e): read the ModelCache ctor's tree_b (+0x10) init + who INSERTS co
 it (one insert-site census); if tree_b IS populated from the same RegisterCommand path, the two
 trees unify and the port needs an Execute(name,args) on F3:: ported from sub_5857F0 verbatim;
 if not, the console registry stays a find-map and the invoke seam is the ModelCache path alone.
+
+
+## Slice-4 opener (BrightYak, 2026-10-22) - tree-identity census, RAW-VERIFIED
+ModelCache::ctor_0x585c00 (decompile + IDB ledger note agree): tree at +0x08/+0x0C built via
+0x45c940 (0x38-byte nodes, VFX_Parameter sibling destroy) ; tree_b at +0x10/+0x14/+0x18 built
+via StringTree::buynode_0x59ec40 = 0x30-byte-node StringTree; trailing loop probes DECIMAL
+string keys '1','2',... case-insensitively (0x4339b0 + _stricmp) - cache-by-index-name era.
+Executor call chain RAW-PINNED: 0x54ca40-0x54caa6: mov ecx,[0x70c528] (=g_model_cache, ctor
+store 0x585cce / dtor clear 0x585b8a) -> wrapper 0x585a50 -> core sub_5857F0 with ecx = the
+ModelCache, core lower-bounds the tree at [ecx+0x10] = tree_b, INVOKES *(node+0x28) (the value
+slot in BOTH tree shapes: console registry AND cache tree).
+READ RESULT: script commands execute against the ModelCache tree_b; console registrations go
+to the F3 registry (0x59f5d0 -> InsertOrGet @0x59f6a8 - whether THAT function also/instead
+feeds tree_b was NOT yet read: the insert-target census inside 0x59f5d0's callees is the
+FINAL open query). Tree-identity answer status: CONFIRMED two trees exist; the invoker uses
+tree_b; console registry consumption = still open, ONE read (0x59f5d0's insert target + 0x38-
+vs 0x30-byte node-shape discriminator, which is decisive since the two builders differ) away.
+No claim beyond that. Slice-4 body work (Gfx seam per ruling) continues next.
