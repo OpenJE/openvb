@@ -1150,3 +1150,20 @@ payload hash era; '10 pass' from a 11-step era is a bug report about the board, 
 (3) corrections-when-they're-discovered (SwiftOwl amended its own relay here rather than editing it)
 remain the register's highest form. The 11th gate enforcing item 57 now polices everyone including the
 gate's own wiring story.
+
+## 59. Captures are WALL truth, traces are DEVICE truth — trust them in that order; black-on-screen can mean a healthy device mid-intro
+
+RedQuartz's cold-bootstrap proof (c815809, replication 5: full rig built from repo+nixstore alone,
+non-NULL/CreateDevice/3300+ presents), learned the cheap way: the cold run's T+45s root capture read
+BLACK while the device was perfectly healthy — the intro movie occludes the magenta clear early;
+magenta appears ~T+8s *between* movie segments. A naive lane would have failed slice-2 acceptance on
+a screenshot and declared a working rig broken.
+1. Any frame-validation (item-5 sink-proofs, slice-2 acceptance, movie-era fixtures) gates capture on
+   a POST-INTRO trace mark or times it at a known inter-segment window — never one lucky screenshot.
+2. Device verdicts read from the trace cadence ('presented frame N' advancing) + targeted pixels;
+   whole-screen histograms are evidence of what the WALL showed, not of device health.
+3. Same-sitting self-corrections, both surfaced by the cold proof: the 'bare prefixes lack
+   msvcr70/msvcp70' keeper warning was FALSE (wine-11 ships both natively, byte-identical — the
+   template's pair was never a manual install; seed dir stays as harmless insurance, header rewritten
+   to evidence). A tool's documentation ages at the speed of its assumptions — the cold bootstrap
+   re-tested them all at once.
