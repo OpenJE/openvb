@@ -60,6 +60,26 @@ namespace F3 {
 			(void) net;
 		}
 
+		// 32-bit view of client+0x112 scroll-flag slot (shipped operand width is DWORD,
+		// stores 0x588448-0x5884b8 era; the Client.hpp word alias is a narrower label on
+		// the same storage - accessor keeps the port's reads/writes at shipped width).
+		unsigned int& ScrollWord( JE::Client* c ) {
+			return *reinterpret_cast<unsigned int*>( reinterpret_cast<char*>( c ) + 0x112 );   // @0x588448-era
+		}
+
+		// 32-bit view of camera+0xC2 flag word (stores 0x5884ce-0x58856e era).
+		unsigned int& CamFlag( JE::CameraControl* cam ) {
+			return *reinterpret_cast<unsigned int*>( reinterpret_cast<char*>( cam ) + 0xC2 );   // @0x5884ce-era
+		}
+
+		// Client accessor for the commands whose chain dies at the CLIENT, not the camera
+		// (scroll words +0x112, and the mouse sub_587870 era). Shipped chain: mov [0x70bd90]
+		// -> +0x2C with NO guard (raw 0x588448 shape).
+		JE::Client* Client0() {
+			JE::Network* net = JE::Network::GetGameNetwork();
+			return net ? net->GetGameClient() : 0;
+		}
+
 	} // namespace
 
 	// 0x58B450 - "CameraAzimuth <deg>": parse atof, gate on arg count, set azimuth.
@@ -176,6 +196,117 @@ namespace F3 {
 			cam->mbr_0xc2 ^= 0x200;   // 0x5885ae
 		}
 	} // CommandCameraTiltDown
+
+	// 0x58B5B0 - "CameraDistance <d>": arg-gated distance set via 0x586140 (0x58b5e0/0x58b5ee raw).
+	void __stdcall CommandCameraDistance(unsigned int argv) {
+		tracing::instrument( tracing::LOCATION, "argv=%08X", argv );
+
+		JE::CameraControl* cam = Cam();
+		if ( HasArg( argv ) && cam ) {
+			cam->set_distance_0x586140( (float)atof( FirstArg( argv ) ) );
+		}
+	} // CommandCameraDistance
+
+	// 0x58B600 - "CameraDistanceSpeed <f>": sets cam+0xF8 (0x58b633) - THE SHIPPED SLOT that the
+	// animated distance setter uses as TARGET; ported verbatim, collision documented in hpp.
+	// No-arg branch echoes (named-absence echo, EchoClient).
+	void __stdcall CommandCameraDistanceSpeed(unsigned int argv) {
+		tracing::instrument( tracing::LOCATION, "argv=%08X", argv );
+
+		JE::CameraControl* cam = Cam();
+		if ( HasArg( argv ) && cam ) {
+			cam->mbr_0xf8 = (float)atof( FirstArg( argv ) );    // 0x58b633
+		} else if ( cam ) {
+			EchoClient( JE::Network::GetGameNetwork(), "Camera distance speed is %f", cam->mbr_0xf8 );   // 0x58b653
+		}
+	} // CommandCameraDistanceSpeed
+
+	// SCROLL FLAG FAMILY (slice 2) - eight commands, DWORD operand at client+0x112 (shipped
+	// stores are 32-bit or/and through *(client+274) despite the hpp's word alias; On = OR,
+	// Off = AND-NOT. Every body: null-guarded client chain (shipped has no guard, raw 0x588448).
+	// cppcheck-suppress syntaxError
+	void __stdcall CommandCameraScrollLeft_On() {              // @0x588440 (store 0x588448 |= 1)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) |= 1u;
+	} // CommandCameraScrollLeft_On
+
+	void __stdcall CommandCameraScrollRight_On() {             // @0x588450 (store 0x588458 |= 2)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) |= 2u;
+	} // CommandCameraScrollRight_On
+
+	void __stdcall CommandCameraScrollUp_On() {                // @0x588460 (store 0x588468 |= 4)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) |= 4u;
+	} // CommandCameraScrollUp_On
+
+	void __stdcall CommandCameraScrollDown_On() {              // @0x588470 (store 0x588478 |= 8)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) |= 8u;
+	} // CommandCameraScrollDown_On
+
+	void __stdcall CommandCameraScrollLeft_Off() {             // @0x588480 (store 0x588488 &= ~1)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) &= ~1u;
+	} // CommandCameraScrollLeft_Off
+
+	void __stdcall CommandCameraScrollRight_Off() {            // @0x588490 (store 0x588498 &= ~2)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) &= ~2u;
+	} // CommandCameraScrollRight_Off
+
+	void __stdcall CommandCameraScrollUp_Off() {               // @0x5884a0 (store 0x5884a8 &= ~4)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) &= ~4u;
+	} // CommandCameraScrollUp_Off
+
+	void __stdcall CommandCameraScrollDown_Off() {             // @0x5884b0 (store 0x5884b8 &= ~8)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::Client* c = Client0(); if ( c ) ScrollWord(c) &= ~8u;
+	} // CommandCameraScrollDown_Off
+
+	// ZOOM/ROTATE FLAG FAMILY (slice 2) - six commands, DWORD operand at cam+0xC2 (shipped
+	// 32-bit or/and/xor through *(cam+194)); Zoom pair OR/AND, Rotate pair XOR (hold-toggle).
+	void __stdcall CommandCameraZoomIn_On() {                  // @0x5884c0 (store 0x5884ce |= 0x10)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::CameraControl* cam = Cam(); if ( cam ) CamFlag(cam) |= 0x10u;
+	} // CommandCameraZoomIn_On
+
+	void __stdcall CommandCameraZoomIn_Off() {                 // @0x5884e0 (store 0x5884ee &= ~0x10)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::CameraControl* cam = Cam(); if ( cam ) CamFlag(cam) &= ~0x10u;
+	} // CommandCameraZoomIn_Off
+
+	void __stdcall CommandCameraZoomOut_On() {                 // @0x588500 (store 0x58850e |= 0x20)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::CameraControl* cam = Cam(); if ( cam ) CamFlag(cam) |= 0x20u;
+	} // CommandCameraZoomOut_On
+
+	void __stdcall CommandCameraZoomOut_Off() {                // @0x588520 (store 0x58852e &= ~0x20)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::CameraControl* cam = Cam(); if ( cam ) CamFlag(cam) &= ~0x20u;
+	} // CommandCameraZoomOut_Off
+
+	void __stdcall CommandCameraRotateLeft() {                 // @0x588540 (store 0x58854e ^= 0x40)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::CameraControl* cam = Cam(); if ( cam ) CamFlag(cam) ^= 0x40u;
+	} // CommandCameraRotateLeft
+
+	void __stdcall CommandCameraRotateRight() {                // @0x588560 (store 0x58856e ^= 0x80)
+		tracing::instrument( tracing::LOCATION, "" );
+		JE::CameraControl* cam = Cam(); if ( cam ) CamFlag(cam) ^= 0x80u;
+	} // CommandCameraRotateRight
+
+	// 0x588420 - "CameraDown": sub_586310(cam, 1): LOBYTE true -> animated set 0.0 (0x586320),
+	// the nadir twin of CameraTop/TopDown (instant branch is the param_1-false leg, 0x586325).
+	void __stdcall CommandCameraDown() {
+		tracing::instrument( tracing::LOCATION, "" );
+
+		JE::CameraControl* cam = Cam();
+		if ( cam ) {
+			cam->set_elevation_0x586010( 0.0f );   // 0x586320
+		}
+	} // CommandCameraDown
 
 	// DEFERRED this slice (named-absence per item 57, bodies read but not portable yet):
 	//  CommandCameraFOV @0x58B660 - CameraControl::meth_0x5867c0 writes through the

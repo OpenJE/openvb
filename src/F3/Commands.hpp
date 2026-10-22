@@ -45,7 +45,26 @@ namespace F3 {
 	// @0x5885a0  "CameraTiltDown" : TOGGLE camera word mbr_0xc2 bit 0x200 (0x5885ae: xor 0x200)
 	void __stdcall CommandCameraTiltDown();
 
-	// DEFERRED (slice 1 honest cuts, each cited):
+	// Slice 2 - camera tail (all raw-read, registrations land in JE::Client::ctor):
+	void __stdcall CommandCameraDistance(unsigned int argv);        // @0x58b5b0 -> setter 0x586140
+	void __stdcall CommandCameraDistanceSpeed(unsigned int argv);   // @0x58b600 (collides on cam+0xF8, documented)
+	void __stdcall CommandCameraScrollLeft_On();                    // @0x588440  ... Off pairs:
+	void __stdcall CommandCameraScrollRight_On();                   // @0x588450
+	void __stdcall CommandCameraScrollUp_On();                      // @0x588460
+	void __stdcall CommandCameraScrollDown_On();                    // @0x588470
+	void __stdcall CommandCameraScrollLeft_Off();                   // @0x588480
+	void __stdcall CommandCameraScrollRight_Off();                  // @0x588490
+	void __stdcall CommandCameraScrollUp_Off();                     // @0x5884a0
+	void __stdcall CommandCameraScrollDown_Off();                   // @0x5884b0
+	void __stdcall CommandCameraZoomIn_On();                        // @0x5884c0
+	void __stdcall CommandCameraZoomIn_Off();                       // @0x5884e0
+	void __stdcall CommandCameraZoomOut_On();                       // @0x588500
+	void __stdcall CommandCameraZoomOut_Off();                      // @0x588520
+	void __stdcall CommandCameraRotateLeft();                       // @0x588540
+	void __stdcall CommandCameraRotateRight();                      // @0x588560
+	void __stdcall CommandCameraDown();                             // @0x588420 -> animated elev 0.0
+
+	// DEFERRED (honest cuts, each cited; slice-1 list kept current):
 	//  CommandCameraFOV @0x58b660  - needs the JE::Gfx_Engine singleton (global 0x707CE4,
 	//    vft+0xA8 engine-view getter, ride of T-013 device era) inside CameraControl::
 	//    meth_0x5867c0; not portable without the engine object.

@@ -241,3 +241,29 @@ ScrollSpeed 0x58b7d0 field 0x110 needs one re-read; scroll/zoom On/Off 0x588440-
 need byte_70BE0C entity-list walk + 0x54be10 resolver) + CameraDown 0x588420 + the EXECUTION dispatch trace.
 Slice 3 (device era, G1 warm): CameraFOV 0x58b660, Toggle* fullscreen/lighting/shadow..., AdapterInfo, VSync,
 SetDisplaymode - now testable against real device behavior.
+
+
+## Slice-2 LEDGER (BrightYak, 2026-10-22) - CAMERA TAIL + FIELD-KEY CORRECTION
+Landed (gates: msvc rc0 / run-all 10/10 app=124 / annot PASS 0/386 / cppcheck 0):
+- 18 new handlers, all raw-read: Distance 0x58b5b0 (setter 0x586140 ported), DistanceSpeed 0x58b600,
+  scroll x8 on client+0x112 DWORD (0x588440-0x5884b8, On=OR/Off=AND-NOT), zoom/rotate x6 on
+  cam+0xC2 DWORD (0x5884c0-0x58856e; zoom OR/AND, rotate XOR hold-toggles), CameraDown 0x588420
+  (sub_586310 -> animated elev 0.0). 14 registrations added (total 24 live of 84).
+- FIELD-KEY CORRECTION (the slice's real find): slice-1's setter mapping came from DECOMPILER
+  PROSE that swapped anim target vs direction. Re-derived from store-opcode DISPLACEMENTS:
+  azimuth {target 0xcc fstps @0x585fae, dir +-1.0 @0xd0 0x585f8f/a7, start @0xd4};
+  elevation {target @0xe4 0x5860fd, dir @0xe8, NO start field - current 0xa8 IS start};
+  distance {target @0xf8 0x58621e, dir @0xfc, bounds 0xec/0xf0}. cpp + hpp corrected together.
+- SHIPPED SLOT COLLISIONS (ported VERBATIM, unified by nothing):
+  (a) cam+0xF8 = distance anim TARGET == DistanceSpeed command slot (0x58b633 writes what
+      0x586140's else-branch treats as target);
+  (b) cam+0x110 = Gfx_Engine VIEW POINTER (ctor stamp 0x586fd9) == ScrollSpeed command's float
+      slot (0x58b803) - setting scroll speed erases the view ptr. CameraScrollSpeed + FOV
+      DEFERRED to slice 3 until the anim-tick/FOV consumers read these slots and the collision
+      is EXPLAINED (this is why named-absence-with-EA beats a plausible port).
+- Deferred-with-reasons: MouseRotate pair 0x5885c0/d0 -> sub_587870(client,bool) input-mgr era;
+  ToggleConstraints 0x5885e0 -> meth_0x586590(cam, [cam+0x114]==0) (quick read pending);
+  Reset/SetTarget -> entity-list byte_70BE0C walk + meth_0x54be10 resolver (spawn era).
+Slice 3 next: the two collisions' consumer reads (anim tick walk = CameraControl's vft/update
+era), ToggleConstraints, then the toggle-family census (Toggle* x20, mostly flag bytes on
+engine/display objects - device era now LIVE per G1 so these get REAL validation).
