@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: REACHABLE-ZERO (97→9; the 9 are all R-FINISH-fenced in ResourceSystem.cpp — see graduation)
 assignee: SwiftOwl `01a16198-6cbb-71af-9ff0-c353db5d95f9` (re-seated post-OOM 2026-10-22 by QuickNova formal re-issue of the dead seat; predecessor: HappyStorm `01a16092-41cf-7127-936b-377a304178a4` (SEATED by formal commission from the human via LoudDragon — PARK R-ANNOT row)
 type: product-lane edits — COMMENTS ONLY (zero behavior change; per-file commits; per-file reservations)
 depends: tools/port-annot-check.py (manifest+gate), tools/ea-index.py (citation source, item-53 query-first), item 57 (cite-or-name-absence law)
@@ -67,3 +67,27 @@ coordinator's keystroke. Successor line: the R-FINISH-adjacent files re-pass onc
   197 docs/7,842 EAs via SageBear's H-IDX pull); the openje submodule pointer was explicitly
   "left for its owner" — that owner is this lane, hence the SkinTable bump here, nothing else
   rides it.
+
+## GRADUATION NOTE (SwiftOwl, 2026-10-22) — the annotation-stock is CLEARED to reachable-zero
+- Trajectory this seat: 31 → 19 (SkinFragments 12, db50b5c/1010c56) → 9 (MapEntitySpawn 10,
+  7a73234) + the salvaged SkinTable 17 (463af13) and the 22 the seat never owned (slices 1–2,
+  HappyStorm). Full campaign: 97 → **9**.
+- The 9 survivors are ALL `modules/openje/src/JE/ResourceSystem.cpp` = R-FINISH COMPLETABLE
+  ("ResourceSystem comment sweep" item) — per the zero-overlap deal each deletes itself at
+  completion, when its owner implements it (R-FINISH is UNCLAIMED paper; this lane did not touch
+  it, fence respected).
+- Fence honesty census at close: `src/F3.cpp 0/34`, `src/F3/RenderD3D8.cpp 0/8`, `src/main.cpp
+  0/2` verified untouched and clean; the old `main.cpp if@24` parse oddity is dead — the current
+  regex pass reads 2 defs, both cited. No file outside R-FINISH's list carries a gap.
+- Every citation written by this seat: rung-2 ledger (ea-index --query hits, T-007/T-074/T-080/
+  T-085/session-21/23 docs) or rung-3 IDB (only rung-1+2-silent case: 0x57B8A0 meth_0x57b8a0,
+  f3_address_lookup, recorded in its comment); absence-comments name the lookup + date + what
+  the function structurally is.
+- Proof gates at close (comment-only waves must survive both): `run-all-tests` 10 pass / 0 fail
+  (app-boot 124 unchanged) + `msvc-build` rc=0 with MapEntitySpawn.cpp recompiled — both run
+  2026-10-22 post-commits.
+- GRADUATION ASK (coordinator keystroke): wire `tools/port-annot-check.py --gate` (incremental:
+  fails only files changed vs HEAD) into run-all NOW. It does not need the 9 to vanish — full
+  gap=0 is R-FINISH's to mint; the incremental gate makes any NEW or RE-OPENED uncited def a
+  build failure, which is the law's actual teeth. At R-FINISH's ResourceSystem completion the
+  plain checker can be promoted from --gate to strict in the same style as the other graduates.
