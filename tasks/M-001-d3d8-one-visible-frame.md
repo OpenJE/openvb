@@ -206,3 +206,31 @@ SHARED-STATE HONOR NOTE: the experiments transiently broke f3-reimpl-wineprefix 
 then a cold-start race) - recovered with the canonical `wineserver -k; wineboot -u`, re-verified
 124 + full battery re-run after clean revert (dlls removed, DllOverrides deleted). When a row
 touches a shared CI prefix, the exit gate is proving the UN-GATED boot again, not assuming it.
+
+
+### Three-dll round (the coordinator's fix applied; HappyEagle's d3d9=native diagnosis confirmed - and the wall MOVED)
+
+Armed state that ran: dxvk 2.7.1 x32 **three dlls** (naqr5g64...-dxvk-2.7.1-bin/x32 - sha1-IDENTICAL
+to the store path I'd used: b0e02516.../06b0d2df.../761bcefb...) + HKCU DllOverrides {d3d8=n, d3d9=n}
+(dxgi deliberately WITHOUT a reg line, matching the working prefix exactly) + nv32 ICD + Xvfb :98.
+Signature TRANSITIONED, decisively:
+
+| state | Direct3DCreate8 outcome | evidence |
+|---|---|---|
+| d3d9 absent (builtin wins bridge QI) | silent clean NULL, zero stderr | HappyEagle's diagnosis, reproduced exactly |
+| d3d9=native present (his fix) | **`std::bad_alloc` + wine assertion at fixed site (+0x1579 across runs: F4F1E579/F504D579/ED3FB579)** - DXVK PROCEEDS into real init, ALLOCATES, dies in the 32-bit address space | /tmp/render-A.log |
+
+So the coordinator's two-command ask is answered by his own grep AND mine: the third dll was in and
+it moved the failure from "never loaded" to "loaded and OOMed" - the SAME allocation wall that killed
+lvp32's LLVM, now on the hardware path. Remaining variables that could still differ from the 12-min
+crash-free demo boot, cheapest first: (1) **init ORDER** - our gated InitOnce runs AFTER the engine's
+resource/subsystem init (window then render, per the slot placement the row dictated); the shipped
+boot creates its device in the Gfx slot much earlier in a much emptier VA - if DXVK's slab reservations
+need the address space our 600MB-asset-loaded 32-bit process no longer has, bad_alloc is exactly this.
+Testable WITHOUT the prefix: move the gated Init earlier in our startup, or shrink pre-init allocations.
+(2) his wine build vs hf94-wine-11 (unverifiable from my shell). Display class (Xvfb vs Xorg-dummy) is
+RULED OUT as the wall cause (bad_alloc precedes any surface work; second Xorg couldn't start rootless -
+noted, not needed).
+
+LAW-55 executed on exit: all three dlls removed, both reg lines deleted, wineserver reset + wineboot -u,
+**un-gated boot RE-PROVED 124** after revert.
