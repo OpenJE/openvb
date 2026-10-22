@@ -185,6 +185,24 @@ namespace F3 {
 	int ScriptNative_GetPrimaryAttribute( int amx, int params );    // 0x45ac70
 	int ScriptNative_GetDerivedAttribute( int amx, int params );    // 0x45ad00
 
+	// ---- the AMX string-fetch seam (batch B slice B16) --------------------------------------
+	// Shipped reads a script string through sub_59AB20 = amx_GetAddr (0x5CE350: cell bounds, ERROR 5,
+	// then base + (*amx + 16)) + amx_StrLen (0x5CE3F0: the pawn PACKED-vs-plain predicate
+	// `*first_cell <= 0xFF`, two byte orderings) + a STRICT `len < bufSize` + amx_GetString (0x5CE510,
+	// which returns 0 on EVERY path). The port has no AMX data segment - JE::Scripting.cpp declares
+	// itself a stand-in registry, not a VM - so this seam takes a plain C string and preserves only
+	// the OBSERVABLES: unknown cell fails, a string of exactly bufSize fails (the comparison is
+	// strict, so a name that exactly fills the caller's buffer is REJECTED, not truncated), and the
+	// destination is left UNTOUCHED on failure. There is deliberately no "decode error" outcome,
+	// because shipped cannot produce one - modelling it would be inventing behavior.
+	void ScriptNativeRegisterStringParam( unsigned nCellOffset, const char *pcValue );
+	char ScriptNativeFetchString( int amx, unsigned nCellOffset, char *pcOut, unsigned nBufSize );
+
+	// 0x45b750 - IsItemEquipped: the first native to consume the seam. Shipped check ORDER is
+	// observable and kept: resolve (0x45b79e), THEN string fetch (0x45b7cc), THEN the creature cast
+	// (0x45b7fe) - so a bad name on a non-creature reports the NAME failure, not the class one.
+	int ScriptNative_IsItemEquipped( int amx, int params );
+
 	int ScriptNative_GetUsableObjectType( int amx, int params );   // 0x45b440
 	int ScriptNative_GetLockDC( int amx, int params );             // 0x45b570
 

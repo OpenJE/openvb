@@ -197,3 +197,62 @@ Note on precision, stated rather than assumed: shipped uses x87 (extended interm
 introduced by the stored `1/6000` constant rather than by intermediate width. That is a reason the artifact
 is *portable across compilers* - and the lockstep check above is what would falsify that claim instead of
 leaving it as reassurance.
+
+## Closed: the engine computes `floor(6000/AP)`, so the faithful port divides in ints (B17)
+
+The retraction above left one question open - the last bit at exact divisors - and it is now answered from
+instruction bytes plus a sweep, not from a guess. JadeBear decoded the caller and `__ftol2`; I verified the
+claim myself and, in doing so, found the port's own defect.
+
+**The engine's chain (bytes).** `0x409b15 mov [esp+8],eax` (an INTEGER store of AP) / `0x409b19 fild` /
+`0x409b1d fmul ds:dbl_64D590` / `0x409b23 fcom ds:dbl_64D588` / `fnstsw` / `test ah,44h` / `jnp -> 1000` /
+`0x409b30 fld ds:dbl_64D580` / `0x409b36 fdiv st,st(1)` / `0x409b38 call __ftol2` / `0x409b3d fstp st(0)`.
+Between `FMUL` and the call there is **no store of a real** - the only memory operations are constant loads.
+`__ftol2` itself is the register-direct variant (`fistp qword` reads the 80-bit value; the `fst DWORD` inside
+it is a float32 *probe* used by the correction chain, not a spill of the value being converted).
+
+**The consequence.** With the constant's true bits (`3F25D867C3ECE2A5` = nearest double to 1/6000, BELOW it)
+and no rounding until truncation: `AP * const` is exact and slightly below `AP/6000`, the reciprocal lands
+slightly ABOVE `6000/AP`, truncation gives `floor(6000/AP)`. Non-divisors are safe because the distance from
+an integer is at least `1/AP`, which dwarfs any ulp. Swept over AP 1..4000 against a double-rounded chain and
+an extended-precision chain: **zero disagreements with `floor(6000/AP)`**. So the derived-HP case is integer
+division plus the `AP == 0 -> 1000` branch, and lockstep now grades a CERTAIN value rather than a coin flip.
+
+**The port's defect, named precisely.** Mirroring the formula as FP - `double scaled = ap * k; return
+(int)(1.0 / scaled);` - returned **199** at AP=30 while the engine returns 200. Bit-level measurement of my
+own build (sequenced prints, per the standing rule):
+
+    k            bits=3f25d867c3ece2a5   (compiler's 1.0/6000.0 == the image's constant - the input was right)
+    s = 30*k     bits=3f747ae147ae147b   (stored as DOUBLE: this is ABOVE 0.005 - the store INVERTED the direction)
+    r = 1/s      bits=4069000000000000   (exactly 200.0 once the quotient is also rounded to double)
+
+So 199 required a **mixed** chain: the product rounded to double (landing above the true value) and then the
+reciprocal consumed at extended precision (199.9999999999999958, truncated down). Neither pure width produces
+it - all-double rounds the reciprocal back to exactly 200.0, all-extended lands above 200. My earlier framing
+("double-rounded = 300, 80-bit = 299") had both horns wrong, which is why I measured instead of choosing.
+
+**Why not `long double`.** On MSVC `long double` IS `double`, so keeping it wide is not portable across the two
+toolchains this file must build in, and the result would depend on each compiler's spill decisions. Integer
+division is deterministic in both and provably equal over the whole reachable domain - and because C++
+truncates toward zero, it also matches `__ftol2` for negative AP, which the suite now pins: `agility = -27`
+(AP = -7) gives **-857**, where a floor-based implementation would give -858, an off-by-one in the opposite
+direction from the claim I retracted.
+
+The arc is worth keeping as one sentence: I asserted a law from a formula, the suite rejected it, I asserted
+the inverse law from a transcribed constant, my peer corrected the constant by reading bits, the engine's
+bytes then showed the whole computation is an integer division, and the port's remaining error turned out to be
+a precision mixture no formula-matching could have exposed. **Every step was a source-of-truth question: the
+print, the bits, the instruction sequence, and finally the arithmetic itself.**
+
+## The string seam and the first inventory native (B16), for the same register
+
+`ScriptNativeFetchString` stands in for the three-leg AMX fetch and preserves exactly the observables the legs
+produce - unknown cell fails, `strlen >= bufSize` fails (0x59ab40's comparison is STRICT, so a 13-character
+name is REJECTED by a 13-byte buffer), and the destination is untouched on failure - with no decode-error
+outcome modelled, because `amx_GetString` returns 0 on every path and inventing a third failure mode would be
+inventing behavior. `ScriptInventory` models what the matcher and vft slot 10 prove: case-insensitive name
+match (0x46a777 `_stricmp`) and equippedness as membership in SIX slots at `GameInventory+0x14`
+(0x46a8cc `while (v3 < 6)`), so an equip into slot 6 is invisible in the port exactly as it would be in the
+engine. `IsItemEquipped` (0x45b750) lands on top of both, with its five shipped failure strings verbatim and
+its check ORDER - resolve, fetch, cast - asserted by giving a non-creature an unfetchable name and watching it
+report the NAME.

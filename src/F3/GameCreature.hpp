@@ -101,6 +101,13 @@ namespace F3 {
 			// undefined behavior in C++ and quietly untestable; one array keeps it defined and
 			// observable. SKILL_AT / PERK_AT below are the readable spellings of the two halves.
 			int statBands_0xE0[ 26 ];   // [0..12] = base skills at +0xE0, [13..25] = perk ranks at +0x114
+			// The creature's INVENTORY, shipped at GameCreature+0x168 and read by THREE natives from
+			// the PRE-CAST entity base (IsItemEquipped 0x45b821 `mov eax,[esi+168h]`, GetWeaponRange
+			// 0x45b6af, EquipItem) before any Inventory -> GameInventory RTTI attempt. Declared as the
+			// port's own model type rather than a raw dword because the port has no GameInventory
+			// implementation to point at - see src/F3/ScriptInventory.hpp for what stands in, and why
+			// naming it a stand-in is the honest move rather than pretending the era exists.
+			class ScriptInventory *inventory_0x168;
 		//: Methods
 			void ctor_0x40d010();
 			undefined4 virt_meth_0x40d300();

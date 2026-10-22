@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "F3/GameCreature.hpp"
+#include "F3/ScriptInventory.hpp"
 #include "F3/GameEntity.hpp"
 #include "F3/GameItem.hpp"
 #include "F3/GameUsableObject.hpp"
@@ -523,27 +524,43 @@ void ScriptNativeResetRegistry() {
 				return 2 * pC->intelligence_0x770 + 5;
 			case SNC_DA_THROWING_RANGE:                           // 0x409b08: 3 * [ecx+760h]
 				return 3 * pC->strength_0x760;
-			case SNC_DA_HIT_POINTS: {                             // 0x409b1d: reciprocal of AP/6000
-				// THE CONSTANT IS READ FROM THE IMAGE, NOT FROM THE PSEUDOCODE. Stored double at
-				// VA 0x64D590 (.rdata) = qword 3F25D867C3ECE2A5 = 0x1.5d867c3ece2a5p-13, the NEAREST
-				// double to 1/6000, which sits BELOW it. IDA prints the value as
-				// "0.0001666666666666667", and that decimal literal is ONE ULP ABOVE the stored
-				// constant - typing the print instead of the bits inverted the sign of the error and
-				// made every exact divisor of 6000 come out one LOW (AP=20 -> 299, 30 -> 199). That
-				// off-by-one was MY artifact, never the engine's - see
-				// docs/f3/CreatureSkillAndPerkArrays.md for the retraction. What is settled: the
-				// reciprocal is >= 6000/AP, so the answer is 6000/AP or one HIGHER, never one lower.
-				// What is NOT settled statically: the last bit at exact divisors, because it depends
-				// on intermediate width - measured in this very binary, the shipped-shaped path gives
-				// 199 at AP=30 while 1.0/(30.0*k) gives 200. Lockstep decides; the suite asserts the
-				// bound plus this build's pin rather than pretending to know the engine's rounding.
-				const double ap = (double)CreatureDerivedAttribute( pC, SNC_DA_ACTION_POINTS );
-				const double kOneOver6000 = 1.0 / 6000.0;        // bits 3F25D867C3ECE2A5 @0x64D590
-				const double scaled = ap * kOneOver6000;         // 0x409b1d fmul ds:dbl_64D590
-				if ( scaled == 0.0 ) {
-					return 1000;                                 // 0x409b4c: the zero case is 1000
+			case SNC_DA_HIT_POINTS: {                             // 0x409b1d: the AP reciprocal
+				// WHAT THE ENGINE DOES (bytes, no argument): `fild` AP, `fmul ds:dbl_64D590` with the
+				// stored constant 3F25D867C3ECE2A5 (nearest double to 1/6000, which sits BELOW it),
+				// `fcom` against 0.0, on equality the 0x3E8 branch returns 1000, else `fld 1.0`,
+				// `fdiv`, then `call __ftol2` at 0x409b38. Between FMUL and the call there is NO store
+				// of a real: every intermediate stays in the 80-bit register stack, and __ftol2 reads
+				// it directly (`fistp qword`), so the value never crosses the double grid.
+				//
+				// WHY THAT MEANS INTEGER DIVISION IS THE FAITHFUL PORT: with no rounding until the
+				// truncation, AP * (1/6000) is exact-and-slightly-below AP/6000, so 1.0/that is
+				// slightly ABOVE 6000/AP, and truncation toward zero returns floor(6000/AP) - at every
+				// divisor (the extra ulps are far below 1.0) and at every non-divisor (the distance to
+				// the next integer is >= 1/AP, which dwarfs any ulp). Verified over AP 1..4000 against
+				// both a double-rounded chain and an extended-precision chain: zero disagreements with
+				// floor(6000/AP).
+				//
+				// WHY THE FP-SHAPED PORT WAS WRONG (this is the instructive part): mirroring the
+				// formula as `double scaled = ap * k; return (int)(1.0 / scaled);` gave 199 at AP=30
+				// while the engine gives 200. Measured bit-for-bit: storing the product as a DOUBLE
+				// snaps 30*k to 3F747AE147AE147B, which is ABOVE 0.005 - the store INVERTS the
+				// below-constant direction - and then the reciprocal is consumed at extended precision
+				// as 199.9999999999999958, which truncates DOWN to 199. Neither pure shape does that:
+				// all-double rounds the reciprocal back to exactly 200.0, all-extended lands above 200.
+				// The port's error was a MIXED chain - double at the store, extended at the use - which
+				// no amount of "mirroring the formula" would have revealed.
+				//
+				// WHY NOT `long double`: on MSVC long double IS double, so the "keep it wide" fix is
+				// not portable across the two toolchains this file must build in, and the port would
+				// then depend on each compiler's spill decisions. Integer division is the only form
+				// that is deterministic here AND provably equal to the engine's behavior over the whole
+				// reachable domain. C++'s truncation-toward-zero also matches __ftol2 for negative AP
+				// (agility below -20), which the asserts pin.
+				const int nAp = CreatureDerivedAttribute( pC, SNC_DA_ACTION_POINTS );
+				if ( nAp == 0 ) {
+					return 1000;                       // 0x409b4c: the divide guard is the value
 				}
-				return (int)(1.0 / scaled);                      // 0x409b36/0x409b3c fdiv + __ftol2
+				return 6000 / nAp;
 			}
 			default:
 				// shipped: JE::LogDebugString_0x497120("GameCreature::GetDerivedAttribute() - Unknown
@@ -715,6 +732,97 @@ void ScriptNativeResetRegistry() {
 		return CreatureTotalSkill( (const GameCreature *)pEntity, (int)p[ 2 ] );
 	} // ScriptNative_GetTotalSkill
 
+	// ---- the string-param seam (stands in for sub_59AB20 @ 0x59ab20) --------------------------
+	// The shipped fetch is amx_GetAddr (0x5ce350) + amx_StrLen (0x5ce3f0) + a strict len < bufSize +
+	// amx_GetString (0x5ce510), called together from 0x59ab20. This seam replaces that data-segment
+	// model with a registered C string. Capacity is a port limit, stated because shipped has none:
+	// leg 1 validates the CELL OFFSET against the runtime's own bounds (0x5ce36b) and returns error
+	// 5, which this seam reproduces as "offset not registered".
+	struct ScriptStringParam {
+		unsigned nOffset;
+		const char *pcValue;
+	};
+	static ScriptStringParam s_strings[ 16 ] = { { 0, 0 } };
+	static int s_nStringCount = 0;
+
+	// Port-side registration for the seam above (0x59ab20 is the shipped consumer path).
+	void ScriptNativeRegisterStringParam( unsigned nCellOffset, const char *pcValue ) {
+		for ( int i = 0; i < s_nStringCount; ++i ) {
+			if ( s_strings[ i ].nOffset == nCellOffset ) {
+				s_strings[ i ].pcValue = pcValue;   // last registration wins, like a rewritten cell
+				return;
+			}
+		}
+		if ( s_nStringCount < 16 ) {
+			s_strings[ s_nStringCount ].nOffset = nCellOffset;
+			s_strings[ s_nStringCount ].pcValue = pcValue;
+			++s_nStringCount;
+		}
+	} // ScriptNativeRegisterStringParam
+
+	// The three shipped observables, each of which the suite pins: unknown offset fails; strlen >=
+	// bufSize FAILS (0x59ab40's comparison is strict `<`, so a full buffer is a rejection); and pcOut
+	// is untouched when the answer is no (legs 1 and 2 short-circuit before leg 3 ever writes).
+	char ScriptNativeFetchString( int amx, unsigned nCellOffset, char *pcOut, unsigned nBufSize ) {
+		const char *pcValue = 0;
+
+		for ( int i = 0; i < s_nStringCount; ++i ) {
+			if ( s_strings[ i ].nOffset == nCellOffset ) {
+				pcValue = s_strings[ i ].pcValue;
+				break;
+			}
+		}
+		if ( pcValue == 0 ) {
+			return 0;   // 0x5CE350's error-5 path: nothing written
+		}
+		if ( strlen( pcValue ) >= nBufSize ) {
+			return 0;   // 0x59ab40: STRICT less-than against the CALLER's capacity
+		}
+		strcpy( pcOut, pcValue );
+		return 1;
+	} // ScriptNativeFetchString
+
+	// 0x45b750 - IsItemEquipped. Five distinct failure messages, all shipped-verbatim, and a
+	// name-keyed lookup whose real semantics live in the inventory model (case-insensitive match at
+	// 0x46a777, then the SIX-slot equipped array at GameInventory+0x14, 0x46a8cc `while (v3 < 6)`).
+	int ScriptNative_IsItemEquipped( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+		char szName[ 128 ];   // shipped: v7[128], fetched with capacity 0x80 at 0x45b7cc
+
+		// Shipped leaves this uninitialized and never reads it unless the fetch succeeded. The port
+		// zeroes it because an uninitialized buffer is a warning magnet in both toolchains; the
+		// observable is identical, since every failure path returns before any use.
+		szName[ 0 ] = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 2, "IsItemEquipped" ) ) {   // 0x45b782
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {   // 0x45b79e
+			ScriptNativeReportError( amx, "IsItemEquipped() was unable to find the entity." );
+			return 0;
+		}
+		if ( !ScriptNativeFetchString( amx, p[ 2 ], szName, 0x80 ) ) {    // 0x45b7cc
+			ScriptNativeReportError( amx, "IsItemEquipped() was unable to find the Item Name." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {       // 0x45b7fe
+			ScriptNativeReportError( amx, "IsItemEquipped() - Entity is not a creature" );
+			return 0;
+		}
+		ScriptInventory *pInv = ( (GameCreature *)pEntity )->inventory_0x168;   // 0x45b821 [esi+168h]
+		if ( !pInv ) {
+			ScriptNativeReportError( amx, "IsItemEquipped() - Inventory not Found" );
+			return 0;
+		}
+		if ( !pInv->bIsGameInventory ) {
+			// models the Inventory -> GameInventory RTTI attempt at 0x45b852 failing
+			ScriptNativeReportError( amx, "IsItemEquipped() - Game Inventory not Found" );
+			return 0;
+		}
+		return pInv->FindEquipped( szName ) ? 1 : 0;
+	} // ScriptNative_IsItemEquipped
+
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
@@ -772,7 +880,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[21] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[22] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -793,7 +901,8 @@ void ScriptNativeResetRegistry() {
 		{ "GetDerivedAttribute", &ScriptNative_GetDerivedAttribute, 2 },   // 0x45ad00
 		{ "GetPerkRank",  &ScriptNative_GetPerkRank,   2 },   // 0x45ab50
 		{ "GetBaseSkill", &ScriptNative_GetBaseSkill,  2 },   // 0x45ad90
-		{ "GetTotalSkill", &ScriptNative_GetTotalSkill, 2 }   // 0x45ae20
+		{ "GetTotalSkill", &ScriptNative_GetTotalSkill, 2 },   // 0x45ae20
+		{ "IsItemEquipped", &ScriptNative_IsItemEquipped, 2 }   // 0x45b750
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

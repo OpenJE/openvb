@@ -1513,3 +1513,72 @@ chain of error, because a corrected claim without its path is only half the valu
 
 Batch B after B14/B15: **21 natives LIVE**, 3 array rows retired from "blocked on layout", remaining blockers
 concentrated in the inventory/party/dialogue eras plus the AMX string fetch trunk (`b8d91b9`).
+
+## Slice-B16 (WildKnight 01a1639b) — the string seam and the first inventory native: 22 LIVE, 134 -> 133 asserts net, and the era built as a declared stand-in
+
+`ScriptNativeFetchString` + `ScriptNativeRegisterStringParam` replace the three-leg AMX fetch with a registered C
+string, preserving exactly the observables the legs produce: unknown cell fails (leg 1's error-5 path, 0x5ce36b),
+`strlen >= bufSize` fails because 0x59ab40's comparison is **strict** - so a 13-character name is REJECTED by a
+13-byte buffer, asserted both sides - and the destination is untouched on failure. Deliberately modelled as
+having NO third failure mode: `amx_GetString` returns 0 on every path, so a "decode error" would be inventing
+behavior shipped cannot exhibit.
+
+`F3::ScriptInventory` (new header, model not reversal) carries what the matcher and the virtual prove: name
+matching is case-insensitive (0x46a777 `_stricmp`), and equippedness is **membership in SIX slots at
+`GameInventory+0x14`** - vft slot 10 at 0x46a860 walks `*(&this->mbr_0x14 + v3) == a2` under `while (v3 < 6)`
+(0x46a8cc), which is where the number 6 comes from rather than from convention. Slot 6 stores nowhere, so an
+over-cap equip is invisible exactly as it would be in the engine. Its `bIsGameInventory` flag exists solely to
+keep the fifth shipped message ("... - Game Inventory not Found", the RTTI-attempt failure) reachable and
+testable instead of dead code.
+
+`IsItemEquipped` (0x45b750) is the first consumer: arity 2; five shipped messages verbatim; and the check ORDER
+is asserted rather than assumed - resolve (0x45b79e), THEN fetch (0x45b7cc), THEN the creature cast (0x45b7fe) -
+proven by feeding a non-creature an unfetchable name and watching it report the NAME, not the class.
+
+Gate note, because the gate was right and I was not: `port-annot` failed my first run with one uncited
+definition (`ScriptNativeRegisterStringParam@746`) - a stand-in seam still needs the shipped EA it stands in
+for, and I had commented the semantics without the address. Fixed by citing 0x59ab20/0x5ce350/0x5ce3f0/0x5ce510;
+`--gate` now PASS. Suite 134 -> 133 asserts net (three bound-style asserts collapsed into equality ones below),
+`ScriptNatives=OK [133 >= 133]`, table 22 natives.
+
+## Slice-B17 (WildKnight 01a1639b) — the last open question closed: derived HP is `floor(6000/AP)`, and the port's residual 199 was a MIXED precision chain
+
+The B15 retraction left one thing open: the last bit at exact divisors. It is closed from bytes and a sweep, and
+the answer makes the whole FP shape unnecessary.
+
+Engine chain (0x409b15-0x409b3d, decoded): integer store of AP, `fild`, `fmul` by the stored constant, `fcom`
+against zero, `jnp` to the 1000 branch, `fld 1.0`, `fdiv`, `call __ftol2`, `fstp`. **No store of a real between
+FMUL and the call**, and `__ftol2` reads the register directly (`fistp qword`; its internal `fst DWORD` is a
+float32 probe used by the correction chain, not a spill). With the constant's true bits BELOW 1/6000, the
+product is exact and slightly under `AP/6000`, the reciprocal lands slightly above `6000/AP`, truncation yields
+`floor(6000/AP)`; non-divisors are safe because their distance to an integer is at least `1/AP`. Swept AP 1..4000
+against both a double-rounded and an extended-precision chain: **zero disagreements** (my first 80-bit emulator
+reported 4000 mismatches - that was my emulator's significand handling being wrong, and it is recorded as mine,
+not as evidence).
+
+So the port divides in ints plus the zero branch, and lockstep grades a certain value now.
+
+**The instructive part is the port's own defect.** Mirroring the formula in FP gave 199 at AP=30 while the engine
+gives 200. Measured bit-for-bit in my build, sequenced as the standing rule requires: `k` = `3f25d867c3ece2a5`
+(compiler's `1.0/6000.0` equals the image's constant - the input was right), the product stored as a double =
+`3f747ae147ae147b`, which is ABOVE 0.005 - **the store inverted the below-constant direction** - and the
+reciprocal rounded to double = `4069000000000000` = exactly 200.0. So 199 needed a MIXED chain: product rounded
+to double (above the true value) then reciprocal consumed at extended precision (199.9999999999999958) and
+truncated down. Neither pure width does it. My earlier dichotomy - "double-rounded means 300, 80-bit means 299" -
+had both horns wrong, which is exactly why measuring beat choosing.
+
+Why not `long double`: on MSVC `long double` IS `double`, so keeping it wide is not portable across the two
+toolchains this file must build in, and the answer would depend on each compiler's spill decisions. Integer
+division is deterministic in both, and because C++ truncates toward zero it also matches `__ftol2` for negative
+AP - pinned by a new assert: `agility = -27` (AP = -7) gives **-857**, where a floor-based implementation would
+give -858, an off-by-one in the OPPOSITE direction from the claim I retracted.
+
+Tooling footnote worth keeping: my first attempt to run the bit-dump returned rc=53 with NO output at all, and it
+looked like a crash. It was a missing `-static` - the loader failed before `main`. A silent nonzero exit with no
+stdout is a linkage fact, not a behavior; run a hello-world in the same prefix before believing a fault story.
+
+Arc of this one finding, for the register: asserted a law from a formula -> suite rejected it; asserted the
+inverse law from a transcribed constant -> peer corrected the constant by reading bits; engine bytes then showed
+the whole computation is an integer division; and the port's remaining error was a precision mixture that no
+amount of formula-matching could expose. Every step was a source-of-truth question - the print, the bits, the
+instruction sequence, the arithmetic.
