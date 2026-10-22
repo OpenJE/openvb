@@ -58,3 +58,54 @@ name lookup.
 (0x45a6f0) - unread bodies, both expected to take a name; `GetWeaponRange` (0x45b620) - does NOT need it (its
 inputs are handles only), which is why the era's four rows share a trunk but not a blocker. Route by
 call-shape, per the gate-trio router: 0x59AF40 / 0x59AEF0 / 0x59AD20 within the first bytes means script native.
+
+## The three legs, read from the image (B15) - and what they ask the port to become
+
+`sub_59AB20` delegates to three functions, each now read whole. They are stock Pawn/AMX, and together they
+define the size of the thing the port would have to grow to be option 1.
+
+**Leg 1 - `sub_5CE350` (amx_GetAddr)** (0x5ce350). A bounds test and an address computation:
+
+    if ( offset >= amx[6] && offset < amx[8] || offset < 0 || offset >= amx[9] ) return 5;   // 0x5ce36b
+    *out = offset + *amx + (*amx + 16);                                                      // 0x5ce378
+
+so the cell offset is validated against three fields of the AMX struct (their meanings are the AMX
+runtime's, not re-derived here - cited as `[6]`,`[8]`,`[9]` and left unverified on purpose) and rejected with
+error code 5, then translated by a base plus a header-size term (`*amx + 16`). **The failure mode is an error
+CODE, not a null pointer** - which is why the fetch's boolean comes out of an `&&` chain and why callers print
+their own message.
+
+**Leg 2 - `sub_5CE3F0` (amx_StrLen)** (0x5ce3f0). Branches on the first cell's magnitude:
+
+- `*param_1 <= 0xFF` -> PACKED: walk 4-byte groups counting `while (data[4*n+4])`, length in BYTES.
+- else -> plain: `strlen`, and then, unless `byte_7004BC` is clear, a tail adjustment that walks forward by
+  whole bytes while `(word & 0xFF000000) != 0` (0x5ce430-0x5ce43a) - i.e. it accounts for padding bytes in the
+  final cell.
+
+**Leg 3 - `sub_5CE510` (amx_GetString)** (0x5ce510). Same predicate, two decoders:
+
+- packed (`<= 0xFF`): emit the low byte of each successive cell (`*v8++ = *v2; v2 += 4`) until a cell is zero,
+  then a terminator - pawn's 4-chars-per-cell packing, one byte per cell little-endian.
+- plain: pull bytes OUT of each cell in descending order - `v5` cycles `3,2,1,0` via `(v5-1)&3` and the byte is
+  `*v2 >> (8*v5)` - so the arrangement is cell-swapped relative to the packed branch.
+
+## Why this settles the seam decision rather than complicating it
+
+To be option 1 the port would need: an AMX struct with a data segment and three bound fields, a base-plus-header
+address translation, error codes, the packed-vs-plain predicate, two different byte orderings, and a padding
+adjustment gated on a global (`byte_7004BC`). That is not a string helper; that is the VM's data model, and the
+port says plainly that it does not have one.
+
+Option 2 - a fetch seam taking a plain C string while preserving the shipped OBSERVABLES - stays the
+recommendation, with the observable list now sharper, because the legs show exactly which failures are
+reachable and which are just the VM's internals:
+
+1. an out-of-range cell offset fails with error 5 (leg 1) -> caller prints its own line and returns 0;
+2. a string whose length is `>= bufSize` fails (the strict `len < bufSize` in `sub_59AB20`) -> same;
+3. a decode failure (leg 3 returns non-zero - it never does in these bodies, both branches `return 0`) is
+   therefore UNREACHABLE as a separate outcome; only legs 1 and 2 can fail.
+
+That third point is a small but real fidelity fact: `sub_59AB20`'s `&& sub_5CE510(...) == 0` clause can never
+be the reason a fetch fails, because `amx_GetString` returns 0 on every path. Writing the seam to model a
+"decode error" would be modelling something shipped cannot do - the kind of defensive invention this batch has
+been systematically removing.
