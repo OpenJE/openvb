@@ -98,10 +98,20 @@ earliest: the target's next pump (same frame iff the world pumps the target afte
 >    editing, then again by NiceTiger).** A lethal hit does enqueue `GameActionDie` via `call 0x550720`
 >    @`0x45c626` - true. But that funnel's own stream is `8d 8e 04 03 00 00` = `lea ecx,[esi+0x304]`
 >    @0x550726: the **ACTION deque**, not the effect deque at `+0x2E0`. So this sentence was never evidence
->    about the container Step 1 builds. **Surviving claim, narrow: damage never queues.** Which shipped class
->    leaves a still-pending `+0x2E0` entry is **NOT established** - the candidate feeders (equip notices,
->    `DropPayload`, `EffectTreeTrigger`, spawn replay @0x552692) were not individually gated: a bounded
->    absence, per item 73.
+>    about the container Step 1 builds. **Surviving claim, narrow: damage never queues** - and its counterpart
+>    is now ANSWERED, by the fourth site neither seat had gated: **spawn / delta-record replay @`0x552692`**,
+>    inside Entity vft `0x692084` **slot 10** (function begins `0x552420`). Verified a third way here straight
+>    from the PE: `8d 8e e0 02` = `lea ecx,[esi+0x2E0]` @**0x55268c**, and **no write of byte `+0xB` anywhere
+>    in the surrounding 0xa0 bytes** - so the replay path pushes re-created effects (factory by recorded type
+>    word; slot-2 assign copies the recorded `+0x9C` damage cell) with **no readiness test and no fire-walk**.
+>
+>    **The distinction is the finding, not the fact of queueing: replayed damage queues; live-feeder damage
+>    still never does**, because `0x45c6b3` forces `+0xB=1` before the gate on the live path. So Step 1's
+>    `skip-past`/multi-entry law IS reachable by shipped traffic - via reconnection/delta replay, not via
+>    combat. Better grounds than the withdrawn death claim, and weaker than "combat exercises it": replay is a
+>    path a given demo session may never take. Both halves are bounded absences with windows stated - the 0xa0
+>    bytes around 0x55268c, and the still-unchecked equip-notice / `DropPayload` / `EffectTreeTrigger` feeders.
+>    Full receipt is FastNova's `79b6c81` §2b; the question this section left open was closed by NiceTiger.
 >
 >    **The error class, in two layers, because both are needed.** (i) *A reused verb is not a shared data
 >    structure* - "enqueues" is said of two containers and the inference crossed without a byte doing it.
