@@ -66,6 +66,13 @@ namespace F3 {
 	void __cdecl CommandCameraScrollSpeed(unsigned int argv);     // @0x58b7d0 (slice 3 unblocked)
 	void __cdecl CommandCameraFOV(unsigned int argv);             // @0x58b660 (slice 3 unblocked; view-half named-unported)
 
+	// Script-control family, slice 6: conn byte trio at [net->mbr_0x18]+0x70E4/0x70E5/0x70E6,
+	// local-authority gate [net]+0x04 & 1, echoes named-absent until the CDebugInterface TU.
+	void __cdecl CommandToggleScripts();                          // @0x588880 (gate + flip, NO echo)
+	void __cdecl CommandDisableScripts();                         // @0x58e4a0
+	void __cdecl CommandEnableScripts();                          // @0x58e5b0
+	void __cdecl CommandOneScriptPass();                          // @0x58e6c0
+
 	// DEFERRED (honest cuts, each cited; slice-1 list kept current):
 	//  CommandCameraFOV @0x58b660  - needs the JE::Gfx_Engine singleton (global 0x707CE4,
 	//    vft+0xA8 engine-view getter, ride of T-013 device era) inside CameraControl::

@@ -68,6 +68,26 @@ namespace F3 {
 			(void) net;
 		}
 
+		// Debug-console echo (script family): JE::CDebugInterface::meth_0x5583e0 on
+		// [client+0x8C] (the slot the shipped handlers load as [[0x70BD90]->0x2C]+140, e.g.
+		// @0x58e4c3), called (msg, fg, bg, 0) with the documented shipped color quirk: Disable
+		// and remote lines pass (0x80,0) @0x58e52a/@0x58e583, Enable passes (0,128) @0x58e63a,
+		// OneScriptPass (0x80,128) @0x58e74e. Named-absence: the port's JE::CDebugInterface is a
+		// vft stub; skipping the echo is the port-side deviation (EchoClient precedent, slice 1).
+		void EchoConsole( JE::Network* net, const char* text ) {
+			tracing::instrument( tracing::LOCATION, "%s", text );
+			(void) net;
+		}
+
+		// Script-control subsystem flags, shipped [net->mbr_0x18]+0x70E4/0x70E5/0x70E6 (the
+		// connection object's byte trio: toggle 28900 @0x5888a2, disabled 28901 @0x58e4dc/0x58e5ec,
+		// one-pass 28902 via sub_5567F0 @0x5568a6). Port: typed off the untyped dword slot with the
+		// slice-1 boot-only guard (shipped faults identically pre-connect; conn install is the
+		// net-boot era, named-unresolved).
+		byte* ScriptConn( JE::Network* net ) {
+			return reinterpret_cast<byte*>( net->mbr_0x18 );
+		}
+
 		// 32-bit view of client+0x112 scroll-flag slot (shipped operand width is DWORD,
 		// stores 0x588448-0x5884b8 era; the Client.hpp word alias is a narrower label on
 		// the same storage - accessor keeps the port's reads/writes at shipped width).
@@ -352,6 +372,86 @@ namespace F3 {
 	//    41b1a74): slice 3 validates it against a real device instead of guessing.
 	//  CommandCameraReset @0x58A7F0 / CommandCameraSetTarget @0x58B6E0 - entity-list walk
 	//    (byte_70BE0C sentinel loop, entity +0x1E8/+0x1DC keys, resolver meth_0x54be10).
+
+	// ------------------------------------------------------------------
+	// Script-control family (slice 6). Shipped shape, four commands, all gated on
+	// [net]+0x04 & 1 (the local-client authority bit; shipped reads it through
+	// JE::AreaMapIcon::Get_mbr_0x4_0x5b4f30 on the [0x70BD90] alias, e.g. @0x58e4d2 - the
+	// mislabeled global is the Network object per slice 1). Flags are the conn byte trio;
+	// echoes route through EchoConsole (named-absent deviation above).
+	// ------------------------------------------------------------------
+
+	// @0x588880 "ToggleScripts": gate-only, NO echo in either branch (unlike its siblings);
+	// flips conn[+0x70E4] to the negation of its zero-test (@0x5888a2: b = (b == 0)).
+	void __cdecl CommandToggleScripts() {
+		JE::Network* net = JE::Network::GetGameNetwork();          // [0x70BD90] store 0x5438fa
+		if ( !net ) {
+			return;   // port boot-guard (slice-1 Cam() precedent; shipped has none)
+		}
+		if ( ( net->mbr_0x4 & 1 ) != 0 ) {                         // @0x58888d
+			byte* conn = ScriptConn( net );
+			if ( conn ) {
+				conn[ 0x70E4 ] = ( conn[ 0x70E4 ] == 0 ) ? 1 : 0;   // @0x5888a2 (28900)
+			}
+		}
+	}
+
+	// @0x58e4a0 "DisableScripts": local -> conn[+0x70E5]=1 + "Scripts disabled.";
+	// remote -> echo only ("Unable to disable scripts from remote client." @0x58e568).
+	void __cdecl CommandDisableScripts() {
+		JE::Network* net = JE::Network::GetGameNetwork();
+		if ( !net ) {
+			return;
+		}
+		if ( ( net->mbr_0x4 & 1 ) != 0 ) {                         // @0x58e4d2
+			byte* conn = ScriptConn( net );
+			if ( conn ) {
+				conn[ 0x70E5 ] = 1;                                 // @0x58e4dc (28901)
+			}
+			EchoConsole( net, "Scripts disabled." );               // text @0x58e513, echo @0x58e52a
+		} else {
+			EchoConsole( net, "Unable to disable scripts from remote client." );   // @0x58e568/0x58e583
+		}
+	}
+
+	// @0x58e5b0 "EnableScripts": mirror image; shipped color params differ from Disable's
+	// ((0,128) @0x58e63a vs (0x80,0)) - the documented shipped quirk, carried by EchoConsole's
+	// comment (the port echo ignores colors until the console TU lands).
+	void __cdecl CommandEnableScripts() {
+		JE::Network* net = JE::Network::GetGameNetwork();
+		if ( !net ) {
+			return;
+		}
+		if ( ( net->mbr_0x4 & 1 ) != 0 ) {                         // @0x58e5e2
+			byte* conn = ScriptConn( net );
+			if ( conn ) {
+				conn[ 0x70E5 ] = 0;                                 // @0x58e5ec
+			}
+			EchoConsole( net, "Scripts enabled." );                // text @0x58e623, echo @0x58e63a
+		} else {
+			EchoConsole( net, "Unable to enable scripts from remote client." );    // @0x58e678/0x58e693
+		}
+	}
+
+	// @0x58e6c0 "OneScriptPass": local -> sub_5567F0(conn, 1) @0x58e6fc, whose param_1==1 arm
+	// is the unconditional store conn[+0x70E6]=1 (@0x5568a6; the clear/"Done" arm belongs to
+	// the SCRIPT PUMP's caller era, not this command - not ported, not needed) + echo;
+	// remote -> "Unable to control script execution from remote client." @0x58e793.
+	void __cdecl CommandOneScriptPass() {
+		JE::Network* net = JE::Network::GetGameNetwork();
+		if ( !net ) {
+			return;
+		}
+		if ( ( net->mbr_0x4 & 1 ) != 0 ) {                         // @0x58e6f0
+			byte* conn = ScriptConn( net );
+			if ( conn ) {
+				conn[ 0x70E6 ] = 1;                                 // via sub_5567F0 @0x556817/@0x5568a6
+			}
+			EchoConsole( net, "Executing scripts for one game round." );   // @0x58e733/0x58e74e
+		} else {
+			EchoConsole( net, "Unable to control script execution from remote client." );  // @0x58e793
+		}
+	}
 
 	// ------------------------------------------------------------------
 	// Execute() mirror: the shipped command FIFO + frame drain. Shipped counterparts, all

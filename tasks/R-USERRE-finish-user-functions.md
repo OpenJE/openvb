@@ -670,3 +670,27 @@ FULL CHAIN, ALL SLOTS RAW-PINNED (the era's spine, port-ready):
   suggested: the ELF cmkr runs on the host directly (wine was never needed for cmkr itself).
 - Gates at this row: run-all 12/0 (with app), msvc TRUE rc0, annot PASS; cls_0x4d8d70 suite
   re-run green post-fix (no regression in the shared tree code).
+
+## Slice-6: SCRIPT-CONTROL FAMILY LIVE (26->30 of 84) - SwiftOwl, 2026-10-22 ~06:2x
+- CommandToggleScripts @0x588880, CommandDisableScripts @0x58e4a0, CommandEnableScripts
+  @0x58e5b0, CommandOneScriptPass @0x58e6c0 ported + registered (0x58ef1c/0x58ef2b/0x58ef3a/
+  0x58ef49). Shipped shape, all raw-read this slice: gate = [0x70BD90->0x04] & 1 (local-client
+  authority bit, read through the mislabeled AreaMapIcon getter @0x58e4d2 era); effect = the
+  conn byte trio [net->mbr_0x18] + 0x70E4 toggle / +0x70E5 disabled / +0x70E6 one-pass;
+  ToggleScripts is gate+flip with NO echo in either branch (@0x58888d-0x5888a2 - the only
+  branchless-shape sibling); OneScriptPass goes through sub_5567F0(conn,1) whose param-1 arm IS
+  the unconditional store @0x5568a6 (the clear/"Done" arm belongs to the script-pump caller
+  era - named, not ported, not needed by this command).
+- ECHO DEVIATION (named-absent, EchoClient precedent): the shipped echoes route through
+  JE::CDebugInterface::meth_0x5583e0 on [client+0x8C] ([[0x70BD90]->0x2C]+140 @0x58e4c3); the
+  port's CDebugInterface is a vft stub, so EchoConsole logs via tracing and skips the real
+  console write. Shipped color-arg quirk DOCUMENTED in-file (Disable/remote (0x80,0), Enable
+  (0,128), OneScriptPass (0x80,128)) - lands fully when the console TU ports.
+- Boot-safety PROVEN by the suite (new asserts 21-22): with the Network singleton absent the
+  four commands dispatch, return at the port guard, and the queue keeps flowing with argv
+  intact - the guard-deviation is now a TESTED contract, not a comment. Suite 22 asserts.
+- Family census note for the batch: script-control trio flags found at their shipped offsets
+  (+0x70E4-E6 in the conn object) - first members of the connection object EVER located;
+  the object itself (0x7100+ bytes) remains unported, named per-field as located.
+- Gates: run-all 12/0 Commands [22>=16] app=124, msvc TRUE rc0, annot GATE PASS stock 0/398,
+  cppcheck clean. Registration counter: 30 of 84 ctor-era live.
