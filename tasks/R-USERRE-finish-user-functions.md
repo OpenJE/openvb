@@ -694,3 +694,50 @@ FULL CHAIN, ALL SLOTS RAW-PINNED (the era's spine, port-ready):
   the object itself (0x7100+ bytes) remains unported, named per-field as located.
 - Gates: run-all 12/0 Commands [22>=16] app=124, msvc TRUE rc0, annot GATE PASS stock 0/398,
   cppcheck clean. Registration counter: 30 of 84 ctor-era live.
+
+
+## Wall-1 ENQUEUE FEEDER CENSUS — CLOSED (BrightYak, 2026-10-22; coordinator ruling 9328c0-off walls)
+Question this lane named (#131): who pushes command strings into the FIFO at [GameClient+0x7C].
+Census: ALL 17 sub_580D10 push-sites load the SAME object — chain `mov [0x70BD90]; mov +0x2C;
+mov +0x7C` verified byte-pattern at every site (two register permutations + the hotkey self-link
+variant [esi+8]). The '9 unnamed feeders' from #131 are now named — they are GUI INTERFACE vft
+handlers, i.e. the game's own windows enqueue COMMANDS BY NAME through the console FIFO:
+  sub_41CA00 = CActionbarInterface era (virt 0x41cfe0): pushes 'InventoryWindow' (0x650b18)
+    @0x41cb89, 'OptionsWindow' (0x650b00) @0x41cc05 — actionbar buttons are command aliases.
+  GamePlayerAvatarManager meth_0x429900 @0x429a18 + meth_0x42a190 @0x42a1eb: 'RequestNewGame'
+    (0x652008) x2 — char-gen completion starts the game VIA the command bus.
+  sub_42FE50 = CCharacterGenerationInterface (virt 0x430750): 'OptionsWindow' @0x42ffe6 +
+    RUNTIME-CONSTRUCTED string @0x4306ba (stack buffer built pre-push).
+  sub_433EE0 = CEscapeMenuInterface (virt 0x434110): 'LoadGameOptions' (0x653e98) @0x4340b2.
+  sub_440CE0 = CMainmenuInterface (virt 0x440fb0): 'RequestNewGame' @0x440d92, 'LoadMap'
+    (0x656720) @0x440e8e, runtime string @0x440f62 — the main menu's New Game/Load Map are
+    console commands on the same bus.
+  JE::Client::SetFocus_virt_0x58d9a0 @0x58dac0: runtime string via 0x616d8c (string-transform),
+    pushed on FOCUS events — the anomaly stands (scripted on-focus command firing, shape
+    consistent with window .int metadata era).
+  sub_59E8E0 = JE::CConsoleInterface::virt_meth_0x59ec10 THUNK (e9 @0x59ec13) -> the CONSOLE
+    ENTER FEEDER, FOUND. Pushes runtime strings built from console input @0x59ea29 —
+    closes the 'separate feeder into the same FIFO' open candidate from SwiftOwl's chain.
+  sub_5B6BC0 = CDebugToolsInterface (virt 0x5b7750): 'disablescripts' @0x5b6d54, 'enablescripts'
+    @0x5b6dde, 'OneScriptPass' @0x5b6f38 (+ 'ToggleBPsBtn' 0x6ac574 site @0x5b6dde-adjacent
+    branch) — debug tools panel buttons enqueue script-control commands.
+ARCHITECTURE SUMMARY (all cited): the console FIFO at [client+0x7C] is the GAME'S CENTRAL
+COMMAND BUS — windows enqueue command NAMES (static) and command LINES (runtime, console
+input + SetFocus strings); the same-frame drain (0x587fd5) + cdecl dispatch (0x580c4b) executes
+whatever the registry holds. ShowCursor-era note: 'ToggleBPsBtn' (0x6ac574) joins the static
+payload list (wall-2 neighbor intel, banked for whoever ports it).
+STRIDE-28 RECORD: fields observed at sites: cell+0x00..0x04 header/next shape + string SSO
+{buf@+4(16B), size@+0x14, cap@+0x18} = 0x1C — matches drain-side 28B stepping; the two
+'named-unknown' fields from the coordinator's brief are the SSO size/cap pair, now NAMED.
+METHOD AUTOPSY (law family fifth member): my E8-scan AND my absolute-pointer scan AND my
+jmp-rel32 FORMULA all missed the console thunk; IDA's xrefs caught it — the miss mechanism:
+the `je 0x59ec13` at 0x59ec11 JUMPS OVER a direct `call 0x59e8e0` (the linear call-site exists
+but my grep for 'call   0x59e8e0' hit only 2 lines: the function-def line and the thunk — the
+direct call is conditional-skipped code my scan SHOULD have caught: it IS there (581390 region),
+my caller-scan's rel-computation for THIS one didn't match — UNRESOLVED micro-mystery, named
+NOT hidden: 4th instrument, IDA, agrees with the thunk decode). LESSON: three scanner
+formulations failed the SAME site; the negative-before-IDA was wrong again; xrefs are the
+census when the byte-family disagrees.
+NEXT: this census makes Execute() mirror fully proven (console Enter feeder named), and hands
+wall-2/wall-3 their command names ('ShowCursor' registration site unchanged; 'ToggleBPsBtn'
+is a bus payload, not a registered command — census note for the cursor lane).
