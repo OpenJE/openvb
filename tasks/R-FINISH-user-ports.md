@@ -1,5 +1,5 @@
 ---
-status: seated (post-OOM re-issue)
+status: COMPLETABLE DONE (items 1-9 landed, marker grep-zero, gates green); GATED stands as filed
 assignee: SwiftOwl `01a16198-6cbb` (QuickNova dispatch ece5726: "SwiftOwl now ALSO takes R-FINISH — they hold the fenced tail, the submodule chain, and the checker"; predecessor seat KeenStorm died mid-renderer-era, all its landed work stands)
 type: product completion (finish user-started functions; every fact needed is ALREADY in discoveries/)
 ---
@@ -76,6 +76,45 @@ completion also lands the function's EA citation.
   not-reproduced, cited). COMPLETABLE-vs-NARRATIVE collision recorded here; treated as NARRATIVE.
 - Gates per close, freshly re-sourced (item 58): run-all 11/0 + port-annot GATE PASS + msvc rc0
   (public headers touched). The annot gate policed items 4/6/7 as they landed — self-consistent.
+- **1 DONE** (src e2c1bac): the +0x90 PAD IS A REAL MEMBER now — embedded JE::VFX_Parameter,
+  layout closed by R-VEG-E's value shape {name SSO buf+0x04/size+0x14/cap+0x18=15, tree at
+  value+0x1C} + the World teardown chain (sub_5AA340(this+144) @0x54852f; SSO reset
+  @0x5aa3a7-0x5aa3b1 — the triple the item-2 ctor byte-pins); file-static g_worldParams
+  retired, Initialize rewired through the member.
+- **2 DONE** (openje 36a4cfc): ctor sweep BYTE-PINNED from the decompiled @0x4fe1e0 — the old
+  zero-for-cleanliness was WRONG in four places (+0x1c=15, +0x20/24/28=-1/-1/-1 sentinels,
+  mbr_0x4 never ctor-written); roles from R-VEG-E §1 (TYPE enum over the 15-vocab @0x6fbbe8,
+  inline-default float bits, buffer trio {size,allocated,data}).
+- **3 DONE** (openje 36a4cfc): GetBool sub_4DF8B0 VERIFIED-READ and re-modeled — miss returns
+  DEFAULT AS-IS (@0x4df94d/0x4df9ef, no clamp), hit returns atol>0 STRICTLY-POSITIVE
+  (@0x4df9cb/0x4df9e7); the GetInt delegation is gone.
+- **5 DONE** (openje 791710b / bump 4c2712e): the three stub comments in ActionAnim START are
+  RESTORED CALLS — sink with the byte-verified 5-arg signature @0x5a92a1, [ent+0x288] clear
+  @0x5a92a8, deadline math @0x5a92d7; Entity::meth_0x548d80/meth_0x548fc0 modeled same-TU
+  (T-066 step-2 precedent) with both shipped gates verbatim and the Gfx device continuation
+  CITED-AND-OMITTED (port state never sets +0x160 — shipped and port terminate identically,
+  faithful by construction, no false model); mislabeled net/critical_section.hpp include
+  removed with the mislabel named. Frame proof per the keeper's ITEM-5 WINDOW RECIPE
+  (9131dc8): cadence+identity on the warm rig — the honest kind RedQuartz armed.
+- **8 DONE** (openje + parent, this commit): the SS::Format path is WIRED at its shipped call
+  site — EngineStringSystem::Get_0x56c260 implements the now-decompiled two-call body (base
+  fetch @0x56c26e via GetById_0x4c5900 + empty-string default, in-place format @0x56c276 via
+  SS::Format/MakeEnv); StringFormat.cpp added to BOTH build source lists — the LNK2019 the
+  mingw-first suites had been hiding; and the reason it HID is the coordinator's item 60
+  (cached-cmkr no-op'd cmake.toml edits silently — TRUE-rc capture caught what the pipe had
+  been green-ing). Final gates, re-sourced, honest rc: run-all 11 pass / 0 fail (app=124),
+  msvc rc=0 'Built target F3', port-annot GATE PASS stock 0.
+
+## ACCEPTANCE MET (SwiftOwl, closing commit): all nine marker phrases grep-ZERO over
+src + modules/openje/src (layout pending / legacy placeholder / "GetInt for now" /
+"until JE::TickMilliseconds" / "stub: signature mismatch" / "not yet RE'd" / "entry-point parity" /
+"not yet wired into Get" / "stubbed blobs"). GATED set stands as filed: SkinFragments +0xC4 device
+decode (UNDEFERRED by G1, queued behind the Gfx-model era), Network netcode era, PathManager
+interim models (fail-loud placeholders correct by design), RenderD3D8 g_state=3 (a state, not a
+gap). SUCCESSORS named: (a) the sink device arm + the +0xC4 gate want the animation-model era —
+rig warm, law = trace-cadence per item 59; (b) Action-suite wiring into the run-all table is a
+build-affecting follow-on this seat named and did NOT smuggle; (c) item-6's test stays unwired
+until (b).
 
 ## Acceptance
 Items 1–9 each: a commit with the function modeled/cited + unit or digest gate green + the marker line

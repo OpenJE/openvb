@@ -57,6 +57,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/ResourceSystem.cpp"
 	"modules/openje/src/JE/Resources.cpp"
 	"modules/openje/src/JE/SS/EngineStringSystem.cpp"
+	"modules/openje/src/JE/SS/StringFormat.cpp"
 	"modules/openje/src/JE/SS/StringSystem.cpp"
 	"modules/openje/src/JE/Scripting.cpp"
 	"modules/openje/src/JE/SpatialGrid.cpp"

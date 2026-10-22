@@ -42,6 +42,7 @@ sources = [
     "modules/openje/src/JE/Map.cpp",
     "modules/openje/src/JE/SS/StringSystem.cpp",
     "modules/openje/src/JE/SS/EngineStringSystem.cpp",
+    "modules/openje/src/JE/SS/StringFormat.cpp",
     "modules/openje/src/JE/Subsystem.cpp",
 ]
 private-include-directories = ["src", "modules/openje/src", "modules/tracing/src"]
