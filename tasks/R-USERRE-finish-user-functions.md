@@ -324,8 +324,10 @@ pass (zero divergence); shipped RegisterCommand total = 109 sites (84+24+quit @0
 
 
 ## Slice-3c RESEARCH — dispatch question CLOSED in shape, registry CONSUMER open
-Store census for [0x70C528]: the ONLY text store is 0x585b8a = JE::ModelCache::dtor clearing
-the singleton (pattern identical to the Network 0x70BD90 slot). => the script-execution tree
+Store census for [0x70C528] (corrected 3d): 0x585b8a sits in JE::ModelCache::dtor_0x585b10
+(the g_model_cache CLEAR, +0x76 into the 0xee-byte dtor); the CONSTRUCTION store is
+g_model_cache=this @0x585cce in the ctor (port already mirrors both: ModelCache.cpp lines 18/40).
+[0x70C528] == JE::ModelCache singleton, CONFIRMED both directions. => the script-execution tree
 belongs to the MODEL CACHE: ModelCache holds TWO name-trees (tree_a +0x04/+0x08/+0x0C VFX-Param
 sibling destroy 0x45d1d0; tree_b +0x10/+0x14/+0x18 StringTree destroy 0x585640, node+0x28 holds
 CACHED MODEL objects freed via 0x567f50). So 'executor+0x10 lookup, call [node+0x28](argv)'
@@ -340,3 +342,17 @@ TOKEN path, and the 'call' leg is the remaining evidence gap. NEXT READ: cls_0x4
 meth_0x56bd50 (0xd8 bytes, the non-ESS consumer). Until it reads, no port claim about HOW the
 handler gets invoked — only HOW IT'S FOUND (registry, proven) and WHERE lookups happen (2 sites,
 census-closed).
+
+
+## Slice-3d LEDGER notes (BrightYak, 2026-10-22) - two self-corrections on the board
+(1) 'console UNREACHABLE / registry zero readers' RETRACTED as overstated: the registry tree
+0x70C668 is consumed via register-passed pointers (lea [obj+0x10] shape - an imm32 scan is
+structurally blind to it); the EXECUTOR INVOKE MECHANISM is fully found: sub_5857F0 tokenizes
+whitespace-separated text -> builds the argv cell-chain -> lower-bound on the passed tree ->
+invokes node+0x28 handler. OPEN now only: which tree instance the console's registered names
+land in (console registry vs ModelCache tree_b). (2) 0x70C528 store census corrected above
+(ctor 0x585cce = g_model_cache=this, dtor clear 0x585b8a; port already models both).
+NEXT (slice 3e): read the ModelCache ctor's tree_b (+0x10) init + who INSERTS command names into
+it (one insert-site census); if tree_b IS populated from the same RegisterCommand path, the two
+trees unify and the port needs an Execute(name,args) on F3:: ported from sub_5857F0 verbatim;
+if not, the console registry stays a find-map and the invoke seam is the ModelCache path alone.
