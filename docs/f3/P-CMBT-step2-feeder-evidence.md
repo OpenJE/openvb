@@ -220,23 +220,35 @@ TrueRaven asked for the OnDamage leg as a second script-by-name witness; here it
 54b02c: mov  ecx,[esi+2BCh]                        ; the cached SCRIPT OBJECT, Entity+0x2BC
 54b032: mov  edx,[ecx]                             ; its vft
 54b03f..43: push name/count/block/out             ; FOUR args forwarded verbatim
-54b044: call dword ptr [edx+14h]                   ; SCRIPT VFT SLOT 5 (byte +20)
+54b044: call dword ptr [edx+14h]                   ; SCRIPT VFT SLOT 5 (+0x14)
 ```
 
 **GetScript_54aef0 (read whole `0x54aef0-0x54afd7`)** adds the resolver law the typedef decision needs:
 - `[esi+0x2C0]` = load-failure latch (checked first, cached-miss returns 0 fast);
 - name string is an SSO at `Entity+0x2A4` (capacity field `+0x2B8`, the `10h` test at `0x54af41`);
 - the script is fetched by SERVER OBJECT: `0x54af28 call GetWorldServerInstance_0x401150` then
-  `0x54af38: call [server_vft+24]` with arg `[entity+0x1DCh]` — the slot-9 SCRIPT HANDLE — stored to
+  `0x54af38: call [server_vft+0x24]` (slot 9) with arg `[entity+0x1DCh]` — the slot-9 SCRIPT HANDLE — stored to
   `+0x2BC` at `0x54af3b`; so the script is resolved BY HANDLE from the same singleton the natives trail
   (B8 family) and cached on the entity;
 - load failure logs `"Entity::GetScript() Unable to load script..."` via `LogDebugString_0x497120`
   (another shipped literal for T-022), latches `+0x2C0=1`, nulls `+0x2BC`, returns 0.
 
-**What this adds over the case-0x51 witness (`0x46d...`, predicate `[script+16]` then invoke
-`[script+24]` with out):** the OnDamage path uses slot **5 (+0x14)** with a COUNTED arg block and NO
-existence predicate — the two shipped call-sites of the script-by-name interface therefore exercise
-THREE distinct slots (+16 exists?, +20 fire-and-forget, +24 call-with-out) of ONE object shape:
+**What this adds over the case-0x51 witness — now BYTE-PINNED both sides:** re-read of the site
+(`0x46e286-0x46e2ae`) shows the predicate is `call [edx+0x10]` (slot 4) @0x46e299 followed by `cmp al,1`
+@0x46e29c, and the invoke is `call [eax+0x18]` (slot 6) @0x46e2ae with `(name, &out)`. The discovery
+prose had written these as decimal "+16 / +24"; the raw operands resolve them to hex `+0x10 / +0x18`,
+consistent with `+0x14` sitting between them. So the script-object vft interface is THREE adjacent
+slots, all now cited at instruction level:
+
+| byte | slot | semantics | witnessed at |
+|---|---|---|---|
+| +0x10 | 4 | `predicate(name) -> al == 1` | net dispatch case-0x51 @0x46e299 |
+| +0x14 | 5 | `invoke(name, argc, cells, out)`, return unused | combat apply -> RunScript @0x54b044 |
+| +0x18 | 6 | `invoke(name, &out)` | net dispatch case-0x51 @0x46e2ae |
+
+The OnDamage path has **no predicate at all** and its return is **unconsumed** — fire-and-forget
+structural, not inferred. Per the batch's notation law (NativeWiringGaps.md @2963163): write `+0x24`
+or "slot 9", never bare `+24`.
 `(script resolved by handle from server singleton) -> vft(name, argc, cells[, out])`. Shipped treats
 entity scripts as named-entrypoint objects in exactly one consistent ABI, used by both the net dispatch
 and the combat apply path, synchronously, server-only (both entry paths throw on the same world-server
