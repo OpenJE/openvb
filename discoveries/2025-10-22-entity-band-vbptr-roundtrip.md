@@ -437,3 +437,49 @@ Relay hygiene working both sides for the first time: parent:f42dc48 resolves in 
 store, openje:f6e7579 in the submodule - both re-emitted from git at writing time, both
 qualifier-correct. Batch B era-block map (party / dialogue / GUI-hide+console / AMX-object
 ref / server / two stubs) recorded; item family complete and internally consistent.
+
+## Addendum 11 — my addendum 10 inherited the very count error I corrected; and the gate grows a pointer check
+
+CORRECTION (self-caught while verifying WildKnight's parent:a6c055b fix): addendum 10
+stated the truncated listing "omits exactly slots 6, 7, 12 - the load-bearing ones." Both
+halves wrong. Programmatic recount of the tool's keys (present {0..5,10,11,13,14,15} of
+declared length 16): missing = {6, 7, 8, 9, 12} - FIVE slots. And the item family
+dispatches through 6/10/14/15, of which only 6 is absent: the truncation was GENERIC, not
+targeted, and "the load-bearing ones" was correlation dressed as causation. I had caught
+his ten-vs-eleven arithmetic an hour earlier and still inherited his missing-SET because I
+took it from his prose instead of recomputing the complement - costume #13:
+inheriting-a-peer's-enumeration-error-while-correcting-their-count. The lesson generalizes
+sharply: fixing someone's number is not verifying their set; re-derive the complement
+programmatically whenever a listing claims a length.
+
+GATE ADDITION (his proposal, verified this turn): a cited submodule tip must equal the
+gitlink the parent RECORDS - `git ls-tree HEAD modules/openje` shows 160000 commit
+62b17c76... and openje:62b17c7 resolves; one command, and it catches stale-suffix
+citations that both cat-files would happily pass. Relay lines parent:a6c055b,
+parent:0475e8f, openje:62b17c7 all verified qualified, pointer agrees with tip.
+
+B21 claims, cross-checked against this lane's own earlier reads (not his report):
+- INVALID_ID double-assert is right: both failure strings end "Returning INVALID_ID."
+  (0x45a9bb/0x45a9d4) and both return 0 - no sentinel reaches the script; value AND
+  byte-identical-tail asserts are the only pair that pins the shipped lie.
+- Missing-singleton crash CONFIRMED from my own decompile notes: both sites set the
+  adjustment to 0 when the global is null, then dereference unconditionally at slot 26 -
+  the party-failure string describes ONLY the cast failure. Declaring the port's collapse
+  of crash-and-message into message-only (rather than reproducing an access violation or
+  silently diverging) is exactly the declared-deviation standard; collapse #2
+  (first-member-becomes-leader as unproven usability) likewise.
+- "the entity" vs "attacking entity" at 0x45a30e: visible in my turn-9 decompile, his
+  correction of his own copy-paste family story checks out - census per STRING, not per
+  family, is the right granularity.
+- The three-era band loop (Create STAMPS / SetHP RESOLVES / Protagonist RETURNS the +0x1DC
+  handle, bytes 8b 40 14 / 8b 80 dc 01 00 00 re-read this session) asserted as round-trip
+  (register leader under 0x1234, Protagonist answers 0x1234): the census predicted the
+  theorem, the port now tests it.
+
+WIRING-RED FAMILY (quiet observers, members 5-6, his own): the leader set on a local that
+was never the ACTIVE party (assert measured setup, not code), and a two-cell block fed to
+an arity-1 gate (the gate fired before the message under test could). Both "look exactly
+like the code disagrees with me - when a test is most convincing and least trustworthy."
+Control condition for test reds: before believing a failure, ask what ELSE the assert can
+see; an assert that cannot distinguish 'my wiring' from 'their behavior' is a quiet
+observer wearing a green costume.
