@@ -299,3 +299,25 @@ resolver 0x54be10; CameraReset needs client+0xBC/0xE0 keys (v3 note: those are C
 world+0x1DC-handle era - rides P-CMBT/T-043 inventory, honest paper exists).
 Next: toggle-family census (Toggle* x20 - flag flips on engine/display objects; device era LIVE,
 G1-validated reads possible), then the EXECUTION dispatch trace.
+
+
+## Slice-3b RESEARCH (BrightYak, 2026-10-22) - dispatch chain + toggle census (memory obs #130)
+EXECUTION CHAIN (the open question since beat 1, ANSWERED for the script path):
+JE::Entity::meth_0x54ca40 (Entity+0x22C gate, +0x218 script text) -> wrapper 0x585a50 -> core
+sub_5857F0 -> lower-bound 0x545710 on the tree at EXECUTOR+0x10, executor = singleton [0x70C528]
+(all 38 AMX/script sites load exactly that global before the call). The handler at node+0x28 is
+invoked with the argv cell-chain convention. OPEN QUESTION (named, not guessed): does the
+console registry tree 0x70C668 == executor's +0x10 tree? Raw census: 0x70C668 has ZERO .text
+readers outside init/RegisterCommand/ GLOBAL__I / atexit - so either the trees are the same
+object (one ctor read of 0x70C528 settles it) or console text flows through the script executor.
+NEXT READ (queued): who STORES 0x70C528.
+TOGGLE FAMILY (13 uniform thunks): every CommandToggle* 0x5882a0-0x588610 = 'mov eax,[0x70bd90];
+mov ecx,[eax+2c] (+ optional mov ecx,[ecx+74] -> CLIENT+0x74 IS A CAMERA/VIEW PTR, layout
+finding); jmp setter' where setter flips ONE bool [obj+disp] and pushes it to the Gfx_Engine
+[0x707CE4] vft (Statistics: flip [Client+0x4a] -> vft+0x1BC @0x581654; Lighting: flip
+[view+0x54] -> call 0x581600). Heavy non-thunk toggles: FogOfWar 0x58b290, Water 0x58e7e0,
+Building 0x58bb90, VisualEffects 0x58e380, StartupMovies 0x58b1b0, FOWAutomap 0x58b370,
+FOWLOS 0x58e340. Port posture: thunks port 1:1 ONLY with per-member engine vft numbers READ
+(no guessing) + Gfx_Engine seam = slice 4, with G1 device validation available per keeper.
+REGISTRY ORDER: full 84-command ctor decompile re-verified verbatim against my slice map this
+pass (zero divergence); shipped RegisterCommand total = 109 sites (84+24+quit @0x5ace0f).
