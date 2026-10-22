@@ -39,6 +39,7 @@ in {
         if [ ! -f "$prefix/system.reg" ]; then
           "${wineboot}" -u >/dev/null
         fi
+        f3-wine-userdirs-fix "$prefix"
       }
 
       run_wineboot "$origPrefix"

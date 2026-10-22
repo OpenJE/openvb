@@ -68,6 +68,10 @@ in {
         exit 1
       fi
 
+      # The app-boot suite boots the exe under this prefix; dangling user-dir links there make
+      # F3::SetupSaveDirectory fatal, so heal them before running anything.
+      f3-wine-userdirs-fix "$wineprefix"
+
       # The data-based suites read their resource root through wine, so C:\f3data must exist in
       # the prefix. Stage it (read-only symlinks to the demo root) exactly like
       # f3-reimpl-run-data does, so this script works even if that script never ran here before.

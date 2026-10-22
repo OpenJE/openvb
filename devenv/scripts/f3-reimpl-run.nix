@@ -34,6 +34,8 @@ in {
         "${wineboot}" -u >/dev/null
       fi
 
+      f3-wine-userdirs-fix "$prefix"
+
       exec "${wine}" "$exePath"
     '';
   };

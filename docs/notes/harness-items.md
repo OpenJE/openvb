@@ -1265,3 +1265,65 @@ cute version is exactly the version that skips the check; (3) the coordinator's 
 own claim inherits the claim's verification status — praise is a quote, and quotes carry halos. The real
 lesson, less cute: the most-quoted seat of the night reproduced the register's named trap in prose, and
 the only defense the board has ever found is the same fifteen keystrokes: grep -c before send.
+
+## 67. A freshly wineboot'ed prefix ships DANGLING user-dir symlinks on this host — "Unable to create save folder." is rig state, not a code regression
+
+The morning-after report (2026-10-22 08:34): `f3-reimpl-run-trace` died in `F3::SetupSaveDirectory`
+with `JE::FatalError("Unable to create save folder.")`, and the reasonable read was "some session
+left the binary broken". It wasn't. `git status` was clean (last write: 03:12), and the failure lived
+in `.devenv/state/f3-reimpl-wineprefix` — RECREATED at 22:35 the previous evening by the rig rebuild
+(`f3-reimpl-wineprefix.broken-20261021-2135` is its predecessor). Wine 11 symlinks the standard user
+dirs to `$HOME`; this host has no `~/Documents` and no `~/Desktop`, so both links dangle. Measured with
+a purpose-built i686-mingw probe under that prefix (not inferred):
+
+```
+SHGetFolderPath(CSIDL_FLAG_CREATE|CSIDL_PERSONAL) -> C:\users\shane\Documents  (hr=0, err=183)
+_findfirst("C:\users\shane\Documents")             -> -1        (not a directory: it is a LINK)
+CreateDirectoryA("C:\users\shane\Documents")        -> 0, err=183 ERROR_ALREADY_EXISTS (on the link)
+CreateDirectoryA("C:\users\shane\Documents\F3-trace")-> 0, err=2  ERROR_FILE_NOT_FOUND (under it)
+CreateDirectoryA("C:\users\shane\Documents2")        -> 1, err=0  (fresh sibling dir: works)
+```
+
+That pair is why neither branch of `CreateAllDirectories` (src/F3.cpp:181) can win: exists-check says
+no, create-says-exists, and the full path still cannot be made. The predecessor prefix had REAL dirs
+(and the `F3*` save dirs inside them), which is the layout the boot assumes.
+
+Fix and hardening: repair the prefix (`rm` the dangling link, `mkdir` the real dir — saves then stay
+inside `drive_c`, as before) and make it non-recurring with `scripts.f3-wine-userdirs-fix`
+(devenv/scripts/f3-wine-userdirs-fix.nix), called by every script that boots a prefix: `f3-reimpl-run{
+,-data,-trace,-debug}`, `f3demo-run{,-debug}`, `f3-lockstep-debug` (both prefixes, inside its
+`run_wineboot`), and `run-all-tests` (the app-boot gate boots under the same prefix). It is idempotent
+and deliberately conservative: live symlinks (`~/Downloads`, `~/Pictures` exist here) and real dirs are
+left alone; only `-L && ! -e` links are replaced.
+
+SAME-MORNING SECOND FINDING, same class (unfinished harness work, not product code): the trace script
+never staged data, so once the save folder was fixed the boot died one step later at
+`JE::ResourceSystem::Init` — "Couldn't open hashtable file" with `cwd=Z:\mnt\...\openvb`. The engine
+opens `<cwd>\resource.rht`, so any run script needs the demo-root stage + `cd` that `f3-reimpl-run-data`
+does; `-trace` now does it too. The two faults were a chain: the second was hidden behind the first.
+SAME-MORNING THIRD FINDING — and THIS one really was unfinished work: `msvc-build-tracing` fails at
+HEAD. The traced exe was 17h behind the sources, and rebuilding proved why the last session never
+refreshed it: `RenderD3D8.cpp(9): fatal error C1083: Cannot open include file: 'd3d8.h'`. bbf7346
+(10-20 19:42, M-001 slice-1 SDK wiring) added `devenv/scripts/msvc-sdk-prerelease.bat` and called it
+from `msvc-build.nix` ONLY — `-tracing` and `-debug` never got the call (nor the item-60 cmkr bootstrap
+block), so both variants have been broken since `RenderD3D8.cpp` first included `<d3d8.h>`. Fixed by
+porting both blocks; the three `-lc` bodies now differ only in `-DCMAKE_BUILD_TYPE`/`-DOPENVB_TRACING`
+and the build dir, and `msvc-build-tracing` builds clean (`[100%] Built target F3`, fresh 90112-byte
+exe, no error/warning lines, `[sdk-prerelease] d3d8 SDK on INCLUDE+LIB` printed by both configure and
+build legs). Proof the fresh exe is the current code: the trace marks moved to `F3.cpp:240` and
+`ResourceSystem.cpp:72`, matching today's sources (the stale binary printed 242/62).
+
+Note the flip side of item 1: fixing the nix payload does NOT fix the running shell — `devenv-reload`
+(or a fresh shell) is what makes `f3-reimpl-run-trace` resolve to the repaired script.
+
+Rules: (1) when a run script fatals, BEFORE reading product code, check whether the fault is prefix
+state — `ls -l <prefix>/drive_c/users/$USER/` for links whose target is missing costs one command and
+has now eaten a morning twice (this file's item-1 class: the environment lies, quietly); (2) prefix
+bootstrapping is not done until the recreated prefix BOOTS — `wineboot -u` returning 0 is not the
+acceptance test, the exe reaching `GameStateLoop` is; (3) probe the Win32 layer directly when a CRT/Win32
+call's error code is the question (`i686-w64-mingw32-gcc` + that prefix gives err numbers, where the
+engine only prints its own fatal string); (4) two faults in a chain hide each other — after fixing the
+first, re-run to the NEXT failure before calling the path healthy; (5) a build-script fix that lands on
+ONE variant is a divergence: when a `.nix` toolchain change is about `INCLUDE`/`LIB`/bootstrap, grep the
+sibling variants in the same commit's blast radius (`grep -l msvc-sdk-prerelease devenv/scripts/*.nix`
+returning 1 of 3 IS the bug report), and prove it by building the other variants, not by reading them.

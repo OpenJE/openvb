@@ -115,10 +115,18 @@ in {
         -v "$PWD:/work" -w /work \
         "${msvcImage}" \
         -lc '
+          # item 60: cmkr bootstrap is a no-op with an existing cache (configure runs with
+          # CMKR_SKIP_GENERATION=ON), so cmake.toml edits would silently never take effect.
+          # Regenerate explicitly whenever the cached cmkr binary is available (offline).
+          cmkr_bin="$(ls build/_cmkr_v*/build/cmkr 2>/dev/null | head -1)"
+          if [ -n "$cmkr_bin" ]; then
+            cp "$cmkr_bin" build/cmkr_gen.exe
+            WINEPREFIX=/work/build/wineprefix wine "Z:\\work\\build\\cmkr_gen.exe" gen || exit 1
+          fi
           WINEPREFIX=/work/build/wineprefix \
-            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && %CMAKE_EXE_WIN% -S Z:\\work -B Z:\\work\\build-msvc -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMKR_SKIP_GENERATION=ON"
+            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat && %CMAKE_EXE_WIN% -S Z:\\work -B Z:\\work\\build-msvc -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMKR_SKIP_GENERATION=ON"
           WINEPREFIX=/work/build/wineprefix \
-            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && %CMAKE_EXE_WIN% --build Z:\\work\\build-msvc"
+            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat && %CMAKE_EXE_WIN% --build Z:\\work\\build-msvc"
         '
     '';
   };

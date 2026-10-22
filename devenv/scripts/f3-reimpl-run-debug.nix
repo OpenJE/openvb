@@ -36,6 +36,8 @@ in {
         "${wineboot}" -u >/dev/null
       fi
 
+      f3-wine-userdirs-fix "$prefix"
+
       printf '%s\n' \
         "Reimplementation GDB stub listening on 127.0.0.1:$gdbPort" \
         "Use IDA Remote GDB Debugger against the rebuilt binary IDB/database." \

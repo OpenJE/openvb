@@ -21,5 +21,6 @@
     ./f3-run.nix
     ./f3-run-debug.nix
     ./f3-json-check.nix
+    ./f3-wine-userdirs-fix.nix
   ];
 }

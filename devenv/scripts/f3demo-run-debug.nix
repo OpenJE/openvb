@@ -27,6 +27,8 @@ in {
         "${wineboot}" -u >/dev/null
       fi
 
+      f3-wine-userdirs-fix "$prefix"
+
       printf '%s\n' \
         "Original demo GDB stub listening on 127.0.0.1:$gdbPort" \
         "Use IDA Remote GDB Debugger against the original demo IDB/database." \

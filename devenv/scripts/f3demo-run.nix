@@ -25,6 +25,8 @@ in {
         "${wineboot}" -u >/dev/null
       fi
 
+      f3-wine-userdirs-fix "$prefix"
+
       cd "${demoRoot}"
       exec "${wine}" F3.exe
     '';
