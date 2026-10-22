@@ -184,3 +184,41 @@ vft[+56](item, slot, 1) equip. Verbatim quirk: sibling error strings differ by a
 "Entity ID does not belong" (Primary) vs "EntityID does not belong" (Derived); keep both.
 Also: CommandInventoryWindow uses the base-plus-delta codegen shape itself
 (`v2 + *(v2->vft[1])`) - the vb-adjust idiom is program-wide, not a server-singleton quirk.
+
+## Addendum 4 — derived HIT_POINTS: the off-by-one is a TRANSCRIPTION, not arithmetic
+(2025-10-22, falsifiable claim resolved statically; supersedes the "x87 width" worry)
+
+WildKnight's a63fffc port table shows derived HP off by one LOW at every exact divisor of
+6000 (AP=20 -> 299). The chain (his structure, fully verified): HIT_POINTS case re-enters
+ACTION_POINTS (= agility_0x774 + 20), stores AP to [esp+8] (89 44 24 08 @0x409b15),
+0x409b19 `db 44 24 08` FILD, 0x409b1d `dc 0d 90 d5 64 00` FMUL qword [0x64D590],
+0x409b24 FCOM [0x64D588]=0.0, zero-branch -> 1000 (mov esi,3e8h @0x409b45), else
+0x409b30 FLD [0x64D580]=1.0 / 0x409b36 FDIVP / 0x409b38 CALL __ftol2 (0x616E24), then
+FSTP pop - NO memory round-trip between FDIVP and ftol2 (so 80-bit if width mattered).
+
+THE SIGN ERROR: stored double at 0x64D590 = 0x1.5d867c3ece2a5p-13, repr
+0.00016666666666666666, exactly the correctly-rounded double of 1/6000 and -3.34e-17
+RELATIVE *BELOW* the true value. AP*C lands BELOW AP/6000, the reciprocal lands ABOVE
+6000/AP, truncation CANNOT drop the integer. Simulated both widths at the stored constant
+(Fraction-based 64-bit-mantissa rounding + IEEE double): EVERY exact divisor of 6000 in
+1..40 yields the EXACT value (20 -> 300, 30 -> 200, 1 -> 6000, 6 -> 1000, 12 -> 500).
+Widths agree; the model's error direction was the bug.
+
+THE DIAGNOSIS: IDA renders the constant in pseudocode as 0.0001666666666666667 (17 digits) -
+which parses to C + 1 ulp, ABOVE 1/6000. 80-bit-precision arithmetic with THAT literal
+reproduces WildKnight's full port table exactly: {1:5999, 6:999, 12:499, 20:299, 30:199,
+7:857, 0:1000}. So the port is x87-faithful in shape but its constant was TRANSCRIBED FROM
+THE DECIMAL PRINT, not taken from the image bits. The shipped exe should read 300 at AP=20;
+if lockstep ever shows 299, the constant read here is the thing to re-check first (nothing
+else in the chain can produce k-1: at C both widths are exact at divisors).
+
+HAZARD CLASS FINALIZED - the print is not the value: pseudocode-print now has three shapes,
+all same-session: (i) displacement units (0xC0 rendered as +48), (ii) offsets in wrong
+units (258 vs 0x408), (iii) NEW and worst: CONSTANT DECIMAL RENDERING off by 1 ulp
+(0.0001666666666666667 vs stored 0.00016666666666666666) - a transcription that survives
+15/16 non-divisor probes and only fires at exact divisors. Rule: constants are adjudicated
+against stored BITS (struct.unpack), never against any decimal rendering, and the divisor
+lattice of any reciprocal-truncation formula is the natural detector for this class.
+Also honest-flagged: my earlier "his fild/fmul cites are off by 1" was MY parse error -
+0x409b19 and 0x409b1d are correct opcode starts; only 0x409b3c (ftol2 call, starts 0x409b38)
+is mid-instruction. The ±1 rule applies to the person applying it too.
