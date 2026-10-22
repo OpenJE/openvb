@@ -324,6 +324,19 @@ in {
         fi
       fi
 
+      # ---- item 57: incremental annotation gate (graduated at R-ANNOT close 2026-10-22) ----
+      # Ports must cite like the research does: only files touched vs HEAD are policed, so this
+      # gates NEW/EDITED defs while the 9-stock tail (R-FINISH fenced) clears at its completion.
+      annot_out="$(python3 "$root/tools/port-annot-check.py" --gate 2>&1)"; annot_rc=$?
+      if [ $annot_rc -ne 0 ]; then
+        printf 'port-annot      FAIL (item 57: uncited defs in touched files)\n%s\n' "$(printf '%s\n' "$annot_out" | tail -8)"
+        summary="$summary annot=FAIL "
+        fails=$((fails + 1))
+      else
+        printf 'port-annot      OK   (%s)\n' "$(printf '%s' "$annot_out" | tail -1)"
+        passed=$((passed + 1))
+      fi
+
       printf '\nsummary: %s => %d pass, %d fail\n' "$summary" "$passed" "$fails"
       [ $fails -eq 0 ] || exit 1
       exit 0
