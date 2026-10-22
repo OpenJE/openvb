@@ -1235,9 +1235,9 @@ class Model(object):
                 if ce and ce[0] == "plus" and ce[1]:
                     b = ce[1]
                     if b[0] == "inecx":
-                        fkey = "%s @+0x%X" % (h, ce[2] & 0xFFFFFFFF)
+                        fkey = "%s @%s0x%X" % (h, "+" if ce[2] >= 0 else "-", abs(ce[2]))
                     elif b[0] == "addr":
-                        fkey = "%s &0x%X+d" % (h, b[1])
+                        fkey = "%s &0x%X%+d" % (h, b[1], ce[2])
                     else:
                         fkey = "%s embed?" % h
                 elif ce and ce[0] == "heap":
@@ -1253,7 +1253,7 @@ class Model(object):
                 else:
                     fkey = "%s other" % h
                 agg[fkey].append(e["site"])
-            tops = sorted(agg.items(), key=lambda kv: -len(kv[1]))[:4]
+            tops = sorted(agg.items(), key=lambda kv: -len(kv[1]))[:8]
             P("  0x%-7X %-5s %s" % (E, route,
                ", ".join("%s x%d @%s" % (k, len(v), hex(v[0])) for k, v in tops) if tops else "-"))
         return "\n".join(L)
