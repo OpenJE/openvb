@@ -222,3 +222,38 @@ lattice of any reciprocal-truncation formula is the natural detector for this cl
 Also honest-flagged: my earlier "his fild/fmul cites are off by 1" was MY parse error -
 0x409b19 and 0x409b1d are correct opcode starts; only 0x409b3c (ftol2 call, starts 0x409b38)
 is mid-instruction. The ±1 rule applies to the person applying it too.
+
+## Addendum 5 — spill question answered from bytes; the engine IS integer floor-division
+(2025-10-22, after WildKnight's 9e11a57 retraction and its two counter-corrections)
+
+CORRECTION TO ADDENDUM 4 (annotate, not rewrite): the pasted qword 0x3F15D867C3ECE2A5 was
+MY transcription error - the image says 0x3F25D867C3ECE2A5 (bytes a5 e2 ec c3 67 d8 25 3f,
+three independent reads agree). 0x3F15 = 1/12000; the hexfloat 0x1.5d867c3ece2a5p-13, the
+BELOW/ABOVE analysis and every conclusion were unaffected. Hazard register gains costume
+family #4 - TRANSCRIPTION COSTUMES: (his) reading VA without base/section mapping
+(9.69e-312 garbage), (mine) hand-converting hexfloat to qword (one nibble). Same law as
+EA±1 and pseudocode-print: regenerate digits from the artifact, never from memory.
+
+SPILL, ANSWERED (objdump --32, file-offset 0x9b15 and 0x216e24):
+Caller 0x409b15-0x409b3d: mov [esp+8],eax; fild [esp+8]; fmul [0x64d590]; fcom [0x64d588];
+fnstsw; test ah,44; jnp->1000; fld [0x64d580]; fdiv st,st(1); call 0x616e24; fstp st(0);
+mov esi,eax. NO real-value store between fmul and the call - only constant loads.
+__ftol2 = classic MSVC register-direct: fld st(0) / fst DWORD[esp+18] (a FLOAT32 *probe*
+for the correction chain - not the conversion path) / fistp QWORD[esp+10] (integer from
+the REGISTER, round-nearest) / fild reload / fsubp (value - int, 80-bit) / sign+adc fixup
+= truncation. The real never traverses the double grid. So the width dichotomy {300=spill,
+299=80bit} is INVERTED: at the correct BELOW constant, no width can produce 299 (299 needs
+r < 6000/AP, i.e. a constant ABOVE). Lockstep prior is not 50/50 - it is 300, and anything
+else means a bytes read is wrong, not a width.
+
+THEOREM (proven + empirically swept AP 1..4000, ZERO mismatches at either width):
+shipped derived HP = floor(6000/AP) for AP>=1, and 1000 at AP=0 (zero-branch, the 0x3E8
+immediate). Non-divisors sit >= 1/AP >= 1.7e-4 from an integer - beyond any ulp at any
+width; divisors land a few ulps ABOVE the integer (BELOW constant) - truncation keeps them.
+Consequence: the faithful port is INTEGER DIVISION plus the zero branch - no FP at all.
+"6000/AP diverges at round numbers" was true only against the C+1ulp port; against the
+exe, the obvious simplification IS the semantics. WildKnight's port producing 199 at AP=30
+"with the correct bits" is impossible under either pure chain (both simulate 200) - that
+pin is a THIRD (mixed) shape in the port, and dump-its-intermediates (sequenced printf of
+t-bits and r-bits) will name it. If port pins 199 and lockstep exe shows 300, the pin is
+codifying port!=exe; break it now, not in the run.
