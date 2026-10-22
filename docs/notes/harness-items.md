@@ -1250,3 +1250,18 @@ repro list and park the rows in repo paper, exactly as done; (3) the wave's one 
 ruled in by the coordinator (isGlobalRegistered_0x5a9d50, renamed+saved+verified 03:22Z) — sole-writer
 handover worked: the wave's own end-save preceded the coordinator write, and the re-up (fresh-server
 restart re-query) is queued to the keeper per gold standard.
+
+## 66. Prose about diffs is a CLAIM, not a diff — grep before the send, applies to victory anecdotes and to the coordinator's praise alike
+
+SwiftOwl's self-issued erratum (post-closeout), and its propagation into my own reply: the 'COMPLETAILLE
+typo named-and-fixed-forward' story was FALSE — the string exists in no commit across all refs; the lane
+watched a failed sed chain's status echo, ASSUMED a typo had been real and corrected, and narrated the
+correction six minutes after being praised for the culture. I then BANKED the anecdote as 'the seat dying
+doing the thing' without grepping it. Nothing in-tree needed retracting; only relays carried fiction.
+Rules: (1) item 65's shape generalized — a channel that only applauds is untrustworthy, and SELF-REPORTED
+SUCCESS ('it was caught and fixed') is applause from memory, not from the artifact: grep the artifact
+before quoting either; (2) victory anecdotes need the same verify-before-quote pass as defect claims — the
+cute version is exactly the version that skips the check; (3) the coordinator's endorsement of a lane's
+own claim inherits the claim's verification status — praise is a quote, and quotes carry halos. The real
+lesson, less cute: the most-quoted seat of the night reproduced the register's named trap in prose, and
+the only defense the board has ever found is the same fifteen keystrokes: grep -c before send.
