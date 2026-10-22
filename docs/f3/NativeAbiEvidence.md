@@ -1,0 +1,323 @@
+# The shipped native-ABI, from instruction text (2026-10-22)
+
+Read-only RE pass commissioned by TrueRaven to convert gap 4 of `NativeWiringGaps.md` from a design
+argument into byte evidence. Scope: the AMX native **invocation** side (registration was already known),
+the producers of `params[0]`, the three C-side tables' relationship, and the product paths to
+`JE::Script_Small::Load` (0x5a8880) in the shipped demo. Database: `artifacts/F3.exe.i64` via
+`ida_original_f3`. **Every offset below was re-emitted from instruction text** (this lane's standing
+rule); where I quote a decompiler line I give the instruction address beside it so a reader can
+re-derive it. Nothing here is inferred from the port's shape, and `artifacts/F3.json` records **no**
+named symbols for the `0x5CCxxx` AMX core — everything in §1–§3 is IDA-live analysis, not a DB lookup.
+
+## 0. Verdict up front
+
+Shipped's native calling convention is `int __cdecl(int amx, int params)` with **exactly two pushed
+args, `amx` first, `params` second**, `params` = `dataptr + hp` (the VM's own data-stack pointer),
+`params[0]` = block byte count, the native's `EAX` returned into the VM's **PRI** register, and a
+separate error channel at `amx+0x84` that the VM clears before every call and reads after.
+
+Therefore: the port's `NativeScriptFn = int(*)(Mover*, int, int, int)` (`modules/openje/src/JE/Scripting.hpp:18`)
+is **not the engine's shape**. Gap 4 is a real typedef/adapter decision — but the call form it must
+adapt between is now pinned by bytes, not by taste.
+
+## 1. The invocation site
+
+Three functions matter. None is named in the DB; all are in `.text` 0x5CC4xx–0x5CCE5x.
+
+### 1a. `sub_5CC4F0` — the default native dispatcher (the `call` itself)
+
+Installed as the callback at `AMX+0x08` by core init §1c **only if that slot is 0**. Full byte text:
+
+    5cc4f0  mov     ecx, [esp+arg_4]      ; ecx = arg2 = native index
+    5cc4f5  mov     esi, [esp+4+arg_0]    ; esi = arg1 = AMX struct ptr
+    5cc4f9  mov     eax, [esi]            ; eax = AMX+0x00 = loaded image base
+    5cc4fb  mov     edx, [eax+24h]        ; native-table offset, at image byte 0x24
+    5cc4fe  lea     ecx, [ecx+ecx*4]      ; ecx = idx * 5
+    5cc501  lea     ecx, [edx+ecx*8]      ; + idx*5*8 = idx*40  (stride 40, by bytes, not taste)
+    5cc504  mov     edx, [esp+4+arg_C]    ; arg4 = params pointer
+    5cc508  mov     eax, [ecx+eax]        ; eax = *(image + table_off + idx*40) = entry+0x00 = fn
+    5cc50b  push    edx                   ; push 2nd arg FIRST  = params
+    5cc50c  push    esi                   ; push 1st arg SECOND = amx
+    5cc50d  mov     dword ptr [esi+84h], 0; clear error slot AMX+0x84 before the call
+    5cc517  call    eax                   ; fn(amx, params) — two args, nothing else
+    5cc519  mov     ecx, [esp+0Ch+arg_8]  ; arg3 = &PRI_out  (still pre-cleanup)
+    5cc51d  add     esp, 8                ; CALLER cleans 2 pushes => __cdecl
+    5cc520  mov     [ecx], eax            ; PRI = native's int return value
+    5cc522  mov     eax, [esi+84h]        ; handler's own return = the error slot
+    5cc529  retn
+
+So the entire shipped ABI is: **`eax = fn(amx, dataptr+hp)`; `*PRI_out = eax`; error = `AMX[0x84]`.**
+The native index is supplied by the caller (§1b); entries are addressed **inside the loaded .amx
+image**, at `[image+0x24] .. [image+0x28)` (registration writes `entry+0` at 0x5cce2a, matcher arg is
+`entry+4` = the script-side name string; `if ( !*v6 )` at 0x5cce10 skips already-filled entries).
+
+### 1b. `sub_5CCE50` — the interpreter; two opcodes reach the dispatcher
+
+The dispatch loop head, verbatim:
+
+    5cd0d1  mov     ecx, [ebp+0]          ; ecx = raw opcode cell at pc
+    5cd0d4  add     ebp, 4
+    5cd0d7  dec     ecx                   ; switch variable = opcode - 1
+    5cd0d8  cmp     ecx, 85h
+    5cd0de  ja      def_5CD0E4            ; > 134 cases or opcode 0 -> error 6 path
+    5cd0e4  jmp     ds:switchdata_005ce0c4[ecx*4]
+
+Opcode numbering trap, noted explicitly because this lane has been burned by rendering twice today:
+Hex-Rays labels cases by the **switch variable** (opcode−1); IDA's `jumptable case N` annotations on
+the disassembly use the **raw opcode**. Anchor proving the annotation is raw: the `LOAD_PRI`-shaped
+absolute load at 0x5cd0eb (`mov ecx,[ebp+0]; mov ebx,[ecx+edi]; ... local_34=ebx`) is annotated
+`jumptable 005CD0E4 case 1` — raw AMX v2.2 opcode 1 *is* LOAD_PRI, so **asm annotation = opcode**.
+The two native-invoking cases are therefore **opcode 122 (0x7A) and 123 (0x7B)**.
+
+Case 122 — native index in PRI, block at hp (the classic SYSREQ shape):
+
+    5cdcbe  mov     ecx, [esp+44h+local_18]   ; jumptable case 122; code base
+    5cdcc6  mov     eax, ebp
+    5cdcc8  sub     eax, ecx
+    5cdcca  mov     ecx, [esp+44h+local_24]   ; stk
+    5cdce2  mov     [esi+18h], ecx            ; persist stk -> AMX+0x18
+    5cdce5  mov     [esi+14h], edx            ; persist frm -> AMX+0x14
+    5cdcce  mov     [esi+10h], eax            ; persist pc  -> AMX+0x10
+    5cdcd1  mov     eax, [esp+44h+local_2c]   ; hp
+    5cdcd5  mov     [esi+20h], eax            ; persist hp  -> AMX+0x20
+    5cdcd8  add     eax, edi                  ; edi = dataptr (AMX+0x04, §2)
+    5cdcda  push    eax                       ; push 1st = arg4 params = dataptr + hp
+    5cdcdf  push    &local_34                 ; arg3 = &PRI out
+    5cdce0  push    ebx                       ; arg2 = PRI, the native index
+    5cdce1  push    esi                       ; push last = arg1 = amx
+    5cdce8  call    dword ptr [esi+8]         ; -> sub_5CC4F0 (§1a) unless replaced
+    5cdceb  add     esp, 10h                  ; 4 args, caller-clean
+    5cdcee  cmp     eax, 0Ch
+    5cdcf1  jz      loc_5CE01A                ; 12 = suspend: save state, return 12 to host
+
+(esi = AMX, ebx = PRI, edx = frm loaded at 0x5cdcc2/0x5cdd22.) Return handling: `12` → the loop
+persists PRI/ALT/`hp`/`stk` into `AMX+0x88/0x8C/0x90/0x94` and returns 12 to the host
+(0x5ce018–0x5ce03a) — the same fields the `param_3 == -2` **resume** path reads back at
+0x5ccf11–0x5ccf53. Any other nonzero return aborts exec and propagates (0x5cdcf7 → LABEL_244).
+Zero → execution continues, and PRI = the native's `eax` (via `local_34`, LABEL_262 at 0x5cdeef).
+
+Case 123 — identical, except the index is the instruction operand, not PRI:
+
+    5cdcfc  mov     eax, [ebp+0]              ; jumptable case 123; index = operand
+    5cdd07  add     ebp, 4
+    5cdd1c  mov     [esi+20h], ecx            ; persist hp
+    5cdd1f  add     ecx, edi                  ; params = dataptr + hp
+    5cdd21  push    ecx                       ; push 1st = arg4 params
+    5cdd29  push    &local_34                 ; arg3 = &PRI out
+    5cdd2a  push    eax                       ; arg2 = index (operand, not PRI)
+    5cdd2b  push    esi                       ; push last = arg1 = amx
+    5cdd2c  call    dword ptr [esi+8]
+    5cdd2f  add     esp, 10h
+
+Neither case body contains **any** store to `dataptr` or write of a byte count — see §2.
+
+### 1c. `sub_5CC810` — core init; defaults and the installer's one call site
+
+Byte-verified shape (all from `decompile` lines tied to instruction addrs, then re-rendered hex):
+header test at 0x5cc8b5 (`magic halfword != 0xF1E0` → return 17 = ERR_FORMAT), version bytes
+`[6],[7]` outside 6..8 → 18 (0x5cc8cb), then defaults:
+
+    if (!amx[0x08]) amx[0x08] = sub_5CC4F0;   # native dispatcher      (0x5cc944)
+    if (!amx[0x0C]) amx[0x0C] = sub_5CC530;   # debug hook -> return 21 (0x5cc950)
+
+plus zero-walks of every 40-byte table span inside the image (`v7 += 40` loops at 0x5cc989–0x5cc9ef),
+and `sub_5CC540` (the core scanner: `switch 122..130`-style reloc fixups; sets `flags AMX+0x28 |= 0x8000`,
+the bit the exec entry tests at 0x5cce90 → "not initialized" error 22 = 0x16 if absent).
+
+`sub_5CE320(amx, fn)` is a one-field setter — `*(amx+0x0C) = fn` at 0x5ce328. `Load` uses it to install
+`Script_Small::Debugger` (debug build) or `sub_5A5860`, **never overwriting `amx+0x08`** unless it was 0,
+so native dispatch is not interceptable by the debugger path. `JE::Breakpoint` proves the error channel
+from the native side: `0x5c3431 push 0Ch; 0x5c3433 push esi(amx); 0x5c3434 call sub_5CE330`, and
+`sub_5CE330` is `*(param_1 + 132) = param_2` at 0x5ce338 — **132 decimal = 0x84**, the slot §1a clears.
+`JE::Breakpoint` also re-verifies the line counter claim: `0x5c3422 mov ecx,[esi+2Ch]` (PRI read for the
+'LINE' public write at 0x5c342c), decimal 0x2C = the `amx+0x2C` line field the port's gap doc asserts.
+
+### 1d. Registration (context, already known — bytes confirmed, not re-derived)
+
+`sub_5CCDE0(&amx, table, count)`: start = `[image+0x24]`, end = `[image+0x28]`, `(end−start)/0x28` count
+(0x5ccdf7 uses the 0xCCCCCCCD magic divide), per-entry `if (!*v6)` skip, miss → err 19 at 0x5cce2e.
+Matcher `sub_5CCD60(scriptName, table, count)`: walks `{name, fn}` pairs stride 8
+(`esi = [ebp+edi*8]` 0x5ccd89, `strcmp` loop 0x5ccd90, match → `return [ebp+edi*8+4]` = fn at 0x5ccdcd,
+next-name-null terminates when count == -1). So `entry+0x00` = fn, `entry+0x04` = script-side native
+name string pointer, stride 40 = 5 cells (3 unused/reserved — not established here).
+
+Exec-side self-check: `sub_5CCE50` starts (0x5cce70) by calling `sub_5CCDE0(amx, 0, 0)` — a *validation*
+pass (null table → any still-null entry ⇒ 19). **Nothing executes unless every native slot is filled.**
+
+## 2. `params[0]`: producers named
+
+Consumer (arity gate, the thing that needs a producer): `sub_59AF40(amx, params, n, name)` begins
+
+    v4 = *param_2 >> 2 ; 0x59af4c     ; params[0] in BYTES / 4 == declared cells
+    if (v4 == param_3) return 1;
+    "Invalid number of paramters passed to function %s()." / "Expected %d parameters but recieved %d."
+
+Its xrefs are the natives themselves (0x459ec6 Attack … 0x5c6661 CreateTeam, and every batch-B ported
+function) — each native starts `push name; push n; push params; push amx; call sub_59AF40`
+(byte text at 0x5c3c52–0x5c3c62 in `JE::DialogueCall`, 0x45a111 in `HideInterfaces`, etc.). Natives then
+read `params[1..n]` (e.g. `a2[1]`, `a2[2]` in DialogueCall at 0x5c3cb0/0x5c3dba).
+
+**Producer (engine side) — named: the `sub_5CCE50` prologue's stacked-argument builder.** When the host
+calls a public by index (`param_3 = idx ≥ 0`, `param_4 = n`, `param_5 = cell*`), bytes
+0x5cd000–0x5cd0b5 build the block the callee inherits:
+
+    5cd056  lea     ebx, ds:0[ecx*4]      ; ebx = 4*n  (the byte count)
+    5cd05d  sub     eax, ebx              ; new slot address = hp - 4n
+    5cd061  mov     [local_2c], ebx       ; holds 4*n
+    5cd06f  lea     ebx, [eax+edi]        ; dataptr + (hp - 4n)
+    (loop 0x5cd080: copy param_5[0..n-1] to ascending cells — a1 first)
+    5cd0a1  sub     eax, 4
+    5cd0a4  mov     [eax+edi], ecx        ; *(hp - 4n - 4) = 4*n  <-- params[0] = BYTE COUNT
+    5cd0a7  sub     eax, 4
+    5cd0aa  mov     dword ptr [eax+edi], 0; one more zero cell; that becomes the callee's hp (0x5cd0b5)
+
+Block layout, high→low: `aN … a1, bytecount(4n), 0 ← hp_entry`. The byte count sits **immediately below
+a1**, i.e. `[count, a1, a2, …]` ascending — the same relative layout every native indexes
+(`params[0]`=count, `params[1]`=first arg), so the engine builder and the script convention are one
+convention. (The extra `0` cell that becomes the callee's initial hp is the call-frame sentinel; its
+consumer is the callee's own prologue and I did not chase it further.)
+
+**Producer (script side) — POSITIVELY TRACED (same day, follow-up pass): the compiler-emitted
+push sequence before opcode 122/123.** 119 compiled `.int` AMX images exist inside the demo bundle at
+`data/Scripts.grp` (staged copy: `.devenv/state/f3-reimpl-data/data/Scripts.grp`); they match the
+engine's own header validation instruction-for-instruction (word `0xF1E0` at image+4 per 0x5cc8a4,
+word `0x28` at image+0xA per 0x5cc8b0, version bytes ≤6/≥6 at +6/+7 per 0x5cc8c2/0x5cc8cb), each
+carries its own stride-40 native table at `[image+0x24..0x28)` with **fn = 0 and the inline ASCII
+native name at entry+4** — the exact layout §1d's registration writes. Decoding those images' code
+streams with the interpreter's own operand arithmetic (opcode 36 PUSH_PRI @0x5cd519, 37 PUSH_ALT,
+**39 PUSH_C** `hp-=4; *hp = operand` @0x5cd52f, 40 push dataptr[ofs], 41 push value@(frm+ofs) @0x5cd589,
+44, 133 push `frm+ofs` address @0x5cdee3 — all `hp`-descending), every native call in shipped
+bytecode ends with the same pattern:
+
+    <param pushes…>  39 <4·arity>  123 <native-ordinal>
+
+Examples from `Scripts.grp` image @0x158fa (28-entry native table, ordinals match the inline names):
+`41 16 · 41 12 · 39 8 · 123 0` → floatcmp, arity 2, count 8; `41 12 · 39 4 · 123 4` → GetCurrentHP,
+arity 1, count 4; `39 12 · 123 3` → SetValue, arity 3, count 12; `39 4 · 123 5` → float, arity 1, count 4.
+Because PUSH cells descend, the final `PUSH_C` lands at the LOWEST address — `dataptr + hp` at sysreq
+time — so `params[0]` = the byte count and the arg cells lie ascending above it, exactly what the gate
+at 0x59af4c (`*params >> 2`) and the natives' `a2[1..n]` indexing consume. The interpreter itself never
+writes the count at call time (both sysreq cases, §1b, contain no dataptr store); the count is script
+payload. Engine-side `sub_5CCE50`'s prologue (§ above) emits the identical convention for host-initiated
+public calls.
+
+## 3. The three tables' relationship (structure only — FastNova owns contents)
+
+`JE::Script_Small::Load_5a8880` calls `sub_5CCDE0` three times per loaded image, in this order, and
+this is the whole relationship:
+
+    0x5a8ada  sub_5CCDE0(&this->mbr_0x26, &off_7004C0,            -1)   ; result ignored
+    0x5a8ae7  sub_5CCDE0(&this->mbr_0x26, &small_script_functions, -1)  ; result ignored
+    0x5a8afe  if (!sub_5CCDE0(&this->mbr_0x26, &off_6F3750,        -1)) ; ONLY the third gates success
+
+They are not three tables the VM consults. They are **three name→function lookup sources merged into
+the one 40-byte-stride native table inside the loaded image** (entries `[image+0x24..0x28)`): pass N
+fills only entries still null (0x5cce10 `if (!*v6)`), so pass order decides precedence where names
+collide; the first two passes are expected to miss (unmatched names stay null for later passes), and
+only the final pass's leftover-miss (err 19) fails the load with
+`"Script_Small::Load() Unable to locate a matching function for a Native in: %s"` (0x5a8b00-era log).
+The dispatch index (§1a) is the **script's own native ordinal in the image table**, never an index into
+off_7004C0/small_script_functions/off_6F3750. `0x6F3750` = the F3 game lib (45 entries, per the board) —
+its content census belongs to FastNova; I verified only that `Load` references it (data xref 0x5a8aee)
+and nothing else in the image reads it (xrefs_to 0x6F3750: that one instruction).
+
+## 4. Product paths to `Script_Small::Load` in shipped — they exist
+
+`Load` (0x5a8880) has exactly two recorded references — one code, one data — but it is a **virtual**:
+`Script_Small`'s vftable `0x6a539c` slot 1 = `0x6a53a0` → `0x5a8880` (DB `f3_class_info`; value re-read
+from the live image). Product callers, all byte-cited:
+
+1. **`JE::DialogueManager::BeginDialogue_55edb0`** — builds the `.dlg` path (`sub_434600(..., ".dlg")`
+   0x55edf6), `operator new(0xE0)` + `Script_Small::ctor_0x5a7240` (0x55ee2b), then
+   `(*(v7->vftptr_0x0 + 1))(v7, path, 1)` at 0x55ee53 = **vft slot 1 = Load**; on success enqueues the
+   `"OnStartDialogue"` entry (0x55efec). On failure logs `"DialogueManager::BeginDialogue() - Error
+   loading script "` (0x55ee93) and destructs via vft slot 0. **This is dialogue start.**
+2. **`sub_55F3E0`** (entity-scoped script loader; stores the Script_Small at `[owner+0x14]` 0x55f4fe) —
+   `call dword ptr [edx+4]` at **0x55f4de**, IDA's operand-value comment resolves the slot to
+   `5a8880` (`5a8880, 5a8880, 5a8880`); ctor call at 0x55f4b5.
+3. **`JE::DialogueCall`** (itself a native — §1d) — the only *direct* `call 5a8880` in the image, at
+   0x5c3e15, loading the callee dialogue's `.dlg` (name+`".dlg"` composed at 0x5c3da9), then executing
+   the named node via **vft slot 6 = `0x5a58c0`** at 0x5c3e73. So shipped nests: a running script's
+   `DialogueCall` loads+runs another script, installing the same three tables via `Load` each time.
+4. **`JE::World::virt_meth_0x544b80`** — constructs a `Script_Small` (0x544bba); slot 5 (`0x5a5a90`,
+   the OnUpdate runner — compares the public name against `"OnUpdate"` at 0x5a5b25–0x5a5b33) executes
+   per world tick. **World scripts run shipped scripts on the tick pump.**
+
+Execution of loaded scripts goes through the two exec wrappers §1b serves: `sub_5CCE50`
+(amx, &retval, index|−1|−2, stacked-param count, params) called at 0x5a5a57 (slot 6, run-by-name) and
+0x5a5b9f (slot 5, OnUpdate), with `sub_5CCA80` resolving the name first; `sub_5CCCC0(amx, tag, &out)` /
+`sub_5CCD00(amx, tag, ptr)` are the wrapper-level named-variable get/set the `Load` prologue uses to
+register the script's entity handle (`[amx+0x04] ← this->mbr_0x4`, 0x5a8b30) and line/statistics
+variables before any call.
+
+**Coordinator conclusion (gap 2/3):** shipped has product callers — dialogue start, entity script load,
+world OnUpdate, and native-nested `DialogueCall`. The port therefore needs no new mechanism to justify
+an installer: `Script_Small::Load` = core-init + the three `sub_5CCDE0` passes, and the port's existing
+hooks (BeginDialogue-shaped entry, a per-entity script holder, the world tick) are where shipped
+attaches them.
+
+## 5. Where shipped faults instead of degrading (stated per the standing rule)
+
+* `JE::DialogueCall` handle resolution: `0x5c3cf5 call meth_0x54be10` (the `Entity+0x1DC`-keyed resolver)
+  **returns 0 on a miss** (explicit `return 0` at 0x54be68), and `JE::DialogueCall` stores it
+  (`0x5c3d09 mov esi, eax`) then **dereferences without any test** at
+  `0x5c3d18 mov eax, [esi+1ECh]` (= pseudocode's `*(v6 + 492)`; 0x1EC = 492 ✓, cross-checked against the
+  resolver's own compare `*(result+476)` at 0x54be39). Fault state: calling `DialogueCall` from script
+  while its character/handle argument does not resolve to a live entity in the `byte_70BE0C` list.
+  The apparent graceful branch — `"DialogueCall() was unable to find the character with target dialogue
+  name attached."` at 0x5c3d49 — guards a **different, later** object (`v9`, built through the
+  vft-slot-84/32 chain at 0x5c3d2d), not the resolver's null. Do not port that else-branch as a
+  "handles-missing" path; the real handles-missing path is a read violation at 0x5c3d18.
+* Graceful (for contrast, all byte-verified): missing dispatcher slot → error 9 (0x5cce59:
+  `mov eax,[esi+8]; test; return 9`); unfilled native slot → err 19 both at install (0x5cce2e) and at
+  exec entry (0x5cce70 recheck) → load failure + free (no fault); stack headroom → error 3 checked
+  before the loop (0x5cd0b9 `add ecx,40h; cmp ecx,hp; return 3`); opcode 0 / >134 → error 6 path.
+  `call eax` at 0x5cc517 on a null `entry+0` would fault, but §1d's pre-exec validation is what keeps
+  it unreachable for images obtained through `Load`; bypassing the installer (the port's temptation)
+  removes exactly that protection.
+
+## 6. What this pass does NOT establish (absence honesty)
+
+* Entry-reserved cells of the 40-byte native entries (bytes 0x08–0x27) — unused on these paths, unread here.
+* Which of the three C-side tables registers `DialogueCall`/`Attack`/etc.: xrefs to 0x5c3c40 returned no
+  data references in the live IDB, and the DB is an excerpt — that is missing tooling, not evidence of
+  absence; the gate-pattern is what ties them to this ABI.
+* `off_7004C0` and `small_script_functions` contents/counts — FastNova's census; §3 claims order and
+  merge semantics only, neither count.
+* Opcode names (SYSREQ vs an engine-specific "NATIVE" variant): behaviors cited by case bytes
+  (index-in-PRI = 122, index-in-operand = 123); no name-level claim.
+* `byte_7004BC` (a 64-bit-cell/compression flag consulted by the SHL_C/SHR_C cases at 0x5cd3f2 and the
+  init zero-walks) — noted, unexplored.
+* The callee-side interpretation of the prologue's extra `0` cell (entry hp sentinel) — layout cited
+  exactly, semantics left to the port's call-frame work.
+* Whether any shipped script uses opcode 122 (index-in-PRI) vs 123: every traced call site in the
+  sample images used 123 (operand index); 122 exists and is dispatched identically, but a 122-using
+  script was not located in the sampled windows (absence from a sample is not absence from the bundle).
+
+## 6.5 `.int` verification method (repeatable)
+
+Scan any `.grp` for `e0 f1` at image+4 with `28 00` at image+0xA and version bytes at +6/+7; parse
+header cells at +0x0C code, +0x10 code-size/end, +0x14 dat, +0x18 dat-size, +0x1C entry (−1 here —
+scripts are run by public ordinal through the `[image+0x20..0x24)` stride-40 publics table, 11
+entries in the first image, name inline at entry+4), +0x24/+0x28 native span. Code is cell-addressed:
+opcode word then operand cells; the operand count per opcode comes from the interpreter case bodies
+at 0x5cd519–0x5cdee8, NOT from a remembered Pawn table. Tools in this repo already walk the `.grp`
+TOC (`tools/data_census.py`, layout B `{id, off, size}`).
+
+## Appendix — verified AMX struct field map (all hex, each from instruction text)
+
+| field | evidence (instruction @ EA) | role |
+|---|---|---|
+| AMX+0x00 | `mov eax,[esi]` @0x5cc4f9 | image base (written by init: `*param_1 = param_2` @0x5cc914) |
+| AMX+0x04 | `mov edi,[esi+4]` @0x5ccead | dataptr (fallback `image + [image+0x10]` @0x5ccebe) |
+| AMX+0x08 | `call dword ptr [esi+8]` @0x5cdce8 | native dispatcher (default sub_5CC4F0 @0x5cc944) |
+| AMX+0x0C | `call dword ptr [esi+0Ch]` @0x5ccfe3 | debug hook (default sub_5CC530 → 21) |
+| AMX+0x10/14/18/20 | persists @0x5cdce8-window | pc / frm / stk / hp |
+| AMX+0x1C | `[eax+1Ch]` @0x5ccef2 | image entry-point offset (run-from-start) |
+| AMX+0x20 | `mov ecx,[esi+20h]` @0x5ccec3 | hp (again: this is the slot §1b persists/reads) |
+| AMX+0x24 | `mov edx,[eax+24h]` @0x5cc4fb | **native-table byte offset within image** (image header) |
+| AMX+0x28 | `and edx,0FFFFBFFFh` @0x5cce83 | flags (bit 0x8000 init'd, 0x4000 debug) |
+| AMX+0x2C | `mov ecx,[esi+2Ch]` @0x5c3422 | script line (also reported by sub_59AD20 as `line %d`) |
+| AMX+0x84 | `mov dword ptr [esi+84h],0` @0x5cc50d | native error slot (writer: sub_5CE330 @0x5ce338) |
+| AMX+0x88/8C/90/94 | `mov edx,[esi+8Ch]` @0x5ccf3d | saved PRI/ALT/hp/stk for the 12-yield + resume path |
+| publics | `[image+0x20 .. +0x24)`, /40 @0x5ccf5f-6e | stride-40 run-by-index entry table, entry+0 = code offset |
