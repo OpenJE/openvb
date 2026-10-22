@@ -1911,13 +1911,40 @@ VERIFIED myself against `.devenv/state/f3-reimpl-data/data/Scripts.grp` (5,832,9
   by 4 bytes** — I read +0x20/+0x24 and "found" a natives table whose fn cells were nonzero; the offset is
   relative to the IMAGE BASE, not to the magic word. If you re-do this, anchor on the magic and remember it
   lives at +4.
-- **NOT reproduced by me**: the call-site byte pattern `39 <4*arity> 123 <ordinal>`. I scanned the image range
-  for `39 08 7b 00` (byte operands) and for `39 00 08 00 7b 00 00 00` (16-bit cells) and found **0 sites**.
-  So either the encoding differs again (cell width / the code starts at a separate `code` offset I did not
-  locate) or the cited bytes are a decompiler-level rather than file-level rendering. **Treat the params[0]
-  producer as WILDUNION-VERIFIED, NOT independently verified by this lane.** One command settles it: dump the
-  image's code region (find it via the header cells at +0x0C/0x10/0x14 rather than guessing) and grep for
-  opcode 123's raw encoding.
+- **The call-site encoding, and my two false negatives.** My scans for `39 08 7b 00` (byte operands) and
+  `39 00 08 00 7b 00 00 00` (16-bit cells) both returned **0 sites across all 119 images**. That was MY
+  assumption failing, not the claim: AMX code cells are full **32-bit LE words**, so a `PUSH_C k` + `SYSREQ idx`
+  pair is SIXTEEN bytes on disk —
+
+      27 00 00 00 <k:4 LE> 7b 00 00 00 <idx:4 LE>
+
+  with code start = u32 at image+0x0C (the interpreter reads it at 0x5ccea8) and end = u32 at image+0x14.
+  Running that: **25,369 well-formed native-call sites in 118 of 119 images**, ordinals indexing each image's
+  OWN natives table (image+0x24, stride 40, name inline at entry+4). Caller-side arity agrees with the
+  spot census (GetCurrentHP 1, SetValue 3, floatcmp 2, DisplayStringRef 4, StartDialogue 2, Protagonist 0).
+
+  **So the params[0] producer is now LANE-VERIFIED, upgraded by my own run rather than adopted on relay** —
+  which was the whole point of declining to launder it earlier. The discriminator that makes a false negative
+  like mine impossible to repeat: **a zero-hit scan on a data format you have not confirmed the cell width of
+  is a hypothesis about the format, not a finding about the data.** Two zero-hits in a row should have sent me
+  back to the interpreter's own push/pop case bodies for the operand width; instead I banked the failure and
+  named the claim as somebody else's. Banking it was right; guessing the encoding twice was not.
+
+- **The two-population cross-check (this is the item-70 third denominator, and it passes).** Caller-side arity
+  from script bytes vs callee-side arity from the shipped C prologue immediate, compared over the port's 36
+  rows: **16 agree, 0 disagree**, and **16 rows are never called by any demo script** (GetLevel,
+  GetEthnicity, GetSubRace, GetItemType, GetUsableObjectType, GetLockDC, PlayMusic, SetHP,
+  GetDerivedAttribute, GetPerkRank, GetBaseSkill, UnequipItem, GetWeaponRange, AddCNPCToParty, GetWeaponCombo,
+  SetWeaponCombo). Two disjoint populations — a script's bytes and a compiler's prologue — agreeing on every
+  row where both exist is exactly the independence item 70 asks for. The 16-row gap is honest and load-bearing
+  in the OTHER direction: half the ported surface has NO shipped caller at all, so for those the C prologue is
+  the only evidence that exists, and a demo-parity oracle cannot cover them.
+- **Four names where caller-side arity is NOT unique** — `FloatingSpeechText` {3,6}, `GetGlobal` {1,2},
+  `SendMessage` {2,3,4}, `SendMessageToTeam` {2,4}. Cause is plausible (natives tables are PER IMAGE, so one C
+  function faces images whose declarations differ) but **not read**: none of these four has its C-side gate
+  examined here. Recorded as the manual-review list, and as a warning to whoever wires this census into the
+  audit: a uniqueness gate on arity-per-name would fire on these four, and firing on an unread thing is how an
+  audit manufactures a bug.
 
 **Next slice, highest value first** (all in this lane's reserved paths — `src/F3/ScriptNatives.{cpp,hpp}`,
 `modules/openje/tests/je/ScriptNatives`, `tools/native-gate-audit.py`):
