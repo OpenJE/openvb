@@ -319,7 +319,7 @@ def render_text(pe: Pe, digest: str, tables, notes=None):
                 g = e.get("gate")
                 out.append(f"  {e['idx']:>{wi}}  {(e['name'] or '<none>'):<{wn}}  "
                            f"{e['name_va']:>10x}  {e['fn_va']:>10x}  "
-                           f"{(str(g['cells']) if g else '-'):>5}  "
+                           f"{(('>=' if g.get('kind') == 'min' else '') + str(g['cells'])) if g else '-':>5}  "
                            f"{((g['name'] if g else '-') or '-'):<{wn}}  {e['bytes']}"
                            + ("" if e["code"] else "   [NOT a plausible code byte]")
                            + ("" if not g or g["name"] == e["name"] else
@@ -382,13 +382,24 @@ def render_json(pe: Pe, digest: str, tables):
 # so the prologue itself carries two claims per native: an expected cell count AND a
 # display name. The display name is NOT guaranteed to equal the table name - shipped
 # lies in four places (see the audit), which a name-only comparison can never see.
-GATE_EA = 0x59AF40
-GATE_WINDOW = 96
+# Two gates live next to each other and are NOT interchangeable:
+#   0x59AF40  EXACT arity   cmp/jne -> "Invalid number of paramters passed to function %s()."
+#                        + "Expected %d parameters but recieved %d."
+#   0x59AF90  MINIMUM arity cmp/jge -> same first message, then
+#                        "Expected at least %d parameters but recieved %d." (0x6A0694)
+# Treating 0x59AF90 as "no gate" is what my first revision did, and it silently mis-classified
+# the whole SendMessage family as ungated. A multi-arity CALLER against a min-gate native is
+# legal API use, not declaration divergence - so the gate identity changes the verdict.
+GATE_EA = 0x59AF40            # exact-equality arity gate
+GATE_MIN_EA = 0x59AF90        # at-least arity gate
+GATE_EAS = (GATE_EA, GATE_MIN_EA)
+GATE_WINDOW = 140             # min-gate users call later; 96 clipped A_SendMessage's
 MAX_CELLS = 16
 
 
 def gate_claim(pe: Pe, fn_va: int):
-    """Return {cells, name, name_va, at} for the first call to the arity gate."""
+    """Return {cells, name, name_va, at, kind} for the first call to EITHER arity gate.
+    kind is 'exact' (0x59AF40, cmp/je) or 'min' (0x59AF90, cmp/jge)."""
     b = pe.read(fn_va, GATE_WINDOW)
     if not b:
         return None
@@ -403,7 +414,8 @@ def gate_claim(pe: Pe, fn_va: int):
             stack.append((op, None)); i += 1; continue
         if op == 0xE8:
             rel = int.from_bytes(b[i + 1:i + 5], "little", signed=True)
-            if fn_va + i + 5 + rel == GATE_EA:
+            target = fn_va + i + 5 + rel
+            if target in GATE_EAS:
                 # cdecl: pushes are reversed, arg0 is the LAST push. Layout is
                 # [name, cells, reg, reg] reading pushes forwards -> stack[-4], stack[-3].
                 imm = [x for x in stack[-4:] if x[0] in (0x68, 0x6A)]
@@ -411,7 +423,8 @@ def gate_claim(pe: Pe, fn_va: int):
                 cells = next((v for t, v in imm if t == 0x6A and v <= MAX_CELLS), None)
                 if name_va is None or cells is None:
                     return None
-                return {"cells": cells, "name": pe.cstring(name_va), "name_va": name_va, "at": i}
+                return {"cells": cells, "name": pe.cstring(name_va), "name_va": name_va,
+                        "at": i, "kind": "exact" if target == GATE_EA else "min"}
             stack = []
             i += 5
             continue
@@ -484,7 +497,11 @@ def audit(port_rows, shipped_entries, port_label="port", shipped_label="shipped"
         "arity_mismatch": sorted(
             (r["name"], r["cells"], shipped[r["name"]]["gate"]["cells"])
             for r in port_rows if r["name"] in shipped and shipped[r["name"]]["gate"]
-            and r["cells"] >= 0 and r["cells"] != shipped[r["name"]]["gate"]["cells"]),
+            and r["cells"] >= 0 and shipped[r["name"]]["gate"]["kind"] == "exact"
+            and r["cells"] != shipped[r["name"]]["gate"]["cells"]),
+        "min_gated_shipped": sorted(
+            (e["name"], e["gate"]["cells"], e["gate"]["name"]) for e in shipped_entries
+            if e.get("gate") and e["gate"]["kind"] == "min"),
         "gate_name_divergence": sorted(
             (e["name"], e["gate"]["name"], e["fn_va"]) for e in shipped_entries
             if e.get("gate") and e["gate"]["name"] != e["name"]),
@@ -544,6 +561,12 @@ def render_audit(a, shipped_entries):
                f"{len(a['gate_name_divergence'])}")
     out += [f"  - table '{tn}' -> gate prints '{gn}' (fn {fx:#x})"
             for tn, gn, fx in a["gate_name_divergence"]] or ["  (none)"]
+    out.append(f"### shipped natives gated by the MINIMUM gate 0x{GATE_MIN_EA:x} (cmp/jge, "
+               f"'at least'): {len(a['min_gated_shipped'])}")
+    out += [f"  - {n}: at least {c} cells (error prints '{gn}')"
+            for n, c, gn in a["min_gated_shipped"]] or ["  (none)"]
+    out.append(f"    NOTE: multi-arity CALLERS against these are legal, not declaration drift.")
+    out.append("")
     out.append(f"### shipped natives with NO arity gate at all: {len(a['shipped_ungated'])}")
     out += [f"  - {n}" for n in a["shipped_ungated"]] or ["  (none)"]
     out.append("")
@@ -598,6 +621,14 @@ def selftest(exe: Path):
         f"reload error-name: {gates['A_ReloadWeapon']['name']}"
     assert sorted(e["name"] for e in f3 if not e["gate"]) == [
         "AddJournalEntry", "AddQuestEntry", "CloseQuest", "OpenQuest"], "ungated set changed"
+    eng = tables[0x6FFAF8]["entries"]
+    mins = sorted(e["name"] for e in eng if e["gate"] and e["gate"]["kind"] == "min")
+    assert mins == ["A_SendMessage", "A_SendMessageToSquad", "A_SendMessageToTeam",
+                    "SendMessage", "SendMessageToSquad", "SendMessageToTeam"], f"min set: {mins}"
+    assert all(e["gate"]["cells"] == 2 for e in eng if e["gate"] and e["gate"]["kind"] == "min")
+    no_g = sorted(e["name"] for e in eng if not e["gate"])
+    assert no_g == ["Day", "GetTimeStamp", "Hour", "MessageArgCount", "Minute",
+                    "Month", "Second", "TransferItemToParty", "Year"], f"ungated engine: {no_g}"
     # float lib must be exactly the float.inc family
     fl = distinct_names(tables[0x7004C0]["entries"])
     assert set(fl) == {"float", "floatstr", "floatmul", "floatdiv", "floatadd",

@@ -1,7 +1,7 @@
 # F3 shipped native tables - PE dump, arity-gate claims, port audit
 
 Generated 2026-10-22 by `tools/native-table-dump.py`
-(sha256 `b1d871d6c839483b...`). Raw tool output is embedded verbatim in section 7;
+(sha256 `54d4686f929edcd5`). Raw tool output is embedded verbatim in section 7;
 nothing in the tables below is hand-transcribed.
 
 | field | value |
@@ -96,10 +96,11 @@ so shipped can (and does) complain under a different name than it registers. Cov
 | engine core (small_script_functions) | 139/155 | TransferItemToParty, A_SendMessage, A_SendMessageToTeam, SendMessage, SendMessageToTeam, MessageArgCount, SendMessageToSquad, A_SendMessageToSquad, Year, Month, Day, Hour, Minute, Second, GetTimeStamp, Debug |
 | F3 game lib (off_6F3750) | 41/45 | OpenQuest, CloseQuest, AddQuestEntry, AddJournalEntry |
 
-The float lib has no arity gate at all (engine-side arity), and the F3 lib's only ungated
-entries are the four dead quest/journal aliases - which is *why* the port records `cells = -1`
-for them. The 16 ungated engine-core entries include the whole time family and the
-`SendMessage` group; porting those needs the no-gate behavior reproduced, not an invented gate.
+The float lib has no arity gate at all, and the F3 lib's only ungated entries are the four dead
+quest/journal aliases - which is *why* the port records `cells = -1` for them.
+**SUPERSEDED by section 9:** the "16 ungated engine-core entries" figure was wrong. It is **9**.
+Six of the sixteen are gated by a second, different arity gate at `0x59AF90` (a minimum, not an
+equality) that this document did not know about, and one more gates beyond my search window.
 
 ## 5. Audit of the port's 36-name table against shipped (verbatim in 7.3)
 
@@ -149,7 +150,7 @@ Two natives, one shared arity-error string; not one native with a flag.
 
 ## 6. New divergences found by the walk (action: report only, lane owner decides)
 
-### 6.1 Shipped prints a DIFFERENT name in its arity error than it registers (20 natives)
+### 6.1 Shipped prints a DIFFERENT name in its arity error than it registers (21 natives; see 9.3 for the 20 -> 21 correction)
 
 F3 game lib (4):
 
@@ -160,7 +161,7 @@ F3 game lib (4):
 | `UnequipItem` | `EquipItem` | 3 | `0x65dbf4` |
 | `A_ReloadWeapon` | `ReloadWeapon` | 1 | `0x65da30` |
 
-Engine core (16):
+Engine core (17; originally reported 16 - see 9.3):
 
 | table name | error prints | cells | string VA |
 |---|---|---|---|
@@ -197,7 +198,7 @@ Why this matters for the port: the lane already found and faithfully kept one of
 (`UnequipItem` reports `"EquipItem"`, src/F3/ScriptNatives.cpp:1019, marked `SHIPPED: wrong
 name`). That is the correct treatment - a port that "fixes" the name is a silent divergence
 in the error channel, and any script or test that greps the error text would then pass on the
-port and fail on shipped. The remaining 19 are mostly not yet ported, so the rule to carry
+port and fail on shipped. The remaining 20 are mostly not yet ported, so the rule to carry
 forward is: **the registration name and the arity-error name are two separate fields to port,
 not one.**
 
@@ -392,14 +393,14 @@ entries=155  terminator_{0,0}_found=True  distinct_fns=155
    96  GetWayPointPosition              6ad58c      5c60e0      3  GetWayPointPosition          81 ec 30 01 00 00 a1 c0
    97  GetWayPointOrientation           6ad574      5c6240      2  GetWayPointOrientation       81 ec 30 01 00 00 a1 c0
    98  GetNearestPath                   6ad564      5c5e20      2  GetNearestPath               83 ec 24 53 8b 5c 24 2c
-   99  A_SendMessage                    6ad554      5c5120      -  -                            83 ec 14 55 8b 6c 24 20
-  100  A_SendMessageToTeam              6ad540      5c52b0      -  -                            83 ec 10 55 8b 6c 24 1c
-  101  SendMessage                      6ad534      5c5410      -  -                            83 ec 10 53 8b 5c 24 1c
-  102  SendMessageToTeam                6ad520      5c57c0      -  -                            83 ec 0c 55 8b 6c 24 18
+   99  A_SendMessage                    6ad554      5c5120    >=2  A_SendMessage                83 ec 14 55 8b 6c 24 20
+  100  A_SendMessageToTeam              6ad540      5c52b0    >=2  A_SendMessageToTeam          83 ec 10 55 8b 6c 24 1c
+  101  SendMessage                      6ad534      5c5410    >=2  SendMessage                  83 ec 10 53 8b 5c 24 1c
+  102  SendMessageToTeam                6ad520      5c57c0    >=2  SendMessageToTeam            83 ec 0c 55 8b 6c 24 18
   103  MessageArgCount                  6ad510      5c5540      -  -                            51 56 8b 74 24 0c 8d 44
   104  MessageGetArg                    6ad500      5c55c0      1  MessageGetArg                51 56 8b 74 24 0c 57 8b
-  105  SendMessageToSquad               6ad4ec      5c5930      -  -                            83 ec 10 55 8b 6c 24 1c
-  106  A_SendMessageToSquad             6ad4d4      5c5660      -  -                            83 ec 10 55 8b 6c 24 1c
+  105  SendMessageToSquad               6ad4ec      5c5930    >=2  SendMessageToSquad           83 ec 10 55 8b 6c 24 1c
+  106  A_SendMessageToSquad             6ad4d4      5c5660    >=2  A_SendMessageToSquad         83 ec 10 55 8b 6c 24 1c
   107  Year                             6918e4      5c5040      -  -                            51 56 8b 74 24 0c 8d 44
   108  Month                            6918dc      5c4490      -  -                            51 56 8b 74 24 0c 8d 44
   109  Day                              6918d8      5c4570      -  -                            51 56 8b 74 24 0c 8d 44
@@ -426,7 +427,7 @@ entries=155  terminator_{0,0}_found=True  distinct_fns=155
   130  SetTokenInt                      6ad3b0      5c3b80      2  SetTokenInt                  83 ec 68 a1 c0 62 70 00
   131  RandomNumber                     6ad3a0      5c3870      2  RandomNumber                 8b 44 24 04 56 8b 74 24
   132  RandomNumberFloat                6ad38c      5c38b0      2  RandomNumberFloat            83 ec 0c 56 8b 74 24 14
-  133  Debug                            69cb18      5c3710      -  -                            56 8b 74 24 0c 57 8b 7c
+  133  Debug                            69cb18      5c3710      2  PointDistance                56 8b 74 24 0c 57 8b 7c   <<< gate error-name != table name
   134  PointDistance                    6ad37c      5c3780      2  PointDistance                83 ec 18 56 8b 74 24 20
   135  Breakpoint                       6ad370      5c33a0      0  Breakpoint                   8b 44 24 08 83 ec 08 56
   136  AttachVEG                        6ad364      5c29b0      2  AttachVEG                    81 ec 0c 01 00 00 a1 c0
@@ -461,7 +462,6 @@ entries=9  terminator_{0,0}_found=True  distinct_fns=9
   6  floatfract      6b794c      5ce710  8b 44 24 08 8b 48 04 51
   7  floatround      6b7940      5ce740  8b 44 24 08 8b 48 04 51
   8  floatcmp        6b7934      5ce7c0  8b 44 24 08 8b 48 04 51
-
 ```
 
 ### 7.3 `--audit` against `src/F3/ScriptNatives.cpp`
@@ -571,12 +571,15 @@ port (ScriptNatives.cpp) rows=36  F3 game lib (off_6F3750) entries=45  exact nam
   - table 'A_JustAttack' -> gate prints 'Attack' (fn 0x459f70)
   - table 'A_ReloadWeapon' -> gate prints 'ReloadWeapon' (fn 0x45a380)
   - table 'UnequipItem' -> gate prints 'EquipItem' (fn 0x45a6f0)
+### shipped natives gated by the MINIMUM gate 0x59af90 (cmp/jge, 'at least'): 0
+  (none)
+    NOTE: multi-arity CALLERS against these are legal, not declaration drift.
+
 ### shipped natives with NO arity gate at all: 4
   - AddJournalEntry
   - AddQuestEntry
   - CloseQuest
   - OpenQuest
-
 ```
 
 ## 8. Follow-up: the shared helper makes the table's `cells` column decorative on 13 rows
@@ -685,3 +688,79 @@ Because A's column is decorative, the honest check is not "column vs shipped" bu
 So the port is right on every gated row today, and the only standing risk is architectural: a new
 row entering set A inherits a hardcoded 1 while the audit keeps reporting green.
 
+## 9. CORRECTION: there are TWO arity gates - this document (and my extractor) knew only one
+
+Found while chasing the one question both WildUnion and TrueRaven explicitly left open: *"does the
+ungated `SendMessage` body read more cells than some callers push?"* The premise was false.
+`SendMessage` **is** gated - by a different function. Two defects in my instrument were involved: a
+hardcoded single gate EA, and a search window I picked as a guess (96 bytes). Both changed published
+numbers in this file, so they are corrected here rather than quietly re-emitted.
+
+### 9.1 The two gates, side by side (objdump of the call sites, not regex)
+
+| | exact gate | minimum gate |
+|---|---|---|
+| EA | `0x59AF40` | `0x59AF90` |
+| test | `shr esi,2` ; `cmp esi,ebx` ; **`je`** | `shr eax,2` ; `cmp eax,ebx` ; **`jge`** |
+| semantics | cells **==** expected | cells **>=** expected |
+| caller pushes | 4 args: name, cells, params, amx | **5** args: name, cells, params, amx, **&out_actual** |
+| cleanup | `add esp,10h` | `add esp,14h` |
+| message 1 | `Invalid number of paramters passed to function %s().` (0x6A065C) | identical string |
+| message 2 | `Expected %d parameters but recieved %d.` (0x6A0634) | **`Expected at least %d parameters but recieved %d.`** (0x6A0694) |
+| extra effect | - | writes the real cell count through arg5 (`mov [edi],eax` @0x59AFA5) |
+
+The minimum gate is a different ABI, not a wording variant: it hands the callee the actual count.
+Neither `0x59AF90` nor its third message string appears anywhere in the port.
+
+### 9.2 The six min-gated natives, and why their multi-arity is not a defect
+
+All one family, all `min = 2`, each confirmed by disassembling its call site (`6a 02` + `add esp,14h`):
+
+`A_SendMessage` 0x5c5120 · `A_SendMessageToTeam` 0x5c52b0 · `A_SendMessageToSquad` 0x5c5660 ·
+`SendMessage` 0x5c5410 · `SendMessageToTeam` 0x5c57c0 · `SendMessageToSquad` 0x5c5930
+
+**This answers the open question.** WildUnion's census saw `SendMessage` called with
+`{2:1, 3:6, 4:80}` and `SendMessageToTeam` with `{2:1, 4:5}`, correctly declined to call it a bug,
+and left "declaration divergence" plus an owed body read. A 2-cell *minimum* admits 3- and 4-cell
+calls by design, so there is nothing to explain: the multi-arity is the intended use of a variadic
+native, and the arity itself creates no stack-garbage exposure. The proposed audit rule
+"allow-multi exactly these 4 names" should instead read: **these 6 names are min-gated and are a
+different gate, not an exception list**; every other native is exact-arity, so a singleton is
+required and any multi-arity sighting elsewhere is a real signal.
+
+### 9.3 What the fix changed in this document
+
+| claim | was | now | cause |
+|---|---|---|---|
+| engine-core ungated | 16 | **9**: `Year Month Day Hour Minute Second GetTimeStamp TransferItemToParty MessageArgCount` | 6 are min-gated (9.2); the rest were already miscounted |
+| engine-core name divergences | 16 | **17** | `Debug` 0x5c3710 gates at **+0x86**, outside the old 96-byte window |
+| total error-name divergences | 20 | **21** | the same `Debug` row |
+| coverage of 209 | exact 182 / none 27 | **exact 181 / min 6 / none 22** (181+6+22 = 209) | second gate discovered |
+
+`Debug` is the find the correction bought: registered as `Debug`, its arity error prints
+**`PointDistance`** (0x6AD37C) - a copy-paste from an unrelated native, 134 bytes into the prologue.
+Two instrument defects (unknown second gate, unanchored window) hid a member of exactly the class
+this section catalogues.
+
+### 9.4 Why neither failure was visible from the output
+
+`gate_claim()` returns `None` for "no gate found", and `None` rendered as `-`, so *native has no
+gate* and *native gates somewhere I did not look* printed identically. A pattern-matching tool's
+absence is a statement about its pattern. Fixed in `tools/native-table-dump.py`: both EAs checked,
+`kind` recorded and rendered as `>=N` in 7.2, window widened to 140, and `--selftest` now pins the
+min-gated set, the ungated set, the 181/6/22 split and `Debug`'s late gate - so a regression here
+fails loud instead of re-rendering as a `-`.
+
+Lane rule, item 70/71's shape again: **state the bound of every negative result.** "No arity gate"
+should be written "no gate call within the first 140 bytes, against EAs {0x59AF40, 0x59AF90}",
+because the truncated form is what let a wrong number reach a published table twice.
+
+### 9.5 Effect on the other audits
+
+`tools/native-gate-audit.py` is unaffected: it audits the F3 game lib's 36 ported rows, and all 45
+F3 natives are exact-gated or ungated stubs - none uses `0x59AF90`. Its 36/36 and section 8's
+three-way triangle both stand. WildUnion's 209-slot cover also survives numerically (111 + 4 + 80 +
+14 = 209), but its `DISAGREE 4` bucket should be re-read: the two `SendMessage` rows in it are not
+arity divergences at all, and the true disagreement population after this correction is
+`GetGlobal` and `FloatingSpeechText` - both still owed the body-read WildUnion asked for, which is
+now the only remaining open item.
