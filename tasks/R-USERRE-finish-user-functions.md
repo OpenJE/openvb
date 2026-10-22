@@ -1327,3 +1327,51 @@ Read and deliberately NOT ported (each with what it waits on):
 
 Gates after the change: `run-all-tests` (floor raised 58->69) and `msvc-build`, both re-run; `ScriptNatives.cpp`
 is compiled by both toolchains, not just mingw.
+
+## Slice-B11 (WildKnight 01a1639b, 2026-10-22 ~14:5x) — four rows read; none ported; one method correction adopted, and a categorization finding that moves two rows out of this TU
+
+Read: `GetWeaponRange` (0x45b620), `AddCNPCToParty` (0x45a2d0), `StartDialogue` (0x45a040),
+`CommandActionbarWindow` (0x45ea50). Nothing landed, and that is the correct outcome for this tranche -
+each is blocked on something specific, named below, rather than on effort.
+
+**1. Method correction, from JadeBear's receipt against my own claim.** My `GetLockDC` `+0xC0` came from
+multiplying the pseudocode's `*(v3 + 48)` by 4. The bytes at 0x45b5dd (`8b 80 c0 00 00 00`) say the same thing,
+so the value was right and the derivation was not: the decompiler's offset rendering depends on a pointer type it
+*guessed*, and it happened to be a 4-byte type here. The rule now written into the source comment is that
+**offsets are adjudicated against instruction text, never against the decompiler's number** - a sibling of the
+cell-index trap, and the reason this batch's every field citation carries a `mov` line.
+
+**2. `GetWeaponRange` (0x45b620) is a four-hop object chain, not a field read.** Arity 1, cast to GameCreature
+(0x45b68d), then `*(creature+360)` = +0x168 for the INVENTORY (the same slot `IsItemEquipped` 0x45b821 uses -
+two natives, one accessor, consistent), RTTI `Inventory -> GameInventory`, `Get_mbr_0x98` (0x463b60) for the
+equipped-weapon slot, `GameInventory::meth_0x4693d0` to find that item, RTTI `GameItem -> GameWeapon`, and
+`+258`-cells (+0x408, needs byte confirmation) - **else** falls back to the creature's own `mbr_0x6f4`; whichever
+value survives is then dereferenced `+ 44` for the actual range, and a zero at either step returns 0. Blocked on
+the inventory/weapon era (GameInventory + GameWeapon unported); note for later: the creature's `+0x6F4` is a
+POINTER that gets dereferenced, so a range of "0" and "no weapon pointer" are again indistinguishable by value.
+
+**3. `AddCNPCToParty` (0x45a2d0) - fourth sighting of the world-server base-plus-delta idiom** (0x45a32f, slot
+26 via `+104`, RTTI `Party -> GameParty`), and its payload is `(**v5)(v5, entity)` - **GameParty vft slot 0**
+called with the resolved entity. So "add NPC to party" is a virtual add on the party object, and the whole native
+is a lookup + dispatch. Blocked on the party class and the singleton's slot-26 accessor. Its failure line names
+the party, not the entity: `"AddCNPCToParty() was unable to find the party."`
+
+**4. `StartDialogue` (0x45a040) is the closest to portable and one seam away.** Arity 2; resolves source and
+target with DISTINCT messages (`"...unable to find the source entity."` 0x45a080 vs `"...target entity."`
+0x45a0ae); then `JE::Entity::meth_0x54c440(source)` which is NOT a getter - read whole, it walks the entity's
+action deque at `gap2F4`/+0x304, calls each action's `vft+8`, destroys them, and finishes with
+`if (!vft[27](this)) meth_0x54bf00(this)` - i.e. **starting a dialogue FLUSHES the source's pending action
+queue** before enqueuing. Then `operator new(0x24)` + `ctor_0x404b40`, stores the resolved TARGET ENTITY
+(dword) at `+0x19`, clears `HIBYTE(mbr_0x14)`, and pushes through the T-030 funnel 0x550720, returning 1.
+Dependency is precise, not vague: the port has the push seam (`MapEntitySpawn.hpp`'s 0x550720 model, kinds
+4/1 only) and the action struct (`src/F3/GameActionInitiateDialogue.hpp`) but has **no action-queue CLEAR** and
+no dialogue kind wired into the seam's owner-linking. Porting it therefore means extending the seam, which is
+map/spawn-lane work - named rather than done under a natives commit.
+
+**5. Categorization finding - two batch-B rows are not script natives at all.** `CommandActionbarWindow`
+(0x45ea50) is a `__usercall (a1@<ebp>)` with NO amx/params pair, reaching GUI state through
+`global_area_map_icons[0]->int_0x2c + 160/+224` and toggling via `CLoadMapInterface::meth_0x495220(0|1)` +
+`CActionbarInterface::meth_0x41c910` / `sub_416B20`. It (and `CommandInventoryWindow` 0x45eac0) belongs to the
+**console-command family in `src/F3/Commands.cpp`**, not to `ScriptNatives.cpp` - the user-era inventory that
+minted this batch mixed both families by address range. Recorded so the remaining rows get routed by kind
+instead of by address, and so nobody ports a console command with an arity gate it does not have.

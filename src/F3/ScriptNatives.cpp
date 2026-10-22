@@ -514,7 +514,12 @@ void ScriptNativeResetRegistry() {
 		// generated header is a name-sorted excerpt - so the two declarations sit at DIFFERENT port
 		// offsets and a container read via GameContainer* would disagree with a door read via its base.
 		// Shipped has one slot at one address (+0xC0); naming the owner is how the port keeps that true.
-		return (int)pUsable->mbr_0xc0;   // shipped: mov eax,[eax+0C0h] at 0x45b5dd / 0x45b5e8
+		// Shipped BYTES at 0x45b5dd are `8b 80 c0 00 00 00` = mov eax,[eax+0C0h]. The pseudocode
+		// printed `*(v3 + 48)` for BOTH return sites, which happens to be the same value here only
+		// because the pointer it guessed was 4-byte typed - a cell-vs-byte rendering that could
+		// just as easily have been wrong. Rule now in force in this file: offsets are adjudicated
+		// against the instruction text, never against the decompiler's number (item 69's sibling).
+		return (int)pUsable->mbr_0xc0;   // shipped: mov eax,[eax+0C0h] (bytes 8b 80 c0 00 00 00 @0x45b5dd)
 	} // ScriptNative_GetLockDC
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
