@@ -5,6 +5,7 @@
 
 #include "F3.hpp"
 #include "JE/World.hpp"
+#include "JE/VFX_Parameter.hpp"
 
 namespace JE { class Encyclopedia; class StoreManager; class PathManager; class VFX_Parameter; }
 namespace F3 { struct GameParty; struct GameJournal; }
@@ -58,8 +59,17 @@ namespace F3 {
 			virtual undefined4 Initialize();
 			// The game config trees: globals.ini + locals.ini parse into the world-owned
 			// parameter tree at world+0x90 (separate from the engine 0x70C2C0 tree).
+			// R-FINISH item 1: the pad is now a REAL member - the +0x90 layout was CLOSED by
+			// R-VEG-E's value shape {SSO name buf@value+0x04, size@+0x14, cap@+0x18=15, embedded
+			// tree at value+0x1C} and the World teardown calls the tree's own clear at the
+			// embedded slot: sub_5AA340(this+144) @0x54852f inside the World destroy chain
+			// (0x5aa340-0x5aa3b1: tree-clear via VFX_Parameter::meth_0x45d1d0 on value+0x1C,
+			// then SSO reset cap=15 @0x5aa3aa / size=0 @0x5aa3a7 / NUL @0x5aa3b1 - the SAME
+			// field triple this port's ctor now byte-pins per item 2). The port embeds the
+			// behavioral tree directly (port classes are behavior-first on layout; the shipped
+			// region is world+0x90..+0xD4 per the IDB member census).
 		private:
-			void* m_worldParamsPad;  // placeholder for the +0x90 VFX_Parameter (layout pending)
+			JE::VFX_Parameter m_worldParams;   // +0x90 embedded parameter tree (was: void* pad)
 		public:
 			void dtor_0x46f190();
 			undefined4 virt_meth_0x46f820();

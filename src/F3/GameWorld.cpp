@@ -22,19 +22,17 @@ namespace F3 {
         tracing::instrument( tracing::LOCATION, "" );
     } // ctor_0x470340
 
-    // World-owned config tree (original at world+0x90; kept file-static until the 0x39C-byte
-    // GameWorld layout is reconstructed). Read-only consumers: [World] Year/Month seed the game
-    // calendar; [Globals] SKILLDIFF*/Greeting feed difficulty checks.
-    static JE::VFX_Parameter g_worldParams;
+    // World-owned config tree is now a REAL embedded member (F3/GameWorld.hpp m_worldParams,
+    // R-FINISH item 1) - the file-static parking lot is retired with the pad.
 
-    static void LoadWorldIni( const char* resourceName ) {
+    static void LoadWorldIni( JE::VFX_Parameter& tree, const char* resourceName ) {
         if ( !JE::g_resource_system ) {
             return;
         }
         void* buf = NULL;
         int len = 0;
         if ( JE::g_resource_system->ReadResource( resourceName, &buf, &len ) ) {
-            g_worldParams.ParseIniText( (char*)buf, len );   // same routine as 0x5A9AB0 wrapper
+            tree.ParseIniText( (char*)buf, len );   // same routine as 0x5A9AB0 wrapper
             free( buf );
         } else {
             // 0x546xxx: the original logs through the file-manager path; keep parity quietly
@@ -67,8 +65,8 @@ namespace F3 {
     undefined4 GameWorld::Initialize() {
         tracing::instrument( tracing::LOCATION, "" );
 
-        LoadWorldIni( "globals.ini" );   // strings at 0x6918B4 / 0x6918A8
-        LoadWorldIni( "locals.ini" );
+        LoadWorldIni( m_worldParams, "globals.ini" );   // strings at 0x6918B4 / 0x6918A8
+        LoadWorldIni( m_worldParams, "locals.ini" );
 
         // Subsystem factory cascade (original GameWorld vft slots; each stores into world+N).
         // vft[7] 0x46F9E0 GamePathManager (0x10) -> +0xF0 - the A* policy object reconstructed
