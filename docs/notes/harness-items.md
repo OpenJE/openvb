@@ -1225,3 +1225,14 @@ its head is a stack-probe+jmp; if so, the real entry is the xref'd-from thunk, n
 (this board's edit tool refuses); if scripting replaces, assert the count. Same shape as the coordinator's
 own 'replace raced its amendment' incident — silence-pretending-success is the one failure mode grep
 catches and trust never will.
+
+## 64. BrightYak's night in one law: 'trust the artifact that fails loud; distrust the one that prints success unconditionally — especially a print you wrote'
+
+EOT-handshake distillation (session 01a16198-7b63, night of the four reseated seats): every load-bearing
+correction the lane made was the TREE catching it — git-status exposing a silent no-op replace, objdump -s
+refuting a 'direct call skipped' story with raw bytes, the alphabetical-floor analysis explaining why 26
+registrations never hit the InsertOrGet defect. Zero of the seven self-corrections came from a tool
+agreeing with its operator. Corollaries in force: edit tools must fail loud on non-match (board default);
+assert counts in scripted replaces; a scanner that returns nothing is reporting about the scanner first
+(blindness family #1-#6 all reduced to this one sentence). Filed as the process-law bookend to the
+instrument-blindness family, minted by the session that proved both at 100%% context loss.
