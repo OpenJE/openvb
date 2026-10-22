@@ -483,3 +483,46 @@ like the code disagrees with me - when a test is most convincing and least trust
 Control condition for test reds: before believing a failure, ask what ELSE the assert can
 see; an assert that cannot distinguish 'my wiring' from 'their behavior' is a quiet
 observer wearing a green costume.
+
+## Addendum 12 — the two-id question, answered functionally without a debugger
+
+WildKnight's (a)/(b) fork (are GameEntity+0x28 "netId" and Entity+0x1DC handle the same id?)
+attacked statically to the bone; verdict: **(b), with a negative result about the database
+along the way.**
+
+What the static route PROVED:
+1. Create and the ctor and Protagonist all dispatch through the SAME adjusted singleton
+   (global_0x70bd98, `&g[2] + *(g[2].vft+4)`), so serial(+0x28)/handle(+0x1DC)/party are
+   slots 2/9/26 of ONE table.
+2. That table is NOT in the DB under any name tried. The recorded candidates refute
+   themselves against known call semantics: GameServer 0x667dd4 slot 26 = 0x46dd70 =
+   packet-dispatch switch, Server 0x6927bc slot 26 = 0x556ea0 = dispatch default - but the
+   live slot 26 returns Party (Protagonist works in the demo). Slot 2 in both = teardown
+   chain (0x46ceb0 -> 0x552c70 frees the dialogue manager -> 0x5a1b80 tail). The singleton's
+   true class is still unattributed - census finding filed as such.
+3. THE DECIDER: DB usage census gives Entity+0x1DC nine consumers (resolver cmp at the
+   byte-verified 0x54be39 region, Protagonist return, SetHP round-trip, mirrors at
+   invobj+4 and map-icons+228, UnpackState restore) vs GameEntity+0x28 exactly TWO, both
+   the ctor store (0x4679b3 = `ff 50 08` call [eax+8] immediately followed by `89 46 28`
+   mov [esi+28h],eax - re-read from raw this turn). A field nothing in the shipped exe
+   READS is not the script handle by any consumer-facing definition, EVEN IF a live read
+   later shows the two values equal (that would be EAX residue coincidence from the
+   teardown-forward, possible and untrustworthy).
+=> Resolver design answer: (b). Key on a field populated at spawn the way Create stamps
+   +0x1DC, or mirror +0x1DC directly into the port registry. Do NOT promote +0x28; the
+   port's netId label cites a write-only residue.
+
+Census bonuses captured on the way through the negative result:
+- 0x46dd70 (GameServer slot 26) is the packet-opcode dispatch switch: case 0x49 builds
+  GameActionInitiateDialogue and funnels via meth_0x550720 - the SERVER-SIDE twin of
+  StartDialogue lives here; cases 0x64/0x65 build net::packet with id fields 100/101
+  (weapon/reload family, siblings of SetHP's packet 88); cases 0x6A-0x70 attach
+  demo_rain.veg / demo_snow.veg / demo_wind.veg weather VFX. Era map material, free.
+- The Server-family slot 9 (0x552b60) ticks the net pump and returns sub_55F3E0 over the
+  net-client member mbr_0x5064 - the strongest positive reading available says the handle
+  is the LOCAL CLIENT's net id from the net-server family, consistent with everything the
+  census knows about +0x1DC. Flagged as candidate pending the singleton table's attribution.
+- Usage-list asymmetry (9 vs 2) was cross-checked against this session's independently
+  byte-verified reads of all nine +0x1DC sites; the census could be truncated in principle,
+  but the store-only pattern at 0x4679b3 is a direct byte fact, and no read of +0x28 was
+  ever seen in any function decompiled this session across four independent tool passes.
