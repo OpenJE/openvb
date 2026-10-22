@@ -142,3 +142,27 @@ only if the row list changes, which needs the two-lane cap).
    port row only).
 4. Whether the RHT canonical key case ever differs from authored case (Step 1's single open
    thread).
+
+---
+
+## T-079 batch-4 correction block (2026-10-22) — T1-T4 (T5 stays open, honest)
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4.
+
+- **T1 — status line stale**: "**Status:** design-only (no code, no `src/` commits)" — T-066 executed
+  Steps 1–3 (`92bceb4`/`c16ddcb` + `653fa79` in openje, re-confirmed present at apply; parents
+  20d8699/d5a70ce/f6cb8a7; gates green each). Steps 4–5 remain device-gated (M-001) **by design**.
+- **T2 — still open, currency note**: no closed row names the runtime writer of `0x70B200` as a
+  singleton OBJECT; T-066 step-2 established what lives BEHIND it (`JE::Gfx_Texture_Manager`), and
+  T-054's analogous finding is the caution to carry: `byte_707CE0` turned out to be a ctor
+  SELF-CACHE, not an object — read `0x70B200` as a stored pointer until a boot proves otherwise.
+- **T3 — corner-field-0 semantics ANSWERED (T-062)**: slot 12 `0x4b1610` writes a float **u0** into
+  corner field-0 of all four vertex blocks (getter pair `0x4b1640`); body prologue
+  `8d 81 c0 00 00 00 b9 04 00 00 00` (`lea eax,[ecx+0xC0]; mov ecx,4`) re-read raw by this lane at
+  apply, matching the sweep §3. Interpolation (mode-1/2) still rides T-067 BONUS-3 as written.
+- **T4 — two numbers to age-check**: "gates … `run-all-tests` **9/9**" (both mentions) — the table
+  has been 10+ suites since the T-042/T-046 era and carried **13/0** as of the 2026-10-22 B2
+  landing (`70b4549`); take live counts from GATE STAMP lines, not this file. Step-2's "id >= 0"
+  predates the grounding catch: **id 0 is the RESERVED absent-sentinel** (free-id pool returns 0 on
+  empty; consumers test `id != 0` @0x4b1b12/0x5236da — T-066 step-2 fixup `c16ddcb`), first live id
+  is 1, and Step-5 census numbers were re-asserted under it.

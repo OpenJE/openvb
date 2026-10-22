@@ -82,10 +82,16 @@ depends: T-072 deliverable (the per-file errata LIST — discoveries/2025-10-21-
   at 0x436240 (D8); `[0x691a1c+0x18]=0x404b70` (D6); GUIStringTags §0 / GUILoadingRecon §1
   sections confirmed present (D7); the D12 12/0 number is attributed as the runtime lane's mesh
   report, not this lane's measurement.
-- [ ] batch 4 (§4 per-file correction blocks: GUILoadingRecon, EntityActionQueueSeam,
-  CombatTurnDispatch (T-072's own C2/C4 — separate from the P-CMBT block), StartupAndSubsystemTable,
-  GUIStringTags, GamePathManager, WorldYearSeedConsumer, T013-registry-port-design,
-  AttackPositionOverrideDoors, GITMItemRecordLayout; ScriptNativeActionDoors check vs B2 lane)
+- [x] **batch 4 LANDED (two commits: 213e1d0 part 1 + this one part 2)** — GUILoadingRecon Gr1-5,
+  EntityActionQueueSeam E1-4, CombatTurnDispatch C2/C3, ScriptNativeActionDoors N1-4, ST1-3,
+  GS1-3, GP1, WY1-2, T1-4, A1, GI1. EXTRA apply re-reads this leg: `0x5466b0 = ff 50 14` + `xor ebx,
+  ebx @0x5466b3` (WY1), `0x4b1640 = d9 81 c0000000` fld [ecx+C0] float getter pair (T3), jump table
+  dwords present at 0x46946C (GI1), all four T-066 openje commits re-confirmed present (T1/WY),
+  `8e272e6` present (A1/E2); ST2 refutation re-checked against the frozen export (G3D_Water 180B
+  @+0x20, VFX_Parameter @+0x1c). TWO sweep-locator off-by-ones caught and logged as the known
+  EA±1 class (predicates located at opcode starts 0x5a95af/0x551c4a); the class does NOT
+  generalize — 0x54be33 matched exactly at its cited EA. Same-day amendment to my OWN D12 line
+  when B2 (70b4549) moved the gate 12/0 -> 13/0 six hours after I quoted the mesh report.
 - [ ] batch 5 (pending flips / DONE marks)
 - [ ] close: coverage statement + relay
 

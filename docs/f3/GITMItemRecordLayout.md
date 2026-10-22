@@ -58,3 +58,13 @@ weapon/creature record family; durable facts:
   PE): `[this+0x3B0] in 1..5 -> mode 1`, `6..8 -> 0`, `9..10 -> 3`; `#17 -> 2` override; `0` or
   out-of-range falls through to the **uninitialized mode lane** (hazard flagged). Names of {0,3}
   stay numeric — semantic naming needs the comparators over the `+0x40C` list nodes (next hop).
+
+---
+
+## T-079 batch-4 correction (2026-10-22) — GI1 (citation fix only; byte claims unaffected)
+
+Line 5 credits "T-041's requirement-class reading" for the B8 pair table `sub_469430`. T-041 is the
+**Entity+0x1E4 map-membership** row — it contains no requirement-class reading. The B8/req-class
+reading is `discoveries/2025-10-20-t010c-conflict-resolved-equip-slot-model.md` (plus the T-018
+helmet closure). The raw content the sentence supports stands — `sub_469430` jump table @0x46946C,
+req1→B etc. — only the credit was wrong; cite-fixed by annotation, never by rewriting line 5.

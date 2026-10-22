@@ -125,3 +125,24 @@ note is wrong" and that was the weaker call.
 What actually matters came out of the check and I had missed it: **`+0x18` is slot 6 — a hole under every
 reading**, so T-034's R0 still needs the live read to name the tick target. This row's seed finding cannot
 substitute for R0, and I should have said that instead of leaving it implicit.
+
+---
+
+## T-079 batch-4 correction block (2026-10-22) — WY1/WY2
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §4/§5.
+
+- **WY1 — table identity RESOLVED and R0 CONFIRMED LIVE**: the file's final disposition ("both
+  readings can be true; table identity stays unresolved; `+0x18` is slot 6 — a hole under every
+  reading; T-034's R0 still needs the live read") is superseded twice over. T-045: `0x5466b0` is
+  `call [eax+14h]` on the PRIMARY table `0x691a1c` (slot 5 = `0x546b50`, the calendar seeder), while
+  the pump enters through the `+4` mixin (`0x6919e4` / `0x66856C`), whose slot 6 is `0x544a90` — no
+  hole; `[0x6919e4+0x18] = 0x544a90` and `[0x691a1c+0x14] = 0x546b50` re-read raw by the T-072 sweep
+  and again by this lane at apply (identical). T-056 then took the live read: R0 = `0x544A90`,
+  three boots, no contradiction of T-045. The "one debugger read owed" ask is retired.
+- **WY2 — the `?: 2253` fallback bug LANDED fixed (T-042)**: the port-comparison table's "seeded, but
+  with different fallbacks — see the bug below" row is closed: ctor aligned to `0,1,1` first,
+  ternaries deleted, absent-key fallback = ctor defaults, authored `Year=0` reachable again
+  (StringSystem 20→27 asserts). Current source comment re-checked at apply — `src/F3/GameWorld.cpp`
+  now only narrates the fix, no live ternary.
+- (The `param_1 == &World+0x14` shape inference stays honestly open — carried, no correction owed.)

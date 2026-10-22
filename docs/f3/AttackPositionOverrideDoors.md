@@ -57,3 +57,12 @@ server loop of the demo). AI: no caller found in AI ranges. Engine: no other cal
 Driver impact: `attack <actor> <target>` cannot express `attack <actor> <x y z>`. A separate driver verb
 (e.g. `attack-pos <actor> <x> <y> <z>` writing packet 91 fields `hasPos=1, +0x4C/+0x50/+0x54`) is warranted —
 the mode is real, shipped, and consumed by `OnServerUpdate`. Row to be added by ZenNova (numbering owned there).
+
+---
+
+## T-079 batch-4 annotation (2026-10-22) — A1
+
+§"Follow-on" ("Row to be added by ZenNova") was added and closed as **T-047**: the `attack-pos`
+verb shipped exe-level at `8e272e6` (re-confirmed present at apply) — walk-then-WHIFF, guard
+`0x46decb` cited, no invented victim. The page's verdict text was unaffected; this pointer just
+retires the pending.
