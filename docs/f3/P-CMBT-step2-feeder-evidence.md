@@ -10,9 +10,11 @@ disagreed with bytes, bytes are what is written.
 **GameEffectDamage NEVER queues.** Its slot-10 wrapper sets the ready byte (`[effect+0xB] = 1`) at
 `0x45c6b3` *unconditionally, before calling anything*, and the push site frees the effect in the same
 call. The target's inbox list (`target+0x2E0`) is structurally unreachable for combat damage. So P-CMBT
-Step 1's container is exercised **only by test traffic** for damage — Step 2 must model the SYNCHRONOUS
-side effects of the push, not an inbox drain. If Step 2's plan says "route damage through the container",
-the plan is wrong about shipped: shipped routes damage through the pusher's own stack frame.
+Step 1's container is exercised **only by test traffic** for damage — and after FastNova's refutation
+(byte-confirmed here: `0x550728: lea ecx,[esi+mbr_0x304]`), NOT by the death action either: lethality
+routes `GameActionDie` into the **`Entity+0x304` ACTION deque**, a sibling instance of the same
+`cls_0x54e070` container type, not the `+0x2E0` EFFECT inbox. Step 2 must model the SYNCHRONOUS side
+effects of the push, not an inbox drain.
 
 ## 0. Correction to the design-doc citation: apply is [vft+0x28], not [vft+0x2C]
 
@@ -164,9 +166,15 @@ target-adjusted subobject, called at three sites with a consistent reading of "a
    If dead: `0x45c5c6: Entity::meth_0x54c440` -> singleton-adjusted `0x45c5e5: call [eax+14h]` (factory
    slot 5) -> `0x45c5f7: ___RTDynamicCast(Action -> GameActionDie)` -> fills `[die+0x1C]=type,
    [die+0x20]=material, [die+0x28]=byte` -> `0x45c626: call net_critical_section::meth_0x550720(target-adj, die)`
-   — **the same named seam 0x550720 = T-030 EnqueueEntityAction**. So a kill does enqueue exactly one
-   action (GameActionDie) into the target's queue; damage itself never does. The inbox that P-CMBT
-   Step 1 models IS reached by combat traffic — via the death action, not the damage effect.
+   — **the same named seam 0x550720 = T-030 EnqueueEntityAction**, whose container is byte-pinned in
+   `EntityActionQueueSeam.md` §"The container (Entity+0x304)" and re-confirmed here: the seam enqueues to
+   **`Entity+0x304` (the action deque)** + writes `[action+0x14]=owner` (`0x550737`) + wakes via `0x54ef30`
+   (`0x55073c`) — the WAKE and the container class are the ones the push site also uses, but the INSTANCE
+   is the sibling deque: NOT `+0x2E0`. So a kill enqueues exactly one action (GameActionDie) into the
+   action deque; damage enqueues nothing anywhere. An earlier sentence in this doc claimed Step 1's
+   `+0x2E0` container "is reached by real combat traffic via the death action" — that was MY notation-
+   adjacent error of a kind (same container TYPE, different INSTANCE), refuted by FastNova, corrected
+   here per item 74 with the wrong claim left visible.
 10. Return: `0x45c640: mov al,1` full path; `0x45c642/0x45c644` cleanup, SEH unwind, `jmp __security_check_cookie`.
 
 ## 5. What this makes observable vs deferred for Step 2
@@ -176,7 +184,7 @@ target-adjusted subobject, called at three sites with a consistent reading of "a
 - **Externally visible, synchronously at push:** `[tgt+0x24]` clamp-store (negative-capable), anim-event
   queue (first-hit + survive + stance-gated ids 0x21/0x22/0x25/0x26/0x28/0x29), VEG attach, sound id,
   `OnDamage` script invoke, `0x46d020` broadcast, and on lethality: a `GameActionDie` **enqueued through
-  the proven seam 0x550720**.
+  the proven seam 0x550720 into `Entity+0x304` (the ACTION deque — not the `+0x2E0` effect inbox)**.
 - **Internal to the effect (no port modeling needed unless the queue is kept for OTHER effect classes):**
   the `+0xA/+0x8/+0x9/+0xB` control-byte walk, `+0x1C` children recursion, `+0x90` clock base store,
   the `55ae10` RbTree gather, deleting-dtor-at-push.
