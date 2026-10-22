@@ -353,6 +353,16 @@ three registered libs (45 + 155 + 9 = 209 name slots). The partition is exact (1
 The four DISAGREE rows, with site histograms — the first two are **shipped defect candidates that
 neither population shows alone**:
 
+> **What these rows are evidence FOR (per TrueRaven's banking at 9c5004a, adopted):** a
+> gate-vs-caller mismatch is only a DEFECT if the body's own cell reads disagree with its gate —
+> the gate is one instruction, the contract is the reads; **`owed: body re-read`** stands on both
+> rows. What the mismatch DOES establish without any further reading is about **script provenance,
+> not the engine**: the shipped `.int` payload carries calls that could never have executed — the
+> gate rejects them before the body is entered, prints "Expected N parameters but recieved M",
+> returns 0. So these artifacts were compiled against a *different declaration* than the shipped
+> exe ships (authored before a signature change, or never recompiled after one). A reader landing
+> on "DISAGREE 4" should read payload archaeology / version skew, not engine bug.
+
 * `GetGlobal` — gate 1, callers {1: 864, **2: 1**}. Exactly one demo-script call site publishes 2
 cells; in shipped that call always fails its own gate ("Expected 1 … but recieved 2", returns 0 —
 the gate at 0x59af4c → 0x59af63/0x59af70 message pair is byte-known). A live DOA typo sitting in
@@ -369,7 +379,16 @@ consume stack garbage, and nobody has yet counted that function's param reads.
 
 Method note for anyone re-deriving: caller-side name resolution goes through EACH image's own
 ordinal table ([image+0x24] stride 40), so one name can hide several ordinals across images; the
-join was done on names precisely because that is what both instruments can share.
+join was done on names precisely because that is the only key both instruments can share.
+
+**Bounding consequence for the oracle program (pulled out of the partition):** 80 of 209 slots are
+gated-but-never-called — two-thirds of shipped's native surface has no demo caller — so **any
+`.int`-parity oracle can ever cover at most 129/209 slots**; the remaining 80 rows are provable
+only from the C prologue (and the 14 zero-evidence stubs only from the table itself). This bounds
+what the installer decision can be *validated* by, independently of whether it is correct, and it
+means "make the port's natives reachable" is chasing an engine API far broader than the demo ever
+exercised. A disjoint count from TrueRaven's lane agrees in shape: 16 of the port's batch-B 36
+rows have no shipped caller either.
 
 ## Appendix — verified AMX struct field map (all hex, each from instruction text)
 
