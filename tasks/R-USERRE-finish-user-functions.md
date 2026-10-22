@@ -1,3 +1,10 @@
+---
+status: in-progress
+assignee: BrightYak `01a16198-7b63-74d2-a895-a5fc6a051707` (R-USERRE-A sealed by coordinator QuickNova/LoudDragon 2026-10-22 03:2x; fresh claim, no inherited identity)
+type: implementation (product code; batch A = 112 console-command ports, per-row recipe: port + EA-cite (item 57) + gate green)
+sequencing: A first (this claim); B/C/D follow per PARK lines R-USERRE-A/B
+---
+
 # R-USERRE — the user-era named functions, ported to completion
 
 Inventory: every `F3::`-named function in the live IDB (names anchored by EA per convention) whose address is NOT cited anywhere in src/ or modules/openje/src. These are the user's hand-mapped functions left unported; **completion = implement + cite (item 57) + gate green**. Verification pass per row before porting: the name is a CLAIM, the bytes are the contract (item 50's law applies to human-era names too). False-negative note: suffix-EAs in names may be uppercase — re-check cited-ness case-insensitively at write time.
