@@ -730,14 +730,20 @@ STRIDE-28 RECORD: fields observed at sites: cell+0x00..0x04 header/next shape + 
 {buf@+4(16B), size@+0x14, cap@+0x18} = 0x1C — matches drain-side 28B stepping; the two
 'named-unknown' fields from the coordinator's brief are the SSO size/cap pair, now NAMED.
 METHOD AUTOPSY (law family fifth member): my E8-scan AND my absolute-pointer scan AND my
-jmp-rel32 FORMULA all missed the console thunk; IDA's xrefs caught it — the miss mechanism:
-the `je 0x59ec13` at 0x59ec11 JUMPS OVER a direct `call 0x59e8e0` (the linear call-site exists
-but my grep for 'call   0x59e8e0' hit only 2 lines: the function-def line and the thunk — the
-direct call is conditional-skipped code my scan SHOULD have caught: it IS there (581390 region),
-my caller-scan's rel-computation for THIS one didn't match — UNRESOLVED micro-mystery, named
-NOT hidden: 4th instrument, IDA, agrees with the thunk decode). LESSON: three scanner
-formulations failed the SAME site; the negative-before-IDA was wrong again; xrefs are the
-census when the byte-family disagrees.
+jmp-rel32 FORMULA all missed the console thunk; IDA's xrefs caught it — RESOLVED same-sitting,
+and two of my own sentences here were wrong: (a) there IS no 'direct call' at 0x59ec11 — the
+bytes are 'sub ecx,[ecx-4]; jmp 0x59e8e0' starting AT 0x59ec10 (MSVC SEH4 SPLIT PROLOGUE: the
+vft holds the 8-byte thunk as the real ENTRY; 0x59e8e0 is a MID-FUNCTION body address no caller
+references, and grep shows exactly that: 1 def line + 1 jmp, zero calls); (b) therefore 'it IS
+there (581390 region)' was FALSE — my original E8 census was CORRECT, as were the abs-ptr and
+jmp-formula scans; the error was mine in CALLING 0x59e8e0 'the function' at all. Law member #6
+of the instrument family: SEH4 split prologues make ENTRY vs BODY distinct addressable things —
+census the ENTRY (vft holds the thunk), and a zero-xref 'function' beginning 'sub ecx,[ecx-4]/
+jmp' is a body, not an entry. This unifies the corpus's standing 'decompile fails (SEH prologue)'
+notes (GUILoadingRecon G4 era) under one mechanism: those bodies are entry-detached the same
+way. LESSON STANDS SHARPENED: three scanners agreed because they were all right; the FALSE
+negative lived in my TARGET CHOICE, not in any instrument — the fifth and sixth blindnesses are
+one family: verify the address IS an entry before censusing it.
 NEXT: this census makes Execute() mirror fully proven (console Enter feeder named), and hands
 wall-2/wall-3 their command names ('ShowCursor' registration site unchanged; 'ToggleBPsBtn'
 is a bus payload, not a registered command — census note for the cursor lane).
