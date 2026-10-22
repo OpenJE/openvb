@@ -3,7 +3,7 @@
 #   Superseded docs stay in the index; judge them by the reader (see canonical-fact-sheet).
 #   Scope: discoveries/*.md only (not tasks/, not src/, not docs/f3/, not the IDB).
 #   Keys are literal addresses; 0x45c140 and 0x45c141 are unrelated keys here.
-# corpus_docs=199 indexed_eas=7872 mentions=12825 refused_tokens=1061 {'vftable slot offset (relative to an unresolved table)': 665, 'bare all-digit hex: could be a decimal count, not indexed': 34, 'outside image span 0x400000-0x715800': 241, 'ambiguous +0x hex: struct offset vs global address': 6, 'masked/pattern EA (N significant digits, not an address)': 106, 'range outside image': 6, 'out-of-image (file offset/FourCC/mask)': 3}
+# corpus_docs=200 indexed_eas=7913 mentions=12873 refused_tokens=1061 {'vftable slot offset (relative to an unresolved table)': 665, 'bare all-digit hex: could be a decimal count, not indexed': 34, 'outside image span 0x400000-0x715800': 241, 'ambiguous +0x hex: struct offset vs global address': 6, 'masked/pattern EA (N significant digits, not an address)': 106, 'range outside image': 6, 'out-of-image (file offset/FourCC/mask)': 3}
 # 87 keys are backed ONLY by inference from compressed prose (slash lists like @0x45c251/261/271,
 #   zero-padded or after-offset suffixes). They are real but not literally written: list with --inferred.
 #   Every other key appears literally as 0x.../sub_.../name_0x... in at least one document.
@@ -39,10 +39,10 @@ ea	count	docs
 0x401b08	1	2025-10-20-entity-family-subtables-and-player-layout.md
 0x401b0b	1	2025-10-20-entity-family-subtables-and-player-layout.md
 0x401b20	12	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t033-batch2-apply-ledger.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t062-addendum-window-d24-d40-census.md;2025-10-21-t062-cursor-subsystem-and-child-notify.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t080-37c-onmessage-inserters.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t085-animated-event-deque.md
-0x401bd0	15	2025-10-20-entity-class-family-layout.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-session10-amo-namelist-giam-efev.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-21-r-cs-csound-census.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t062-addendum-manager-trio-0x50b790-owner.md;2025-10-21-t062-cursor-subsystem-and-child-notify.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t078-byte-run-0x64d7d8.md;2025-10-21-t083-gfx-engine-vft-census.md
+0x401bd0	16	2025-10-20-entity-class-family-layout.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-session10-amo-namelist-giam-efev.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-21-r-cs-csound-census.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t062-addendum-manager-trio-0x50b790-owner.md;2025-10-21-t062-cursor-subsystem-and-child-notify.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t078-byte-run-0x64d7d8.md;2025-10-21-t083-gfx-engine-vft-census.md;2026-10-22-getglobal-setglobal-seh-triage.md
 0x401c70	1	2025-10-21-t013-static-tail-plus0x2c-broadcast-keyform.md
 0x401d00	1	2025-10-20-vftable-master-index.md
-0x401d20	1	2025-10-21-t078-byte-run-0x64d7d8.md
+0x401d20	2	2025-10-21-t078-byte-run-0x64d7d8.md;2026-10-22-getglobal-setglobal-seh-triage.md
 0x401d60	5	2025-10-21-qw2-wave2-ledger.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md;2025-10-21-t084-long-tail-batch-attribution.md;README.md
 0x401dd0	2	2025-10-20-entity-ctor-anatomy-and-global-list.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md
 0x401ef0	1	2025-10-20-session15-effect-clone-callers-damage-path.md
@@ -3731,7 +3731,7 @@ ea	count	docs
 0x50d5a4	2	2025-10-20-settings-surface-map.md;RESPONSES-from-reimpl-agent.md
 0x50da90	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
 0x50daf0	2	2025-10-21-t059-pad-owner-census.md;2025-10-21-t060-pad-annotation-apply-ledger.md
-0x50db20	26	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-emef-map-effect-wire-and-registry.md;2025-10-20-entity-class-family-layout.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-entity-script-binding-onupdate-pump.md;2025-10-20-session10-amo-namelist-giam-efev.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t033-batch2-selfnaming-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-t033-batch2-apply-ledger.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t062-addendum-window-d24-d40-census.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t085-animated-event-deque.md;README.md
+0x50db20	27	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-emef-map-effect-wire-and-registry.md;2025-10-20-entity-class-family-layout.md;2025-10-20-entity-family-subtables-and-player-layout.md;2025-10-20-entity-script-binding-onupdate-pump.md;2025-10-20-session10-amo-namelist-giam-efev.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t033-batch2-selfnaming-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-t033-batch2-apply-ledger.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t062-addendum-window-d24-d40-census.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t072-doc-errata-sweep.md;2025-10-21-t083-gfx-engine-vft-census.md;2025-10-21-t085-animated-event-deque.md;2026-10-22-getglobal-setglobal-seh-triage.md;README.md
 0x50dbb0	20	2025-10-20-dialogue-call-dlg-system-opener.md;2025-10-20-entity-update-updater-maps.md;2025-10-20-session37-t029-function-census.md;2025-10-20-session38-t033-batch1-adjudication.md;2025-10-20-t033-batch1-identity-decisions.md;2025-10-20-t036-helper-noise-taxonomy.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t033-batch3-hostband-ledger.md;2025-10-21-t033-batch4-ledger.md;2025-10-21-t033-batch5-ledger.md;2025-10-21-t033-batch6-ledger.md;2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t055-mint-queue-apply-ledger.md;2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t058-annotation-apply-ledger.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t063-conservative-half-attribution.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t086-retro-share-check.md;README.md
 0x50dc60	2	2025-10-21-t057-escalation-family-readjudication.md;2025-10-21-t058-annotation-apply-ledger.md
 0x50dd90	2	2025-10-21-t053-string-mining-unexamined-bands.md;2025-10-21-t055-mint-queue-apply-ledger.md
@@ -5391,6 +5391,7 @@ ea	count	docs
 0x58a6fb	1	2025-10-21-r-codec-radtools-bink-mss.md
 0x58a7b0	1	2025-10-20-death-console-only-and-packet-fixes.md
 0x58a960	1	2025-10-20-vftable-master-index.md
+0x58a9a0	1	2026-10-22-getglobal-setglobal-seh-triage.md
 0x58b880	1	2025-10-20-f3-ui-command-handlers-window-slots.md
 0x58bd80	1	2025-10-20-vftable-master-index.md
 0x58be40	3	2025-10-21-r-cs-csound-census.md;2025-10-21-r-st-split-annotations-ledger.md;2025-10-21-rinst-install-deriv.md
@@ -5400,6 +5401,39 @@ ea	count	docs
 0x58db80	2	2025-10-20-death-console-only-and-packet-fixes.md;2025-10-20-f3-ui-command-handlers-window-slots.md
 0x58dbe0	1	2025-10-20-death-console-only-and-packet-fixes.md
 0x58dda0	1	2025-10-20-f3-ui-command-handlers-window-slots.md
+0x58dfd0	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58dfde	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58dfec	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e002	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e004	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e032	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e033	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e092	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e097	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e0b7	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e0ba	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e0c3	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e0c5	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e0fa	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e0fb	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e178	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1ae	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1b0	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1be	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1ce	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1e2	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1e4	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e1f2	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e212	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e213	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e272	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e277	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e29b	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e29d	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e2a4	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e2bc	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e2ca	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x58e31e	1	2026-10-22-getglobal-setglobal-seh-triage.md
 0x58e900	2	2025-10-20-death-console-only-and-packet-fixes.md;2025-10-20-gameclient-layout-command-surface.md
 0x58e96b	1	RESPONSES-from-reimpl-agent.md
 0x58ea4e	1	2025-10-20-gameclient-layout-command-surface.md
@@ -5547,7 +5581,8 @@ ea	count	docs
 0x59d9f0	1	2025-10-21-t062-addendum-window-d24-d40-census.md
 0x59dce0	1	2025-10-20-vftable-master-index.md
 0x59deb0	1	2025-10-21-t062-addendum-window-d24-d40-census.md
-0x59ec10	1	2025-10-20-vftable-master-index.md
+0x59eaf0	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x59ec10	2	2025-10-20-vftable-master-index.md;2026-10-22-getglobal-setglobal-seh-triage.md
 0x59ec40	1	2025-10-20-jeworld-layout-interface-views.md
 0x59ec80	1	2025-10-20-input-path-architecture-command-fifo-actions.md
 0x59f030	1	2025-10-20-input-path-architecture-command-fifo-actions.md
@@ -5769,6 +5804,8 @@ ea	count	docs
 0x5a99af	1	2025-10-20-settings-surface-map.md
 0x5a9a10	1	2025-10-21-t010-10e-manager-producers.md
 0x5a9a90	1	2025-10-20-vftable-master-index.md
+0x5a9d50	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x5a9e60	1	2026-10-22-getglobal-setglobal-seh-triage.md
 0x5a9f80	1	RESPONSES-from-implementer-B.md
 0x5a9fc5	1	RESPONSES-from-implementer-B.md
 0x5a9fd5	1	RESPONSES-from-implementer-B.md
@@ -6843,7 +6880,7 @@ ea	count	docs
 0x6162c4	1	2025-10-20-vftable-master-index.md
 0x6162e0	7	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-21-r-cs-csound-census.md;2025-10-21-r-vfm-vfx-formatmanager.md;2025-10-21-t059-pad-owner-census.md;2025-10-21-t070-idle-resident-rootcause.md;2025-10-21-t075-skin-registry-identity.md;2025-10-21-t083-gfx-engine-vft-census.md
 0x6162e5	2	2025-10-20-vftable-master-index.md;2025-10-21-r-cs-csound-census.md
-0x616328	15	2025-10-20-canonical-fact-sheet.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-tohit-apply-tail.md;2025-10-20-world-packstate-registries.md;README.md;RESPONSES-from-reimpl-agent.md
+0x616328	16	2025-10-20-canonical-fact-sheet.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session33-socket-table-is-attachment-space.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-tohit-apply-tail.md;2025-10-20-world-packstate-registries.md;2026-10-22-getglobal-setglobal-seh-triage.md;README.md;RESPONSES-from-reimpl-agent.md
 0x6165e0	6	2025-10-20-examine-flow-actionbar-rtti-recipe.md;2025-10-20-session21-hp-adjudication-wire-confirm.md;2025-10-20-tohit-apply-tail.md;2025-10-21-t017-pass4-blk-allocation-handlers.md;2025-10-21-t070-idle-resident-rootcause.md;RESPONSES-from-reimpl-agent.md
 0x616bc0	1	2025-10-20-vftable-master-index.md
 0x616c75	1	2025-10-20-vftable-master-index.md
@@ -6888,6 +6925,8 @@ ea	count	docs
 0x637b10	1	2025-10-21-t059-pad-owner-census.md
 0x63931a	1	2025-10-21-t059-pad-owner-census.md
 0x63983e	1	2025-10-21-t059-pad-owner-census.md
+0x639da0	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x639dc0	1	2026-10-22-getglobal-setglobal-seh-triage.md
 0x63a316	1	2025-10-21-t059-pad-owner-census.md
 0x63a536	1	2025-10-21-t059-pad-owner-census.md
 0x63c003	1	2025-10-21-t059-pad-owner-census.md
@@ -7733,6 +7772,8 @@ ea	count	docs
 0x6ea9b4	1	2025-10-21-t059-pad-owner-census.md
 0x6eaa5c	1	2025-10-21-t059-pad-owner-census.md
 0x6eace8	1	2025-10-21-t059-pad-owner-census.md
+0x6eb350	1	2026-10-22-getglobal-setglobal-seh-triage.md
+0x6eb374	1	2026-10-22-getglobal-setglobal-seh-triage.md
 0x6eb8c8	1	2025-10-21-t059-pad-owner-census.md
 0x6ebb88	1	2025-10-21-t059-pad-owner-census.md
 0x6ed070	1	2025-10-21-t059-pad-owner-census.md
@@ -7859,8 +7900,8 @@ ea	count	docs
 0x70b250	3	2025-10-21-r-cs-ann-ledger.md;2025-10-21-r-cs-csound-census.md;2025-10-21-t062-cursor-subsystem-and-child-notify.md
 0x70b318	1	2025-10-21-t073-orphans-final.md
 0x70bb68	1	2025-10-21-t073-orphans-final.md
-0x70bd90	17	2025-10-20-command-record-to-packet-issuers.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameclient-layout-command-surface.md;2025-10-20-gameclient-vft-demand-ui-factories.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session23-combat-join-leave-state5.md;2025-10-20-session25-mode-flag-connected-client-retraction.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-21-t017-pass4-blk-allocation-handlers.md;2025-10-21-t054-ecx-flow-owner-attribution.md;2025-10-21-t061-cengineinterface-virtual-surface.md;EXPERIMENTS-for-reimpl.md;HANDOFF-2025-10-20.md;README.md
-0x70bd98	28	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-world-packstate-registries.md;2025-10-21-t010-10e-manager-producers.md;2025-10-21-t034-live-capture-orig-boot-exception.md;2025-10-21-t052-startup-dance-retry.md;2025-10-21-t056-xorg-dummy-six-rows.md;2025-10-21-t069-gate-run-ledger.md;2025-10-21-t082-digest-fields-re-audit.md;2025-10-21-t085-animated-event-deque.md;EXPERIMENTS-for-reimpl.md;README.md;RESPONSES-from-implementer-B.md;RESPONSES-from-reimpl-agent.md
+0x70bd90	18	2025-10-20-command-record-to-packet-issuers.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameclient-layout-command-surface.md;2025-10-20-gameclient-vft-demand-ui-factories.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-session12-serverupdate-ondeath-flip.md;2025-10-20-session23-combat-join-leave-state5.md;2025-10-20-session25-mode-flag-connected-client-retraction.md;2025-10-20-session7-effect-pipeline-and-damage-apply.md;2025-10-20-session8-entity-lifecycle-state-die.md;2025-10-21-t017-pass4-blk-allocation-handlers.md;2025-10-21-t054-ecx-flow-owner-attribution.md;2025-10-21-t061-cengineinterface-virtual-surface.md;2026-10-22-getglobal-setglobal-seh-triage.md;EXPERIMENTS-for-reimpl.md;HANDOFF-2025-10-20.md;README.md
+0x70bd98	29	2025-10-20-c23-answer-worldsim-seconds-not-pointer.md;2025-10-20-canonical-fact-sheet.md;2025-10-20-copyfrom-caller-hunt-creature-regen-tick.md;2025-10-20-effect-node-wrapper-worldserver-interfaces.md;2025-10-20-gameentity-vft-decode-activation-and-inventory.md;2025-10-20-gameworld-interfaces-effects-classid.md;2025-10-20-gcre-versions-gwam-queueanimevent-table.md;2025-10-20-jeworld-layout-interface-views.md;2025-10-20-r0-world-vftable-slot6-read-from-image.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-session31-wire-helper-naming-roundup.md;2025-10-20-session34-world-host-chain-map-load-slot.md;2025-10-20-session6-classid-readers-weapon-ammo-combat.md;2025-10-20-session6b-effect-node-dispatch.md;2025-10-20-t034-attempt-stub-contention-preresolved.md;2025-10-20-t034-handover-orig-gdb-port-collision.md;2025-10-20-world-packstate-registries.md;2025-10-21-t010-10e-manager-producers.md;2025-10-21-t034-live-capture-orig-boot-exception.md;2025-10-21-t052-startup-dance-retry.md;2025-10-21-t056-xorg-dummy-six-rows.md;2025-10-21-t069-gate-run-ledger.md;2025-10-21-t082-digest-fields-re-audit.md;2025-10-21-t085-animated-event-deque.md;2026-10-22-getglobal-setglobal-seh-triage.md;EXPERIMENTS-for-reimpl.md;README.md;RESPONSES-from-implementer-B.md;RESPONSES-from-reimpl-agent.md
 0x70bde8	3	2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-21-t070-idle-resident-rootcause.md;README.md
 0x70be08	4	2025-10-20-entity-ctor-anatomy-and-global-list.md;2025-10-20-f3-ui-command-handlers-window-slots.md;2025-10-20-gameinterfaces-vft-semantics-gui-globals.md;2025-10-20-world-packstate-registries.md
 0x70be0c	10	2025-10-20-canonical-fact-sheet.md;2025-10-20-cutscene-controller-world-subsystem-roster.md;2025-10-20-entity-ctor-anatomy-and-global-list.md;2025-10-20-session14-frame-pump-chain.md;2025-10-20-world-packstate-registries.md;2025-10-20-world-tick-state-evasion-stub.md;2025-10-21-t010-10e-manager-producers.md;2025-10-21-t074-entity-2e0.md;README.md;RESPONSES-from-reimpl-agent.md
