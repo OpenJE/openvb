@@ -161,6 +161,23 @@ tool checks the port's `cells` column against the shipped gate immediate on all 
 and confirms the 4 `cells = -1` rows are exactly the 4 shipped ungated natives - the arity half is byte-right,
 the name half is open work.
 
+**Port-side status, now AUDITED rather than trusted (added same sitting).** The open question above was
+whether only `UnequipItem` diverges. It is answered by recomputation, not by sampling: for each of the 36
+rows, the shipped native's own prologue immediates (`68 <name-ptr>` + `6a <cells>` before the
+`call 0x59AF40`) were read from the PE and compared against what the PORTED body passes to
+`ScriptNativeCheckArity` / `ResolveNativeEntity` - the latter resolving through the shared helper, whose own
+gate cell (1) is folded in so helper-mediated rows are not silently skipped.
+
+    rows parsed 36 (asserted - a 0-row parse would have looked identical to "0 findings", which is the exact
+    vacuous-green trap this lane filed days ago, so the count is an assert, not a print)
+    gate-comparable rows 36, divergences 0
+
+=> every ported native's GATE NAME and GATE CELLS equal shipped's immediates, and the one shipped defect in
+that field (`UnequipItem` printing `"EquipItem"`) is present in the port ON PURPOSE and asserted, so it does
+not show up as drift. The alias quad's four rows carry `-1` (no gate) and were checked for exactly that. The
+`cells` column and the name column are therefore both byte-right for all 36 rows, which is what makes the
+table safe to hand to an installer once the typedef decision lands.
+
 Two facts from the same pass that foreclose whole classes of speculation: counts walked to terminators are
 **9 + 155 + 45 = 209**, and **no name and no fn value appears in two tables**, so shipped's registration order
 never shadows. A flat port table cannot introduce a shadowing bug - there is no shipped shadowing behavior to
