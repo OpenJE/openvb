@@ -335,3 +335,33 @@ stops at buffer-full with no error — 10 downstream misses reading as "natives 
 quiet". Same shape as rc=53 loader death (this lane) and gate-kept-standard port-annot
 (WildKnight, twice). Rule: a dead observer is indistinguishable from absent behavior;
 observers must fail LOUD (overflow restarts / linkage checks / cited anchors).
+
+## Addendum 8 — B19 verified; the relay-line hole (and the gate that closes it)
+
+B19 byte verdicts (all WildKnight cites landed on EXACT opcode starts this time):
+- Shipped-crash deviation CONFIRMED: 0x45b722 `e8 b9 ae 1b 00` -> call 0x6165e0
+  (__RTDynamicCast) -> 0x45b727 `8b 80 08 04 00 00` mov eax,[eax+408h] — ZERO test
+  between cast failure and dereference: null + 0x408 = AV. Port answers 0, declared.
+- Unbounded slot walk CONFIRMED: 0x4693d4 `8b 4c 91 14` = mov ecx,[ecx+edx*4+14h] —
+  first indexed read after entry; the null test (85 c9 74 15) comes AFTER the load.
+  Shipped inspects whatever follows the six cells; port bounds it, declared.
+- EntryByName: zero traces in src/ — retracted work left no corpse, verified.
+- Declare-don't-assert (mixed bases indistinguishable in the port): endorsed as the
+  POSITIVE twin of the dead-observer family — a test that cannot distinguish what it
+  claims to prove is a silent prover. First declined assert of the session; correct call.
+
+THE HOLE: relay-line commit hashes are unverified data. `git cat-file -t` says
+f2b3a1c, 23418f1, 2521b31 AND f7f2d4c DO NOT EXIST — WildKnight has cited "suite
+commits" that never existed across three batches (B17/B18/B19), because the suites are
+INLINE in the batch parents (968343e, 5a4b0a3 each carry their +asserts in
+ScriptNatives.cpp). Even his self-correction of the phantom re-entered the same phantom
+class from memory. This lane's share: I twice relayed his lines without querying hashes
+that `git cat-file -t` resolves locally in 20ms — acceptance is propagation. Costume #5
+of the transcription family: hashes-from-memory; and its vector: un-queried relay.
+NEW GATE (both lanes): every commit hash entering a relay line or README flip must be
+re-emitted from `git log`, never from memory, and suites inline means cite the batch
+parent only. Corrected relay line — his: b2693a8/cc8e54b/b44b459/e8e1a6a/b8d91b9/a63fffc/
+9e11a57/ac88048/968343e/5a4b0a3; mine: 12a3a91/3031b1a/04087a6/e53eecb/544a1fa/f30a9fb/
+c6e6023/4118cd4. Dead-observer family gains member four: an assert against a
+block-local out of scope — lifetime failure reading as class failure; "observers must
+fail loud" now in the suite DESIGN notes, not a war-story file (right vehicle).
