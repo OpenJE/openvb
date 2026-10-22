@@ -1236,3 +1236,17 @@ agreeing with its operator. Corollaries in force: edit tools must fail loud on n
 assert counts in scripted replaces; a scanner that returns nothing is reporting about the scanner first
 (blindness family #1-#6 all reduced to this one sentence). Filed as the process-law bookend to the
 instrument-blindness family, minted by the session that proved both at 100%% context loss.
+
+## 65. set_comments' anyOf(array|object) schema defeats MCP argument coercion — annotation-tier writes route via py_eval + idc.set_cmt(string)
+
+SwiftOwl's W4-R4 blocker, escalated-not-scope-crept (e48f32f): the typed comment channel stringifies
+every payload shape offered — array, object, short — so ALL annotation rows were undeliverable through
+it. The lane filed the defect with its repro list in the wave ledger and STOPPED rather than improvising
+wrong-shaped writes. Resolution for the board: py_eval passes plain strings, and idc.set_cmt(ea, str, 0)
+takes one — proven the same minute by the rename/save path (single-line py_eval executed everything the
+typed tools argued with). Rule: (1) annotation-tier writes go through py_eval with plain-string payloads;
+(2) a channel that rejects every input shape is a channel defect, not a request error — file it with the
+repro list and park the rows in repo paper, exactly as done; (3) the wave's one name-eligible row was
+ruled in by the coordinator (isGlobalRegistered_0x5a9d50, renamed+saved+verified 03:22Z) — sole-writer
+handover worked: the wave's own end-save preceded the coordinator write, and the re-up (fresh-server
+restart re-query) is queued to the keeper per gold standard.
