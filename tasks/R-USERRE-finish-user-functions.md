@@ -853,3 +853,19 @@ is a bus payload, not a registered command — census note for the cursor lane).
   integer->integer rejected (C2440 x2) - static_cast, mingw had accepted it (toolchain
   strictness asymmetry, named for the register: MSVC2002 polices casts the modern cross
   compiler lets slide).
+
+## Law-#6 triage DONE (same sitting, pre-wave-4): GetGlobal/SetGlobal = REAL SEH4 BODIES
+- both decompile-fails de-thunked: in-function SEH4 heads (5-push), NOT split thunks;
+  bodies read COMPLETE by disasm (168+137 insns) and filed verbatim:
+  discoveries/2026-10-22-getglobal-setglobal-seh-triage.md (per-step EA tables).
+- Shared shape: argc guard -> 'Usage:' echo via [client+0x88] sink -> GAME-object
+  (0x70BD98, cls_0x616328) slot-27 (+0x6C) name->handle -> sub_5A9D50 is-registered.
+  Get: miss echo 'Global variable <%s> not registered.'; hit meth_0x5A9E60 toInt +
+  '<%s> = %d'. Set: WARNING-ONLY on unregistered (FALLS THROUGH - creates globals!)
+  + atol(argv[2]) + GameClient::meth_0x58A9A0 set-sink (body unread, named; message
+  tail past 'It' = data-region read, open, not guessed).
+- Wave-4 manifest fed: 0x70bd98 role CONFIRMED dual (pump timer + globals owner -
+  re-cut with shared-adjacency check before any mint), toInt/toBool sibling pair,
+  slot-27 census row, GameServer +0x70A8/+0x70C4 layout rows. Port posture of both
+  commands: GATED (game object + echo object unconstructed), bodies read = comments-
+  to-code when the era lands - same as the 7c factories.
