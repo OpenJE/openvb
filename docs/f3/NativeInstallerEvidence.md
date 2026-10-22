@@ -128,7 +128,19 @@ Standing rule 7 again, in a new costume: a listing built by a filter is an excer
 filter's own criterion is part of the claim. The table at 0x6F3750 — read from bytes — is the authority for
 "which natives does the F3 game lib expose", not a symbol query.
 
-### 5b. Registered name vs gate ArgList - TWO fields, and they disagree on 20 natives
+### 5b. Registered name vs gate ArgList - TWO fields, and they disagree on 21 natives
+
+> **COUNT CORRECTION (FastNova `248f842`, verified here)**: this section said 20 and the true figure is **21**
+> (engine-core 16 -> 17). The cause is not a missed string, it is a missed FUNCTION: shipped has **two** arity
+> gates - `0x59AF40` EXACT (`cmp/je`, 4 args, `add esp,10h`) and **`0x59AF90` MINIMUM** (`cmp/jge`, 5 args, the
+> 5th an `&out_actual` written at `0x59afa5`, `add esp,14h`, its own message
+> "Expected at least %d parameters but recieved %d." @0x6A0694, both shapes re-read from instruction text).
+> FastNova's extractor knew one EA and used a guessed 96-byte window, so six engine-core natives counted as
+> "ungated" were actually MIN-gated (real ungated engine-core count: 9, not 16 - Year/Month/Day/Hour/Minute/
+> Second/GetTimeStamp/TransferItemToParty/MessageArgCount). The 21st divergence is `Debug` 0x5c3710, which
+> gates at **+0x86** - outside that window - and prints "PointDistance" @0x6AD37C.
+> **No F3 game-lib native uses the min gate**, so this lane's 36-row audit is unaffected; `tools/native-gate-audit.py`
+> now resolves both EAs, reports gate kind, widened its window to 140, and prints the bound on every negative.
 
 Shipped registers `A_Attack` but the body pushes `"Attack"` into the arity gate (0x459ed0-era), and the failure
 lines read `"Attack() was unable to find the attacking entity."` / `"..the target entity."`. The prefix is the
@@ -144,6 +156,7 @@ name-ptr is a separate `.rdata` string, NOT the table's name pointer.
 | `A_Attack` / `A_JustAttack` | `"Attack"` (both) | first 22 bytes identical **displacement and all**, 0xC0 apart; they diverge only past the gate, where ENTITY messages are name-specific while the ARITY message is not. Two bodies, one shared arity string - NOT one native with a flag |
 | `A_ReloadWeapon` | `"ReloadWeapon"` | 0x45a380, cells 1 |
 | `UnequipItem` | `"EquipItem"` | 0x45a580 / 0x45a6f0 both reach the gate at +0x32 with `68 f4 db 65 00` + `6a 03` - **already ported faithfully**, kept at `ScriptNatives.cpp:1024` ("SHIPPED: wrong name") |
+| `Debug` | `"PointDistance"` | gates at +0x86 (0x5c3710); prints 0x6AD37C - the 21st, found only after the window grew |
 | `DecGlobal` | `"IncGlobal"` | 0x5c8200 / 0x5c8360 push the SAME 0x6AD81C |
 | `GetSquadID` + `GetSquadRank` | `"GetSquad"` | both push 0x6B4BC4 - a name in NO table, so the arity string is not even a valid native name |
 | `GetSquadMEmber` | `"GetSquadMember"` | the capital-E typo is in the REGISTERED name (scripts must call it that) while the error prints the correct spelling - so "sic" marks the WIRED spelling, not the pretty one |
