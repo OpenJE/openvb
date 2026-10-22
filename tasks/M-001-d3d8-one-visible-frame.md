@@ -234,3 +234,35 @@ noted, not needed).
 
 LAW-55 executed on exit: all three dlls removed, both reg lines deleted, wineserver reset + wineboot -u,
 **un-gated boot RE-PROVED 124** after revert.
+
+
+### Phase-split round (876814f) - three theories died by bytes
+
+1. **PHASE1-at-Main had never run**: the window is created in **WinMain (main.cpp:38), BEFORE
+   F3::Main()** - the row's 'single frame driver' phrase means TICKS. PreInit moved to the true
+   earliest port-controlled point. Evidence chain: Probe() line ORDERING (probe logged AFTER
+   PHASE2 lines) proved non-execution; after the move, "PHASE1 enter, gate OK" lands first.
+2. **VA/init-order hypothesis KILLED**: Direct3DCreate8 returns NULL at WinMain entry on a
+   nearly-empty 32-bit process ("NULL at PRE-init too"). The allocation-timing story died with
+   its own instrument. The earlier bad_alloc was OLD-PREFIX state (fresh prefix behaves
+   differently; reproduce on clean state before naming theories - law).
+3. **Display-class hypothesis TESTED-and-eliminated**: the host runs a LIVE sway compositor
+   (/run/user/1000/wayland-1); our own Xwayland :99 gave real RandR monitor geometry
+   (1258x698) - still silent NULL. No root Xorg needed, and no flip.
+4. **Wine-build space exhausted**: only wine-11.0 exists on this host (both store paths report
+   it); "w12" in HE's note resolves to nothing installable here.
+
+FULL replicated-difference list, all clean: 3 dlls sha-identical to the working prefix,
+{d3d8=n, d3d9=n} HKCU (dxgi deliberately unreg'd), nv32 ICD verbatim, loader LD path, display
+class, init order, wine build. REMAINING CANDIDATE: HE's prefix CONTENTS (non-DllOverrides
+state), or the humbler reading - **nobody on this host may ever have had d3d8
+Direct3DCreate8 succeed**: the demo's 12 crash-free minutes live in the bink/GDI intro era,
+which never asks for a D3D8 device (his own boot logs put the gameplay request behind input
+injection). Slice 1's guard would then be the FIRST code on this host to ask the question
+honestly, and its NULL is the first real answer. One-command test on his side: run our gated
+build/F3.exe under the known-good prefix (gated path touches no demo data).
+
+Citation sweep: RenderD3D8 8/8, main.cpp guard, T-026 digest helpers - my files 0 uncited;
+checker truth: CITE regex requires EXACTLY SIX hex digits (0x1305a was invisible; 0x01305A
+counts). Gates re-greened on the final exe: 10/10 incl un-gated app-boot 124, cppcheck 0,
+integrity rc0; prefix reverted law-55-clean before commit.
