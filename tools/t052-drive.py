@@ -15,11 +15,19 @@
 #   T-034 read breakpoints while parked at each.
 #
 # SHAPE OF USE (see the discoveries doc for the full recipe):
-#   1. fifo with held writer; winedbg stdin=fifo, e.g.:
-#      env WINEPREFIX=<prefix> WINEARCH=win32 WINEDLLOVERRIDES='mscoree,mshtml=' \
-#          WINEDEBUG='-all,+err' DISPLAY=<X> GALLIUM_DRIVER=softpipe LIBGL_ALWAYS_SOFTWARE=1 \
-#          winedbg --gdb --port 31440 F3.exe <fifo >log 2>&1 &     (cwd = f3demo root)
-#   2. echo 'set pagination off' >fifo ; six `break *<ea>` lines >fifo
+#   1. fifo with held writer; winedbg stdin=fifo. LONG-RUN WINDOWS USE THE DXVK ENV (item-59-era
+#      keeper law: the softpipe/wined3d stack below SIGSEGVs at the bink upload 2.5-4 min in —
+#      T-067 proved DXVK runs 712s+ clean; sitting S1 on the keeper rig: 9m15s zero faults):
+#      env WINEPREFIX=<keeper-grade prefix: 3 dxvk dlls + HKCU DllOverrides d3d8=n,d3d9=n (registry,
+#          NOT env-only — wine-11 ignores env for d3d9)> WINEARCH=win32 WINEDLLOVERRIDES='mscoree,mshtml=' \
+#          WINEDEBUG='-all,+err' DISPLAY=:96 VK_DRIVER_FILES=/run/opengl-driver-32/share/vulkan/icd.d/nvidia_icd.json \
+#          winedbg --gdb --port 31440 F3.exe <fifo >log 2>&1 &     (cwd = f3demo root; NO softpipe env)
+#      (legacy wined3d one-off legs — FindMode-era bp7/bp8 — may still use GALLIUM softpipe +
+#          LIBGL_ALWAYS_SOFTWARE=1, per T-056; never both stacks in one window.)
+#   2. echo 'set pagination off' >fifo ; `break *<ea>` lines >fifo IN DISPATCH ORDER (below) —
+#      the driver services GDB NUMBERS, which equal the arm ORDER; adding legs without extending the
+#      elif chain + keeping 1-10 in this exact sequence mis-arms handlers (S0 reconciliation,
+#      tasks/SITTING-redquartz-lockstep-capture.md; quote EAs in relays, never bare bp names)
 #   3. python3 tools/t052-drive.py <fifo> <log>   (env T052_DEADLINE=s ; then echo continue >fifo)
 #
 # BREAKPOINT MAP (ORIGINAL F3.exe, image 0x400000, IDA EA == VA):

@@ -71,6 +71,22 @@ plus the digest fold waking WildZenith's successor row.
 - 801 cross-refs residual: TBD
 - windows ledgered with exe-sha of the ORIGINAL (f3demo F3.exe — static; head at run = git provenance)
 
+## S1 BRING-UP VERDICT (COMPLETE — keeper window 2026-10-22T00:57→01:07, head 24f6f98-era)
+Original F3.exe (sha256 3194880 B store exe, ledgered to sitting-runs.log), fifo-winedbg :31440,
+keeper-grade DXVK prefix (clone of r-rig), driver v3 servicing legs 1-10 in dispatch order.
+**GATE: PASS — alive 9m15s, ZERO SIGSEGV (the wined3d bink wall at 2.5-4 min left far behind),
+DRIVER-END r1=4 tick=6 pump=5 funnel=12 post=35 seamA=25 seamB=0.**
+Historical fingerprint MATCHED line by line: post=35 (T-056 runs C/H, T-067 run I — 4th deterministic
+boot), seamA=25 (T-067 run I exactly), bp8 (0x5818d0 FindMode-fatal) 0 hits (rig law holds for the
+ORIGINAL under DXVK), bp5 (live Attack) 0 (script cap, as every prior boot), net chatter 'unknown id 7'
+(T-067's live-session signature). First S-PEND cell filled: **falsifier 0x5a955d = 0 hits across a
+clean 9-min DXVK boot** (consistent w/ T-067; re-check after S3 injection before any T-050 wording).
+Six-row read shapes captured live in values.log (world 0x7e16740, Greg 0x0a1fa8b8, +0x34=0x2e@R1-time).
+Teardown: every window pid environ-gated to /tmp/sitting-redquartz/prefix before kill (stub trio took
+TWO passes — launcher dies, wine-host children persist; lesson banked); managed 31338/31437 verified
+STILL UP and untouched post-teardown. Driver header usage updated to the DXVK env (softpipe demoted to
+legacy FindMode one-offs, never both stacks in one window).
+
 ## S0 RECONCILIATION (complete — no window needed, pure paper-vs-code)
 **The collision is worse than naming — it is DISPATCH-BY-NUMBER.** The driver's elif chain services
 GDB numbers 1..10, which are purely the ORDER of the `break *<ea>` lines pushed into the fifo (arm
