@@ -869,3 +869,14 @@ is a bus payload, not a registered command — census note for the cursor lane).
   slot-27 census row, GameServer +0x70A8/+0x70C4 layout rows. Port posture of both
   commands: GATED (game object + echo object unconstructed), bodies read = comments-
   to-code when the era lands - same as the 7c factories.
+
+
+## SESSION FINAL (SwiftOwl 01a16198, ~03:3x) — five seats, all closed-to-zero or closed-with-evidence
+R-ANNOT (97->0) / R-FINISH (9/9) / R-HEADERSAN (57/57 + tool) / R-USERRE-A (34 live regs, console
+mapped keypress->camera, Execute+config pipeline LIVE and suite-driven, 0x58f010 hub enumerated) /
+WAVE-4 (refreshed table, salvage, toBool write+save, R4 blocked-with-defect -> LD ruled and wrote
+isGlobalRegistered_0x5a9d50 himself, R5 holstered with regen receipt). Item 65 (py_eval+set_cmt
+channel law) born from this seat's honest stop. Everything durable: this file, the task/PARK rows,
+discoveries/, git tips (parent 3475adb-side, openje tip, i64 saved 03:02:41). A warm successor
+resumes at: the P2 virtual-surface era (unblocks create+hub+pump+weather+Connect in one), then the
+remaining 50 registrations ride the existing recipe. -end-of-transmission
