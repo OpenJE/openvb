@@ -365,3 +365,15 @@ third sighting: the port's generated headers let the SAME shipped offset exist a
 different class names, and only the OWNER type names the real one. Test-side consequence worth remembering: a
 green suite can be writing one copy and reading another, so member access in these tests is owner-typed by rule,
 not by preference.
+
+
+## NAMING: do not treat `F3::GameActionEquip::` as the owner of 0x54be10 / 0x46ee10 / 0x4629c0 / 0x46d620
+
+The disassembly listings above quote IDA's names verbatim, which means they also quote a **wrong owner**. Per
+JadeBear's attribution pass the `GameActionEquip::` prefix on those four is contamination - the bodies are
+correct, the class is not - and the family belongs to `cls_0x616328`, the same bogus label that stuck to the
+world-server singleton at `0x401150`, i.e. server-side era, not an action class. Kept as quoted in the listings
+because those lines are literal transcriptions; flagged here so a future reader does not propagate the label
+into a rename or a vft hypothesis. `src/F3/ScriptNatives.cpp` carries the same warning at the resolver comment,
+and `src/F3/Commands.hpp:81` (another lane's line, pre-existing) still says
+"GameActionEquip::meth_0x54be10 resolver" - left untouched, noted for its owner.

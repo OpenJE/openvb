@@ -23,7 +23,11 @@ namespace F3 {
 	// ---------------------------------------------------------------------------
 	// Port-side handle registry - the byte_70BE0C stand-in.
 	//
-	// Shipped resolves a script entity handle in F3::GameActionEquip::meth_0x54be10 (0x54be10):
+	// Shipped resolves a script entity handle in meth_0x54be10 (0x54be10). NAMING WARNING: the IDB's
+	// "GameActionEquip::" prefix on this function (and on 0x46ee10 / 0x4629c0 / 0x46d620) is label
+	// contamination - the bodies are right, the class is not; JadeBear attributes the family to
+	// cls_0x616328, the same bogus label attached to the world-server singleton at 0x401150, and it is
+	// server-side era. Quoted below only where the disassembly itself carries the name.:
 	// walk the global entity list at byte_70BE0C (doubly-linked sentinel; node+8 = entity) and
 	// compare *(entity+0x1DC) against the handle (0x54be30-0x54be39, the +476 decimal IDA prints
 	// is 0x1DC in bytes - the cell-vs-byte trap again), else fall through to the container at
