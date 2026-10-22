@@ -51,6 +51,13 @@ namespace F3 {
 		struct Entry {
 			const char *pcName;
 			void *pItem;
+			// Weapon support for GetWeaponRange (0x45b620). Shipped reaches the range in TWO hops: the
+			// item at the creature's active slot is RTTI-cast GameItem -> GameWeapon and read at +0x408
+			// (bytes 8b 80 08 04 00 00, 0x45b727 - a POINTER), and that pointer is then dereferenced at
+			// +0x2C (bytes 8b 40 2c, 0x45b740) for the actual range. pRangeRecord models the +0x408
+			// target, so the two-hop shape survives instead of being flattened into a single int.
+			int *pRangeRecord;
+			char bWeapon;
 		};
 
 		Entry entries[ SNCCI_MAX_ITEMS ];
@@ -66,6 +73,8 @@ namespace F3 {
 			for ( int i = 0; i < SNCCI_MAX_ITEMS; ++i ) {
 				entries[ i ].pcName = 0;
 				entries[ i ].pItem = 0;
+				entries[ i ].pRangeRecord = 0;
+				entries[ i ].bWeapon = 0;
 			}
 			for ( int s = 0; s < SNCCI_EQUIPPED_SLOTS; ++s ) {
 				equipped[ s ] = 0;
@@ -78,9 +87,40 @@ namespace F3 {
 			if ( nCount < SNCCI_MAX_ITEMS ) {
 				entries[ nCount ].pcName = pcName;
 				entries[ nCount ].pItem = pItem;
+				entries[ nCount ].pRangeRecord = 0;
+				entries[ nCount ].bWeapon = 0;
 				++nCount;
 			}
 		} // Add
+
+		// A weapon, with the record its +0x408 pointer would address (range lives at +0x2C of it).
+		void AddWeapon( const char *pcName, void *pItem, int *pRangeRecord ) {
+			if ( nCount < SNCCI_MAX_ITEMS ) {
+				entries[ nCount ].pcName = pcName;
+				entries[ nCount ].pItem = pItem;
+				entries[ nCount ].pRangeRecord = pRangeRecord;
+				entries[ nCount ].bWeapon = 1;
+				++nCount;
+			}
+		} // AddWeapon
+
+		// 0x4693d0 - the equipped cell at a slot, RTTI'd to GameItem, returning 0 if it is not one.
+		// DEVIATION, named because it is a real difference: the shipped accessor reads
+		// `*(this + 0x14 + slot*4)` with NO bound check at all (0x4693d4), so slot 6 or 9 inspects
+		// whatever follows the six-cell array. The port bounds it, because unbounded reads of
+		// neighboring port members would be a different - and less reproducible - wrong answer.
+		const Entry *ItemAtSlot( int nSlot ) const {
+			if ( nSlot < 0 || nSlot >= SNCCI_EQUIPPED_SLOTS ) {
+				return 0;
+			}
+			for ( int i = 0; i < nCount; ++i ) {
+				if ( entries[ i ].pItem == equipped[ nSlot ] && equipped[ nSlot ] != 0 ) {
+					return &entries[ i ];
+				}
+			}
+			return 0;
+		} // ItemAtSlot
+
 
 		// Slot bounds follow the shipped constant: an out-of-range slot is stored nowhere, because the
 		// shipped scan could never observe it either.

@@ -108,6 +108,17 @@ namespace F3 {
 			// implementation to point at - see src/F3/ScriptInventory.hpp for what stands in, and why
 			// naming it a stand-in is the honest move rather than pretending the era exists.
 			class ScriptInventory *inventory_0x168;
+			// GetWeaponRange's two inputs, appended for the same item-69 reason as the bands above.
+			// +0x98 is read through the tiny getter at 0x463b60 (`return this->mbr_0x98') and used as
+			// the SLOT passed to the inventory's item-at-slot accessor (0x45b702-0x45b70a). The same
+			// field is what Equip compares against 2 and 3 (0x46c170/0x46c18a), so it is the creature's
+			// active weapon slot, not a weapon id.
+			int weaponSlot_0x98;
+			// +0x6F4 is the FALLBACK range pointer, used only when no item occupies the slot
+			// (0x45b732: `mov edi,[edi+6F4h]' off the POST-CAST base, unlike +0x168 which is read
+			// pre-cast). It is a POINTER that gets dereferenced at +0x2C, so "range 0" and "no fallback
+			// pointer" are again indistinguishable by value to a script.
+			int *rangeFallback_0x6f4;
 		//: Methods
 			void ctor_0x40d010();
 			undefined4 virt_meth_0x40d300();

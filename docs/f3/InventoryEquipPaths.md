@@ -62,3 +62,54 @@ goes dead is worse than one that forgets: it is indistinguishable from correct-b
 one assert failed because it reused a handle registered against a **block-local object that had already gone
 out of scope** - reading destroyed storage and calling the result "the class check" is noise a suite should not
 generate, so that leg now registers a fresh static item.
+
+## GetWeaponRange (0x45b620) landed on the same model - a two-hop read, two bases, and one crash I chose not to reproduce (B19)
+
+Arity 1, handle only, no string fetched. The interesting part is what it takes to get a number:
+
+    0x45b6af   mov eax,[esi+168h]        ; inventory, PRE-CAST base   (same accessor as IsItemEquipped)
+    0x45b702   call 0x463b60             ; slot = creature+0x98        (a one-instruction getter)
+    0x45b70a   call 0x4693d0             ; item at that slot, RTTI'd to GameItem, 0 if not
+    0x45b727   mov eax,[eax+408h]        ; the WEAPON's range POINTER   - no null test on the cast result
+    0x45b732   mov edi,[edi+6F4h]        ; FALLBACK pointer, POST-CAST base (creature+0x6F4)
+    0x45b740   mov eax,[eax+2Ch]         ; ...and only here is the actual range read
+
+Three consequences, all now in the port:
+
+1. **The range is two dereferences deep.** A weapon does not hold a range; it holds a pointer
+   (`+0x408`) to a record whose `+0x2C` holds the value. The suite proves this by putting 42 at index 11 and
+   999 at index 5 in the same record - reading either offset by mistake gives a different, wrong number.
+2. **The native mixes bases deliberately.** The inventory comes from the pre-cast entity (`+0x168`, shared
+   with `IsItemEquipped` and `EquipItem`), while the fallback pointer comes from the post-cast creature
+   (`+0x6F4`). Two different eras of layout in one expression: `+0x168` is Entity-era, `+0x6F4` is
+   GameCreature's own. In the port both objects share an address, so this cannot be asserted - stated here
+   rather than faked with a test that could not distinguish it anyway.
+3. **"Range 0" and "no range record" are the same answer**, exactly like `IsLocked`'s unlocked-vs-wrong-class
+   problem. A record that exists and holds 0 returns 0; so does no weapon and no fallback. Asserted on both
+   legs so the port does not quietly invent a distinguishing value.
+
+**The landmine.** When the item occupying the slot is NOT a `GameWeapon`, shipped computes the RTTI result and
+dereferences it at `+0x408` with no test (0x45b727) - a null dereference in the engine. The port returns 0 in
+that case. That is a **named deviation**, not a fix: reproducing a crash is not a behavior worth copying, and
+documenting the difference is what keeps it from being mistaken for agreement.
+
+**Second named deviation, same shape.** `GameInventory::meth_0x4693d0` (item at slot) reads
+`*(this + 0x14 + slot*4)` with **no bound check at all** (0x4693d4), even though the equippedness scan is
+strictly six cells (0x46a8cc). So shipped will happily inspect whatever follows the array for slot 6, 7, or 9.
+The port bounds the lookup and answers "no item". An unbounded read of neighboring port members would be a
+different and far less reproducible wrong answer, so the bound is chosen and declared.
+
+## Slot 14 and slot 15 - a unit flip that would have moved the function
+
+Worth keeping as a census rule rather than a footnote: the two payload calls in this family are **different
+virtual slots**, and the decompiler rendered them in different units.
+
+| site | pseudocode | bytes | real slot |
+|---|---|---|---|
+| EquipItem's equip | `(*(*v5 + 56))` | 0x45a6ce `ff 52 38` -> `[edx+38h]` | **14** |
+| UnequipItem's unequip | `(*(vft + 15))` | 0x45a918 `ff 52 3c` -> `[edx+3Ch]` | **15** |
+
+The pseudocode was truthful in the first row and cell-indexed in the second. A reader who took `+15` as bytes
+would probe `[edx+0Fh]` - slot 3, mid-table nonsense that looks like a corrupted vftable rather than a
+rendering artifact. **Unit flips in pseudocode can move the function, not just misstate an offset**, so vft
+citations quote the call bytes and never the printed addend.

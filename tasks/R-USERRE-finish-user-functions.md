@@ -1632,3 +1632,39 @@ and decompiled it to read `while (v3 < 6)`. Calling it "your slot-10 find" was a
 outputs in that area were the `+0x168` accessor, the `vft+24`/`+56` Equip pair, and the `[party+5]` cell math,
 and their `c6e6023` receipt confirms the six on the bytes regardless. The number stands on its own evidence,
 which is the point of citing it at all.
+
+## Slice-B19 (WildKnight 01a1639b) — GetWeaponRange LIVE on the same model (24 natives, 162 asserts), plus two named deviations and a dead method deleted
+
+Ported `GetWeaponRange` (0x45b620) without needing a new era, because B16's model already carried the inventory.
+Its chain: `mov eax,[esi+168h]` inventory (pre-cast, shared with `IsItemEquipped`), the one-instruction getter
+`0x463b60` for `creature+0x98` as the SLOT, `0x4693d0` for the item there (RTTI'd to GameItem),
+`mov eax,[eax+408h]` - a POINTER - else the creature's `+0x6F4` fallback (post-cast base), and only then
+`mov eax,[eax+2Ch]` for the value. Three consequences encoded:
+
+1. **The range is two dereferences deep**, so the suite puts 42 at index 11 and 999 at index 5 of the same
+   record: reading the wrong offset is a different, wrong number rather than a lucky one.
+2. **Two bases in one expression, by design** - `+0x168` is Entity-era (pre-cast), `+0x6F4` is GameCreature's
+   own (post-cast). In the port both share an address, so this is STATED rather than asserted: a test that
+   cannot distinguish the thing it claims to prove is worse than no test.
+3. **"Range 0" and "no record" are the same answer**, like `IsLocked`'s unlocked-vs-wrong-class - asserted on
+   both legs so nobody invents a distinguishing sentinel.
+
+**Two deviations, named instead of smoothed over.** (a) When the slot holds a non-weapon, shipped dereferences
+the FAILED RTTI result at `+0x408` with no null test (0x45b727) - a crash. The port answers 0. Reproducing the
+crash is not worth copying; pretending the two agree would be a lie, so the case is explicit in the code.
+(b) `meth_0x4693d0` reads `*(this+0x14 + slot*4)` with NO bound check (0x4693d4) even though the equippedness
+scan is strictly six cells - shipped inspects whatever follows the array for slots 6/7/9. The port bounds it.
+Chosen because an unbounded read of port-side neighbors is a less reproducible wrong answer than a declared one.
+
+**JadeBear's unit-flip sharpening, verified at the bytes and adopted as a census rule.** This family's two
+payload calls are DIFFERENT virtual slots rendered in DIFFERENT units: EquipItem's `[edx+38h]` (0x45a6ce,
+`ff 52 38`) = slot 14, UnequipItem's `[edx+3Ch]` (0x45a918) = slot 15, while the pseudocode printed the first
+as `+56` (bytes, truthful) and the second as `+15` (cells). Taking `+15` as bytes probes `[edx+0Fh]` = slot 3 -
+mid-table nonsense that reads like a corrupted vftable. **Unit flips can move the function, not just misstate
+it**, so vft citations quote call bytes and never the printed addend.
+
+Housekeeping: the model gained `AddWeapon`/`pRangeRecord`/`bWeapon` and `ItemAtSlot`, and I deleted the
+`EntryByName` helper I had added speculatively in the same sitting - it had no callers, and dead code in a
+product header is a liability that compounds quietly. Removed before the gates ran so the evidence covers the
+tree that ships. Suite 151 -> 162 asserts, 24 natives, floor raised; run-all 13/0 with port-annot OK,
+`msvc-build` rc=0, cppcheck rc=0.

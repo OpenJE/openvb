@@ -122,6 +122,16 @@ namespace F3 {
 	int ScriptNative_LockDoor( int amx, int params );    // 0x45a1b0
 	int ScriptNative_UnlockDoor( int amx, int params );  // 0x45a240
 
+	// 0x45b620 - GetWeaponRange: arity 1, and the deepest object chain in batch B so far. It mixes
+	// bases on purpose - the inventory comes from the PRE-CAST entity at +0x168 (same accessor as
+	// IsItemEquipped, three natives agree) while the fallback range pointer comes from the POST-CAST
+	// creature at +0x6F4 - and it ends in a two-hop read: weapon+0x408 is a POINTER, dereferenced at
+	// +0x2C for the value. A SHIPPED LANDMINE is preserved as a named port deviation: when the item at
+	// the slot is not a GameWeapon, 0x45b727 dereferences the failed RTTI result with no null test, so
+	// shipped crashes and the port returns 0. Reproducing a crash is not a behavior worth copying, but
+	// pretending the two are equivalent would be a lie - hence the explicit case below.
+	int ScriptNative_GetWeaponRange( int amx, int params );
+
 	int ScriptNative_GetItemType( int amx, int params );           // 0x45b240
 	// The shipped Skill enum, values read off GetTotalSkill's jump table (cmp edx,0Ch at 0x40983e =
 	// cases 0..12). The PAIRS whose bodies are identical (0/1, 3/4, 6/7, 10/11) carry the IDB's names;

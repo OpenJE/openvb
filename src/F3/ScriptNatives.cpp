@@ -892,6 +892,56 @@ void ScriptNativeResetRegistry() {
 		return pInv->UnequipNamed( szName, (int)p[ 3 ] ) ? 1 : 0;
 	} // ScriptNative_UnequipItem
 
+	// 0x45b620 - GetWeaponRange. Legs in shipped order; each cite is the instruction, not the print.
+	int ScriptNative_GetWeaponRange( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+		char szUnused[ 1 ];   // no string is fetched here - arity 1, handle only
+
+		(void)szUnused;
+		if ( !ScriptNativeCheckArity( amx, p, 1, "GetWeaponRange" ) ) {   // 0x45b63e
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {   // 0x45b654
+			ScriptNativeReportError( amx, "GetWeaponRange() - Unable to resolve requested entity." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {        // 0x45b68d
+			ScriptNativeReportError( amx, "GetWeaponRange() - Entity is not a creature" );
+			return 0;
+		}
+		GameCreature *pC = (GameCreature *)pEntity;
+		ScriptInventory *pInv = pC->inventory_0x168;                       // 0x45b6af, PRE-CAST base
+		if ( !pInv ) {
+			ScriptNativeReportError( amx, "GetWeaponRange() - Inventory not Found" );
+			return 0;
+		}
+		if ( !pInv->bIsGameInventory ) {
+			ScriptNativeReportError( amx, "GetWeaponRange() - Game Inventory not Found" );
+			return 0;
+		}
+		// 0x45b702: slot = creature+0x98 (via the one-instruction getter at 0x463b60), then
+		// 0x45b70a: item at that slot (0x4693d0, which RTTIs the cell to GameItem and yields 0 if not).
+		const ScriptInventory::Entry *pItem = pInv->ItemAtSlot( pC->weaponSlot_0x98 );
+		const int *pRangeRecord = 0;
+		if ( pItem ) {
+			if ( !pItem->bWeapon ) {
+				// SHIPPED: 0x45b727 computes GameItem->GameWeapon and dereferences the result at +0x408
+				// with NO test, so a non-weapon in the active slot is a null dereference in the engine.
+				// The port answers 0 instead. Named deviation, not a fix: the difference is only visible
+				// where shipped would have crashed, and a crash is not behavior worth reproducing.
+				return 0;
+			}
+			pRangeRecord = pItem->pRangeRecord;         // the +0x408 pointer
+		} else {
+			pRangeRecord = pC->rangeFallback_0x6f4;     // 0x45b732: creature+0x6F4, POST-CAST base
+		}
+		if ( !pRangeRecord ) {
+			return 0;                                    // 0x45b73a: no record, no range
+		}
+		return pRangeRecord[ 11 ];                       // 0x45b740: `mov eax,[eax+2Ch]' = int index 11
+	} // ScriptNative_GetWeaponRange
+
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
@@ -949,7 +999,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[23] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[24] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -972,7 +1022,8 @@ void ScriptNativeResetRegistry() {
 		{ "GetBaseSkill", &ScriptNative_GetBaseSkill,  2 },   // 0x45ad90
 		{ "GetTotalSkill", &ScriptNative_GetTotalSkill, 2 },   // 0x45ae20
 		{ "IsItemEquipped", &ScriptNative_IsItemEquipped, 2 },   // 0x45b750
-		{ "UnequipItem", &ScriptNative_UnequipItem, 3 }          // 0x45a6f0
+		{ "UnequipItem", &ScriptNative_UnequipItem, 3 },         // 0x45a6f0
+		{ "GetWeaponRange", &ScriptNative_GetWeaponRange, 1 }    // 0x45b620
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {
