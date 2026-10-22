@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 assignee: WildZenith `01a16092` (PULL per lane contract, PARK id R-AMX, dispatched by LoudDragon `01a15f82` 2026-10-21; lane-fit note "completes their atlas consumer-side")
 type: research (read-only; discoveries DIRTY-until-checkpoint; relay-only for board state)
 depends: T-074 (+0x2E0), T-030/T-070 (+0x304 funnel), T-080 (+0x378 mailbox), T-085 (+0x1A8 anim deque + prearm boxes)
@@ -64,3 +64,17 @@ the native × queue × selection matrix. Known partials to complete/correct:
 ## References
 T-074/T-080/T-085 docs (all four surfaces + selectors + bps), T-070 §2 funnel census line,
 T-037 (script-native doors), harness items 40-47, `openvb-ida-mcp` skill.
+
+
+## Notes (closure)
+
+**DONE 2026-10-21 (WildZenith 01a16092).** Deliverable: discoveries/2025-10-21-r-amx-native-queue-map.md (DIRTY for checkpoint). Headlines:
+(1) COMPLETENESS METHOD = containment: every queue touch must pass one of FIVE primitives, all censused complete (funnel 0x550720 = 63 sites re-pulled uncapped; drain 0x54c440 = 15; mailbox 0x54EE60 = 5; anim 0x5505F0 = 267; inbox 0x5506c0 = 6+1) x three sentinel-walked registration tables -> full classification with zero per-handler walking. Doc sec 0 states the argument.
+(2) REGISTRATION SURFACE: ONE registrant (JE::Script_Small::Load_5a8880), exactly 3 register calls (sub_5CCDE0 @0x5a8ada/ae7/af4; the 4th xref is the AMX VM interpreter core itself, not a registrant): 9 float-library + 155 JE-engine (0x6ffaf8, sentinel @0x6fffd0) + 45 F3-game-layer (0x6F3750) = 209 natives, counts exact. The 'two modules' guess resolved: module split is TABLE-level, same loader, one AMX.
+(3) MATRIX: 19 queue-touching natives. Funnel x16 with create-kinds raw-pinned (push $K; call *[vft+0x14]): kind 0=Die(A_Kill), 1=Idle(TeleportParty per-member), 2=MoveTo(A_MoveToPosition), 3=PickUp, 4=Wander, 5=Wait, 6=Anim(A_PlayAnim), 7=Message(A_Send trio), 8=SpeechText; direct-ctor natives (no factory): A_MoveToEntity 0x55b350, A_Attack/JustAttack 0x403e40+0x403fa0 (JustAttack writes action +0x6C/+0x6F=0), StartDialogue new(0x24)@0x404b40, A_ReloadWeapon new(0x3C)@0x4071c0 (raw confirms 0x3C - pairs KeenStorm P-REV erratum). Mailbox x3 (bare trio, T-080). Drain x4 natives (ClearActions/A_Kill/TeleportParty/StartDialogue). NONE rows proven: NO native touches +0x1A8 anim or +0x2E0 inbox (QueueAnimEvent's 30 sites all engine-action lifecycle; 0x556ea0 pump has only 2 net-receive callers - native indirection closed).
+(4) T-070 x T-080 SETTLED = DUAL-PATH, split by A_ prefix (both rows true; new axis, not a correction): bare trio synchronous member-loop mailbox push NOW; A_ trio queues ONE kind-7 to the SENDER's +0x304 with fan-out DEFERRED to ActionMessage::start (team cell action+0x20 @0x5c53de, squad +0x24 @0x5c578e - the exact fields T-080's three start-branches read). Consequence named: a drained sender cancels A_ delivery (drain set = A_Kill/StartDialogue/ClearActions); bare-send never does. Proposed one-clause annotations to both rows at checkpoint (coordinator's call - no edits made by this lane).
+(5) NEW ATLAS FACT: ClearActions drains ONLY +0x304 - mailbox/anim/inbox SURVIVE it (containment-proven; drain primitive census has no other native roots).
+(6) FIFTH QUEUE named-not-conflated: QueueFunction/ClearFunctionQueue = AMX-side script-function queue (FOURCC-retrieved), NOT an entity surface; keeps port inventory at four.
+(7) PREARM CROSSWALK (doc sec 5): bpN1 funnel entry / bpN2 drain entry (StartDialogue hit = first visible boot latch-adjacent event, pairs bp9) / bpN3 mailbox push / bpN4 factory 0x46f290 (kind pushed at call site = live kind histogram) / bpN5 anim push (MUST never show native return-address - if it does this row says so loudly); composes with T-085 bp7-bp13, no re-derivation for the sitting.
+(8) Port verdict NAMED: table map = script-VM port surface (mechanical); A_-vs-bare ordering = required paired-observable once scripts run, NOT a digest seam (+0x304 digest is count-based; kind 7 is +1); drain-survival matrix = behavioral spec for port clear-primitives. Nothing invented.
+Posture: read-only honored; raw-over-decompiler on every kind byte; no membership claims (table attribution by registration data); collisions untouched; selftest 6/6 prior gate reused same session; docs left DIRTY.
