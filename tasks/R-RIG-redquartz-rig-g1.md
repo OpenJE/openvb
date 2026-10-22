@@ -54,10 +54,29 @@ timeout 120 /nix/store/hf94anvjgxy56ddx1arxrswpv2zwbzvi-wine-11.0/bin/wine \
 (Trace path is a WINDOWS path — the exe's fopen sees wine's namespace; `Z:\tmp` = host `/tmp`.)
 
 ## Verdict slots (fill at first trace)
-- Direct3DCreate8 at PHASE1 (WinMain entry, earliest port-controlled point — `src/main.cpp:40`): TBD
-- GetAdapterDisplayMode hr/format: TBD
-- CreateDevice hr / device alive: TBD
-- presented frames: TBD
+- Direct3DCreate8 at PHASE1 (WinMain entry, earliest port-controlled point — `src/main.cpp:40`): **NON-NULL — "Direct3DCreate8 SUCCEEDED pre-Startup (VA/ORDER was the wall)"**
+- GetAdapterDisplayMode hr/format: **hr=0x00000000, format=0x00000016 (D3DFMT_X8R8G8B8)**
+- CreateDevice hr / device alive: **OK** (`CreateDevice OK; magenta clear+present armed per frame`), DXVK swapchain 800x580, VK_PRESENT_MODE_IMMEDIATE
+- presented frames: **run1 5,400+ @ T+72s; run2 13,800 @ T+120s; rc=124 (alive at reap), ZERO fatal/err lines** — verdict replicated across two independent boots
+
+## CAPTURE PROOF (the first port-rendered frame, in bytes)
+`DISPLAY=:96 import -window root /tmp/g1-frame.png` mid-run → 800x600 PNG, histogram:
+**464,000 px (255,0,255) magenta** (= 800x580, exactly the DXVK-reported swapchain client area) + 16,000 px black root margin.
+
+## G1 VERDICT (2026-10-22, RedQuartz)
+**POSITIVE — Direct3DCreate8 CAN and DOES return non-NULL on this host**, given the full rig stack:
+Xorg :96 dummy-with-Modelines (vrefresh 67.20 live-verified via xrandr) + DXVK x32 three-dll set
+(md5-matched: d3d8 `76c44ce4…`, d3d9 `cf8a8df6…`, dxgi `a107ae82…`) + BOTH registry DllOverrides
+lines + nvidia **lib32** ICD via VK_DRIVER_FILES + softpipe env ABSENT + WAYLAND_DISPLAY inherited.
+The historic pre-init NULLs were rig-state artifacts, not host incapacity. Slice-2 / R-FINISH device
+gates / the sitting: UNBLOCKED on the positive branch. The repro line above is the board's rig; runner
+script saved at `/tmp/r-rig-redquartz/g1-run.sh` (writes `g1-rc.txt` + `g1-trace2.log`).
+
+## Status of rig at handoff
+Xorg :96 LEFT RUNNING (pid in `/tmp/r-rig-redquartz/xorg.pid`, log `xorg.log`) as the warm-rig asset the
+board asked for; managed winedbg pairs 31338/31437 and their wineservers untouched (environ-gated check:
+their WINEPREFIXes are the .devenv/state ones, mine is /tmp/r-rig-redquartz/prefix).
 
 ## Relay contract
 Report to QuickNova at FIRST trace output with the exact repro line + which of the two gold answers it is.
+**FULFILLED**: first-trace relay sent (POSITIVE); exit-code + capture-proof relay sent after run2 reap (rc=124).
