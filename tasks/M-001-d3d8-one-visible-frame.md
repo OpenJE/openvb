@@ -1,9 +1,18 @@
 ---
-status: open
+status: in-progress (slice 1 pulled by KeenStorm per owner relay b2a0633; board flip is coordinator's)
 priority: P2 slice / P4 whole
-assignee: unassigned (B has first claim of need; C after T-011)
+assignee: KeenStorm (slice 1; board mirror via relay per coordinator-only law)
 type: milestone
 ---
+
+> CLAIM NOTE (KeenStorm, 2026-10-21): pulling slice 1 with the NEW input nobody had when the
+> harness-limit verdict was written: T-067 proved tonight that this host runs d3d8 via **DXVK +
+> 32-bit Vulkan ICD** for the shipped demo (wined3d/GL was never the only backend - the earlier
+> "GL context impossible" probe result is wined3d-specific and stands ONLY for wined3d). Slice-1
+> step 1 smoke first (real msvc leg, prerelease paths per bbf7346), then the renderer slot with
+> the row's probe posture (opt-in, SEH-guard, file trace). Acceptance attempted against
+> DXVK+lavapipe; if CreateDevice still faults, the row's harness-limit sentence restands,
+> re-measured not inherited.
 
 # M-001 — D3D8: get one visible frame (slice 1 of 4). NOT "port the renderer".
 
