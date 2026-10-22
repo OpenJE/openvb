@@ -70,3 +70,24 @@ plus the digest fold waking WildZenith's successor row.
 - cursor +0xA4 fill site + GameCursorManager+0xA4: TBD
 - 801 cross-refs residual: TBD
 - windows ledgered with exe-sha of the ORIGINAL (f3demo F3.exe — static; head at run = git provenance)
+
+## S0 RECONCILIATION (complete — no window needed, pure paper-vs-code)
+**The collision is worse than naming — it is DISPATCH-BY-NUMBER.** The driver's elif chain services
+GDB numbers 1..10, which are purely the ORDER of the `break *<ea>` lines pushed into the fifo (arm
+order = number assignment). Adding any runbook leg without a plan renumbers what follows and can
+land, e.g., raiser 0x54c834-family under the GFX1 handler — wrong reads, confidently. Never
+re-order the legacy break list without rewriting the dispatch table.
+
+UNIFIED ARM PLAN (two-phase, numbers allocated ONCE):
+| gdb# | EA | role | handler state |
+|---|---|---|---|
+| 1-6 | 0x48ccf6, 0x552bb5, 0x550720, 0x550741, 0x459f5d, 0x56af50 | T-034 six reads (R0-R4 + tick) — NOTE driver#3 == runbook bpN1 | EXISTING, keep arm order verbatim |
+| 7-8 | 0x581810, 0x5818d0 | FindMode-era GFX probes (legacy bp7/bp8 — DEAD EAs for the ladder, but the handlers hold the numbers) | EXISTING; arm ONLY in a dedicated FindMode window, never co-armed with T-085 legs |
+| 9-10 | 0x5a94a0, 0x5a955d | seam watch — driver#9 == runbook bp11, driver#10 == runbook bp10 (the falsifier, SAME numbering by luck) | EXISTING |
+| 11+ | 0x54c833, 0x54c864, 0x549090, 0x54c9c1, 0x54c92a, 0x548d80, 0x54c440, 0x54ee60, 0x46f290, 0x5505F0 | T-085 bp7/bp8/bp9/bp12a/bp12b/bp13 + R-AMX bpN2/bpN3/bpN4/bpN5 (bpN1=driver#3, bpN10 falsifier=driver#10) | CODE-ON-ARRIVAL (S2): bp8-debounce pair, bp12 either-or tallies, bp13 census reads, bpN4 kind histogram; runbook bp11 re-entrancy DEPTH (mbr_0x8 read) extends driver#9's leg |
+| 15+ | cursor-reload bps + window-event sites | event-kind NUMERICS + +0xA4 fill (S-PEND cells 2&4) | TO-ARM per T-067 BONUS-4/5 notes (EAs: cursor bps from T-062 docs; GameCursorManager+0xA4 = the BONUS-5 watchpoint) |
+
+Vocabulary law for relays from now on: **quote EAs, never bare bp names** — "bp10 (0x5a955d, the
+falsifier)" not "bp10". Both tables use it, the numbers diverge, the EAs do not.
+Also corrected: the driver's SHAPE-OF-USE header still shows the softpipe env (wined3d era) — the
+sitting arms the DXVK env per hazard 4; header gets updated at S1 commit (tools/ = keeper lane).
