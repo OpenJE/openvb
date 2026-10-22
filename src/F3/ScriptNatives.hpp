@@ -68,6 +68,15 @@ namespace F3 {
 	int ScriptNative_GetEthnicity( int amx, int params );  // 0x45afd0
 	int ScriptNative_GetSubRace( int amx, int params );    // 0x45b070
 
+	// ---- the HP pair (batch B slice B3) ----------------------------------------
+	// Same preamble, but the cast target is GameEntity and the two reads differ in KIND:
+	//   GetCurrentHP 0x45b237 `mov eax,[eax+24h]`            - a plain field
+	//   GetMaxHP     0x45b197 `mov edx,[eax]; mov ecx,eax; call dword[edx]`
+	//              - a VIRTUAL call through vftable slot 0, whose target
+	//                F3::GameEntity::virt_meth_0x4080c0 is itself `mov eax,[ecx+20h]; retn`.
+	int ScriptNative_GetCurrentHP( int amx, int params );  // 0x45b1b0
+	int ScriptNative_GetMaxHP( int amx, int params );      // 0x45b110
+
 	// ---- the shipped {name, fn} native table shape -------------------------------
 	// Shipped registers natives as arrays of {name, addr} consumed by the amx_Register era
 	// (0x5CCDE0, per-entry 0x5CCD60, miss err 19 / `mov ebp,0x13` @0x5CCE2E - see the
@@ -84,7 +93,10 @@ namespace F3 {
 	};
 
 	// The five getters, in shipped EA order (0x45abe0, 0x45aeb0, 0x45af40, 0x45afd0, 0x45b070).
-	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount );
+	// Seven entries today: the five B1 getters plus GetCurrentHP/GetMaxHP (B3), in shipped
+// EA order. The HP pair cast to GameEntity, NOT GameCreature - the table does not encode
+// the class, the bodies do (the shipped RTTI site differs; see each body).
+const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount );
 
 	// ---- port-side entity registry (the byte_70BE0C stand-in) ---------------------
 	// Shipped resolves handles against the engine's global entity list (doubly-linked
@@ -96,7 +108,17 @@ namespace F3 {
 	// with no RTTI, so the shipped __RTDynamicCast(Entity->GameCreature) cannot run;
 	// nIsCreature is what that cast would have decided. MapEntitySpawn may adopt this
 	// registry when the real list lands - nothing here invents engine behavior.
-	void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, char nIsCreature );
+	// Which shipped concrete class the handle stands for. The natives cast through RTTI to
+	// DIFFERENT targets per family - the B1 getters cast Entity->GameCreature (0x45af9f and its four
+	// siblings), the HP pair cast Entity->GameEntity (0x45b217, 0x45b177) - and GameCreature derives
+	// from GameEntity, so the values are an IS-A ladder and comparison is >=.
+	enum ScriptNativeClass {
+		SNC_NONE = 0,
+		SNC_GAME_ENTITY = 1,
+		SNC_GAME_CREATURE = 2
+	};
+
+	void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, int nClass );
 	void ScriptNativeUnregisterEntity( JE::Entity *pEntity );
 
 	// Test/build helper: drop every registry entry (the shipped list has no such clear;

@@ -995,3 +995,55 @@ AddHP 0x45b390 / SetHP 0x45b2e0: same shape, offsets unknown until read), the sk
 0x45ad90 / GetTotalSkill 0x45ae20 / GetPerkRank 0x45ab50 — expect INDEXED reads, so params[2] matters and
 the arity gate's expected cells will differ), then the action verbs (EquipItem/UnequipItem/IsItemEquipped)
 which are the first rows that WRITE.
+
+## Slice-B3 (WildKnight 01a1639b, 2026-10-22 ~11:2x) — HP pair LIVE with an IS-A class ladder; four families deferred WITH their mechanisms named
+
+Landed: `ScriptNative_GetCurrentHP` (0x45b1b0) and `ScriptNative_GetMaxHP` (0x45b110), the registry's
+creature flag generalised into a **class ladder** (`SNC_NONE < SNC_GAME_ENTITY < SNC_GAME_CREATURE`, compared
+with `>=`) because the two families cast to DIFFERENT targets (B1 five getters: Entity->GameCreature at
+0x45af9f/0x45af0f/0x45b037/0x45b0d7/0x45ac3f; HP pair: Entity->GameEntity at 0x45b217/0x45b177), and the table
+grew to 7 entries. Suite now **35 asserts**, floor raised 26->35 in the run-all-tests row. Gates: run-all-tests
+**13 pass / 0 fail**, `ScriptNatives=OK [35>=35]`, app-boot 124, port-annot GATE PASS; msvc-build rc=0.
+
+Two RE facts worth the board's time:
+
+1. **GetMaxHP is not a field read.** 0x45b197 `mov edx,[eax]; mov ecx,eax; call dword ptr [edx]` - vftable
+   SLOT 0 of GameEntity (0x666130[0] = virt_meth_0x4080c0), which is itself `mov eax,[ecx+20h]; retn`. So max
+   HP is a virtual today's implementation answers from +0x20, and a derived class could override it. The port
+   funnels it through ONE seam (GameEntityMaxHp) instead of inline reads, with the missing vftable named as the
+   deviation. GetCurrentHP, by contrast, is the plain `[eax+24h]` at 0x45b237. Doc: docs/f3/CreatureHpAccessors.md.
+2. **Two int arrays inside GameCreature, discovered via the natives that index them**: perk ranks at
+   `+0x114` (0x45abd2 `mov eax,[eax+ecx*4+114h]`) and base skills at `+0xE0` (callee 0x409824, a 3-instruction
+   `thiscall (int skill)` with `retn 4`, which the IDB labels `cls_0x409820::meth_0x409820` - another
+   owner-mis-attribution of the GameActionEquip kind: the caller RTTI-casts to GameCreature and passes it
+   unchanged). No bounds test in either native. Doc: docs/f3/CreatureSkillAndPerkArrays.md.
+
+DEFERRALS, each with the blocker named rather than the row quietly skipped (this is the part that keeps the
+batch honest):
+
+- **SetHP (0x45b2e0) / AddHP (0x45b390)**: arity 2, and neither writes a field - both fetch a subject through
+  `mov edx,[eax+4]; mov edx,[edx+4]; mov eax,[edx+eax+1E0h]` then thiscall `meth_0x46ee10` whose `this` comes
+  from `*(F3::global_area_map_icons+0x18)`, and 0x46ee10 itself runs the HANDLE RESOLVER on that `this`
+  (0x46ee19 calls meth_0x54be10) before casting to GameEntity and calling `meth_0x4629c0(entity, value)` AND
+  `meth_0x46d620(fetched, value)` - two writes. The `+4/+4` chain's meaning is unresolved, so WHAT the setter
+  writes to is not yet known. AddHP's value expression is `currentHP + params[2]`, i.e. shipped AddHP is a
+  set-to-computed, not an increment primitive. B4 reads 0x4629c0/0x46d620/0x46ee10 whole, then ports the pair.
+- **GetPerkRank / GetBaseSkill / GetTotalSkill**: need REAL array members. The port header carries the first
+  dword of each band (`mbr_0x114`, `mbr_0xe0`) and item 69 means `(&obj->mbr_0x114)[i]` would index the wrong
+  neighbours while compiling clean - so this needs a layout decision on the header, not a private edit in a
+  natives TU. Filed as B4's prerequisite with the candidate shapes.
+- **GetTotalSkill's formulas** (callee 0x409830, the 1x/2x/3x attribute weights + the flat Firearms/Melee arm +
+  the `UNKNOWN SKILL: %d` default) are recorded as a LEAD with numbers marked unverified - switch lowering and
+  constant scaling are precisely where pseudocode is quietly wrong, so B5 verifies against bytes with a named
+  claim list rather than porting the pretty version.
+
+Shipped-telemetry finding banked in docs/notes/shipped-literals.md: **GetPerkRank reports
+`"GetPosition() was unable to find the requested entity."` (0x45ab8e) when its own resolve fails** - a shipped
+copy-paste bug. The port reproduces wrong strings verbatim (T-022); a parity diff that launders an engine bug
+into clean text is worse than the bug. Also logged: `EntityID` vs `Entity ID` and `the requested entity` vs
+`requested entity` split across the SAME family, per-native, measured at each push site.
+
+Self-note, caught by my own suite again (item 69's discipline working, not a shame entry): the HP asserts were
+first placed AFTER the section that unregisters the test entity, so 2 asserts failed for harness ordering
+reasons, not product ones. Diagnosis was `offsetof`+standalone repro before touching the code - which is how
+the B2 layout finding got found in the first place.

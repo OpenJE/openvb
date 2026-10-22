@@ -60,3 +60,26 @@ Two bugs found while building it, both silent and both worth remembering:
   stripped before reading literals — prose is not a claim;
 - stripping changed the text length and **mis-numbered every reported line**, so comment removal
   preserves length and offsets now.
+
+
+## Script-native error strings (B1/B3, 2026-10-22) - the shipped text is inconsistent ON PURPOSE
+
+Byte-verbatim, all asserted by the port suite (T-022 identity):
+
+- arity gate, two lines in order: `Invalid number of paramters passed to function %s().` (0x59af63) then
+  `Expected %d parameters but recieved %d.` (0x59af70) - **`paramters` and `recieved` are shipped
+  misspellings**, do not "fix" them.
+- per-native resolve failures: `GetLevel() - Unable to resolve the requested entity.` (with `the`) versus
+  `GetRace()/GetGender()/GetEthnicity()/GetSubRace() - Unable to resolve requested entity.` (without it) -
+  GetLevel is the odd one out, measured at 0x45ac1e vs 0x45af7e/0x45aeee/0x45b016/0x45b0b6.
+- per-native cast failures: `... - EntityID does not belong to a game creature.` (GetRace 0x45af21,
+  GetGender 0x45afb1, GetEthnicity 0x45b049) versus `... - Entity ID does not belong to a game creature.`
+  (GetLevel 0x45ac51, GetSubRace 0x45b0e9) - `EntityID` vs `Entity ID`, split across the same family.
+- HP pair cast failures say `GameEntity`, not `game creature`: `GetCurrentHP() - Entity ID does not belong
+  to a GameEntity.` (0x45b229), `GetMaxHP() - Entity ID does not belong to a GameEntity.` (0x45b189).
+- **a shipped copy-paste bug, banked as-is**: `F3::GetPerkRank` (0x45ab50) reports
+  `GetPosition() was unable to find the requested entity.` (0x45ab8e) when *its own* entity resolve fails -
+  the message names a different function. Its cast failure line is correct
+  (`GetPerkRank() - Entity ID does not belong to a game creature.`, 0x45abc1). The port reproduces the wrong
+  string verbatim: fixing engine telemetry is not the reimplementation's job, and a parity diff that hides a
+  shipped bug is worse than the bug.

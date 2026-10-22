@@ -24,14 +24,13 @@ namespace F3 {
 	// is 0x1DC in bytes - the cell-vs-byte trap again), else fall through to the container at
 	// byte_70BE14 (0x54be41) and return node+0x10 (0x54be61 `local_4[4]`) or 0 (0x54be68).
 	// That list has no port-side container yet, so this table is what the walk runs against.
-	// DEVIATION, named: entries carry an `nIsCreature` flag recorded at insert, because the port
-	// links WITHOUT RTTI and the shipped `__RTDynamicCast(Entity -> GameCreature, 0)` (0x45af9f)
-	// cannot run here. MapEntitySpawn may adopt this registry when the real list lands; nothing
+	// DEVIATION, named: entries carry an `nClass` value recorded at insert, because the port links
+	// WITHOUT RTTI and the shipped `__RTDynamicCast` sites (0x45af9f, 0x45b217 and siblings) cannot run here. MapEntitySpawn may adopt this registry when the real list lands; nothing
 	// here pretends the list exists.
 	struct RegistryEntry {
 		unsigned int hHandle;
 		JE::Entity *pEntity;
-		int nIsCreature;
+		int nClass;      // ScriptNativeClass; the stand-in for what RTTI would decide
 		int nUsed;
 	};
 
@@ -40,12 +39,12 @@ namespace F3 {
 
 		// PORT-SIDE helper: no shipped twin - the shipped list is maintained by the engine's own entity
 	// construction path (see the byte_70be0c walk at 0x54be10, which this table feeds). Insert only.
-void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, char nIsCreature ) {
+void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, int nClass ) {
 		int i;
 		for ( i = 0; i < s_registryCount; ++i ) {
 			if ( s_registry[ i ].nUsed && s_registry[ i ].pEntity == pEntity ) {
 				s_registry[ i ].hHandle = (unsigned int)hEntity;   // re-publish under a new handle
-				s_registry[ i ].nIsCreature = nIsCreature ? 1 : 0;
+				s_registry[ i ].nClass = nClass;
 				return;
 			}
 		}
@@ -54,7 +53,7 @@ void ScriptNativeRegisterEntity( unsigned hEntity, JE::Entity *pEntity, char nIs
 		}
 		s_registry[ s_registryCount ].hHandle     = (unsigned int)hEntity;
 		s_registry[ s_registryCount ].pEntity     = pEntity;
-		s_registry[ s_registryCount ].nIsCreature = nIsCreature ? 1 : 0;
+		s_registry[ s_registryCount ].nClass = nClass;
 		s_registry[ s_registryCount ].nUsed       = 1;
 		++s_registryCount;
 	} // ScriptNativeRegisterEntity
@@ -77,18 +76,20 @@ void ScriptNativeResetRegistry() {
 		s_registryCount = 0;
 	} // ScriptNativeResetRegistry
 
-	// What the shipped __RTDynamicCast(Entity -> GameCreature, 0) would have decided.
-		// PORT-SIDE stand-in for the shipped __RTDynamicCast(&Entity -> &GameCreature) at 0x45af9f
-	// (same site in the four sibling bodies: 0x45af0f, 0x45b037, 0x45b0d7, and 0x45ac3f).
-static int RegistryIsCreature( JE::Entity *pEntity ) {
+	// PORT-SIDE stand-in for __RTDynamicCast. The shipped cast TARGET differs per family -
+	// Entity->GameCreature at 0x45af9f / 0x45af0f / 0x45b037 / 0x45b0d7 / 0x45ac3f (the B1 getters)
+	// and Entity->GameEntity at 0x45b217 / 0x45b177 (the HP pair) - and because GameCreature derives
+	// from GameEntity the recorded nClass is an IS-A ladder: `nClass >= nClassNeeded` is the same
+	// decision the two TypeDescriptor pairs implement.
+	static int RegistryIsClass( JE::Entity *pEntity, int nClassNeeded ) {
 		int i;
 		for ( i = 0; i < s_registryCount; ++i ) {
 			if ( s_registry[ i ].nUsed && s_registry[ i ].pEntity == pEntity ) {
-				return s_registry[ i ].nIsCreature;
+				return s_registry[ i ].nClass >= nClassNeeded ? 1 : 0;
 			}
 		}
 		return 0;
-	} // RegistryIsCreature
+	} // RegistryIsClass
 
 	// ---------------------------------------------------------------------------
 	// 0x59ad20 - the script error reporter.
@@ -187,6 +188,13 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 		return 1;                                  // 0x59af2e - even on the inactive warning
 	} // ScriptNativeResolveEntity
 
+	// NOTE on shipped telemetry (banked in docs/notes/shipped-literals.md): the resolve-failure and
+	// cast-failure strings are NOT consistent across this family - GetLevel says "the requested entity"
+	// while its siblings say "requested entity", and "EntityID" vs "Entity ID" splits the cast lines. One
+	// native even names a different function in its own error (GetPerkRank @0x45ab8e reports
+	// "GetPosition() was unable to find the requested entity." - a shipped copy-paste bug). Bodies below
+	// pass the strings VERBATIM, wrongness included; T-022 identity, not editorial licence.
+
 	// ---------------------------------------------------------------------------
 	// The getter family. One shape, five field offsets:
 	//   arity(1 cell) -> resolve(params[1], active-check=1) -> creature cast -> field
@@ -210,8 +218,8 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 	// `(char*)obj + 0xBC` against these structs reads a DIFFERENT field than `obj->mbr_0xbc` does -
 	// which is exactly what this slice's first draft did, and the suite caught it (10 reds) rather
 	// than letting a green build hide it.
-	static GameCreature *ResolveCreatureNative( int amx, int params_i, const char *pcFnName,
-	                                            const char *pcResolveMsg, const char *pcCastMsg ) {
+	static JE::Entity *ResolveNativeEntity( int amx, int params_i, const char *pcFnName, int nClassNeeded,
+	                                        const char *pcResolveMsg, const char *pcCastMsg ) {
 		const unsigned *params = (const unsigned *)params_i;
 		JE::Entity *pEntity = 0;
 
@@ -224,17 +232,17 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 		}
 		// shipped: __RTDynamicCast(pEntity, 0, &Entity, &GameCreature, 0) - the port links without
 		// RTTI, so the registry's recorded flag is what that cast would have decided.
-		if ( !RegistryIsCreature( pEntity ) ) {
+		if ( !RegistryIsClass( pEntity, nClassNeeded ) ) {
 			ScriptNativeReportError( amx, "%s", pcCastMsg );
 			return 0;
 		}
-		return (GameCreature *)pEntity;
-	} // ResolveCreatureNative
+		return pEntity;
+	} // ResolveNativeEntity
 
 	// 0x45abe0 - GetLevel: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read . Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetLevel( int amx, int params ) {
-		GameCreature *pCreature = ResolveCreatureNative( amx, params, "GetLevel",
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetLevel", F3::SNC_GAME_CREATURE,
 		                                                "GetLevel() - Unable to resolve the requested entity.",
 		                                                "GetLevel() - Entity ID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -246,7 +254,7 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 	// 0x45aeb0 - GetRace: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45af2f `eax+0C8h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetRace( int amx, int params ) {
-		GameCreature *pCreature = ResolveCreatureNative( amx, params, "GetRace",
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetRace", F3::SNC_GAME_CREATURE,
 		                                                "GetRace() - Unable to resolve requested entity.",
 		                                                "GetRace() - EntityID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -258,7 +266,7 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 	// 0x45af40 - GetGender: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45afbf `eax+0D0h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetGender( int amx, int params ) {
-		GameCreature *pCreature = ResolveCreatureNative( amx, params, "GetGender",
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetGender", F3::SNC_GAME_CREATURE,
 		                                                "GetGender() - Unable to resolve requested entity.",
 		                                                "GetGender() - EntityID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -270,7 +278,7 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 	// 0x45afd0 - GetEthnicity: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45b057 `eax+0D4h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetEthnicity( int amx, int params ) {
-		GameCreature *pCreature = ResolveCreatureNative( amx, params, "GetEthnicity",
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetEthnicity", F3::SNC_GAME_CREATURE,
 		                                                "GetEthnicity() - Unable to resolve requested entity.",
 		                                                "GetEthnicity() - EntityID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -282,7 +290,7 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 	// 0x45b070 - GetSubRace: arity 1 cell, resolve with the active-check flag, creature cast, then the
 	// single field read: 0x45b0f7 `eax+0D8h`. Every failure path returns 0 with no distinguishing code.
 	int ScriptNative_GetSubRace( int amx, int params ) {
-		GameCreature *pCreature = ResolveCreatureNative( amx, params, "GetSubRace",
+		GameCreature *pCreature = (GameCreature *)ResolveNativeEntity( amx, params, "GetSubRace", F3::SNC_GAME_CREATURE,
 		                                                "GetSubRace() - Unable to resolve requested entity.",
 		                                                "GetSubRace() - Entity ID does not belong to a game creature." );
 		if ( !pCreature ) {
@@ -291,14 +299,52 @@ static int RegistryIsCreature( JE::Entity *pEntity ) {
 		return (int)pCreature->mbr_0xd8;   // shipped: mov eax,[eax+0xD8h] at 0x45b0f7
 	} // ScriptNative_GetSubRace
 
+	// 0x45b1b0 - GetCurrentHP: arity 1, resolve, cast Entity->GameEntity (0x45b217), then
+	// 0x45b237 `mov eax,[eax+24h]`. Shipped offset +0x24 (port: the named member).
+	int ScriptNative_GetCurrentHP( int amx, int params ) {
+		GameEntity *pEntity = (GameEntity *)ResolveNativeEntity( amx, params, "GetCurrentHP",
+		                                                         F3::SNC_GAME_ENTITY,
+		                                                         "GetCurrentHP() - Unable to resolve requested entity.",
+		                                                         "GetCurrentHP() - Entity ID does not belong to a GameEntity." );
+		if ( !pEntity ) {
+			return 0;
+		}
+		return (int)pEntity->mbr_0x24;   // shipped: mov eax,[eax+24h] at 0x45b237
+	} // ScriptNative_GetCurrentHP
+
+	// 0x45b110 - GetMaxHP: arity 1, resolve, cast Entity->GameEntity (0x45b177), then a VIRTUAL call,
+	// not a field read: 0x45b197 `mov edx,[eax]; mov ecx,eax; call dword ptr [edx]` - vftable SLOT 0
+	// with this = the entity. The slot's target is F3::GameEntity::virt_meth_0x4080c0 (0x666130[0]),
+	// which is itself two instructions: `mov eax,[ecx+20h]; retn` at 0x4080c0. So max HP is the
+	// GameEntity+0x20 accessor behind a virtual - which means a derived class CAN override it, and the
+	// port calling the member directly loses that dispatch. DEVIATION, named: the port has no
+	// GameEntity vftable yet, so the body goes through GameEntityMaxHp() - the single seam a future
+	// vtable install can replace, rather than five inline field reads pretending to be virtuals.
+	static int GameEntityMaxHp( GameEntity *pEntity ) {
+		return (int)pEntity->mbr_0x20;   // shipped: virt_meth_0x4080c0 = mov eax,[ecx+20h] at 0x4080c0
+	} // GameEntityMaxHp
+
+	int ScriptNative_GetMaxHP( int amx, int params ) {
+		GameEntity *pEntity = (GameEntity *)ResolveNativeEntity( amx, params, "GetMaxHP",
+		                                                         F3::SNC_GAME_ENTITY,
+		                                                         "GetMaxHP() - Unable to resolve requested entity.",
+		                                                         "GetMaxHP() - Entity ID does not belong to a GameEntity." );
+		if ( !pEntity ) {
+			return 0;
+		}
+		return GameEntityMaxHp( pEntity );
+	} // ScriptNative_GetMaxHP
+
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[5] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[7] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
 		{ "GetEthnicity",&ScriptNative_GetEthnicity,1 },   // 0x45afd0
-		{ "GetSubRace",  &ScriptNative_GetSubRace,  1 }    // 0x45b070
+		{ "GetSubRace",  &ScriptNative_GetSubRace,  1 },   // 0x45b070
+		{ "GetCurrentHP",&ScriptNative_GetCurrentHP,1 },   // 0x45b1b0
+		{ "GetMaxHP",    &ScriptNative_GetMaxHP,    1 }    // 0x45b110
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {
