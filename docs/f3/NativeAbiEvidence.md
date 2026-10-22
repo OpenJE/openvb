@@ -401,6 +401,7 @@ min-gate use, not divergence and not bug — the stack-garbage open question is 
 (no row can have k < 2 without failing the gate first). The residual DISAGREE rows are exactly
 `GetGlobal` (gate 1 vs {1:864, 2:1}) and `FloatingSpeechText` (gate 6 vs {3:14, 6:211}), both still
 `owed: body re-read`, both still provenance-not-engine-bug.
+**→ Both CLOSED as gate==body with stale callers, §6.10.**
 * **Re-partition of the 209**: AGREE-or-min-admitted **113**, DISAGREE **2**, gated-never-called
 **84** (+A_SendMessageToTeam/A_SendMessageToSquad/SendMessageToSquad/Debug moved out of the
 zero-evidence bucket — they have gates), ungated-AND-never-called **10** (4 quest aliases,
@@ -428,6 +429,49 @@ dismissing that fully requires walking all code with the complete per-opcode ope
 nobody has written. Every negative in this doc now carries its instrument's bound:
 "no 123-pattern site and no LIN+122 site in each image's `[image+0x0C, image+0x14)` code span",
 never a bare "never called".
+
+### 6.10 The two body re-reads, done — both residual DISAGREE rows close as gate==body
+
+The item-71 discriminator applied: count the BODY's `params[i]` reads against its own gate.
+Read-only disassembly of the full bodies (fn_va resolution: `native-table-dump.py --json`, tool
+sha 54d4686f929edcd5).
+
+**`GetGlobal` @0x5c8000 — body reads exactly 1 cell; gate 1 is the contract.**
+Prologue keeps params in `edi` (`mov edi,[esp+118h+arg_4]` @0x5c801d) and gates exact
+(`push 1` @0x5c8029, `call sub_59AF40`, `add esp,10h`). The ONLY cell read is
+`mov ecx,[edi+4]` @0x5c8040 — cell 1, the variable name, consumed as an address by
+`sub_59AB20(amx, cell1, buf, 0x100)` @0x5c804f. Then `edi` is clobbered by unrelated work
+(`mov edi,0Fh` @0x5c808c) and the params stack slot `arg_4` is **never reloaded anywhere**:
+the body was enumerated instruction-by-instruction to its epilogue (0x5c80f1–0x5c8110, cookie
+check and pops only). Bound of the negative, per §6.9: "no read of any params cell ≥ 2 exists
+in the full instruction text 0x5c8000–0x5c8110, via the carrying register (edi) or its stack
+slot".
+Verdict: gate (1) == contract (1). The single 2-cell caller in 865 is a **payload provenance
+artifact** — compiled against a declaration with an extra parameter (the shape fits the
+`SetGlobal` 2-cell `(name, value)` family). In shipped that one call fails its own gate, logs
+the Expected/recieved pair, returns 0. The 864 1-cell sites are the LIVE set; the DOA
+population is the 1 outlier — the direction that mattered, resolved. Not an engine bug. CLOSED.
+
+**`FloatingSpeechText` @0x5c25e0 — body reads exactly cells 1..6; gate 6 is the contract.**
+Exact gate (cells=6, `sub_59AF40` @0x5c260d; the gate's name string is "AddFloatingSpeechText"
+— already in FastNova's divergence ledger, nothing new there). Cell reads by instruction text:
+`a2[1]` fed to the entity fetch `sub_59AEF0` @0x5c261b; then
+`mov edx,[esi+18h]` / `mov eax,[esi+14h]` / `mov ecx,[esi+10h]` @0x5c2649/4c/4f = cells 6/5/4;
+`a2[3]` @0x5c2652 and `a2[2]` @0x5c2656; all six handed to
+`meth_0x554d30(*(v6+476), a2[2], a2[3], a2[4], a2[5], a2[6])` @0x5c2672. No params read beyond
+`+18h` exists in the body (bound: full window 0x5c25e0–0x5c26f8 read; epilogue is cookie-only).
+Verdict: gate (6) == contract (6) — the "the gate is the stale artifact" hypothesis is
+**REFUTED**: a stale gate would have the body reading 3, and it reads 6. The fourteen 3-cell
+sites are **pre-migration payload** compiled against an older signature; in shipped they fail
+the gate before the body is entered, same mechanism as the GetGlobal outlier. The 211 6-cell
+sites are the LIVE set; the 14 are DOA. Not an engine bug. CLOSED.
+
+**Board consequence:** the global matrix's DISAGREE bucket is now **empty of engine bugs**. Of
+the original 4 rows: 2 were min-gate legality (§6.8), these 2 close gate==body with stale
+callers (§6.10). No shipped native row remains where the bytes disagree with themselves. What
+is left in the batch is bounded, not pending: the computed-PRI-122 bound (§6.9, would need a
+full-code walk with the complete operand table) and the 84 gated-never-called + 10
+zero-evidence slots, which no `.int` oracle can ever close.
 
 Method note for anyone re-deriving: caller-side name resolution goes through EACH image's own
 ordinal table ([image+0x24] stride 40), so one name can hide several ordinals across images; the
