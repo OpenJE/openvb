@@ -1897,6 +1897,48 @@ excerpt of the image, not the image. Walking shipped's F3 game-lib native table 
 
 Full write-up: `docs/f3/NativeInstallerEvidence.md` §5-6, `docs/f3/TaskJournalTrio.md` §2a.
 
+## Next-slice recipe (TrueRaven, banked at the context cliff 2026-10-22 ~22:0x) — NOT started, so the next seat does not re-derive
+
+WildUnion's `.int` trace (docs/f3/NativeAbiEvidence.md, d61aa78) makes a real parity oracle available. What I
+VERIFIED myself against `.devenv/state/f3-reimpl-data/data/Scripts.grp` (5,832,974 bytes):
+
+- **119 images**, magic word `0xF1E0` at image+4 and `0x28` at image+0xA — both confirmed.
+- **Natives table at image+0x24/0x28, stride 40**: the image at `0x158fa` gives 28 entries, every entry's
+  cell+0 is **0** and entry+4 holds an **inline ASCII name** (`floatcmp, Myself, ClearActions, SetValue,
+  GetCurrentHP, float, ...`). Confirmed exactly as claimed.
+- **Publics table is the SIBLING at image+0x20/0x24** (same image: 10 entries, `GetUsableSkills, OnCreate,
+  OnDamage, OnDeath, OnDestroy, OnLoad...`), cells nonzero. Confirmed. **My first two reads of this were wrong
+  by 4 bytes** — I read +0x20/+0x24 and "found" a natives table whose fn cells were nonzero; the offset is
+  relative to the IMAGE BASE, not to the magic word. If you re-do this, anchor on the magic and remember it
+  lives at +4.
+- **NOT reproduced by me**: the call-site byte pattern `39 <4*arity> 123 <ordinal>`. I scanned the image range
+  for `39 08 7b 00` (byte operands) and for `39 00 08 00 7b 00 00 00` (16-bit cells) and found **0 sites**.
+  So either the encoding differs again (cell width / the code starts at a separate `code` offset I did not
+  locate) or the cited bytes are a decompiler-level rather than file-level rendering. **Treat the params[0]
+  producer as WILDUNION-VERIFIED, NOT independently verified by this lane.** One command settles it: dump the
+  image's code region (find it via the header cells at +0x0C/0x10/0x14 rather than guessing) and grep for
+  opcode 123's raw encoding.
+
+**Next slice, highest value first** (all in this lane's reserved paths — `src/F3/ScriptNatives.{cpp,hpp}`,
+`modules/openje/tests/je/ScriptNatives`, `tools/native-gate-audit.py`):
+
+1. **Third denominator.** `tools/native-gate-audit.py` currently cross-checks 3 counts (declarator, suite
+   assert, parsed rows). A script-side arity census — arity per native ordinal read from the `.int` images —
+   is an INDEPENDENT population that shares no failure path with any of them, and it is exactly what item 70
+   asks for. If it reproduces, the audit becomes self-enforcing against every parse bug class this lane has
+   hit. Do step 0 above first.
+2. **A shipped-bytecode parity leg in the suite**: for a few natives (GetCurrentHP arity 1, SetValue 3),
+   assert the port's table `cells` equals the arity shipped's own scripts call it with. That converts "the
+   table is byte-right against the C array" into "the table is byte-right against the CALLERS".
+3. Remaining batch-B rows: 4 wiring-blocked (gap 5's handle→`SpawnedEntity` decision — spawn/openje lane,
+   not a natives-TU shim), 4 era-blocked, `DisplayStringRef` era-blocked with its 4 messages/hop order already
+   recorded in `TaskJournalTrio.md` §2a.
+
+**State at handoff**: parent tip 1b64e18, openje tip (last here) 8e519a5, ahead 75, all gates green
+(run-all 13/0, suite 243 asserts, msvc rc0, cppcheck rc0, port-annot 0 of 451). Only `tools/t052-drive.py`
+dirty — another owner's, never staged. `docs/f3/NativeAbiEvidence.md` is WildUnion's, committed by them at
+d61aa78.
+
 ## Status correction for the whole batch (WildKnight 01a1639b) — the natives are reversed and tested, but unreachable from the running port
 
 While scoping `StartDialogue` I found that nothing in the tree can call the 27 natives: `ScriptNativeGameCreatureTable`
