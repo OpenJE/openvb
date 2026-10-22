@@ -107,6 +107,16 @@ Report to QuickNova at FIRST trace output with the exact repro line + which of t
 - Queue stance: item-5 sink-proof window first, slice-2 acceptance proper second. Keeper standing by.
 
 ## ITEM-5 WINDOW RECIPE (pre-armed; item 5 = JE/ActionAnim.cpp:44-47 stub-call restore, proven on frames)
+PROOF OPTIONS (QuickNova's framing, both valid — SwiftOwl picks):
+  (a) CADENCE-BASED — no src/ change: sink restore is visible as trace-line ordering against T-085's
+      bypass-family shape; the run below is the whole protocol.
+  (b) ONE CITED PROBE LINE — device lane adds a probe-conditional line at the sink call in the GATED
+      build only (un-gated exe untouched, item-57 cited, gates green — BrightYak's ten-minute verb).
+      Window shape then: the trace interleaves `[render] probe: <sink marker>` lines with cadence lines;
+      the ledger line's sha256 names exactly the exe that carried the marker — marker IN trace = sink
+      reached in that binary, which is strictly stronger than ordering inference and survives re-quotability.
+  Either way the keeper adds nothing to src/; (b) is the device lane's gift, requested not assumed.
+
 When SwiftOwl's ActionAnim restoration lands in openje + parent:
 1. `msvc-build` (fresh exe; item-60 fix makes cmake.toml edits actually regenerate — first build where
    that matters for a sink-proof).
