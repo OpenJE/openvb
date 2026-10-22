@@ -154,11 +154,41 @@ void ScriptNativeResetRegistry() {
 
 		// TEST SEAM, not a behavior: the shipped sink is JE::LogDebugString and this TU cannot
 		// override a definition it links against, so exact-string assertions (the sibling-space
-		// quirk in B13) need the last formatted message readable here. It is a copy, so the sink
-		// call above is untouched and nothing about shipped behavior changes.
-		strncpy( s_szLastError, szBuffer, sizeof( s_szLastError ) - 1 );
+		// quirk in B13) need the formatted message readable here. It is a copy, so the sink call
+		// above is untouched and nothing about shipped behavior changes.
+		//
+		// It ACCUMULATES rather than overwriting, because the arity gate legitimately reports TWO
+		// messages in order (0x59af63 then 0x59af70) and a last-only capture made the first one
+		// unassertable - which is how B18's arity-copy-paste assert failed its first run. One line
+		// per report keeps both reachable without inventing anything.
+		size_t nHave = strlen( s_szLastError );
+		const size_t nNeed = strlen( szBuffer ) + 2;   // separator + terminator
+		if ( nHave + nNeed >= sizeof( s_szLastError ) ) {
+			// Full: restart with this message rather than silently STOPPING capturing. The first
+			// version of this seam appended unconditionally and, once the 1028-byte buffer filled,
+			// every later message assert downstream read stale text and failed - 10 reds from a
+			// capture that had quietly gone dead. A capture that stops is worse than one that
+			// forgets, because it looks like the code stopped reporting.
+			nHave = 0;
+			s_szLastError[ 0 ] = 0;
+		}
+		if ( nHave ) {
+			s_szLastError[ nHave ] = '\n';
+			++nHave;
+			s_szLastError[ nHave ] = 0;
+		}
+		strncpy( s_szLastError + nHave, szBuffer, sizeof( s_szLastError ) - nHave - 1 );
 		s_szLastError[ sizeof( s_szLastError ) - 1 ] = 0;
 	} // ScriptNativeReportError
+
+	// Clears the capture so a leg can be inspected without history. Exists for the ordered PAIR the
+	// arity gate emits - "Invalid number of paramters passed to function %s()." (0x59af63) then
+	// "Expected %d parameters but recieved %d." (0x59af70) - and for the copy-paste in UnequipItem's
+	// gate name (0x45a72c), both of which need a known-empty buffer to assert against. No shipped
+	// counterpart: the shipped sink is a log call with no readback.
+	void ScriptNativeResetLastError() {
+		s_szLastError[ 0 ] = 0;
+	} // ScriptNativeResetLastError
 
 	const char *ScriptNativeGetLastError() {
 		return s_szLastError;
@@ -823,6 +853,45 @@ void ScriptNativeResetRegistry() {
 		return pInv->FindEquipped( szName ) ? 1 : 0;
 	} // ScriptNative_IsItemEquipped
 
+	// 0x45a6f0 - UnequipItem. Same preamble order as IsItemEquipped (resolve, fetch, cast) with its own
+	// messages, then the slot split at 0x45a81d (`if (v3 != 7)`), which the model carries.
+	int ScriptNative_UnequipItem( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+		char szName[ 128 ];   // shipped: v15[128], capacity 0x80 at 0x45a76e
+
+		szName[ 0 ] = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 3, "EquipItem" ) ) {   // 0x45a72c - SHIPPED: wrong name
+			return 0;   // ...so this reports EquipItem's arity complaint, as shipped
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {   // 0x45a73e
+			ScriptNativeReportError( amx,
+				"UnequipItem() was unable to find the attacking entity." );   // 0x45a750, copy-paste
+			return 0;
+		}
+		if ( !ScriptNativeFetchString( amx, p[ 2 ], szName, 0x80 ) ) {    // 0x45a76e
+			ScriptNativeReportError( amx, "UnequipItem() was unable to find the Item Name." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {       // 0x45a7a5
+			ScriptNativeReportError( amx, "UnequipItem() - Entity is not a creature" );
+			return 0;
+		}
+		ScriptInventory *pInv = ( (GameCreature *)pEntity )->inventory_0x168;   // 0x45a7ca [v13+360]
+		if ( !pInv ) {
+			ScriptNativeReportError( amx, "UnequipItem() - Inventory not Found" );
+			return 0;
+		}
+		if ( !pInv->bIsGameInventory ) {
+			ScriptNativeReportError( amx, "UnequipItem() - Game Inventory not Found" );
+			return 0;
+		}
+		// 0x45a81d: the slot-7 sentinel means "everywhere, case-insensitively"; anything else is one
+		// named slot, compared case-SENSITIVELY, with the "*" wildcard clearing but answering 0.
+		return pInv->UnequipNamed( szName, (int)p[ 3 ] ) ? 1 : 0;
+	} // ScriptNative_UnequipItem
+
 	// 0x45b240 - GetItemType: cast Entity->GameItem (0x45b2a7), read [obj+0xA0] (0x45b2c7).
 	// Shipped cast-failure line has NO trailing period: "GetItemType() - Entity is not an Item".
 	int ScriptNative_GetItemType( int amx, int params ) {
@@ -880,7 +949,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[22] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[23] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -902,7 +971,8 @@ void ScriptNativeResetRegistry() {
 		{ "GetPerkRank",  &ScriptNative_GetPerkRank,   2 },   // 0x45ab50
 		{ "GetBaseSkill", &ScriptNative_GetBaseSkill,  2 },   // 0x45ad90
 		{ "GetTotalSkill", &ScriptNative_GetTotalSkill, 2 },   // 0x45ae20
-		{ "IsItemEquipped", &ScriptNative_IsItemEquipped, 2 }   // 0x45b750
+		{ "IsItemEquipped", &ScriptNative_IsItemEquipped, 2 },   // 0x45b750
+		{ "UnequipItem", &ScriptNative_UnequipItem, 3 }          // 0x45a6f0
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

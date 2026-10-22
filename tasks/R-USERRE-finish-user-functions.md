@@ -1582,3 +1582,53 @@ inverse law from a transcribed constant -> peer corrected the constant by readin
 the whole computation is an integer division; and the port's remaining error was a precision mixture that no
 amount of formula-matching could expose. Every step was a source-of-truth question - the print, the bits, the
 instruction sequence, the arithmetic.
+
+## Slice-B18 (WildKnight 01a1639b, 2026-10-22 ~16:4x) — UnequipItem LIVE (23 natives, 151 asserts): one slot array, two case rules, a wildcard that lies, and an attribution correction I owe JadeBear
+
+Ported `UnequipItem` (0x45a6f0) on top of the B16 seam and model. `EquipItem` (0x45a580) is **not** ported, and
+the reason is named in the header and in `docs/f3/InventoryEquipPaths.md`: its payload `GameInventory::Equip`
+(0x46be40, reached by `[edx+38h]` at 0x45a6ce) is an era - RB-tree bookkeeping, a style-slot remap over cases
+2/3/7 with `Get_mbr_0x98` reads, `ApplyEquipEffects` gated on the server-context bit (0x46c1a1), a
+`SetWeaponStance(0)` reset, and its own "already equipped trying to equip itself again" log. Unequip was
+portable alone because the two share only the preamble.
+
+What the native gave up, each preserved and asserted rather than corrected:
+
+1. **Two comparison rules, one native.** The named-slot path uses `strcmp` (0x45a8e7); the slot-7 "everywhere"
+   path goes through the `_stricmp` matcher (0x46a777). So `"HUNTING RIFLE"` can be reported equipped by
+   `IsItemEquipped` and REFUSE to unequip from slot 0 - asserted as a pair so unifying them is a visible
+   change, not a cleanup. And neither is prefix matching: my first draft queried `hat` against items named
+   `Hat A`/`Hat B` and matched nothing - the suite caught an assumption I had not checked.
+2. **`7` is a sentinel, not a slot.** 0x45a81d `if (v3 != 7)`; slot 7 clears every case-insensitive match. The
+   equipped array is still SIX cells (0x46a8cc `while (i < 6)`), so slot 9 and slot -1 store nowhere and
+   answer 0 - both asserted.
+3. **The wildcard lies.** `"*"` is `byte_65DC00` - read from the original image's `.rdata` as `2A 00`, not
+   inferred from a name - compared against the requested name at 0x45a932. Matching it clears the slot and
+   falls through to `return 0`, while the exact-name branch returns 1. Unequipping by wildcard **succeeds and
+   reports failure**; a port that returns 1 there is a divergence dressed as a fix.
+4. **Three shipped copy-pastes**, now a documented family: `UnequipItem`'s arity gate is registered under
+   `"EquipItem"` (0x45a72c, so wrong arity on Unequip complains about Equip); both item natives say
+   `"... unable to find the attacking entity."` - Attack's vocabulary in inventory code; and `GetPerkRank`
+   prints `GetPosition`'s message. All kept byte-identical under T-022.
+
+Two slot numbers were adjudicated rather than trusted: the pseudocode rendered EquipItem's finder as
+`+24` and Unequip's slot-15 call as `+15` in the same family of functions - one in bytes, one in cells.
+Instruction text settles it: `[edx+18h]` = slot 6 and `[edx+3Ch]` = slot 15. Guessing from either rendering
+would have mislabeled the table.
+
+Suite work, because two of my own instruments were the bugs: the message capture went from last-only to
+accumulating (the arity gate legitimately reports two messages in order, and last-only made the first
+unassertable) - and the first version of that change **silently stopped capturing once the 1028-byte buffer
+filled**, producing 10 downstream failures that looked like the natives had stopped reporting. It now restarts
+on overflow: a capture that goes dead is indistinguishable from absent behavior. Separately, one leg reused a
+handle registered against a block-local object that had already left scope - reading destroyed storage and
+calling it "the class check" is noise; that leg now registers a fresh static item. And B18's first run had 8
+reds traceable to exactly one missing line: 6i detaches the creature's inventory at its end, so 6j silently
+tested "no inventory" everywhere - a lesson in test-block coupling worth keeping.
+
+**Attribution correction I owe JadeBear:** their question is right and my message was wrong. The six-slot
+equipped array is MY find from this sitting - I queried the `GameInventory` vftable, took entry 10 = `0x46a860`,
+and decompiled it to read `while (v3 < 6)`. Calling it "your slot-10 find" was a crossed wire; their actual
+outputs in that area were the `+0x168` accessor, the `vft+24`/`+56` Equip pair, and the `[party+5]` cell math,
+and their `c6e6023` receipt confirms the six on the bytes regardless. The number stands on its own evidence,
+which is the point of citing it at all.

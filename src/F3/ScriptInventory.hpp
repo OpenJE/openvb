@@ -38,6 +38,16 @@ namespace F3 {
 			SNCCI_MAX_ITEMS = 32       // port capacity; shipped list is unbounded
 		};
 
+		// The shipped wildcard token is the string "*" (global byte_65DC00 in the original .rdata,
+		// read from the image: 2A 00). An inline accessor, not a static const member: a header-only
+		// struct in a C++98 static link emitted one definition per TU and the linker said so
+		// (multiple definition of F3::ScriptInventory::SNCCI_WILDCARD) - which is the correct fix
+		// telling, not a workaround.
+		static const char *Wildcard() {
+			return "*";
+		} // Wildcard
+
+
 		struct Entry {
 			const char *pcName;
 			void *pItem;
@@ -111,6 +121,61 @@ namespace F3 {
 			}
 			return 0;
 		} // FindEquipped
+
+		// UnequipItem's two paths do NOT share a comparison, and that is shipped behavior worth the
+		// trouble of modelling: the named-slot path uses strcmp (CASE-SENSITIVE, 0x45a8e7) while the
+		// slot-7 "everywhere" path goes through meth_0x46a6c0, whose matcher is _stricmp (0x46a777).
+		// So "Hunting Rifle" unequips from slot 0 but "HUNTING RIFLE" does not - while slot 7 accepts
+		// either spelling. Porting one comparison for both paths would be a silent divergence.
+		//
+		// The shipped wildcard is the string "*" (global byte_65DC00, read from .rdata of the original
+		// image: 2A 00), matched against the REQUESTED name at 0x45a932. Note what it does NOT do:
+		// the wildcard branch clears the slot and then falls through to `return 0`, while the exact-name
+		// branch returns 1. Unequipping by wildcard therefore SUCCEEDS AND REPORTS FAILURE - preserved
+		// below because it is observable, not because it is sensible.
+		int UnequipNamed( const char *pcName, int nSlot ) {
+			if ( nSlot != 7 ) {
+				if ( nSlot < 0 || nSlot >= SNCCI_EQUIPPED_SLOTS ) {
+					return 0;
+				}
+				void *pItem = equipped[ nSlot ];
+				if ( pItem == 0 ) {
+					return 0;
+				}
+				const char *pcHave = NameOfItem( pItem );
+				if ( pcHave && strcmp( pcHave, pcName ) == 0 ) {   // 0x45a8e7: case-SENSITIVE
+					equipped[ nSlot ] = 0;
+					return 1;
+				}
+				if ( strcmp( pcName, Wildcard() ) == 0 ) {     // 0x45a932: byte_65DC00 == "*"
+					equipped[ nSlot ] = 0;
+					return 0;   // shipped: cleared, but the native answers 0
+				}
+				return 0;
+			}
+			int nCleared = 0;
+			for ( int i = 0; i < nCount; ++i ) {
+				if ( entries[ i ].pcName == 0 || _stricmp( entries[ i ].pcName, pcName ) != 0 ) {
+					continue;   // 0x46a777 path: case-INSENSITIVE
+				}
+				for ( int s = 0; s < SNCCI_EQUIPPED_SLOTS; ++s ) {
+					if ( equipped[ s ] == entries[ i ].pItem ) {
+						equipped[ s ] = 0;
+						++nCleared;
+					}
+				}
+			}
+			return nCleared ? 1 : 0;
+		} // UnequipNamed
+
+		const char *NameOfItem( const void *pItem ) const {
+			for ( int i = 0; i < nCount; ++i ) {
+				if ( entries[ i ].pItem == pItem ) {
+					return entries[ i ].pcName;
+				}
+			}
+			return 0;
+		} // NameOfItem
 
 		int FindAny( const char *pcName ) const {
 			for ( int i = 0; i < nCount; ++i ) {

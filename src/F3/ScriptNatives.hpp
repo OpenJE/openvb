@@ -50,10 +50,12 @@ namespace F3 {
 	// IS read from the amx handle (+0x2C, 0x59ae38 era) when an amx is supplied.
 	void ScriptNativeReportError( int amx, const char *pcFormat, ... );
 
-	// Read the last message ScriptNativeReportError formatted. TEST SEAM only: the shipped sink is
+	// Read the messages ScriptNativeReportError has formatted since the last reset (newline-separated;
+	// the arity gate emits two in order, so a last-only capture loses the first). TEST SEAM only: the shipped sink is
 	// JE::LogDebugString, which a test linking JE.cpp cannot override, so byte-exact assertions on
 	// shipped sentences (the B13 sibling-space quirk) go through this copy instead.
 	const char *ScriptNativeGetLastError();
+	void ScriptNativeResetLastError();   // clears the capture; call before a leg you want to inspect
 
 	// ---- the getter family (batch B slice B2) ------------------------------------
 	// Field offsets are BYTE offsets verified against the instruction text. Do NOT
@@ -202,6 +204,21 @@ namespace F3 {
 	// observable and kept: resolve (0x45b79e), THEN string fetch (0x45b7cc), THEN the creature cast
 	// (0x45b7fe) - so a bad name on a non-creature reports the NAME failure, not the class one.
 	int ScriptNative_IsItemEquipped( int amx, int params );
+
+	// 0x45a6f0 - UnequipItem: arity 3 (entity, name, slot), and THREE shipped copy-pastes preserved
+	// verbatim: its arity gate is registered under the name "EquipItem" (0x45a72c passes that ArgList,
+	// so a wrong-arity call on UnequipItem complains about EquipItem), and both item natives report
+	// "... was unable to find the attacking entity." - Attack's wording, in an inventory native.
+	// Its slot path splits from IsItemEquipped on case sensitivity, and its "*" wildcard clears the
+	// slot while RETURNING 0; both are in ScriptInventory.hpp with the EAs.
+	//
+	// NOT ported, with the reason named rather than parked silently: EquipItem (0x45a580). Its payload
+	// is GameInventory::Equip (0x46be40, vft slot 14 at 0x45a6ce), which is an era, not a store - RB-tree
+	// bookkeeping, a style-slot remap over cases 2/3/7, Get_mbr_0x98 weapon-style reads, an
+	// ApplyEquipEffects call gated on the server-context bit (0x46c1a1), a SetWeaponStance(0) reset, and
+	// its own "already equipped trying to equip itself again" log. Porting Unequip without Equip is fine
+	// because the two share only the preamble; porting Equip means modelling effects and stance.
+	int ScriptNative_UnequipItem( int amx, int params );
 
 	int ScriptNative_GetUsableObjectType( int amx, int params );   // 0x45b440
 	int ScriptNative_GetLockDC( int amx, int params );             // 0x45b570
