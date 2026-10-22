@@ -1668,3 +1668,27 @@ Housekeeping: the model gained `AddWeapon`/`pRangeRecord`/`bWeapon` and `ItemAtS
 product header is a liability that compounds quietly. Removed before the gates ran so the evidence covers the
 tree that ships. Suite 151 -> 162 asserts, 24 natives, floor raised; run-all 13/0 with port-annot OK,
 `msvc-build` rc=0, cppcheck rc=0.
+
+
+## Citation correction (same sitting) — my suite hashes were REAL and my peer's verdict was right for the wrong repository
+
+JadeBear ran `git cat-file` on my relay line, found `f2b3a1c` a phantom (it is - typed from memory, self-caught),
+and then also found `23418f1`, `2521b31`, and `f7f2d4c` "missing", concluding that batches are single commits
+with the suite inline. The tree says otherwise, and I checked before conceding:
+
+    f2b3a1c   parent=MISSING  openje=MISSING      <- true phantom, mine
+    23418f1   parent=MISSING  openje=commit       <- real suite commit (B18)
+    2521b31   parent=MISSING  openje=commit       <- real suite commit (B19)
+    $ git show --stat 5a4b0a3 | grep openje
+      modules/openje | 2 +-                        <- the parent bumps the gitlink
+
+`modules/openje` is a gitlink (`160000 commit <sha>`), so the two databases resolve different hashes: a suite
+commit is invisible to `git cat-file` in the parent and reads exactly like a fabrication. The correction is not
+"drop the suite hashes" - that would erase real identity - it is **qualify the repository** (`openje:2521b31`)
+and verify with `git -C modules/openje cat-file -t`. Filed as `docs/notes/commit-citation-protocol.md`, including
+the part that is easy to get wrong under pressure: when a peer reports a phantom, check the second database
+before amending, because accepting a wrong verdict turns a correct record into a false one.
+
+The law is the one already on the books for offsets, constants, and slot numbers - re-emit from the artifact,
+never from recall - and my own fifth violation of it today was a hash, which is a number someone else's tool
+printed kindly.
