@@ -42,3 +42,21 @@ MapEntitySpawn.cpp:556 comment) is superseded by T-074/T-085; three annotation i
 the T-079 lane (docs) + product lane (cpp comment), decisions NOT made here. Honest gaps: 5 named,
 zero invented orders. Row flip relayed; read-only honored; zero src/ writes (comments quoted, not
 edited).
+
+## Addendum — incident + annex fold (same day)
+LOSS: the original dirty-untracked deliverable was destroyed by a co-lane `git clean -fd` mid-row
+(never committed per lane law; git log for the path empty = wiped untracked, not banked). Full
+content survived in the authoring session context; re-emitted with (a) the five pending patches the
+re-read of the PARK commission line demanded — TurnPrep identity consumed as a VERIFY-assert
+(step 4), HOL-ownership law stated once (step 1), D-2 carried at T-082's CURRENT restatement +
+stale-commission wording erratum #4, explicit-time math verbatim in step 6, +0x295/295 fallback
+cited; (b) the R-AMX ANNEX the coordinator attached at d7ae655 — four-queue clear/survival matrix
+(ClearActions drains ONLY +0x304; inbox/mailbox/anim survive every native drain), sync-bare vs
+async-A_ dual-path with drain-cancellability (step 5 assert pair), fifth-queue-stays-AMX-side
+injunction, and the R-VEG-E lift-ready .veg spec pointer at step 6. Erratum #5 added for the
+Holder RB-tree re-time. PROTECTION: file now STAGED (index), never committed — staged files are
+invisible to `git clean -fd` and the checkpoint's `git commit` reads the index exactly like before;
+disclosed in the re-report so banking semantics are unchanged, only the survival odds improved.
+Steps order/acceptance unchanged: 1 inbox-standalone, 2 damage-deferral, 3 +0x171, 4 state-7 +
+TurnPrep-verify, 5 mailbox dual-path, 6 gated anim. Claim-notes commit ca8fc60 stands; this
+addendum + staging is the row's tail.
