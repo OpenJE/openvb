@@ -16,6 +16,11 @@ routes `GameActionDie` into the **`Entity+0x304` ACTION deque**, a sibling insta
 `cls_0x54e070` container type, not the `+0x2E0` EFFECT inbox. Step 2 must model the SYNCHRONOUS side
 effects of the push, not an inbox drain.
 
+**FOLLOW-UP, SAME DAY (see §2b): the open question is closed — +0x2E0 DOES get live-code traffic, from
+the delta-record replay path at 0x552692 (Entity vft slot 10), ungated by any readiness test.** "Only by
+test traffic" is therefore wrong for the CONTAINER (right for the attack feeder). The headline law above
+stands exactly as written: it is the 0x5506c0 push path that damage can never queue through.
+
 ## 0. Correction to the design-doc citation: apply is [vft+0x28], not [vft+0x2C]
 
 `GameEffectDamage` vftable @`0x66073c`, all 16 cells read raw (`dd`):
@@ -94,6 +99,39 @@ reachable from slot-10 is `0x45c6b3`, and it writes 1.
 Consequence worth naming: the push OWNS the effect. After `meth_0x5506c0` returns, the damage effect
 object is freed (`0x45c120` deleting dtor, `free` when flag&1). Step 2's port cannot keep pointers to
 it post-push, because shipped doesn't either.
+
+### 2b. THE SECOND WRITER TO +0x2E0 — record replay — and it is NOT gated (closes the open question)
+
+`CodeRefsTo(0x54ea00)` (the deque push) census: the container has EXACTLY THREE push sites in the
+image — `0x55070c` (+0x2E0, ready-gated, damage never satisfies it), `0x55072e` (+0x304, via the action
+seam), and **`0x552692` (+0x2E0, inside `JE::Entity::virt_meth_0x552420`, Entity vft slot 10
+@`0x692084` — the delta-record apply path)**. Extents read whole: `0x552420-0x552752`.
+
+When the server flag is on (`0x5525d3` AreaMapIcon+0x4 test) and the incoming record carries a pending
+effects block (`[rec+744/748/752]` ring, loop `0x5525e1..0x5526a0`), the replay path, per entry:
+
+```
+55266b: call [server_vft+28h](server, *(v7+12))   ; RE-CREATES the effect by its recorded TYPE word
+552676: call [effect_vft+8]                        ; slot 2 = 0x45c0c0 assign-op (copies +0x9C damage cell et al.)
+552682: call meth_0x55a3a0                          ; bind target handle
+552692: call 0x54ea00(&[entity+0x2E0], &effect)     ; PUSH - NO slot-0 READY TEST, NO 0x55ae10 FIRE WALK ANYWHERE IN THE LOOP
+552699: call meth_0x54ef30(entity)                  ; wake (same wake the 0x5506c0 enqueue branch uses)
+```
+
+So the corrected law, both halves stated:
+1. Damage from the LIVE attack feeder (0x403770 -> 0x5506c0) never queues — fire-inline and free, the
+   +0x2E0 ready-branch unreachable (unchanged; structural, 0x45c6b3).
+2. Damage REPLAYED through a delta record (type word `*(v7+12)` = 1 re-creates a GameEffectDamage)
+   **is enqueued into +0x2E0 with NO readiness gate at all** — the replay path skips both the slot-0
+   predicate and the fire-walk. The inbox is therefore **live-code territory**, just not fed by live
+   attack hits: its shipped traffic is net/replay, and a full port owes the replay feeder eventually
+   (era-blocked with the delta-record machinery, named-deferred; the drain side is the target's walk
+   per the banked era, not re-derived here).
+
+Absence bounds per item 73: exactly 3 CodeRefs to 0x54ea00 in the image (one is the 0x550720 seam itself);
+no slot-0 `call [edx]`/`test al` appears between 0x5525d3 and 0x5526a0 (whole extent read); what effect
+TYPE WORDS actually appear in shipped demo records is not enumerable statically — the path is proven
+reachable-by-construction, not observed-fires-in-the-demo.
 
 ## 3. Q1 — one effect object per HIT, created inside the per-hit loop
 
