@@ -1327,3 +1327,42 @@ first, re-run to the NEXT failure before calling the path healthy; (5) a build-s
 ONE variant is a divergence: when a `.nix` toolchain change is about `INCLUDE`/`LIB`/bootstrap, grep the
 sibling variants in the same commit's blast radius (`grep -l msvc-sdk-prerelease devenv/scripts/*.nix`
 returning 1 of 3 IS the bug report), and prove it by building the other variants, not by reading them.
+
+## 68. An "armed" prefix is a CLAIM, not a state: a dll named d3d8.dll in system32 can be Wine's OWN builtin, and only a hash against a declared source tells - arming it properly produced the first visible frame
+
+Item 67's loose end, opened the same day, and it turned out to be worth more than the fix. The prefix's
+`system32/{d3d8,d3d9,dxgi}.dll` (Oct 21 22:47) plus a DllOverrides key that had gone empty made the render
+lane look merely "un-armed - restore the two reg lines". Hashing those three files said otherwise: their
+md5 EQUALS `${pkgs.wine}/lib/wine/i386-windows/{d3d8,d3d9,dxgi}.dll`. They were Wine's own builtin proxies
+copied into system32 - a no-op that LOOKED like an install. Two independent lies in one directory: the
+filenames claim DXVK, the registry claims nothing, and the builtin-wins default makes the files inert
+either way. And the store path the rig had recorded for the real DXVK (`ap3294dg…-dxvk-i686-w64-mingw32-2.7.1`)
+was GONE by morning - an ad-hoc store path is not a dependency.
+
+Fixed by declaring the source instead of quoting a path: `env.OPENVB_DXVK_X32 = "${pkgs.dxvk.bin}/x32"`
+(devenv/environment/openvb.nix) and `scripts.f3-wine-dxvk` (status|arm|disarm), which CLASSIFIES BY HASH -
+`ARMED` / `INERT` (DXVK dlls, no override: builtin wins, DXVK never loads) / `IMPOSTOR` (system32 copies
+are not DXVK) / `CLEAN` / `PARTIAL` - printing dxvk+windbuiltin md5 per dll so a name can never again stand
+in for a verification. `f3-reimpl-run-data`/`-trace` now print the verdict line on every boot. NOTE the
+pinned flake's dxvk 2.7.1 is NOT byte-identical to the set T-067 recorded (d3d8 7f991638… here vs 76c44ce4…
+there) - same version, different nixpkgs revision; the tool prints the hash of the source it used, so the
+difference is visible rather than inherited.
+
+WHAT THE PROPER ARMING BOUGHT (measured, not inferred): a standalone i686-mingw d3d8 probe under the armed
+prefix + Xvfb went `Create8 -> non-NULL` on the REAL device (`driver=nvd3dum.dll desc=NVIDIA RTX A3000
+Laptop GPU`, DXVK banner `info: DXVK: 2.7.1`), then `GetAdapterDisplayMode hr=0`, then - our port's exact
+param shape - `CreateDevice hr=0` + `Clear hr=0` + `Present hr=0`. Then the gated engine itself
+(`OPENVB_RENDER=1`, F3-trace.exe, staged data, :97): render-trace `CreateDevice OK; magenta
+clear+present armed per frame` and `presented frame 3300 (magenta)`, and the WALL confirmed it -
+`import -window root` histogram = 233758 px #FF00FF magenta + 552674 px black. The frame M-001 has been
+chasing since slice 1 is on screen; the blocker was not the 32-bit address space, not init order, not the
+ICD - it was that the prefix was never actually running DXVK.
+
+Rules: (1) for any "X is installed in the prefix" claim, verify by HASH against a DECLARED source
+(nix env attr, not a pasted /nix/store path - GC makes pasted paths lie on a delay); (2) a native dll in
+system32 without its DllOverrides line is worse than absent, because it is invisible in both directions -
+the tool should name that state (`INERT`) rather than report "dlls present"; (3) item 59 holds: the trace
+cadence AND the wall pixels both got checked, and the pixel count is the sentence a screenshot cannot fake;
+(4) when a parked blocker's premise is "the host cannot do X", re-test X once with the environment proven
+correct before booking the harness-limit wording - here the wall answer was YES and the row's premise was
+the bug.

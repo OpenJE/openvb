@@ -38,6 +38,10 @@ in {
       # Dangling user-dir symlinks left by a fresh wineboot break the save folder.
       f3-wine-userdirs-fix "$prefix"
 
+      # Say out loud which d3d8 the render path will get (an "armed" prefix that is really using
+      # the Wine builtin looks identical from the trace stream).
+      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2
+
       # Stage the original demo's data directory (read-only symlinks) so the engine finds
       # resource.rht, *.grp, STF, Fonts... exactly like f3-reimpl-run-data's `cd "$dataDir"`.
       # Without this JE::ResourceSystem::Init fatals with "Couldn't open hashtable file".

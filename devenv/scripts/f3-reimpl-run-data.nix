@@ -41,6 +41,10 @@ in {
 
       f3-wine-userdirs-fix "$prefix"
 
+      # Say out loud which d3d8 the render path will get. An "armed" prefix that is really
+      # falling back to the Wine builtin cost M-001 a full day of chasing a NULL device.
+      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2
+
       cd "$dataDir"
       exec "${wine}" "$exePath"
     '';

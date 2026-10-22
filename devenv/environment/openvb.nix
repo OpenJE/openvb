@@ -13,6 +13,13 @@ in {
     MSVC_IMAGE = "ghcr.io/openje/msvc2002:latest";
     OPENVB_CMAKE_VERSION = "3.24.4";
     OPENVB_F3DEMO_ROOT = "${localPackages.f3demo}/share/f3demo";
+    # M-001/T-067 render lane: the VERIFIED DXVK x32 dll set (d3d8/d3d9/dxgi). Declared here so the
+    # arming tool (scripts/f3-wine-dxvk.nix) has a store-backed source instead of an ad-hoc
+    # /nix/store path that a later GC silently eats - which is exactly how a prefix ended up holding
+    # Wine's OWN builtin d3d8 proxy in system32 and still looked "DXVK-armed" (2026-10-22).
+    # `pkgs.dxvk.bin` is the bin output; x32 -> pkgsCross.mingw32.dxvk_2/bin. 2.7.1, the version the
+    # working rig recorded (md5 d3d8 76c44ce4..., d3d9 cf8a8df6..., dxgi a107ae82...).
+    OPENVB_DXVK_X32 = "${pkgs.dxvk.bin}/x32";
     OPENVB_IDADIR = resolvedIdaDir;
     OPENVB_ORIG_EXE = "${localPackages.f3demo}/share/f3demo/F3.exe";
     OPENVB_ORIG_IDB = "./artifacts/F3.exe.i64";

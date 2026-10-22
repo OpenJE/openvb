@@ -266,3 +266,35 @@ Citation sweep: RenderD3D8 8/8, main.cpp guard, T-026 digest helpers - my files 
 checker truth: CITE regex requires EXACTLY SIX hex digits (0x1305a was invisible; 0x01305A
 counts). Gates re-greened on the final exe: 10/10 incl un-gated app-boot 124, cppcheck 0,
 integrity rc0; prefix reverted law-55-clean before commit.
+
+
+## VISIBLE FRAME ACHIEVED (2026-10-22, harness lane — not the assignee; status line left for the row owner)
+
+The row's remaining premise — "nobody on this host may ever have had d3d8 Direct3DCreate8 succeed" —
+is FALSE, and the reason it looked true is a prefix-state lie, not a host limit. Full writeup in
+docs/notes/harness-items.md item 68; the operative facts:
+
+1. The prefix's system32 d3d8/d3d9/dxgi dlls were **Wine's own builtins** (md5 == `${pkgs.wine}/lib/wine/
+   i386-windows/*.dll`), not DXVK, and DllOverrides was empty. So every "DXVK-armed" measurement since the
+   2026-10-21 prefix recreation actually ran wined3d — the NULL and the bad_alloc signatures were the
+   builtin's, not DXVK's.
+2. Arming is now declared + hash-verified: `env.OPENVB_DXVK_X32 = ${pkgs.dxvk.bin}/x32` and
+   `scripts.f3-wine-dxvk {status|arm|disarm}` (ARMED/INERT/IMPOSTOR/CLEAN/PARTIAL). `f3-reimpl-run-data`
+   and `-trace` print the verdict on every boot. Caveat for the row: the pinned flake's dxvk 2.7.1 is NOT
+   byte-identical to the set T-067 recorded (d3d8 7f991638… vs 76c44ce4…) — same version, newer revision.
+3. Probe (i686-mingw, armed prefix, Xvfb): Create8 non-NULL on the REAL device (`nvd3dum.dll /
+   NVIDIA RTX A3000 Laptop GPU`, DXVK banner 2.7.1); GetAdapterDisplayMode hr=0; **CreateDevice hr=0,
+   Clear hr=0, Present hr=0** in our port's exact param shape (swvp + DISCARD/COPY, no auto-depth-stencil).
+   One combination DID fail and is worth keeping: `flip + EnableAutoDepthStencil + INTERVAL_IMMEDIATE`
+   -> 0x8876086c (D3DERR_INVALIDCALL), so the port's INTERVAL_DEFAULT choice is load-bearing, not cosmetic.
+4. Engine itself, gated (`OPENVB_RENDER=1`, F3-trace.exe, staged data, :97): render-trace
+   `CreateDevice OK; magenta clear+present armed per frame` … `presented frame 3300 (magenta)`, and the
+   WALL agrees: root capture histogram = 233758 px #FF00FF magenta over 552674 px black. Slice-1's
+   acceptance ("a magenta window appears under f3-reimpl-run-data") is MET on this host.
+5. Prefix left ARMED (that is the state that works); gate re-run in that state: run-all-tests 12 pass /
+   0 fail, app-boot 124, rc=0 — the un-gated path is unaffected. `f3-wine-dxvk disarm` returns the
+   law-55 clean state in one command if a lane wants it.
+
+NEXT for the row (not done here, it is the assignee's call): a committed capture artifact + the slice-2
+frame-validation windows now become reachable, and the 32-bit-address-space/bad_alloc line can be
+re-tested against REAL DXVK instead of the builtin that was standing in for it.
