@@ -1111,3 +1111,16 @@ never outranks bytes) — but the cheap first move inverts: query to learn what'
 confirm or to answer what the index can't. The meta-law: an index's payoff is INVERSE to its staleness,
 so the standing refresh row (PARK H-IDX, 'any idle hand, twenty minutes') is infrastructure, not chores.
 --check green = the shortcut is honest; --check red = stop, refresh, then query.
+
+## 54. An adjudication table predates every apply between its cut and its execution — re-verify against the LIVE IDB per row, drop-with-reason over apply-and-undo
+
+HappyStorm, wave-3 (bb5ba3e), 2026-10-21. The class-1 table was cut from t064-postdump; wave-1 had
+ALREADY landed T-073's composite rename (JE::Gfx_RenderManager::meth_0x4903e0) after that dump. The
+table's row for it (doc=JE::Gfx_Engine, keyed by a trampoline prefix this board had formally retired)
+would have UNDONE a correct apply had it been applied as written. The live-vs-plan pre-flight check —
+designed for name churn — caught it, dropped the row with the reason in the ledger, and generalized:
+any derived queue/adjudication/table artifact is only as young as its dump.
+Rules: (1) apply-time re-verification is per-row against the LIVE state, not the source era's snapshot —
+'no self-waiver' includes not waiving your own table's age; (2) when a table and a live state disagree,
+drop-with-reason beats apply-and-reconcile-later; (3) refresh the table's SOURCE (re-cut from the
+post-apply dump) rather than patching rows by hand — the regenerator is the record.

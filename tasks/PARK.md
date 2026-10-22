@@ -5,7 +5,8 @@ Rules (see tasks/README.md § Lane contract): every closed row names a PARK succ
 | ~~R-CS-ANN~~ **CLOSED (34839f3)**: 16/16 comments, [E1] alias note ON its seed 0x4C8149, inheritance guard stated per derived vft, master-gate SKIP on both consumers, the 628-char APPEND-never-overwrite merge over T-058's text at the wave's only occupied site, chain-of-custody baseline matched R-ST's end-save to the second, T2 delta 0, epoch annotation debt CLEARED per ledger |
 | ST-RENAME | StringTree artifact-pair RENAME (0x4B2DD0/0x56EE40 out of the prefix, into sub_/free — their comments tell the truth, their names still mislead): MINT-TIER, share-check pre-gated, belongs in wave-3 with R-INST's install edges + C-W2b residue | wave-3 bundle | HappyStorm successor #2 |
 
-| WAVE-4 | **SEATED TrueCastle on wake** (behind wave-3): manifest = rows wave-3 leaves (4 feed-unique ADOPT set unless absorbed) + Win95IsDebuggerPresent→toBool annotation (R-VEG-E bonus) + R-INST reactivation line HOLSTERED w/ named candidate 0x558740 (if wave-3/epic decode hosts it, the derivor's last reason expires — 'a good outcome, not a lost one'); S4 heap-factory tier ships EXPERIMENTAL/NOT-PROVEN, matcher bug owned in the open (4d24c90) — retirement must not launder a red selftest into silence |
+| WAVE-4 | **SEATED TrueCastle (wake)** — manifest: 4 feed-unique rows (post-EpicRaven cross-check) + class-1 table RE-CUT from post-wave-1/3 dumps (0x4903E0 lesson, item 54) + Win95IsDebuggerPresent->toBool annotation + holstered R-INST reactivation (candidate 0x558740) + ST-era stragglers. Successor #1 for SOME lane: the 21-row bare-namespace values-era OWNER-CHASE batch (18 rows each wear their HOLD comment; gate: live owner from post-boot data — belongs to the S-PEND era, TrueCastle may want it as a second sitting) |
+
 
 ## READY NOW (no deps, no slot conflicts)
 | id | scope | lane-fit | notes |
