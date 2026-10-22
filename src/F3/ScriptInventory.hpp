@@ -130,6 +130,34 @@ namespace F3 {
 			}
 		} // Equip
 
+		// 0x55fda0 - JE::Inventory vft slot 6 (the table read from .rdata at 0x666754, not from the
+		// IDB's partial listing, which shows 10 of 16 entries and skips exactly the ones this family
+		// uses). Walks the item list and compares each ITEM's name to the query with _stricmp, so the
+		// EQUIP path is case-INSENSITIVE - while UnequipItem's named-slot path is strcmp (0x45a8e7).
+		// Shipped therefore lets a script equip "HUNTING RIFLE" and refuse to unequip the same string,
+		// which is the sort of asymmetry a "cleanup" silently changes gameplay over.
+		const Entry *FindByNameCI( const char *pcName ) const {
+			for ( int i = 0; i < nCount; ++i ) {
+				if ( entries[ i ].pcName && _stricmp( entries[ i ].pcName, pcName ) == 0 ) {
+					return &entries[ i ];
+				}
+			}
+			return 0;
+		} // FindByNameCI
+
+		// 0x46a860 - vft slot 10: is this item in one of the six equipped cells? Returns the slot or -1.
+		int SlotOfItem( const void *pItem ) const {
+			if ( pItem == 0 ) {
+				return -1;
+			}
+			for ( int s = 0; s < SNCCI_EQUIPPED_SLOTS; ++s ) {
+				if ( equipped[ s ] == pItem ) {
+					return s;
+				}
+			}
+			return -1;
+		} // SlotOfItem
+
 		int IsEquippedSlot( int nSlot ) const {
 			if ( nSlot < 0 || nSlot >= SNCCI_EQUIPPED_SLOTS ) {
 				return 0;

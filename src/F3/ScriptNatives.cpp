@@ -892,6 +892,76 @@ void ScriptNativeResetRegistry() {
 		return pInv->UnequipNamed( szName, (int)p[ 3 ] ) ? 1 : 0;
 	} // ScriptNative_UnequipItem
 
+	// 0x45a580 - EquipItem. The preamble is identical to UnequipItem's - including the shipped gate name,
+	// which is the ONLY thing that makes the two natives tellable apart before their payloads run.
+	int ScriptNative_EquipItem( int amx, int params ) {
+		const unsigned *p = (const unsigned *)params;
+		JE::Entity *pEntity = 0;
+		char szName[ 128 ];   // shipped: fetched into a 128-byte block, capacity 0x80 at 0x45a5f7
+
+		szName[ 0 ] = 0;
+
+		if ( !ScriptNativeCheckArity( amx, p, 3, "EquipItem" ) ) {   // 0x45a5bc
+			return 0;
+		}
+		if ( !ScriptNativeResolveEntity( amx, p[ 1 ], &pEntity, 1 ) ) {   // 0x45a5ca
+			ScriptNativeReportError( amx,
+				"EquipItem() was unable to find the attacking entity." );   // 0x45a5dc, Attack's wording
+			return 0;
+		}
+		if ( !ScriptNativeFetchString( amx, p[ 2 ], szName, 0x80 ) ) {     // 0x45a5f7
+			ScriptNativeReportError( amx, "EquipItem() was unable to find the Item Name." );
+			return 0;
+		}
+		if ( !RegistryIsClass( pEntity, F3::SNC_GAME_CREATURE ) ) {        // 0x45a62c
+			ScriptNativeReportError( amx, "EquipItem() - Entity is not a creature" );
+			return 0;
+		}
+		ScriptInventory *pInv = ( (GameCreature *)pEntity )->inventory_0x168;   // 0x45a668, pre-cast
+		if ( !pInv ) {
+			ScriptNativeReportError( amx, "EquipItem() - Inventory not Found" );
+			return 0;
+		}
+		if ( !pInv->bIsGameInventory ) {
+			ScriptNativeReportError( amx, "EquipItem() - Game Inventory not Found" );
+			return 0;
+		}
+		// 0x45a6bb: vft slot 6 (0x55fda0) - case-INSENSITIVE name walk. A miss prints NOTHING and
+		// answers 0; that silence is shipped behavior, unlike the four messages above.
+		const ScriptInventory::Entry *pItem = pInv->FindByNameCI( szName );
+		if ( !pItem ) {
+			return 0;
+		}
+		// 0x46be8b: Equip asks slot 10 FIRST and refuses an already-equipped item, logging
+		// "GameInventory::Equip() - Item that was already equipped trying to equip itself again."
+		// through JE::LogDebugString_0x497120 (0x46be97) - that sink is unported, so the VALUE (0) is
+		// kept and the line is not emitted, named-deferred like the packet-88 broadcast and the derived
+		// default case. The observable that matters: re-equipping an equipped item FAILS with 0.
+		if ( pInv->SlotOfItem( pItem->pItem ) >= 0 ) {
+			return 0;
+		}
+		// 0x45a6ce: vft slot 14 (GameInventory::Equip 0x46be40), args (item, params[3] slot, 1).
+		// THREE named deviations in the ported placement, because Equip's body is an era:
+		//   (1) SHIPPED REMAPS THE SLOT. Cases 2/3/7 of its style switch (0x46bff4-0x46c051) translate
+		//       the requested slot through the creature's weapon style at +0x98, so "equip into 7" can
+		//       land in 2 or 3. The port places into the requested slot, bounded to the six cells.
+		//   (2) SHIPPED RELOCATES THE DISPLACED ITEM (the unbounded cell read at 0x4693d4 plus the
+		//       RB-tree bookkeeping around it). The port overwrites an occupied cell; the old item
+		//       simply leaves the equipped set.
+		//   (3) SHIPPED RUNS SIDE EFFECTS: ApplyEquipEffects gated on the server-context bit
+		//       (0x46c1a1), a SetWeaponStance(0) reset (0x46c1e9), and meth_0x469cf0 accounting
+		//       (0x46c1bc). The port performs NONE of them - so an equip here changes slot state only,
+		//       which is a real behavioral difference for any later combat/stat parity work.
+		// Declared rather than minimized: the return value and the slot write are what this native
+		// observably does to inventory state, and everything else is named with its EA.
+		const int nSlot = (int)p[ 3 ];
+		if ( nSlot < 0 || nSlot >= ScriptInventory::SNCCI_EQUIPPED_SLOTS ) {
+			return 0;   // port bound; see deviation (1) - shipped remaps or inspects past the cells
+		}
+		pInv->Equip( nSlot, pItem->pItem );
+		return 1;
+	} // ScriptNative_EquipItem
+
 	// 0x45b620 - GetWeaponRange. Legs in shipped order; each cite is the instruction, not the print.
 	int ScriptNative_GetWeaponRange( int amx, int params ) {
 		const unsigned *p = (const unsigned *)params;
@@ -999,7 +1069,7 @@ void ScriptNativeResetRegistry() {
 
 	// The {name, fn, expected cells} table in shipped EA order. NOT wired into any VM - the port
 	// has no amx module table yet, and faking one would be inventing the thing being reversed.
-	static const ScriptNativeEntry s_gameCreatureNatives[24] = {
+	static const ScriptNativeEntry s_gameCreatureNatives[25] = {
 		{ "GetLevel",    &ScriptNative_GetLevel,    1 },   // 0x45abe0
 		{ "GetRace",     &ScriptNative_GetRace,     1 },   // 0x45aeb0
 		{ "GetGender",   &ScriptNative_GetGender,   1 },   // 0x45af40
@@ -1023,7 +1093,8 @@ void ScriptNativeResetRegistry() {
 		{ "GetTotalSkill", &ScriptNative_GetTotalSkill, 2 },   // 0x45ae20
 		{ "IsItemEquipped", &ScriptNative_IsItemEquipped, 2 },   // 0x45b750
 		{ "UnequipItem", &ScriptNative_UnequipItem, 3 },         // 0x45a6f0
-		{ "GetWeaponRange", &ScriptNative_GetWeaponRange, 1 }    // 0x45b620
+		{ "GetWeaponRange", &ScriptNative_GetWeaponRange, 1 },   // 0x45b620
+		{ "EquipItem", &ScriptNative_EquipItem, 3 }              // 0x45a580
 	};
 
 	const ScriptNativeEntry *ScriptNativeGameCreatureTable( int *pnCount ) {

@@ -122,6 +122,12 @@ namespace F3 {
 	int ScriptNative_LockDoor( int amx, int params );    // 0x45a1b0
 	int ScriptNative_UnlockDoor( int amx, int params );  // 0x45a240
 
+	// 0x45a580 - EquipItem: arity 3 (entity, name, slot). Finder is Inventory vft slot 6 (0x55fda0),
+	// which matches names with _stricmp; the payload is GameInventory::Equip, vft slot 14, reached at
+	// 0x45a6ce by `call dword ptr [edx+38h]` (bytes ff 52 38). Ported here with the OBSERVABLE parts
+	// of Equip and its era declared rather than hidden - see the body for the three named deviations.
+	int ScriptNative_EquipItem( int amx, int params );
+
 	// 0x45b620 - GetWeaponRange: arity 1, and the deepest object chain in batch B so far. It mixes
 	// bases on purpose - the inventory comes from the PRE-CAST entity at +0x168 (same accessor as
 	// IsItemEquipped, three natives agree) while the fallback range pointer comes from the POST-CAST

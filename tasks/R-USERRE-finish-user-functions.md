@@ -1692,3 +1692,42 @@ before amending, because accepting a wrong verdict turns a correct record into a
 The law is the one already on the books for offsets, constants, and slot numbers - re-emit from the artifact,
 never from recall - and my own fifth violation of it today was a hash, which is a number someone else's tool
 printed kindly.
+
+## Slice-B20 (WildKnight 01a1639b) — EquipItem LIVE: 25 natives, 181 asserts, the case asymmetry completes as a three-way split, and the era was ported by declaring what it skips
+
+`EquipItem` (0x45a580) landed on B16's model with the observable contract of `GameInventory::Equip` (0x46be40)
+kept and its era named rather than imitated. The interesting part is what completing the family revealed:
+
+**Three name comparisons, two rules, one gameplay consequence.** `IsItemEquipped` matches with `_stricmp`
+(0x46a777); `EquipItem`'s finder - `JE::Inventory` vft slot 6 at 0x55fda0 - also walks names with `_stricmp`;
+`UnequipItem`'s named-slot path uses plain `strcmp` (0x45a8e7). So a script can `EquipItem("SNIPER RIFLE", 1)`
+successfully and then `UnequipItem("SNIPER RIFLE", 1)` and be REFUSED, leaving the item on the creature. Asserted
+as a pair in one block, because "let's make these consistent" is exactly the edit that would silently change
+how the game plays.
+
+**The vftable had to be read from the image.** The IDB's `GameInventory` listing returns 10 of 16 entries and
+omits precisely the slots this family dispatches through (6, 7, 12). Reading the dwords at `.rdata:0x666754`
+gives all sixteen, confirms 14=0x46be40 / 15=0x46b350 / 10=0x46a860 independently of my byte adjudication
+earlier today, and shows slots **8 and 9 are the same function** (0x469370) - an alias, not near-duplicates,
+which matters before anyone "fixes" one half.
+
+**Two shipped silences, now asserted AS silence.** A failed name lookup in all three natives prints nothing;
+and re-equipping an already-equipped item fails at 0x46be8b with a `LogDebugString` line (0x46be97) on an
+unported sink - so the port keeps the 0 and emits nothing, and the suite checks the error capture is EMPTY
+after the refusal, not merely that the return is 0. A test that only checks the value cannot tell "silent" from
+"reported something else".
+
+**Three declared deviations** (all in the source comment with EAs, all in `docs/f3/InventoryEquipPaths.md`):
+the port does not fold slots 2/3/7 through the creature's weapon style (0x46bff4-0x46c051), it overwrites a
+taken cell instead of relocating the displaced item, and it performs none of `ApplyEquipEffects` (server-context
+gated, 0x46c1a1), `SetWeaponStance(0)` (0x46c1e9) or `meth_0x469cf0` accounting (0x46c1bc). Equipping changes
+slot state and nothing else. The rule I'm holding to: refuse with the same VALUE the engine refuses with, stay
+silent where the engine is silent to the script, and never imply the skipped side effects are equivalent.
+
+Suite work: the RTTI-failure model instances were hoisted to function scope after this being the second time a
+block-scoped declaration broke a later block - and static storage duration matters here for a second reason,
+since a registered entity must outlive the leg that registered it. `port-annot` was run BEFORE the gates this
+time instead of failing them, which is the right ordering for a standard I keep meeting late.
+
+Batch B after B20: **25 LIVE**; remaining rows need the party, dialogue, GUI-hide, AMX-object-reference and
+server eras, or are documented stubs; the item/inventory family is now complete and internally consistent.

@@ -113,3 +113,56 @@ The pseudocode was truthful in the first row and cell-indexed in the second. A r
 would probe `[edx+0Fh]` - slot 3, mid-table nonsense that looks like a corrupted vftable rather than a
 rendering artifact. **Unit flips in pseudocode can move the function, not just misstate an offset**, so vft
 citations quote the call bytes and never the printed addend.
+
+## EquipItem (0x45a580) landed, and the case rules are now a THREE-way asymmetry (B20)
+
+Equip's finder is `JE::Inventory` vft **slot 6** = `0x55fda0`, which walks the item list comparing each item's
+name with `_stricmp`. So:
+
+| native | its name comparison | cite |
+|---|---|---|
+| `IsItemEquipped` | `_stricmp` | 0x46a777 |
+| `EquipItem` (finder) | `_stricmp` | 0x55fde... inside 0x55fda0 |
+| `UnequipItem`, named-slot path | **`strcmp`** | 0x45a8e7 |
+
+The consequence is gameplay, not bookkeeping: a script can `EquipItem("SNIPER RIFLE", 1)` successfully and then
+`UnequipItem("SNIPER RIFLE", 1)` and be refused, leaving the item on. The suite asserts the pair in one block
+so a future "consistency" fix shows up as a behavior change instead of a cleanup.
+
+## The vftable itself, read from the image
+
+The IDB's `GameInventory` vftable listing returns **10 of 16** entries and skips exactly the slots this family
+uses (6, 7, 12). Reading the table's dwords out of `.rdata` at `0x666754` gives all sixteen, and it also
+independently confirms the byte-vs-cell adjudication above (14 = `0x46be40` Equip, 15 = `0x46b350` Unequip,
+10 = `0x46a860` the six-cell scan). Slots 8 and 9 are the **same function** (`0x469370`) - an alias, not a
+pair of near-duplicates, which is worth knowing before anyone "fixes" one of them.
+
+## Two shipped silences, asserted as silence
+
+1. **A failed name lookup says nothing.** `IsItemEquipped`, `EquipItem` and `UnequipItem` all return 0 for an
+   unknown item without a report line; the five messages belong to resolve/fetch/class/inventory legs only.
+2. **Re-equipping an already-equipped item fails quietly.** `GameInventory::Equip` asks slot 10 first
+   (0x46be8b) and, on a hit, logs `"GameInventory::Equip() - Item that was already equipped trying to equip
+   itself again."` through `JE::LogDebugString_0x497120` (0x46be97) and returns 0. The log sink is unported, so
+   the port keeps the value and emits nothing - which is why the suite asserts that the error capture is
+   **empty** after the refusal, rather than just that the return is 0.
+
+## EquipItem's three declared deviations
+
+`GameInventory::Equip` (0x46be40) is an era, and the port takes its observable contract while naming what it
+does not do:
+
+1. **Slot remap.** Shipped's style switch (0x46bff4-0x46c051) folds requested slots 2/3/7 through the
+   creature's weapon style at `+0x98`, so "equip into 7" can land in 2 or 3. The port places into the requested
+   slot, bounded to the six cells, and answers 0 for out-of-range slots.
+2. **Displacement.** Shipped relocates whatever occupied the cell; the port overwrites it, so the displaced
+   item simply leaves the equipped set. Asserted as behavior so the difference is on the record, not in a
+   future diff.
+3. **Side effects.** `ApplyEquipEffects` gated on the server-context bit (0x46c1a1), the `SetWeaponStance(0)`
+   reset (0x46c1e9), and `meth_0x469cf0` accounting (0x46c1bc) are **not performed**. Equipping here changes
+   slot state and nothing else - a real divergence for combat/stat parity work, named in the source comment
+   with its EAs so nobody rediscovers it from a mismatch.
+
+The faithfulness rule this slice runs on: the port refuses the already-equipped case with the same value the
+engine uses (0), and stays silent where the engine is silent to the script - but it does not pretend the
+effects are equivalent to the ones it skips.
