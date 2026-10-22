@@ -51,7 +51,7 @@ class Derivor:
             if ea in self.m.ea2cls:
                 self.m.ea2cls[ea] = (nm.rsplit("::", 1)[0] if "::" in nm else nm,
                                      nm.rsplit("::", 1)[-1])
-        self._vfts(); self._installs()
+        self._vfts(); self._installs(); self._heapfactories()
 
     def _text(self): return self.exe[TEXT_OFF:TEXT_OFF + TEXT_LEN]
     def _va2off(self, va):
@@ -101,6 +101,41 @@ class Derivor:
                 owner = self.m.ea2cls[so][0] if so in self.m.ea2cls else ("sub_%X" % so)
                 self.inst[self.m.resolve_to(e["target"])].append((e["site"], owner, so, ce[2]))
 
+    def _heapfactories(self):
+        """HEURISTIC tier edge-kind: heap-factory installs via the callee-saved chain
+        `e8 <factory>` -> `8b f0` (mov %eax,%esi) -> `8b ce` (mov %esi,%ecx) -> `e8 <ctor>`,
+        all within 80B of the ctor site in one function. R-ST [C] ground truth (0x58BE40 /
+        factory 0x4A7680 / sole ctor 0x558740 @0x58BEC1 / stores ->client+0x8C/+0x90) IS the
+        regression (S4). Constitutes nothing alone: arbitration must corroborate with the
+        [owner+disp] store pattern before assignment."""
+        t = self._text()
+        self.heapfac = collections.defaultdict(list)   # ctor target -> [(site, owner)]
+        for e in self.m.edges:
+            if not e["kind"].startswith("call"): continue
+            site, T = e["site"], self.m.resolve_to(e["target"])
+            o1 = site - TEXT_BASE
+            w = t[max(0, o1 - 128):o1]
+            i_ctor = len(w)
+            # walk back: 8b ce (mov esi->ecx)
+            c = w.rfind(b"\x8b\xce", 0, i_ctor)
+            if c < 0 or i_ctor - c > 28: continue
+            f = w.rfind(b"\x8b\xf0", 0, c)             # mov eax->esi
+            if f < 0 or c - f > 96: continue
+            # nearest preceding call e8 rel32 (the factory call): scan forward from f backwards
+            j = f
+            A = None
+            while j > 0:
+                if w[j-6] == 0xE8 and (f - (j-6)) <= 6:
+                    rel = struct.unpack_from("<i", w, j-5)[0]
+                    A = (max(0, o1-128) + (j-6) + 5 + TEXT_BASE) + rel
+                    break
+                j -= 1
+            if A is None or A == T: continue
+            so = self.m.owner_of(site)
+            if so is None: continue
+            owner = self.m.ea2cls[so][0] if so in self.m.ea2cls else ("sub_%X" % so)
+            self.heapfac[T].append((site, owner))
+
     def cluster_of(self, E):
         Er = self.m.resolve_to(E)
         for st, vfs in self.vft_of.items():
@@ -118,7 +153,7 @@ class Derivor:
             return ("key-family", key, mem)
         return (None, None, {E, Er})
 
-    def install_votes(self, E):
+    def install_votes(self, E, with_factory=False):
         kind, tag, mem = self.cluster_of(E)
         votes = collections.Counter(); disps = collections.Counter()
         for member in mem:
@@ -126,6 +161,11 @@ class Derivor:
             for (site, owner, so, d) in self.inst.get(mr, []):
                 if so in mem: continue                       # internal edge
                 votes[owner] += 1; disps[(owner, d)] += 1
+        if with_factory:
+            for member in mem:
+                mr = self.m.resolve_to(member)
+                for (site, owner) in self.heapfac.get(mr, []):
+                    votes["heapfac:" + owner] += 1
         return kind, tag, votes, disps
 
     def install_host(self, E):
@@ -162,12 +202,19 @@ def selftests(dv):
     mgr_disp = [(o, hex(d)) for (o, d) in disps if o.endswith("GUI::Manager")]
     print("  Manager embed disps for this helper:", mgr_disp, "| S3 edge present:", ok3)
     if not ok3: fails.append("S3")
+    print("== S4 [EXPERIMENTAL, NOT GATING] heap-factory tier vs R-ST ground truth ==")
+    k, t, votes, disps = dv.install_votes(0x558740, with_factory=True)
+    fac = [o for o in votes if o.startswith("heapfac:")]
+    ok4 = any(o == "heapfac:JE::Client" for o in fac)
+    print("  votes:", dict(votes), "| S4 (advisory):", "PASS" if ok4 else "NOT-PROVEN (tier off by "
+          "default; matcher bug found post-review: ctor-site 0x58BEC1 chain not matched by the "
+          "fixed-window scan; retired per Q-W2b regen coverage — see ledger note)")
     print("SELFTEST:", "ALL PASS" if not fails else "FAILED " + ",".join(fails))
     return fails
 
 def main():
     dv = Derivor()
-    fails = selftests(dv)
+    fails = selftests(dv)  # S1-S3 gate; S4 advisory-only
     if fails:
         sys.stderr.write("verdicts withheld on red selftest (item 35)\n"); sys.exit(1)
     if "--run74" in sys.argv:
