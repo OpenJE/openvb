@@ -267,3 +267,35 @@ Landed (gates: msvc rc0 / run-all 10/10 app=124 / annot PASS 0/386 / cppcheck 0)
 Slice 3 next: the two collisions' consumer reads (anim tick walk = CameraControl's vft/update
 era), ToggleConstraints, then the toggle-family census (Toggle* x20, mostly flag bytes on
 engine/display objects - device era now LIVE per G1 so these get REAL validation).
+
+
+## Slice-3a LEDGER (BrightYak, 2026-10-22) - TICK CONSUMER + FIELD KEY v3 + SELF-CORRECTION
+THE CONSUMER READ (planned first, delivered first): CameraControl::meth_0x5869c0 = the animation
+tick (33ms dt-gate, per-bit walk legs + mode-register legs). It re-decoded the ENTIRE field key:
+- MODE REGISTER = dword at 0xC2 (not a tilt-word!): scroll bits 1/2/4/8 (MoveTarget legs using
+  scroll speed 0x110), zoom bits 0x10/0x20 (FOV ramps using speed 0xC4), rotate 0x40/0x80
+  (orbit yaw @0xC8 speed), tilt 0x100/0x200 (orbit pitch @0xD8 speed). The 32-bit toggle writes
+  OVERLAP the zoom-speed half by construction - shipped, our port matches width, explained.
+- SELF-CORRECTION REGISTER (gen-5 class, my own claim): the slice-2 'cam+0x110 view-pointer
+  collision' was MY misread - I pattern-matched the tick's scroll-leg dereference to the ctor's
+  stamp instead of checking the ctor's STORE DISPLACEMENT, which is 0x118(%esi) (raw fstps
+  @0x586fd9) / 0x11c. 0x110 is scroll speed, pure. ScrollSpeed + FOV commands UNBLOCKED the
+  same sitting they were deferred for: CommandCameraScrollSpeed 0x58b7d0 LIVE, CommandCameraFOV
+  0x58b660 LIVE (clamp 104/108 + enable 114 ported; the view-stamp trio 0x58681f-0x586828 stays
+  NAMED-UNPORTED behind the Gfx_Engine seam - real boundary, no fake pointer). Corrections
+  relayed to the coordinator the same cycle the finding died.
+- CLAMP KEY v3 (all displacement-verified): elevation bounds 0xdc/0xe0 (v2 said d8/dc - 0xd8 is
+  the elevation SPEED the tick multiplies); distance bounds 0xf0 LOWER (fcomps 0xf0 @0x58615c)
+  / 0xf4 UPPER (@0x586179); 0xec = distance speed (setter leg + tick @0x586b8a both read it);
+  0xf8 = distance target AND the DistanceSpeed command slot - UNIFIED meaning (the 'speed'
+  command sets where the camera MOVES TO), collision explained instead of feared.
+- anim_tick_0x5869c0 PORTED (azimuth leg live: walk 0xd4 toward target 0xcc at 0xc8*dir 0xd0,
+  flag clear 0xfffe, orbit set_pose @0x586aa7 cite; elevation/distance/mode legs banked to
+  slice 4 - they need MoveTarget 0x586410 + orbit-nudge 0x4C62B0 seam ports).
+Registrations now 26 of 84 LIVE. Gates: msvc rc0 / run-all 10/10 app=124 / annot 0/390 / cppcheck 0.
+Remaining camera deferrals (cited): MouseRotate pair -> sub_587870(client,bool) input era;
+ToggleConstraints -> meth_0x586590 (read pending); Reset/SetTarget -> entity walk 0x70BE0C +
+resolver 0x54be10; CameraReset needs client+0xBC/0xE0 keys (v3 note: those are CLIENT fields,
+world+0x1DC-handle era - rides P-CMBT/T-043 inventory, honest paper exists).
+Next: toggle-family census (Toggle* x20 - flag flips on engine/display objects; device era LIVE,
+G1-validated reads possible), then the EXECUTION dispatch trace.

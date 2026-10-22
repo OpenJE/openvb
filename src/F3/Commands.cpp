@@ -175,25 +175,26 @@ namespace F3 {
 		}
 	} // CommandCameraTopDown
 
-	// 0x588580 - "CameraTiltUp": xor camera word mbr_0xc2 with 0x100 (raw 0x58858e:
-	// mov ax,[eax+0xc2]; xor ax,0x100; mov [..],ax shape via *(cam+194)^=0x100). NOT an
-	// elevation set - the name lied, the bytes did not.
+	// 0x588580 - "CameraTiltUp": xor the MODE DWORD (cam+0xC2, 32-bit operand per raw
+	// 0x58858e *(cam+194)^=0x100) with 0x100. NOT an elevation set - the name lied, the bytes
+	// did not. v3 key: the mode dword's low half IS mbr_0xc4 zoom speed; the flip zeroes it
+	// (shipped overlap, our CamFlag matches the width by construction).
 	void __stdcall CommandCameraTiltUp() {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::CameraControl* cam = Cam();
 		if ( cam ) {
-			cam->mbr_0xc2 ^= 0x100;   // 0x58858e
+			CamFlag( cam ) ^= 0x100u;   // 0x58858e
 		}
 	} // CommandCameraTiltUp
 
-	// 0x5885A0 - "CameraTiltDown": xor camera word mbr_0xc2 with 0x200 (0x5885ae).
+	// 0x5885A0 - "CameraTiltDown": xor mode dword with 0x200 (0x5885ae).
 	void __stdcall CommandCameraTiltDown() {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::CameraControl* cam = Cam();
 		if ( cam ) {
-			cam->mbr_0xc2 ^= 0x200;   // 0x5885ae
+			CamFlag( cam ) ^= 0x200u;   // 0x5885ae
 		}
 	} // CommandCameraTiltDown
 
@@ -308,7 +309,35 @@ namespace F3 {
 		}
 	} // CommandCameraDown
 
-	// DEFERRED this slice (named-absence per item 57, bodies read but not portable yet):
+	// 0x58B7D0 - "CameraScrollSpeed <f>" (SLICE 3 UNBLOCKED: the tick consumer proved 0x110 is
+	// scroll speed, NOT the view pointer - my slice-2 collision claim was a misread, corrected;
+	// ctor stamps go to 0x118/0x11c raw @0x586fd9). Sets mbr_0x110 with arg, echoes without.
+	void __stdcall CommandCameraScrollSpeed(unsigned int argv) {
+		tracing::instrument( tracing::LOCATION, "argv=%08X", argv );
+
+		JE::CameraControl* cam = Cam();
+		if ( HasArg( argv ) && cam ) {
+			cam->mbr_0x110 = (float)atof( FirstArg( argv ) );   // 0x58b803
+		} else if ( cam ) {
+			EchoClient( JE::Network::GetGameNetwork(), "Camera scroll speed is %f", cam->mbr_0x110 );   // 0x58b823
+		}
+	} // CommandCameraScrollSpeed
+
+	// 0x58B660 - "CameraFOV <deg>" (SLICE 3 UNBLOCKED): arg -> set_fov_0x5867c0 (clamp 104/108
+	// when enable 0x114 set; the VIEW stamp trio 0x58681f-0x586828 is the named-unported callee
+	// half, lands with the Gfx_Engine port); the shipped echo (0x58b6a2-0x58b6cf, degrees from
+	// view mbr_0x118 era) is the named-absence half via EchoClient.
+	void __stdcall CommandCameraFOV(unsigned int argv) {
+		tracing::instrument( tracing::LOCATION, "argv=%08X", argv );
+
+		JE::CameraControl* cam = Cam();
+		if ( HasArg( argv ) && cam ) {
+			cam->set_fov_0x5867c0( (float)atof( FirstArg( argv ) ) );   // 0x58b695
+		}
+		EchoClient( JE::Network::GetGameNetwork(), "Camera FOV is %f", cam ? cam->mbr_0x118 * 57.295776f : 0.0f );   // 0x58b6cf (view-degrees read, port-side from 0x118)
+	} // CommandCameraFOV
+
+	// DEFERRED (named-absence per item 57, bodies read but not portable yet):
 	//  CommandCameraFOV @0x58B660 - CameraControl::meth_0x5867c0 writes through the
 	//    JE::Gfx_Engine singleton (global [0x707CE4], vft+0xA8 view getter, stores +0x4A=1,
 	//    +0x110=rad FOV at 0x58681f-0x586828) — rides the now-LIVE device era (G1 positive,

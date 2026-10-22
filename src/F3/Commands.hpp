@@ -63,6 +63,8 @@ namespace F3 {
 	void __stdcall CommandCameraRotateLeft();                       // @0x588540
 	void __stdcall CommandCameraRotateRight();                      // @0x588560
 	void __stdcall CommandCameraDown();                             // @0x588420 -> animated elev 0.0
+	void __stdcall CommandCameraScrollSpeed(unsigned int argv);     // @0x58b7d0 (slice 3 unblocked)
+	void __stdcall CommandCameraFOV(unsigned int argv);             // @0x58b660 (slice 3 unblocked; view-half named-unported)
 
 	// DEFERRED (honest cuts, each cited; slice-1 list kept current):
 	//  CommandCameraFOV @0x58b660  - needs the JE::Gfx_Engine singleton (global 0x707CE4,
