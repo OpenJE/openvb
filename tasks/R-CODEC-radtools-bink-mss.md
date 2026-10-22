@@ -1,6 +1,7 @@
 ---
-status: open
-assignee: SwiftMoon (seated by standing order; decline-then-reseat logged as the system working; re-decline honored once, then re-slotted)
+status: in-progress
+assignee: SwiftMoon `01a16092` (PULLED per standing-order seat; R-PORT-Q successor stays queued behind
+P-CMBT steps 1-2, unaffected — this row is the boot-adjacent foreign-runtime lane, independent)
 type: research (offline analysis of in-tree artifacts; discoveries/ DIRTY-until-checkpoint)
 depends: nothing — everything needed is now in the tree
 ---
