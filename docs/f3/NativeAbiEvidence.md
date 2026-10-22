@@ -304,6 +304,39 @@ opcode word then operand cells; the operand count per opcode comes from the inte
 at 0x5cd519–0x5cdee8, NOT from a remembered Pawn table. Tools in this repo already walk the `.grp`
 TOC (`tools/data_census.py`, layout B `{id, off, size}`).
 
+### 6.6 Exact grep encoding, and a full-bundle caller-side arity census (2026-10-22, after a peer
+reproduction attempt failed on encoding width)
+
+TrueRaven scanned for `39 08 7b 00` (byte operands) and `39 00 08 00 7b 00 00 00` (16-bit cells) and
+got zero hits — correct result, wrong encoding. **Code cells are full 32-bit LE words**, so the
+`PUSH_C k ; SYSREQ idx` pair is SIXTEEN bytes:
+
+    27 00 00 00 <k:4> 7b 00 00 00 <idx:4>
+
+Re-verified over the whole staged bundle (`.devenv/state/f3-reimpl-data/**/*.grp`) with regex
+`\x27\x00\x00\x00(....)\x7b\x00\x00\x00(....)` confined to each image's code span (start = dword at
+image+0x0C, per `mov ecx,[eax+0Ch]` @0x5ccea8; end = dword at image+0x14):
+
+* **25,369 well-formed sites in 118 of 119 images, 115 distinct natives-by-name called.**
+* Caller-side arity (`k/4`) is a singleton per native and matches the C-side gate immediates: e.g.
+  `floatcmp 2`, `GetCurrentHP 1`, `SetValue 3`, `float 1`, `DisplayStringRef 4`, `RandomNumber 2`,
+  `Protagonist 0`, `AddHP 2`, `UnlockDoor 1`, `MessageGetArg 1`, `StartDialogue 2` — the last checked
+  directly against the shipped prologue this pass (`push 2` @0x45a052 in `F3::StartDialogue`).
+* Only exception seen in the spot list: `SendMessage {2,3,4}`. Plausible cause is per-image native
+  declaration divergence (ordinals and names are per-image; one C function can face differently-declared
+  scripts), but that is a HYPOTHESIS — `SendMessage`'s gate was not read in this pass (no DB symbol).
+  The audit gate should treat it as the one manual-review row.
+* Scanning OUTSIDE the code span (whole image) is where false negatives/near-misses breed; anchoring
+  on the magic means remembering it sits at image+4 — a peer read my `[image+0x24]` offsets as
+  magic-relative and mistook the publics table for a natives table with nonzero fn cells. Both tables
+  are stride-40 and adjacent ([0x20..0x24) publics, [0x24..0x28) natives); the discriminator is that
+  natives carry fn=0 + inline name on disk, publics carry a nonzero code offset.
+
+One-liner for the audit hook (arity-per-ordinal from callers, an independent population for
+COVERAGE-BEFORE-VERDICT):
+
+    rg -aU '(?s)\x27\x00\x00\x00(.{4})\x7b\x00\x00\x00(.{4})' <image-code-region>   # then K=le32(g1)/4, ord=le32(g2)
+
 ## Appendix — verified AMX struct field map (all hex, each from instruction text)
 
 | field | evidence (instruction @ EA) | role |
