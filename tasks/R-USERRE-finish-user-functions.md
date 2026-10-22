@@ -499,4 +499,82 @@ RE-SHAPED, not closed. Plus BrightYak's independent re-verification relayed (byt
   (c) BrightYak's own generalization, adopted: 'no shipped twin' is itself a negative claim that
   requires a census wide enough to see register-passed objects - an imm32 scanner literally
   cannot find this executor, and that must stop any lane calling a seam twin-less on scan-absence.
-- Gates: paper-only again; no src touched this block.
+- Follow-up to the follow-up (same night, bytes from the blessed vft census): the queue's
+  IDENTITY just moved. HotKeys vft (0x69fd34) = {0x599D50, 0x5998C0, 0x599A90}; slot[1]
+  0x5998C0 READ: the [Hotkeys] INI SECTION LOADER - walks the ENGINE parameter tree
+  (sub_56AF30 = GetIniParameterTree, the 0x70C2C0 era) [Hotkeys] entries, parses 'Ctrl+'
+  (mask 1) / 'Shift+' (mask 2) in a TWO-PASS loop (order-pinned 0x5999c8 before 0x5999e2),
+  resolves the key name via mbr_0x4's vft+16 (mbr_0x4 = [GameClient+0x78] = the KEYMAP object,
+  the twin pointer HotKeys::ctor took), and binds: GameHotKeys::meth_0x599860(keyId u16,
+  repeatFlag char, modMask int, command string).
+- meth_0x599860 READ (0x599860-0x5998b2): PACKS param_3 = keyId | ((repeat&0xF | 16*(mods&0xF))
+  << 16) into ONE dword key; inserts into the StringTree at &this->mbr_0xc (note: tree rooted AT
+  +0x0C in GameHotKeys - the field HotKeys::ctor had seeded as LOBYTE(param_1); StringTree-
+  object layout {+0 head-cursor?, +4 header-node ptr @buynode, +8 count} overlapping the
+  range-cursor fields - the SAME 16 bytes are the FIFO cursor at HotKeys-base level and the
+  tree-object base one subclass down; the object is genuinely BOTH structures, not an adjacency
+  accident); assign-stores the COMMAND STRING into the node VALUE slot (meth_0x52bc90 ->
+  meth_0x401bd0). KEY->COMMAND BINDING TABLE CONFIRMED; NOT a FIFO push (zero vector writes).
+- RECORDED TENSION (self-caught, not smoothed): GameHotKeys+0x0C is BOTH the HotKeys-base FIFO
+  end-cursor (drain range +8..+C) and, per the binder's &mbr_0xc, the head of a StringTree
+  object spanning +C..+14. Ranges and a tree header cannot share a dword without collision -
+  either the drain cursor fields resolve differently than the ctor-store reading suggests, or
+  the object swaps role per era (binds before any push, or vice versa), or one of today's two
+  structural reads is wrong at one dword. The FIRE-SITE read settles it; named here rather than
+  papered over, and NO port layout decision is taken until then.
+
+### THE TENSION, SETTLED SAME NIGHT (and the resolution indicts MY OWN byte-indexed decompiler
+### reading, not the machinery)
+The pump raws at 0x587f95/0x587fd2/0x587fa5 load THREE DISTINCT GameClient slots: `mov
+ecx,[esi+80h]` -> fire 0x599720, `mov ecx,[esi+7Ch]` -> the DRAIN, `mov ecx,[esi+78h]` ->
+keymap twin (its vft+16 resolves key NAMES to ids @0x599a01). The decompiler's '[124]'/'[128]'
+were BYTE-INDEXED GUESSWORK on an untyped this, and the '+0x7C queue-object with cursor fields'
+claim was built on them. Raws, resolved:
+- [GC+0x7C] = the COMMAND FIFO itself: a std::vector of 28-byte SSO strings (begin/end/cap
+  triple) - the drainer's 'mbr_0x8/mbr_0xc' are THAT VECTOR's begin/end, read as its own
+  this+fields. cls_0x580ba0 is the vector struct's label, not a 16-byte queue-owner.
+- [GC+0x80] = the GameHotKeys object: {+0 vft-patched 0x6647f4, +4 = keymap ptr, +8 = FIFO ptr,
+  +0xC..+0x14 = the binding StringTree} (0x18 bytes - fits exactly). HotKeys::ctor's
+  param_2-store at +8 is a POINTER to the vector (the fire's push reads it back: 0x59978f
+  `sub_580D10(this: *(this+8), value)`; 0x580D10 = temp-string then meth_0x4c60a0(esi+4) =
+  push_back-at-end). The factory virt_meth_0x45e880 receives the FIFO+keymap by READING
+  [GC+7C]/[GC+78] - so the Initialize chain allocates vector+keymap FIRST, GHH last; the
+  'pre-store empty-range' reading dies with the misread (no contradiction remains: ctor never
+  seeded cursors, it stored POINTERS). One loose end stays honest: the ctor's
+  LOBYTE(param_1)->+0xC store lands inside the tree's base word - unexplained byte-write
+  quirk of the era, NO semantic claimed, and none needed.
+- Register entry (second one tonight, self-inflicted, named as it happens): BYTE-INDEXED
+  DECOMPILED FIELD PATHS ARE NOT OFFSETS. Every slot claim above was re-pinned against the
+  'mov ecx,[esi+XX]' raws before it's worth a word; the F3.json usage-list floors caught the
+  same class from the other side (missed stores).
+
+FULL CHAIN, ALL SLOTS RAW-PINNED (the era's spine, port-ready):
+  (a) init: Initialize chain fills GC+78 keymap, GC+7C command FIFO (vector of 28B strings),
+      GC+80 GameHotKeys (factory virt_meth_0x45e880, built FROM the first two - ctor stores at
+      its +4/+8, buynode tree at its +0xC..+0x14);
+  (b) bind: HotKeys::virt_meth_0x5998c0 [Hotkeys] ini walk (ENGINE tree sub_56AF30), 'Ctrl+'(1)
+      'Shift+'(2) two-pass @0x5999c8/0x5999e2, keymap vft+16 name->id, pack
+      keyId|(repeat|mods<<16, GameHotKeys::meth_0x599860 inserts key->COMMAND STRING in the tree;
+  (c) fire: per pump frame each dequeued input event -> sub_599720(this=[GC+80]): pressed-guard
+      0x599729, IDENTICAL pack @0x59974f, tree find @0x599760, HIT -> push the value string into
+      the FIFO through *(this+8) @0x59978f;
+  (d) drain+execute: cls_0x580ba0(this=[GC+7C]) SAME FRAME: space-tokenize -> registry
+      (0x70C668) -> handler(&argv) or 'Unknown command %s\n';
+  (e) camera tick immediately after (0x587fda, BrightYak's adjacency pin: fire in frame N,
+      bound commands act BEFORE the camera animates in the same frame).
+- Console input path: a SEPARATE feeder into the same FIFO (named candidate: CDebugInterface
+  0x558740 era) - no read claimed; the port's Execute() mirror needs (c)+(d) shapes verbatim
+  and (b)'s pack format; (a)'s slot map is port-internal until digest parity cares.
+- Consequence for the still-OPEN enqueue question (re-shaped AGAIN, honestly): the FIFO gets
+  fed by KEY-EVENT FIRES that look up this binding tree and push the found command string -
+  the fire site is the next read (candidates: the keymap vft+16 twin's consumer chain, or
+  GameClient window/keypress handlers calling INTO [GC+7C]; the drain is pump-side, so the
+  fire-and-drain pair straddles frames exactly like the camera-adjacency note predicts).
+  Port stays vector<string>-with-named-pushers until the fire is read. NOT ported ahead of
+  evidence; the loader era ([Hotkeys] ini section) can land WITHOUT the fire read, and is
+  itself a candidate port row once the 58 registrations resume.
+- GameClient vft note from the same table read: vft 0x6647f4 carries '??_R4GameClient@@6B@' at
+  +0xC - it is GameClient's OWN vft region; the [esi+7Ch]-stored object's vft-patch 0x45e8c3
+  set it to that table's GameHotKeys range; RTTI adjacency noted, no claim built on it.
+- Gates: paper-only again (this file, only); vft tables read via ida_original_f3 disasm of
+  0x69fd34/0x6647f4, methods decompiled whole; every EA re-dumpable cold.
