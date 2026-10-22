@@ -765,3 +765,34 @@ per the runtime-lane relay.
   on a delay): resolve wine via the devenv shell, and treat prefix soundness as CLASSIFIED STATE,
   not assumption — `f3-wine-dxvk status` (post-`9207579`: refuses a verdict on REG-ERROR, names
   DEFAULT-BUILTINS/HALF-ARMED) before any render-dependent reading.
+
+## T-079 batch-5 — dead pendings flipped (2026-10-22, this lane; the sweep's "3 dead pendings" +1)
+
+The four pendings below were resolved by closed rows but still travel as open in this file.
+Flips are citations, never restatements; each authority was read before citing it.
+
+- **"TODO: identify who calls LoadStartupMap (grep vft[14] callers / 0x546FD0 xrefs) - likely
+  F3::Main first iteration or interface state machine sub_546870"** — **DONE**: the host chain was
+  resolved (`World+0x160` route, exact-adjust 352) and slot entry[14] `0x546FD0` was NAMED as
+  LOAD-MAP (`ChangeState(3)`, `"none.map"` default, VFX_Parameter["Mainmenu"]."Map Name") in
+  `discoveries/2025-10-20-session34-world-host-chain-map-load-slot.md`; the "likely F3::Main"
+  guess was obsoleted by that chain, and the map-name shipped default answered separately (T-016).
+  Residual named there stands: "exact vft+84 target needs ONE debugger read" — that read was later
+  the +4-view slot-6 question, closed LIVE by T-056 R0 (`0x544A90`, three boots).
+- **"small accessors 0x545250..0x545490 (name them once consumers show up)"** (same section) —
+  **DONE**: consumers showed up and the trio got names in session34 (`0x545490` = WorldMap factory,
+  `0x5452B0` = Party factory, entry[13] `0x545430`, entry[15] `0x5455A0` placed).
+- **"Open: semantics consumers of Gregorian idx3 Get_mbr_0x34 (0x41D1D0) - filed to discovery"** —
+  **DONE (C-21)**: `discoveries/2025-10-20-door-polarity-and-clock-consumer-verdicts.md` §2 — bare
+  2-instruction getter `return *(int*)(this+0x34)`, three call sites scanned, **no SecondsPerRound
+  consumer**; the SecondsPerRound budget inputs live at `Combat::meth_0x5A94A0` instead.
+- **"server tick is vft[16] 0x545D60 - verify which caller drives it (GameWorld vft[3] is empty!)"** —
+  **DONE**: session-14 mapped the driver (`Update`'s `mbr_0x34==1` dispatch -> `ServerUpdate_0x545d60`
+  per-entity pump, reached per frame through the `0x552b60` slot-6 chain — R0 live-confirmed), and
+  T-085's X1 row closes the caller census from the other end (`0x5a94a0` entered ONLY from
+  `World::virt_meth_0x545d60 @0x545e0d`, xrefs complete: 1 real caller):
+  `discoveries/2025-10-21-t085-animated-event-deque.md`.
+
+STILL-OPEN, explicitly NOT flipped (checked same pass): "WIRING PENDING: who calls
+SS::EngineStringSystem::Init/ctor with which root dir" — grep across discoveries/ + docs/ finds no
+closer (only this file's own listing and the sweep's carry); it stays the named half of D7 above.
