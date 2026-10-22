@@ -109,18 +109,32 @@ class Pe:
         return b.split(b"\x00")[0].decode("latin1")
 
 
-GATE_WINDOW = 140   # Debug 0x5c3710 gates at +0x86, which a 96-byte window MISPASSED as "no gate"
-                    # (FastNova's own miss). Any "no gate" this tool returns is a statement about THIS
-                    # window and these two EAs, not about the binary - so it is printed with its bound.
+# THE BOUND IS THE FUNCTION, NOT THE RADIUS (FastNova 2026-10-22, after widening 96->2048 MANUFACTURED a
+# dozen false gates by reading into the NEXT function). Evidence: Debug 0x5c3710 is 0x66 bytes long, so a
+# 140-byte window sees PointDistance's own gate at +0x86 and attributes it to Debug. Widening cannot fix
+# attribution; only an extent cap can. scan_limit() bounds the window at the next known native entry, and the
+# selftest asserts the CORRECT attribution for that pair - Debug ungated, PointDistance gated at +0x16.
+GATE_WINDOW = 0x40            # generous for real gates (max observed entry->gate offset is +0x34)
 
 
-def shipped_gate(pe, fn_va, window=GATE_WINDOW):
+def scan_limit(pe, fn_va, known):
+    """Bytes of THIS function we are willing to read: up to the next known native entry, else the window.
+    `known` is the sorted list of native entry VAs from the port's own table."""
+    nxt = next((k for k in known if k > fn_va), None)
+    if nxt is None:
+        return GATE_WINDOW
+    return max(1, min(GATE_WINDOW, nxt - fn_va))
+
+
+def shipped_gate(pe, fn_va, window=GATE_WINDOW, known=()):
     """Read (name, cells, kind) from a shipped native's prologue arity gate.
 
     Two gate shapes are recognised, by their call target: 0x59AF40 EXACT and 0x59AF90 MINIMUM.
     Prologue shape: push <name-ptr>; push <imm8 cells>; push reg [; push &out]; call <gate>.
     Returns None when NO gate call is found for either EA within `window` bytes - which, per item 72's
     corollary, must be reported as a BOUNDED negative, never as "this native has no gate"."""
+    if known:
+        window = min(window, scan_limit(pe, fn_va, known))
     code = pe.read(fn_va, window)
     for i in range(len(code) - 4):
         if code[i] == 0xE8:                                     # call rel32
@@ -192,6 +206,16 @@ def parse_port_rows(text):
     return rows
 
 
+def tbl_text(tu_text):
+    """The s_gameCreatureNatives[...] table block only, so row-comment regexes cannot match body comments
+    elsewhere in the file (a body cites many EAs too, and matching those would invent entries)."""
+    i = tu_text.find("s_gameCreatureNatives[")
+    if i < 0:
+        return ""
+    j = tu_text.find("};", i)
+    return tu_text[i:j if j > 0 else len(tu_text)]
+
+
 def audit(pe, tu_text, suite_text):
     decl = DECL.search(tu_text)
     suite_m = SUITE_COUNT.search(suite_text)
@@ -208,6 +232,10 @@ def audit(pe, tu_text, suite_text):
         return coverage, None
     coverage["ok"] = True
 
+    # Every native entry this port claims to mirror, sorted: the extent cap for a gate scan is the NEXT one of
+    # these (see scan_limit). Built once, up front, from the same table block the rows came from.
+    known = sorted({int(mm.group(1), 16)
+                    for mm in re.finditer(r'\}\s*,?\s*//\s*(0x[0-9a-f]{6})', tbl_text(tu_text))})
     findings, kept, checked = [], [], 0
     enforced_elsewhere = []
     min_gated = []
@@ -220,10 +248,8 @@ def audit(pe, tu_text, suite_text):
                 findings.append((r["name"], "port declares -1 (no gate) but its body calls a gate"))
             checked += 1
             continue
-        ea = None
-        m = re.search(r'\{\s*"%s"[^/]*//\s*0x([0-9a-f]{6})' % re.escape(r["name"]), tu_text)
-        if m:
-            ea = int(m.group(1), 16)
+        mm = re.search(r'\{\s*"%s"[^/]*//\s*(0x[0-9a-f]{6})' % re.escape(r["name"]), tbl_text(tu_text))
+        ea = int(mm.group(1), 16) if mm else None
         if ea is None:
             findings.append((r["name"], "no shipped EA in the row comment"))
             continue
@@ -296,15 +322,27 @@ def selftest():
     # 2. the ungated alias body must yield NO gate (else -1 rows would be wrong).
     assert shipped_gate(pe, 0x420990, window=16) is None, "0x420990 must have no arity gate"
     # 2b. MIN gate detection: A_SendMessage 0x5c5120 gates at minimum 2 via 0x59AF90 (FastNova 248f842).
+    # 2x. THE BLEED TEST (FastNova's retraction, now an assert): Debug 0x5c3710 is 0x66 bytes; PointDistance
+    # starts 0x5c3780. With no extent cap, Debug's 140-byte window reads PointDistance's gate at +0x86 and
+    # reports it as Debug's - the exact error that produced a retracted "21st divergence". With the cap, Debug
+    # is correctly UNGATED and PointDistance correctly gated at +0x16.
+    KNOWN = [0x5c3710, 0x5c3780]
+    assert shipped_gate(pe, 0x5c3710, known=KNOWN) is None, "Debug must read UNGATED once its own extent bounds the scan"
+    pd = shipped_gate(pe, 0x5c3780, known=KNOWN)
+    assert pd and pd["name"] == "PointDistance" and pd["cells"] == 2 and (pd["at"] - 0x5c3780) == 0x16, pd
+    # ...and an INTENTIONALLY un-bounded 256-byte scan reproduces FastNova's retraction as a test: widen the
+    # RADIUS past Debug's 0x66 extent and it reads PointDistance's gate at +0x86 and attributes it to Debug.
+    # That is the whole lesson in one assert - radius widening does not fix attribution, it manufactures
+    # false gates - so the test pins both halves: bounded = correct, unbounded = the exact bug retracted.
+    bleed = shipped_gate(pe, 0x5c3710, window=256)
+    assert bleed and bleed["name"] == "PointDistance" and (bleed["at"] - 0x5c3710) == 0x86, \
+        ("un-bounded scan should reproduce the bleed", bleed)
     mg = shipped_gate(pe, 0x5c5120)
     assert mg and mg["kind"] == "min" and mg["gate"] == GATE_MIN_EA, ("A_SendMessage should be min-gated", mg)
-    # 2c. the window bound that made FastNova's tool miss Debug: it gates at +0x86, INSIDE our 140 window.
-    dg = shipped_gate(pe, 0x5c3710)
-    assert dg and dg["at"] >= 0x5c3710 + 0x80, ("Debug's late gate not found", dg)
-    assert dg["name"] == "PointDistance", ("Debug prints PointDistance", dg)
-    # 2d. a too-small window must produce a BOUNDED negative, not a false 'no gate' claim - and the tool
-    #     must be able to tell that it is bounded. This is item 72's corollary made executable.
-    assert shipped_gate(pe, 0x5c3710, window=96) is None, "96-byte window should still miss Debug (that is the point)"
+    # 2y. (superseded) an earlier version of this selftest ASSERTED the bleed as if it were a finding - that
+    # Debug's window should reach PointDistance's gate at +0x86. It was enforcing FastNova's retracted error.
+    # Replaced by 2x above: the correct behavior is Debug UNGATED, and the bleed is only tested as proof that
+    # the extent cap is what prevents it.
     # 3. a known cell count from a helper-mediated native.
     assert shipped_gate(pe, 0x45abe0)["cells"] == 1, "GetLevel cells != 1"
     # 4. COVERAGE-BEFORE-VERDICT must actually fire: feed it a suite text with a wrong number.

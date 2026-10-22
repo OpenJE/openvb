@@ -128,19 +128,42 @@ Standing rule 7 again, in a new costume: a listing built by a filter is an excer
 filter's own criterion is part of the claim. The table at 0x6F3750 — read from bytes — is the authority for
 "which natives does the F3 game lib expose", not a symbol query.
 
-### 5b. Registered name vs gate ArgList - TWO fields, and they disagree on 21 natives
+### 5b. Registered name vs gate ArgList - TWO fields, and they disagree on 20 natives
 
-> **COUNT CORRECTION (FastNova `248f842`, verified here)**: this section said 20 and the true figure is **21**
-> (engine-core 16 -> 17). The cause is not a missed string, it is a missed FUNCTION: shipped has **two** arity
-> gates - `0x59AF40` EXACT (`cmp/je`, 4 args, `add esp,10h`) and **`0x59AF90` MINIMUM** (`cmp/jge`, 5 args, the
-> 5th an `&out_actual` written at `0x59afa5`, `add esp,14h`, its own message
-> "Expected at least %d parameters but recieved %d." @0x6A0694, both shapes re-read from instruction text).
-> FastNova's extractor knew one EA and used a guessed 96-byte window, so six engine-core natives counted as
-> "ungated" were actually MIN-gated (real ungated engine-core count: 9, not 16 - Year/Month/Day/Hour/Minute/
-> Second/GetTimeStamp/TransferItemToParty/MessageArgCount). The 21st divergence is `Debug` 0x5c3710, which
-> gates at **+0x86** - outside that window - and prints "PointDistance" @0x6AD37C.
-> **No F3 game-lib native uses the min gate**, so this lane's 36-row audit is unaffected; `tools/native-gate-audit.py`
-> now resolves both EAs, reports gate kind, widened its window to 140, and prints the bound on every negative.
+> **TWO CORRECTIONS PASSED THROUGH THIS SECTION; BOTH KEPT VISIBLE (item 74: log the branch that died).**
+>
+> **(i) 20 -> 21 -> 20.** The bump to 21 came from a `Debug` 0x5c3710 "gate at +0x86 printing PointDistance".
+> That was **bleed into the next function**: `Debug`'s extent is 0x66 bytes and `PointDistance` starts at
+> 0x5c3780, so the window reached PointDistance's own gate. `Debug` is UNGATED and the count is back to **20**.
+> Retracted in place by FastNova (`21886c1`, §10.1) after checking live IDA extents. Reproduced here as an
+> ASSERT rather than prose: `tools/native-gate-audit.py --selftest` scans `Debug` both ways - bounded by the
+> next known native entry it correctly reads UNGATED, and with an intentionally wide 256-byte radius it
+> re-reads "PointDistance" at +0x86, pinning the retracted bug as a test. **The bound is the function, not the
+> radius**: widening 96 -> 2048 did not fix bleed, it MANUFACTURED a dozen false gates.
+>
+> **(ii) the two-gate discovery stands and was worth more than the number it briefly broke.** Shipped really
+> does have TWO arity gates - `0x59AF40` EXACT (`cmp/je`, 4 args, `add esp,10h`) and `0x59AF90` MINIMUM
+> (`cmp/jge` @0x59afa7, 5 args with `&out_actual` written at `0x59afa5`, `add esp,14h`, its own message
+> "Expected at least %d parameters but recieved %d." @0x6A0694). The image-wide census, computed by scanning
+> ALL of `.text` for `E8 rel32` to either EA and attributing each site to the nearest preceding native entry
+> (max observed entry->site offset **+0x34**, so no attribution crosses a boundary):
+>
+> | table | entries | exact | min | ungated |
+> |---|---|---|---|---|
+> | float `0x7004C0` | 9 | 0 | 0 | 9 |
+> | engine core `0x6FFAF8` | 155 | 140 | **6** | 9 |
+> | F3 lib `0x6F3750` | 45 | 41 | **0** | 4 |
+> | **total** | **209** | **181** | **6** | **22** |
+>
+> Arg count must be read from the caller's stack cleanup (`add esp,10h`=4 vs `14h`=5), **not** by counting
+> pushes - counting pushes mislabels 167 exact rows. And `TransferItemToParty` 0x5ca1e0 was a false NEGATIVE in
+> the other direction: it IS exact-gated, 3 cells at +0x32, objdump-confirmed - so it leaves the ungated set.
+>
+> **Consequences for this lane**: no F3 game-lib native uses the min gate, so the 36-row audit scores no
+> exact-vs-min mismatch and neither correction changes it - confirmed by two independent tools. The min form is
+> needed by exactly **6 engine-core natives** (the SendMessage family), which bounds that set's porting cost,
+> and the parked helper parameterisation needs **three** per-row facts, not two: cell count, comparison kind,
+> and the 5th `&out_actual` argument.
 
 Shipped registers `A_Attack` but the body pushes `"Attack"` into the arity gate (0x459ed0-era), and the failure
 lines read `"Attack() was unable to find the attacking entity."` / `"..the target entity."`. The prefix is the
