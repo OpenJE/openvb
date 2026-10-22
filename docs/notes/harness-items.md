@@ -1328,7 +1328,7 @@ ONE variant is a divergence: when a `.nix` toolchain change is about `INCLUDE`/`
 sibling variants in the same commit's blast radius (`grep -l msvc-sdk-prerelease devenv/scripts/*.nix`
 returning 1 of 3 IS the bug report), and prove it by building the other variants, not by reading them.
 
-## 68. An "armed" prefix is a CLAIM, not a state: a dll named d3d8.dll in system32 can be Wine's OWN builtin, and only a hash against a declared source tells - arming it properly produced the first visible frame
+## 68. An "armed" prefix is a CLAIM, not a state: a dll named d3d8.dll in system32 can be Wine's OWN builtin, and only a hash against a declared source tells - and the shared prefix was NOT running DXVK, which is why G1 reproduced only on one keeper's private rig (PRIORITY ERRATUM at the end of this item: the first frame was banked 9.5 h earlier by RedQuartz)
 
 Item 67's loose end, opened the same day, and it turned out to be worth more than the fix. The prefix's
 `system32/{d3d8,d3d9,dxgi}.dll` (Oct 21 22:47) plus a DllOverrides key that had gone empty made the render
@@ -1354,9 +1354,9 @@ Laptop GPU`, DXVK banner `info: DXVK: 2.7.1`), then `GetAdapterDisplayMode hr=0`
 param shape - `CreateDevice hr=0` + `Clear hr=0` + `Present hr=0`. Then the gated engine itself
 (`OPENVB_RENDER=1`, F3-trace.exe, staged data, :97): render-trace `CreateDevice OK; magenta
 clear+present armed per frame` and `presented frame 3300 (magenta)`, and the WALL confirmed it -
-`import -window root` histogram = 233758 px #FF00FF magenta + 552674 px black. The frame M-001 has been
-chasing since slice 1 is on screen; the blocker was not the 32-bit address space, not init order, not the
-ICD - it was that the prefix was never actually running DXVK.
+`import -window root` histogram = 233758 px #FF00FF magenta + 552674 px black. The blocker for the DEVENV
+path was not the 32-bit address space, not init order, not the ICD - it was that the prefix was never
+actually running DXVK.
 
 Rules: (1) for any "X is installed in the prefix" claim, verify by HASH against a DECLARED source
 (nix env attr, not a pasted /nix/store path - GC makes pasted paths lie on a delay); (2) a native dll in
@@ -1366,3 +1366,21 @@ cadence AND the wall pixels both got checked, and the pixel count is the sentenc
 (4) when a parked blocker's premise is "the host cannot do X", re-test X once with the environment proven
 correct before booking the harness-limit wording - here the wall answer was YES and the row's premise was
 the bug.
+
+### ERRATUM (self-caught 09:59 the same morning, by the reflex this register keeps demanding)
+
+The first draft of this item said arming "produced the first visible frame" and that M-001's chased frame
+was now on screen. FALSE AS A PRIORITY CLAIM: `git log -- discoveries/2026-10-22-g1-first-frames.md` =
+**185e393, 2026-10-21 23:44, "THE FIRST FRAME BANKED"**, artifact already in the tree
+(`artifacts/frames/2026-10-22-first-port-frame-800x600.png`, 464,000 px magenta). RedQuartz's G1 sitting got
+the port's first presented frame 9.5 hours before my ea7f596, on their warm rig (Xorg :96 + the
+Modeline-bearing /tmp/t056-xorg.conf), and their memorized gotcha ("registry-not-env overrides, THREE dlls,
+lib32 ICD, no softpipe") is the same knowledge my impostor-prefix finding generalizes. What stands, and is
+still the point: mine is a RE-PRODUCTION on the devenv prefix - the difference between one keeper's private
+rig working and the harness path working for every lane - plus the diagnosis of why the shared prefix could
+NOT reproduce it. How the overclaim happened, per item 66: `ls -t discoveries` WAS run at session start and
+that filename was literally in front of me; I read the board rows that referenced it and skipped the
+discovery itself, then wrote a priority claim about my own measurement.
+Rule added: (5) before any "first / never / blocked" sentence in a commit, item, or reply, `git log` the
+artifact path and grep discoveries/ for the claim's own nouns - a priority claim is a diff against the tree,
+and only the tree referees it.

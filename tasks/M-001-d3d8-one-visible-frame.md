@@ -268,7 +268,12 @@ counts). Gates re-greened on the final exe: 10/10 incl un-gated app-boot 124, cp
 integrity rc0; prefix reverted law-55-clean before commit.
 
 
-## VISIBLE FRAME ACHIEVED (2026-10-22, harness lane — not the assignee; status line left for the row owner)
+## VISIBLE FRAME RE-PRODUCED ON THE DEVENV PREFIX (2026-10-22, harness lane — not the assignee; status line left for the row owner)
+
+PRECEDENCE FIRST (erratum, self-caught): RedQuartz banked the port's FIRST presented frame at **185e393
+(2026-10-21 23:44)** — `artifacts/frames/2026-10-22-first-port-frame-800x600.png`, 464,000 px magenta — 9.5 h
+before this block. Nothing here claims a first; what this adds is that the result now reproduces on the
+SHARED devenv prefix instead of one keeper's private rig, and the diagnosis of why it could not.
 
 The row's remaining premise — "nobody on this host may ever have had d3d8 Direct3DCreate8 succeed" —
 is FALSE, and the reason it looked true is a prefix-state lie, not a host limit. Full writeup in
@@ -290,7 +295,8 @@ docs/notes/harness-items.md item 68; the operative facts:
 4. Engine itself, gated (`OPENVB_RENDER=1`, F3-trace.exe, staged data, :97): render-trace
    `CreateDevice OK; magenta clear+present armed per frame` … `presented frame 3300 (magenta)`, and the
    WALL agrees: root capture histogram = 233758 px #FF00FF magenta over 552674 px black. Slice-1's
-   acceptance ("a magenta window appears under f3-reimpl-run-data") is MET on this host.
+   acceptance ("a magenta window appears under f3-reimpl-run-data") is MET **on the harness path** — it was
+   already MET on RedQuartz's rig (185e393); this is the replication that made the shared prefix agree.
 5. Prefix left ARMED (that is the state that works); gate re-run in that state: run-all-tests 12 pass /
    0 fail, app-boot 124, rc=0 — the un-gated path is unaffected. `f3-wine-dxvk disarm` returns the
    law-55 clean state in one command if a lane wants it.
