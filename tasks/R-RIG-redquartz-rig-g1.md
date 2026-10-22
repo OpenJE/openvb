@@ -1,5 +1,7 @@
 ---
-status: in-progress
+status: verdict delivered — seat CONVERTED to RIG KEEPER (QuickNova, post-185e393): device-gated test
+  support for slice-2 + item-5 sink-proofs; board entry point = tools/rig-g1-run.sh (committed,
+  keeper-verified rc=124 + mid-run capture on the warm rig). Release only when the queue says idle.
 assignee: RedQuartz (2nd successor; dispatch from QuickNova 23:31, seat re-issued verbatim)
 depends: T-067 (DXVK stack recipe), T-056 (Xorg-dummy :96 recipe), M-001 (the G1 question)
 ---
