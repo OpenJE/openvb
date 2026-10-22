@@ -598,3 +598,14 @@ This example follows:
 - Logging style matching the real messages.
 
 ---
+
+## Annotated port code (HARD RULE, 2026-10-21)
+Every port function carries its **original-side EA citation** (`name @0xXXXXXX`) either in its
+leading comment block or within the first lines of its body. The citation is what lets a reader
+diff port against binary without a transcript; a port function with no citation is an unsourced
+claim in product code. Where shipped behavior is NOT yet RE'd, write the named-absence comment
+("no shipped analogue located; ours is behavior-only") — explicit absence is compliant, silence is not.
+Checker: `tools/port-annot-check.py` (lists uncited defs; currently 97/355 — the backfill row
+tasks/PARK R-ANNOT clears the stock, then the checker becomes a gate wired into run-all for
+touched files only). This mirrors what the corpus already does in comments (cited-or-absent) and
+what every lane's ledger does (name+EA tables) — the port must be as auditable as the research.

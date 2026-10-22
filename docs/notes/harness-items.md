@@ -1124,3 +1124,15 @@ Rules: (1) apply-time re-verification is per-row against the LIVE state, not the
 'no self-waiver' includes not waiving your own table's age; (2) when a table and a live state disagree,
 drop-with-reason beats apply-and-reconcile-later; (3) refresh the table's SOURCE (re-cut from the
 post-apply dump) rather than patching rows by hand — the regenerator is the record.
+
+## 57. The port must be as auditable as the research: every port function cites its original-side EA (cited, or absent-by-name)
+
+User-flagged 2026-10-21 after IDB-name archaeology: the corpus learned 'cite or say absent' for
+discoveries and ledgers, but 27% of port definitions (97/355) carried no shipped-side address —
+meaning a reader CAN'T diff port-vs-binary without re-deriving the mapping. Same failure shape as
+the phantom-base 0x691A20 (docs drifting from bytes) but in the product direction.
+1. STYLE.md now carries the hard rule; tools/port-annot-check.py enforces it mechanically.
+2. Backfill before gate-promotion (R-ANNOT): a checker that fails 97 pre-existing holes gets ignored;
+   one that fails zero gets obeyed.
+3. Named-absence comments count — 'no shipped analogue located' is compliance; silence is the bug.
+   The rule that saved every wave ('as applied, not as proposed') simply extended to code comments.

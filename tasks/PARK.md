@@ -8,6 +8,8 @@ Rules (see tasks/README.md § Lane contract): every closed row names a PARK succ
 | WAVE-4 | **SEATED TrueCastle (wake)** — manifest: 4 feed-unique rows (post-EpicRaven cross-check) + class-1 table RE-CUT from post-wave-1/3 dumps (0x4903E0 lesson, item 54) + Win95IsDebuggerPresent->toBool annotation + holstered R-INST reactivation (candidate 0x558740) + ST-era stragglers. Successor #1 for SOME lane: the 21-row bare-namespace values-era OWNER-CHASE batch (18 rows each wear their HOLD comment; gate: live owner from post-boot data — belongs to the S-PEND era, TrueCastle may want it as a second sitting) |
 
 
+| R-ANNOT | Port-annotation backfill (HARD RULE now, STYLE.md): clear the 97 uncited defs across 23 files (checker output is the manifest, worst files listed) — each gets its original EA citation from the ledger/corpus or a named-absence comment; comments-only, per-file commits, gates stay green; when gap=0 the checker graduates into run-all as an incremental gate | any lane between rows; cheap per-file slices make it parallel-safe (per-file = the collision unit) |
+
 ## READY NOW (no deps, no slot conflicts)
 | R-CODEC | RadTools SDK audit + Bink 1.5u container spec + MSS-vs-dsound settle (task file R-CODEC-radtools-bink-mss.md; everything in-tree: user drop, shipped dlls, seed notes tools/scripts/bink15_facts.md) | **SwiftMoon** (re-seated after their honest decline — task file was already theirs by that name) |
 | id | scope | lane-fit | notes |
