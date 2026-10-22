@@ -114,3 +114,29 @@ A capture is a render, not a read. A memory read sees what the shipped code **st
 a path we never reach prove nothing. So a divergence is a **question with a location**, not a verdict
 on the port — and until T-034's R3/R0 land, every artifact this tool writes is SYNTHETIC and says so
 in its first twelve lines.
+
+---
+
+## T-079 batch-1 correction (2026-10-22) — this page's errata from the T-072 sweep (O1–O4)
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §1/§4 (SwiftMoon). Stale sentences stay visible;
+this block referees them. Byte claims re-verified against `$OPENVB_ORIG_EXE` at apply time (receipts:
+`tasks/T-079-batch-doc-correction-apply.md`).
+
+- **O1 — WRONG table cell** (field table: "`JE_TickMilliseconds` = `timeGetTime`"): shipped
+  `0x56af50` is `mov eax,[0x70c2b8]; ret` — session-elapsed accumulator, WinMain-seeded (T-045; bytes
+  raw re-verified at apply). The CONTEXT placement of `tickMs` is unchanged (ours IS uptime-shaped);
+  the shipped side is process-relative.
+- **O2 — superseded boundary** (§Boundary: "until T-034's R3/R0 land, every artifact this tool writes
+  is SYNTHETIC"): T-034 closed-as-miss, T-052 fixed the startup dance, T-056 landed the six values,
+  and T-068 rendered the first REAL `lockstep ↔ unrecorded` pairing
+  (`tools/scripts/orig-capture-t056-runH.txt` @27d8e86). The provenance grammar and refusal rules are
+  unchanged — that part of the page is the design that worked; item 47 was born from T-068's
+  stale-/tmp near-miss on exactly this machinery.
+- **O3 — example needs the pointer** (format example `breakpoint=0x459f5d`): in every real boot
+  `0x459f5d` (script-native `F3::Attack`) NEVER FIRED — the scripts enqueue Idle/Anim through the same
+  funnel; the accepted capture used the funnel callers `0x550720/0x550741` (T-056 deviation note, T-070
+  HOL). The example stays as a fixture, not as the live recipe.
+- **O4 — semantics moved** (`q` row: shipped `q>4` beside our `q=4` "is a dropped order"): the grammar
+  still expresses it, but per T-070 shipped `q` includes the idle RESIDENT — capacity comparison is
+  **3 orders + resident**, shipped `q` at rest is 1, never 0. ">4" re-expresses under T-071 step 4.

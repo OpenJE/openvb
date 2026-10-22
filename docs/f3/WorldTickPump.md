@@ -245,3 +245,34 @@ Two consequences that matter beyond this row:
 Written as address / value / when, for whoever runs the window — see
 `docs/f3/ParityOracleDesign.md` §Reads. Read (a) from the coordinator's list — what `ms` the pump passes —
 is **closed by this page** and should not be spent on.
+
+---
+
+## T-079 batch-1 annotation (2026-10-22) — W1/W2 from the T-072 sweep
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §1/§4. This page's BODY is the current authority
+(T-045); two tails needed pointers, re-verified against `$OPENVB_ORIG_EXE` at apply time.
+
+- **W1 — the section above is SUPERSEDED by T-052/T-056**: the six T-031 reads are no longer
+  debugger-owed — they were TAKEN with values (T-056 six-row table; R0 `0x544A90` live-confirmed on
+  three boots, matching this page's static claim — no loud-flag owed). Remaining depth reads re-based
+  to T-067 (R5/R6, rung-2 list; folded by T-068/T-070). Same section's environment note about a
+  foreign `winedbg.exe` on port 31338 is stale context: T-056 ran a private clone prefix + fifo-held
+  `winedbg --gdb` on :31440, and the ImHex contention was named-solved in the T-034 handover
+  (stub moved to 31437 for the ORIGINAL, ImHex keeps 31337 — env vars are the source, not memory).
+- **W2 — the Conclusion headline needs the magnitude qualifier** (second leg of the §1 three-way
+  collision): "the first shipped delta is one frame and there is no 8-hour leap in the original" is
+  TRUE for the FOLD (the ~8 h machine-uptime artifact is ours, `src/F3.cpp:786` vs the session-
+  elapsed `[0x70c2b8]` read here), but T-056 R2 LIVE-CONFIRMED a small shipped leap of a different
+  magnitude: the world-seconds clock carries 0s→1s inside the first pumps (pump#1 0s → pump#3 1s;
+  19–21s boot-offset character at the R1 instant). T-068: that carry is ported+correct in the app
+  path, unobservable in the harness (driver clock starts 0). So "we do [leap]" on this page means
+  the FOLD; the shipped 0→1s CARRY is real and nobody should read this headline as denying it.
+- **Apply-time receipt (T-079)**: re-verified in the image — 0x56af50 bytes `a1 b8 c2 70 00 c3`;
+  world-entry seed block `0x5466b5..0x5466c8` exactly as tabulated above (`mov [esi+48h],ebx` /
+  `call 0x56af50` / `mov [esi+4Ch],eax` ...); `[0x691a1c+0x14]=0x546b50`, `+0x18` and `+0x0c` =
+  `0x404b70` (slot-5 seeder, slots 3/6 retn — this page's own table identity). One catch against
+  the BODY, logged not rewritten: the init-zeroes section's inline comment "World+0x48 = 0 <- the
+  stamp Update subtracts" contradicts this page's Conclusion (the subtracted stamp is the SEEDED
+  primary `+0x4C` via `this=X+4`; `X+0x48` is the ACCUMULATOR). The conclusion and the seed table
+  are byte-true; read the inline note as the pre-correction wording it is.

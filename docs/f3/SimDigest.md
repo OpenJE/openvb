@@ -190,3 +190,37 @@ the tick. So the original computes the same `uptime - 0` on its first `Update` a
 **Our behaviour is faithful — mirror it, do not "fix" the stamp.** For the parity oracle this is good news:
 `clock` is a valid comparison field, because both sides start from the identical leap, so a `clock`
 divergence reads as elapsed sim time rather than an epoch mismatch.
+
+---
+
+## T-079 batch-1 correction (2026-10-22) — this page's errata from the T-072 sweep (S1–S4)
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §1/§4 (SwiftMoon). Stale sentences above stay
+visible per the board state rule; this block referees them. Byte claims re-verified against
+`$OPENVB_ORIG_EXE` at APPLY time (T-079 lane; receipts in `tasks/T-079-batch-doc-correction-apply.md`).
+
+- **S1/S2 — WRONG, reversed by T-045** (the "SETTLED without a debugger" paragraph above, incl. the
+  two sentences "ms is absolute machine uptime" / "Our behaviour is faithful — mirror it").
+  `JE_TickMilliseconds_0x56af50` is NOT `timeGetTime()`: image bytes `a1 b8 c2 70 00 c3` =
+  `mov eax,[0x70c2b8]; ret` — a WinMain-seeded **session-elapsed accumulator** (sole writer
+  `ProcessMessagesAndUpdateTime` 0x56afb8..0x56afd7). `Update` is entered `this = X+4`
+  (0x552ba4 `lea esi,[eax+4]`) and subtracts primary **`+0x4C`, which the world-entry path SEEDS**
+  (`0x5466b8 call 0x56af50` → 0x5466bd `mov [esi+4Ch],eax`). The ~8-hour fold at frame 0
+  (`clock=29242`) is a **port artifact**; fidelity is *seeding the stamp*, the opposite of
+  "mirror the leap, do not fix it". Authority: `docs/f3/WorldTickPump.md` §Conclusion.
+- **The magnitude qualifier** (corpus reconciliation, §1): "the frame-0 leap" names TWO different
+  quantities in the corpus. The **FOLD** (~8 h uptime) is ours (T-045); the small **0s→1s
+  seconds-carry** in the first pumps IS shipped (T-056 R2, live-confirmed; 19–21s boot-offset
+  character at the R1 instant); T-068: the carry is ported+correct in the app path but
+  UNOBSERVABLE in the harness (driver clock starts 0). Every older "leap is shipped / not
+  shipped" sentence on this page predates the split and must be read against it.
+- **S3 — SUPERSEDED by T-056/T-068** (the `PARITY=` section: "every artifact it writes today is
+  labelled `# SYNTHETIC`"): T-056 delivered the six values and T-068 rendered the first real
+  `lockstep ↔ unrecorded` artifact (`tools/scripts/orig-capture-t056-runH.txt` @27d8e86; real-pair
+  pin openje 8e0568b). Remainder still true: the full per-frame shipped digest awaits R5/R6
+  (T-067).
+- **S4 — re-expressed by T-070** (T-039 section: shipped `q>4` vs our `q=4` "is deviation D-2
+  firing"): shipped `q` includes the idle RESIDENT, so the capacity comparison is **3 orders +
+  resident**, shipped `q` at rest reads **1**, never 0, and T-056 never observed >4 pre-crash.
+  D-2's ">4" question re-expresses under T-071 step 4 (digest upgrade owns it).
+

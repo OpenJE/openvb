@@ -117,3 +117,33 @@ print `tickMs` as `CONTEXT` (not hashed), or (ii) keep `tickMs` hashed and requi
 by a pinned virtual clock. (i) is honest and cheaper; (ii) is what T-028's driver needs anyway, so the
 CONTEXT convention is shared with `eN.vft` (§4b) deliberately: one grammar for "printed, captured, not
 yet compared". Implemented as (i), with the mark visible in the artifact.
+
+---
+
+## T-079 batch-1 correction (2026-10-22) — this page's errata from the T-072 sweep (P1–P4)
+
+Per `discoveries/2025-10-21-t072-doc-errata-sweep.md` §1/§4 (SwiftMoon). Stale sentences stay visible;
+this block referees them. Byte claims re-verified against `$OPENVB_ORIG_EXE` at apply time (receipts:
+`tasks/T-079-batch-doc-correction-apply.md`).
+
+- **P1 — WRONG row, convention survives** (§2 table, `tickMs`): `JE_TickMilliseconds_0x56af50` is NOT
+  `timeGetTime()` — image bytes `a1 b8 c2 70 00 c3` (`mov eax,[0x70c2b8]; ret`, WinMain-seeded
+  session-elapsed accumulator). In the ORIGINAL, `tickMs` is process-relative and would be comparable;
+  the incomparability being designed around is OURS (`src/F3.cpp:786` returns raw `timeGetTime()`).
+  The CONTEXT convention itself stands — T-068 kept it and the §5 argument for option (i) still holds,
+  just with the corrected provenance (T-045 §Consequences-2 named this page explicitly).
+- **P2 — provenance required** (§2 `clock` row: "valid because the frame-0 leap is shipped"): that
+  sentence predates T-045 and cites a page that now states the OPPOSITE. The magnitude split: the
+  ~8-hour FOLD is ours (T-045 — `clock` comparable only once the port seeds `+0x4C` at world-entry,
+  mirroring 0x5466b8/0x5466bd); the small 0s→1s carry IS shipped (T-056 R2 live-confirmed);
+  ported+correct in app path, harness-unobservable (T-068). See `docs/f3/WorldTickPump.md` §Conclusion
+  and the shared reconciliation appended to `docs/f3/SimDigest.md`.
+- **P3 — superseded field list** (§2 `eN.st`): `+0x314` left the `st=` triple at T-039 — it is the
+  deque LIVE COUNT, printed as its own `q=` field (`inc [esi+0x10]` @0x54ea71 raw re-verified);
+  `+0x319` became live data at T-048, raiser shipped-live per T-069/item 45.
+- **P4 — reads LANDED** (§3 "Lockstep reads still owed"): all of R0–R4b delivered WITH VALUES by
+  T-056 (R0 `0x544A90` live-confirmed on three boots, no contradiction of T-045; R1 draw 0x2D81 /
+  state 0x65AD8170 pin rule; R2 0→1s; R3 0→1→3, no >4 datum; R4 pre=0 / post=entity 35/35; R4b
+  GameActionIdle + ActionAnim, zero UNKNOWN_VT). "if R3 shows the index exceeding 4..." — still no
+  >4 datum; depth reads re-based to T-067 (R5/R6 folded by T-068; D-2 re-expressed by T-070 as
+  3 orders + resident).

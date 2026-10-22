@@ -40,10 +40,31 @@ depends: T-072 deliverable (the per-file errata LIST — discoveries/2025-10-21-
 
 ## Ledger
 - [x] claim filed (this file), reserves taken, batch order set
-- [ ] batch 1 (frame-0-leap reconciliation appendix)
+- [x] **batch 1 LANDED (2026-10-22)** — SimDigest S1–S4, ParityOracleDesign P1–P4, OrigCapture O1–O4,
+  WorldTickPump W1–W2, each as an appended correction block (stale text left visible, annotate-never-
+  rewrite honored). APPLY-TIME VERIFICATION (own PE-parsed reads of `$OPENVB_ORIG_EXE`, image base
+  0x400000 — NOT copies of the sweep's §3): `0x56af50 = a1 b8 c2 70 00 c3` MATCH; seed block
+  `5466b5 mov[esi+48h],ebx / 5466b8 call 0x56af50 / 5466bd mov[esi+4Ch],eax / 5466c3+5466c8 -> +0x54`;
+  `0x552ba4 = 8d 70 04 eb 02 33 f6 8b 1e e8 9e 83 01 00 50 8b ce ff 53 18` (`lea esi,[eax+4]`, `call
+  [ebx+18h]` = +4-view slot 6); `[0x6919e4+0x18]=0x544a90`, `[0x668584]=0x544a90`,
+  `[0x691a1c+0x18]=0x404b70`, `[0x691a1c+0x14]=0x546b50`, `[0x691a1c+0x0c]=0x404b70`;
+  `[0x66856C+0x00]=0x436240`, `+0x04=0x46f250`, `+0x08=0x46f260`; `[0x66E4D4+0x30]=0x4AFC00`,
+  `[0x66E574+0x30]=0x4B06A0`; `0x436240=8b 41 3c c3`, `0x46f250=d9 41 70 c3`,
+  `0x46f260=8b442404 8941 70 c20400`; `0x64D7D8`=8x00 then ASCII at `0x64D7E0` ("GameCreature::
+  ReadVersion2() - Making failsafe attack mode f..."); ctor `0x548abb = c706 1c1a6900 c74604 e4196900
+  c7460c c0196900`; raiser `0x54c833 = c6 85 19 03 00 00 01`; consumer `0x5a955d = 8a 87 19 03 00 00
+  84 c0`. EVERY sweep §3 claim batch 1 pasted stands. ONE catch against the sweep's COVERAGE (logged
+  in the WTP block, not rewritten): `WorldTickPump.md:205` inline comment labels `World+0x48` "the
+  stamp Update subtracts" — contradicts the page's own Conclusion (`Update` subtracts `X+0x4C` via
+  `this=X+4`; `X+0x48` is the accumulator zeroed there). T-072's W-list missed it (body declared
+  "otherwise current"); apply-time reverify caught it. CRLF/absolute-path machinery: n/a here (docs only).
 - [ ] batch 2 (I1 ×8 relabels)
-- [ ] batch 3 (DEFERRED-NOTES appendix + annotations + P-CMBT 2 items)
-- [ ] batch 4 (§4 per-file correction blocks)
+- [ ] batch 3 (DEFERRED-NOTES appendix + annotations + P-CMBT 2 items) — pinned regions ~114/~195
+  supersession-cite d284880/9207579, reverify against CURRENT scripts first (WildKnight relay accepted)
+- [ ] batch 4 (§4 per-file correction blocks: GUILoadingRecon, EntityActionQueueSeam,
+  CombatTurnDispatch, ScriptNativeActionDoors, StartupAndSubsystemTable, GUIStringTags,
+  GamePathManager, WorldYearSeedConsumer, T013-registry-port-design, AttackPositionOverrideDoors,
+  GITMItemRecordLayout)
 - [ ] batch 5 (pending flips / DONE marks)
 - [ ] close: coverage statement + relay
 
