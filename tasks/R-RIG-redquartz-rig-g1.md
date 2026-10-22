@@ -106,6 +106,26 @@ Report to QuickNova at FIRST trace output with the exact repro line + which of t
   item 59 governs captures."
 - Queue stance: item-5 sink-proof window first, slice-2 acceptance proper second. Keeper standing by.
 
+## SLICE-2 ACCEPTANCE WINDOW (pre-armed per item 61: unique named TRACE2)
+Scope note from PARK:54 (M-001-S2 row): slice 2's stated acceptance = "magenta frame on that config"
+— the config being exactly what tools/rig-g1-run.sh bootstraps — plus the row's "needs the user"
+clause, i.e., a human eye on the artifact, and the row itself is UNCLAIMED product work (not the
+keeper's to claim; src/ stays lane territory).
+Window protocol when the slice-2 build lands (or to formally accept the CURRENT exe if the coordinator
+rules the bar already met):
+  1. `TIMEOUT_S=120 SCREENSHOT=1 CAPTURE_AT=8 TRACE2=slice2-acceptance.log tools/rig-g1-run.sh`
+     (item 61 honored: named lane-window file; no shared filenames).
+  2. Acceptance bundle = ledger line (UTC+HEAD+exe sha256) + trace head (PHASE1/PHASE2/CreateDevice)
+     + cadence tail + rc=124 + the histogram-gated g1-frame.png COPIED OUT of $RIG_DIR before any
+     next window overwrites it (keeper contract), handed to the coordinator for banking beside
+     artifacts/frames/ (binary commits stay the coordinator's pen, per the 185e393 precedent).
+  3. Human-eyes clause: the banked PNG + the claim-ceiling wording from item 5 go in the acceptance
+     relay so the user sees EXACTLY what is proven (device clear on hardware Vulkan via DXVK) and
+     what is not (nothing renders beyond slice-1's paint until model/texture work lands).
+  4. If slice-2's real product adds geometry/color beyond the clear, the acceptance gains a PIXEL-
+     TARGET step: keeper crops the PNG region the lane names and reports the value — wall truth,
+     read at a specified place, still gated by item 59 ordering.
+
 ## ITEM-5 WINDOW RECIPE (pre-armed; item 5 = JE/ActionAnim.cpp:44-47 stub-call restore, proven on frames)
 PROOF OPTIONS (QuickNova's framing, both valid — SwiftOwl picks):
   (a) CADENCE-BASED — no src/ change: sink restore is visible as trace-line ordering against T-085's
