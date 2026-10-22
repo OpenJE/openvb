@@ -35,3 +35,27 @@ open over guessed on version mismatches. Read-only; zero IDB writes.
 Discoveries file: SDK audit table (header/API/version), Bink 1.5u container spec (field-level,
 consumer-ready), MSS question answered with cited call-sites. One page consumable by M-001's movie
 era and the audio port alike; a claim-vs-truth table if the 1.0 SDK lies about 1.5u anywhere.
+
+## Notes (SwiftMoon, research-complete 2026-10-21)
+GATE-VERDICTS all bytes-first: (1) AUDIO SETTLED — NO MSS at three levels (import table, zero
+strings mss32/.asi/Miles/AIL/WaveOut, no mss32.dll shipped); movie audio = Bink-internal via the
+header's EXACT macro recipe BinkSetSoundSystem(&BinkOpenDirectSound,0) @0x5b530b; game volume =
+mixer band 0x53a4xx (pairs btn*Volume GUI tags) + mci MCI_SET 0x808; DirectSoundCreate (#11) is a
+DEAD import — sole ref = data literal at 0x5fe038 in a pointer table ending in 0xCC padding (the
+'ff 25 jmp thunk' at 0x5fe036 proved a linear-disasm misalignment, dword-aligned read kills it).
+(2) MOVIES ARE OLD-FORMAT 'BIKi' v1 WEARING .mve NAMES (both files; filelen=filesize-8 exact;
+frame-count duplicated; 640x320; trailing quads DIFFER between the two files = two v1 revisions,
+roles named-open not guessed); 'Interplay MVE' expectation refuted; 1.5u runtime +
+BINKOLDFRAMEFORMAT consistent. (3) VERSIONS from resources/banners directly: binkw32 1.5.21.0,
+granny2 2.1.0.5 (claim verified exact), SDK = bink.h 1.0p/smack 3.2f/mss.h 6.1a vs bundled
+mss32.dll banner 6.0i w/ stale 3.0.0.0 resource (SDK internally delta'd too). (4) Header-vs-export
+diff: ONE true lie — BinkGetTrackLargest shipped as BinkGetTrackMaxSize (rename trap); 30+
+1.5-era adds; F3's 9 used APIs present in BOTH. (5) Doc-claim correction: 'CSound reads WAV/ACM'
+refuted — all WAV hits are VFXWAVE_* + WAVFile/PresetFile schema vocabulary; ACM zero; inline
+code-RIFF at ~0x4c6e80s unclassified; .rht 'RIFF/.ogg' hits = substring false positives
+(SheriFF/Togggle); .rht carries a sound-NAME table (MonitorBeep, SlidingDoor*) with payloads
+unlocated — tail for the content era. Method failures caught+reported: my PE helper had swapped
+export tables + double-offset data dirs (fixed, hand-verified at 0x43700/0x42cbc); wine absent ->
+chunk anatomy left OPEN with the exact missing instrument named. Deliverable STAGED per item 55
+(stage-or-commit), never committed by this lane. Successor proposed: R-MVE-A (wine-gated radinfo
+sitting). Row flip relayed.
