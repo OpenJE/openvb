@@ -43,3 +43,24 @@ store @EA writes [this+0xNN])"; zero writes outside my two files.
 ## References
 T-073 §2a-c; `discoveries/vftable-slots.tsv` L2213; `van-buren-docs/File-Format-Specifications.md`
 (VEG); T-083 method (`discoveries/2025-10-21-t083-gfx-engine-vft-census.md`); harness items 40–49.
+
+## Notes (SwiftMoon, research-complete 2026-10-21)
+Gate 6/6 (T-073's six anchors re-read raw) before any classification. HEADLINE: the vft is
+exactly ONE slot — 0x4FD660 = scalar deleting dtor (single-virtual class; everything else is
+direct-call, so the anatomy is member/chain-based, not dispatch-based); export length-1 AGREES
+(rare no-erratum census). Size erratum landed: named export 44 is 12 bytes short — load zeroes
+through [this+0x34] @0x4FD7E0 ⇒ span ≥0x38=56, and the export's OWN sibling cls_0x4fd780 says
+56 (self-contradiction across its split identities; reported floor-vs-truth per T-040).
+Chain: CRT static-init 0x641980 → load 0x4FD780 (re-arms vft — T-073's 'dtor-is-load' verified at
+0x4FD7AD) → 1910-bounded schema-string array @0x6FCA18 → 0x52FA30 (14-entry name walk @0x6FE82C)
+→ registrar 0x4FCD00 (43 builtin name/type/default rows @0x6FC968; SSO assign; 'false'/'0'
+defaults at 0x4FF1B0 bool/float branches; VFX_ParameterInfo ctor 0x4FB2D0; grow 0x4FD680 ÷20).
+.veg conformance 5-for + 1 FINAL-unknown (0x4F9A00 caller-set): engine VALIDATES 'VEG '+'V1.1'
+(0x50136D/0x501383, split 4-byte tokens; spec's own C# only SKIPS it — engine stricter);
+'VFX '+'V1.0'+8-skip+count conforms (0x4F9994/0x4F99B2); FULL §3.2 type vocabulary in .rdata
+(float/bool/VFX_Byte/enum/std::string/Vector/Vector2/Color/Rotation/Resource/TextureUVs) and the
+0xDC bool-true encoding is LIVE — `and al,0xDC` @0x500C5F. Cross-row bonus: a THIRD consumer of
+the pooled empty string @0x64D7D8 (T-078 disposition re-vindicated at a new site). Self-caught
+during drafting (counts vs table, 1910-vs-14 loop bound, '0 0 0' as schema-data not call-arg).
+Deliverable LEFT DIRTY; successor proposed: R-VFM-2 (VFX_ParameterInfo 273B field anatomy +
+0x501xxx applicator-band ownership) — PARK it or fold into R-CS's audio/cursor era.
