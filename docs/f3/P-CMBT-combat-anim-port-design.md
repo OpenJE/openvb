@@ -211,8 +211,8 @@ setter, not a stray write:
   the value always arrives as an argument. The five `"Invalid state change"` strings this batch censused live
   in this function.
 - **State 7 is produced by `Entity::virt_meth_0x5509b0`**, byte-decoded and independently re-verified by
-  FastNova's PE reader: **`push 7` is at `0x550a35`**, `mov ecx,esi` at `0x550a37`, and the `e8 b3 fd ff ff`
-  call at **`0x550a38` resolves to `0x5507f0`**. (My first draft pinned the producer to `0x550a38`, which is
+  FastNova's PE reader: **`push 7` is at `0x550a34`** (`6a 07`; `0x550a35` is its operand byte - both FastNova's
+  cite and mine were one late), `mov ecx,esi` at `0x550a36`, and the `e8 b3 fd ff ff` call at `0x550a38` resolves to `0x5507f0`**. (My first draft pinned the producer to `0x550a38`, which is
   the *call*, not the push - and in a lane that keys cites on EAs, a reader grepping `6a 07` at `0x550a38`
   finds a call opcode and concludes the producer does not exist. Off-by-three in the wrong direction.) Sibling `Entity::virt_meth_0x550970` pushes 4, and both `net::critical_section::meth_0x551c80`
   and `meth_0x5a9330` do `cmp [reg+1E0h],5 / jne / push 4` - a guarded 5 -> 4 transition. The field is
@@ -229,8 +229,29 @@ setter, not a stray write:
   `mov [esi+1E0h],ebx`) - so there are at least **three** register-write sites besides `meth_0x5507f0`'s.
   The load list grew the same way (19 -> 35), so the "no immediate 7 anywhere" claim is also now bounded to
   *the forms my second scan matched*, not the binary.
-  What survives, and it is what Step 3 actually needs: the `push 7; call 0x5507f0` producer at `0x550a35`
-  is real and re-verified by two instruments, and `0x549030` is a real `==7` query. What does NOT survive is
+- **The two extra writers are now characterized, and one of them is a genuine hazard (NiceTiger, IDB, my
+  bytes agreeing): `Entity::UnpackState_0x54e690` writes the state field from the NETWORK STREAM, bypassing
+  the validator.** At `0x54e733` the instruction is `mov [edi+1E0h],edx` with `edx` loaded straight from the
+  unpacked record (immediately preceded by `lea eax,[edi+1E4h]; push eax` @0x54e72a, pairing the state write
+  with a follow-on call), i.e. a hostile or buggy peer can put **any** value in `+0x1E0` - including 7 -
+  without `meth_0x5507f0` ever running. `0x551475` is the benign one: `mov [esi+1E0h],ebx` with
+  `ebx = xor ebx,ebx`, a ctor zeroing the field.
+- **Consequence, and it re-opens what I just closed**: "the validator is the only door" is false, so the
+  accepted-transition graph is not an invariant of the runtime - it is an invariant of the *computed* path
+  only. Step 3's reading of a `== 7` state must therefore ask **which writer produced this value**: a
+  validator-approved transition, a ctor zero, or an unvalidated wire write. A port that models only the
+  validator has silently *stricter* state semantics than shipped, which is a divergence class the digest
+  may not surface at all - a wire-set state is invisible to a single-host test.
+- What does survive intact: the producer `push 7; call 0x5507f0` is real and re-verified by three
+  instruments (my PE scan, FastNova's reader, the IDB), and `0x549030` is a genuine `== 7` query.
+- **Census caveat, now the strongest form of today's law**: my "complete sweep" (41 stores / 35 loads,
+  byte-pattern) and NiceTiger's (21 / 81, normalized disasm text) **disagree in both counts and in both
+  directions**, and neither is THE number. Byte patterns miss registers and forms; disasm text misses
+  **aliasing** (`lea` a computed address, then store through it - a style this very function uses). So a
+  complete-*encoding* sweep is still an incomplete *census*: the pattern that covers all encodings does not
+  cover all addresses. Defensible claim is the negative with its named hole - no `mov [reg+1E0h],7` in any
+  normalized disasm form, and 7 arrives from DATA via UnpackState, which makes an explicit immediate store
+  unnecessary in the first place., and `0x549030` is a real `==7` query. What does NOT survive is
   any claim about **exhaustiveness** of writers - so the predicate's state leg has *a* producer and *at
   least two more write sites to characterise*, which is a different and weaker statement than the one filed an
   hour ago. Note the irony worth keeping: I wrote the control-first rule into this file after my two false
