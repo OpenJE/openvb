@@ -279,6 +279,35 @@ idle-arm transient makes this easy now: post-idle frame, q=0, inbox=1 ⇒ mark p
 **Risk:** the re-gate walk `0x54aa78` iterates via mbr_0x2ec..0x2f0 — SAME container ops as step 1's
 walk; reuse, do not duplicate (the T-074 §1b "instance chosen by this" law).
 
+## GWAM record: three callers, two clone functions - and my relay fed the verifier a mismatched frame pair
+
+Verified twice by independent instruments (NiceTiger's IDB `CodeRefsTo`, my PE `E8 rel32` scan - whose control
+is that the same scan reproduces the 11 callers of `meth_0x5507f0` found an hour earlier):
+
+- **The append helper `sub_40C970` has exactly 3 callers**: `0x40e0bc` (creature-mode reader), `0x414e11`
+  (weapon-mode reader), `0x41502f` (a **third** function, `sub_414ef0`, extent 0x414ef0-0x41513e, whose
+  prologue pushes `??_R0?AUGameCreature@@@8` / `??_AUEntity@@@8` - an Entity->GameCreature RTTI cast).
+  **Any "N gates" claim about this record must say N=3 or bound itself to two.**
+- **`0x40dba0` and `0x4148a0` are two functions, not one** (extents 0x40dba0-0x40e0f4,
+  0x4148a0-0x414e45), sharing the IDB name `F3::GameWeapon::ReadAttackModeData`. Name-not-evidence applies to
+  the attribution; the two-extent fact is structural.
+- **The SEH-shift explanation is dead**: both SEH setups are **byte-identical** (same 12-byte prologue, same
+  `sub esp,70h`), so a shift present identically in both frames cannot explain a 4-byte difference between
+  them. The real cause is **one callee-saved push**: the creature clone saves 4 registers (incl. **ebp**, which
+  then holds the arg pointer), the weapon clone saves 3 (arg straight into `ebx`). Frame numbering is uniform
+  per function - creature locals at `esp+8Ch`, weapon at `esp+88h`, **8Ch-88h = 4 at every site** - which is
+  what makes it a prologue fact rather than a local accident.
+- **What replaces the pairing argument, stronger:** the two are **near-identical clones** (line-by-line
+  matching jump-table case glyphs - `\` 22, `e` 31, `g` 33, `h` 34 - same `local_18=0Fh` init, same single
+  append callee). So the claim is **one record format, one shared append helper, three callers**. The
+  `esp+0x14` vs `esp+0x10` pair is **not evidence of anything** - two frames four apart by construction.
+- **My own error in this chain**: my relay to the verifier described the creature record as `esp+0x14`
+  "(`local_78` in its own frame numbering)" against the weapon side's `esp+0x10`. The `local_78` value is
+  actually **the third caller's frame** (`sub_414ef0`, `lea ecx,[esp+0FCh+local_78]`), not the creature
+  clone's. A relay that pairs a number from one function with a frame from another hands a verifier a test
+  that cannot come out right - and here the verifier caught it only by widening past the question I framed.
+  Rule for relays, not just cites: **name the owner of every number you send, including inside one sentence.**
+
 ## Layout law for the batch-C read work: `base: true` and `base: false` are DIFFERENT frames of reference
 
 Raised by WildUnion's GWAM-pair hazard note, and the correction matters more than their version of it. From
