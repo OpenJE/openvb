@@ -122,3 +122,42 @@ DURABLE CORRECTION for the next attempt: run the window FOREGROUND under a sessi
 timeout (the prior keeper's S1 window was a foreground window; detached nohup breaks the
 process-group assumptions the dance relies on). Also fixed incident-wise: the t052 driver has no
 WINEPREFIX in its environ — cmdline-gating is required for it, environ alone misses it.
+
+## S2 window attempt-2 2026-10-23 23:47 (splitseat; COMPLETE — foreground, rc=0, ladder serviced)
+Executed the banked durable correction verbatim: session-owned foreground window
+(`/tmp/sitting-redquartz/s2-window.sh`, 560s deadline), prefix clone reused, Xorg :96 cold-rebuilt
+from the r-rig config (stale-socket guard added: X96 with no owner is rm'd before bind — attempt-2
+hit it once), unified arm order 1-20 accepted by gdb (20/20 "Breakpoint N at" lines). TWO window
+machinery fixes landed in the script itself, both honest: (1) the held-writer open must come AFTER
+the reader's open or `exec 9>fifo` deadlocks (write-open blocks with no reader — found live, fixed;
+the attempt-2a variant never reached the inferior); (2) expanded env-arrays are command words, not
+assignments — `env "${WDBENV[@]}"` is the working form. ZERO SIGSEGV again; teardown two-pass,
+managed 31338/31437 verified alive post-window; no 31440 stragglers.
+**Legacy fingerprint MATCHED the 4th/5th replication exactly: r1=3 tick=6 pump=5 funnel=12
+post=35 seamA=25 seamB=0** — the boot is deterministic under the arm plan. LADDER READINGS
+(code-on-arrival legs 11-20, raw reads in values-s2.log; interpretation kept to the pre-specified
+readings, no freelancing):
+
+| leg | EA | hits | decoded reading |
+|---|---|---|---|
+| bp7 runbook (raiser R1) | 0x54c833 | 10 | raiser fired 10x in a no-injection boot |
+| bp8 runbook (exhausted) | 0x54c864 | 101 (cap) | [ecx+0x318] reads banked raw (decode next window) |
+| bp9 runbook (clearer) | 0x549090 | 100 (cap) | +0x300 reads banked raw |
+| bp12a/12b either-or | 0x54c9c1 / 0x54c92a | **63 / 3** | pop path A dominates 63:3 — either-or tally LANDED, pair sequence in values log |
+| bp13 sink census | 0x548d80 | 101 (cap) | [ecx+0x288] content at hit time: 68x `0x5f4d4101` (bytes `01 41 4d 5f` = `\x01AM_`), 14x 1, 9x 0xffffff01 — raw table banked, NOT interpreted here |
+| bpN2 native drain | 0x54c440 | **0** | honest zero: no natives drain in a script-capped boot (consistent with R-AMX: native traffic requires script loads) |
+| bpN3 sync mailbox | 0x54ee60 | **0** | honest zero, same boot shape |
+| bpN4 action factory | 0x46f290 | 35 | **pushed-K histogram LIVE: 33x kind 1, 2x kind 6** — the kind-numerics S-PEND cell's ACTION-site half is filled; the window-event {1,3,4,5,7} half rides legs 15+ |
+| bpN5 anim pushes | 0x5505F0 | 66 | anim deque pushes 66x; [esp+4] raw banked |
+| bp11 runbook re-entrancy | 0x5a94a0 (driver#9) | 25 | **[ecx+0x8] depth byte = 0x00 on ALL 25 hits** — zero re-entrancy in a script-capped boot; >4-depth cell stays NOT-CLAIMABLE-ABSENT (correctly), injection window pending |
+| bp10 falsifier | 0x5a955d (driver#10) | **0** | 2nd consecutive clean DXVK boot with 0 hits — T-050 verdict slot: closed-as-unobserved so far, re-check after S3 injection before any wording |
+
+Also observed: bp7-legacy (0x581810 Graphics::Initialize) hit ONCE under DXVK (S1-era note said the
+pair never hits — refined: bp7 hits, bp8 (the FindMode-fatal stop) does not; the "0 hits" claim in
+S1 was bp8-specific). Run identity ledgered: head 8da0668, exe sha256 4652a3d0…3579b87 (SAME bytes
+as S1 and as the PE-read table authority — store path differs, content identical).
+
+**STILL OPEN for the row:** legs 15+ (cursor bps + GameCursorManager+0xA4 watchpoint, event-kind
+{1,3,4,5,7}), the S3 injection window (xdotool) that the >4-depth and T-050 re-checks are gated on,
+and the 801 cross-refs residual. Next attempt inherits: foreground recipe (this script), prefix
+clone (dosdevices diff = transient dll tmps + one F3.log), values-s2.log for the raw-read decode tail.
