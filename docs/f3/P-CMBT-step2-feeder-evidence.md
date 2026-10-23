@@ -123,8 +123,13 @@ effects block (`[rec+744/748/752]` ring, loop `0x5525e1..0x5526a0`), the replay 
 Gate cites, corrected against FastNova's byte-check (my first cite, `0x5525d3`, was the SOURCE deque's
 COUNT check `mov eax,[edi+2F0h]; test eax,eax; jbe 0x5526CA` @0x5525d3-0x5525db, not the flag):
 the loop's OUTER flag gate is `call 0x5b4f30` @0x5525c6 / `test al,1` @0x5525cb / `jz 0x5526CA` @0x5525cd,
-and the flag is RE-TESTED per entry at `0x552644-49` with `jz 0x5526ab` -> the throw path
-("Invalid attempt to retrieve world server instance.", flag-off mid-loop THROWS rather than skips).
+and the flag is RE-TESTED per entry at `0x552644-49` with `jz 0x5526ab` -> the throw path, whose exact
+mechanism (byte-confirmed by both scanners): `push offset __TI1?AUException@Common@@` @0x5526ab (throw-info
+block @0x6d8834), exception object built by STORES — `mov [esp+…+local_8], 0x64787c` (vft) @0x5526b5 and
+`mov [esp+…+local_4], 0x6478a4` ("Invalid attempt to retrieve world server instance.") @0x5526bd — then
+`call __CxxThrowException@8` @0x5526c5. The string is NEVER PUSHED; a push-scan for it correctly finds
+nothing (FastNova's precision, verified here). Flag-off mid-loop THROWS; flag-off BEFORE the loop
+(0x5525cd) silently skips.
 
 The fire-eligible leg, which makes both one-sided readings wrong (`0x55af80` read whole,
 `0x55af80-0x55afa0`): `mov al,[eff+0Ah]; test al,al; jz ret` — if +0xA is SET it calls
