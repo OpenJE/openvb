@@ -54,28 +54,74 @@ BUILD_FILES = ("cmake.toml", "CMakeLists.txt")
 # definitions - which silently downgraded the whole latent-LNK2019 class to "dead weight" and
 # still printed PASS. Leading indentation is therefore part of the pattern, and the two
 # self-guards below refuse to emit a verdict when the parse is empty.
-DEF_RE = re.compile(
-    r"^[ \t]+(?:[A-Za-z_][\w:<>,*&\s]*?)\s+((?:[A-Za-z_]\w*::)+~?[A-Za-z_]\w*)\s*\(",
-    re.M,
-)
-NS_RE = re.compile(r"^\s*namespace\s+([A-Za-z_]\w*)\s*\{", re.M)
+# A definition is either qualified (`int Foo::Bar(`) OR unqualified inside one or more
+# `namespace X {` blocks - and in THIS repo most are the latter (`src/F3/Display.cpp` opens
+# `namespace F3 { namespace Display {` then defines a bare `bool CreateGameWindow( uint )`).
+# The first version of this tool matched only qualified definitions and read CRLF as noise, so
+# four TUs reported "0 defs" and were then classified as DEAD WEIGHT / duplicate on ZERO
+# evidence - a silent mis-classification, which is worse than a crash. A parse that yields no
+# definitions is now its own class (parse-blind), never dead weight.
+DEF_Q = re.compile(r"^[ \t]+(?:[A-Za-z_][\w:<>,*&\s]*?)\s+"
+                   r"((?:[A-Za-z_]\w*::)+~?[A-Za-z_]\w*)\s*\(([^)]*)\)", re.M)
+DEF_U = re.compile(r"^[ \t]+(?:static\s+|inline\s+|virtual\s+|explicit\s+)*"
+                   r"([A-Za-z_][\w:<>&*]*?)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*(?:const)?\s*\{",
+                   re.M)
+NS_OPEN = re.compile(r"^\s*namespace\s+([A-Za-z_]\w*)[^;]*\{\s*$", re.M)
+CLS_OPEN = re.compile(r"^\s*(?:class|struct)\s+([A-Za-z_]\w*)[^;{]*\{\s*$", re.M)
+STRIP = [(re.compile(r"//[^\n]*"), ""), (re.compile(r'"(?:\\.|[^"\\])*"'), '""'),
+         (re.compile(r"'(?:\\.|[^'\\])*'"), "''")]
 
 
-VIRT_RE = re.compile(r"\bvirtual\b[^;{]*?([A-Za-z_][\w]*)\s*\(", re.M)
+def _clean(txt):
+    txt = txt.replace("\r\n", "\n").replace("\r", "\n")
+    for rx, rep in STRIP:
+        txt = rx.sub(rep, txt)
+    return txt
 
 
-def virtual_names():
-    """Member names declared `virtual` in any header under src/ or the openje tree.
+def _scope_stack(txt):
+    """Reconstruct namespace/class nesting line by line so unqualified defs get their real
+    qualified name. Brace-depth tracked over the whole text; only openings that look like a
+    scope header are pushed, everything else counts as depth."""
+    lines = txt.split("\n")
+    stack = []                      # list of (name, depth_at_open)
+    depth = 0
+    scopes = []                     # parallel: scope label per line index
+    for ln in lines:
+        head = ln.strip()
+        label = None
+        if NS_OPEN.match(ln) or CLS_OPEN.match(ln):
+            m = NS_OPEN.match(ln) or CLS_OPEN.match(ln)
+            label = m.group(1)
+        opens, closes = ln.count("{"), ln.count("}")
+        scopes.append("::".join([n for n, _ in stack] + ([label] if label else [])))
+        if label is not None and opens:
+            stack.append((label, depth))
+        depth += opens - closes
+        while stack and depth <= stack[-1][1] and opens - closes < 0:
+            stack.pop()
+        if depth < 0:
+            depth = 0
+    return scopes, lines
 
-    A virtual call compiles to a vftable slot load, not a symbol reference, so matching a
-    virtual name at a call site proves nothing about linkability. Both of this tool's first
-    two 'latent' hits were exactly this: JE::ActionMoveTo::Update_0x55b600 is declared
-    `virtual int Update_0x55b600(...)` at ActionMoveTo.hpp:131. Excluding them keeps the FAIL
-    list to real undefined-symbol risk instead of dispatch noise."""
+
+def definitions_of(path):
+    """(qualified_name, signature) pairs this TU appears to define."""
+    txt = _clean(path.read_text(errors="replace"))
     out = set()
-    for h in list(ROOT.glob("src/**/*.h*")) + list(ROOT.glob("modules/openje/src/**/*.h*")):
-        out |= set(VIRT_RE.findall(h.read_text(errors="replace")))
-    return out
+    for m in DEF_Q.finditer(txt):
+        out.add((m.group(1), " ".join(m.group(2).split())))
+    scopes, lines = _scope_stack(txt)
+    for i, ln in enumerate(lines):
+        if i >= len(scopes):
+            continue
+        for m in DEF_U.finditer(ln + "\n"):
+            name, args = m.group(2), " ".join(m.group(3).split())
+            if name in ("if", "for", "while", "switch", "return", "else", "catch"):
+                continue
+            qual = f"{scopes[i]}::{name}" if scopes[i] else name
+            out.add((qual, args))
+    return out, txt
 
 
 def listed_sources():
@@ -96,13 +142,17 @@ def all_tus():
     return out
 
 
-def definitions_of(path):
-    """Symbols this TU appears to define, incl. namespace-qualified reconstruction."""
-    txt = path.read_text(errors="replace")
-    names = set(DEF_RE.findall(txt))
-    # unqualified defs inside `namespace X {` blocks: collect the namespace labels so a
-    # duplicate can be matched on either spelling; ambiguity is resolved conservatively.
-    return names, set(NS_RE.findall(txt))
+VIRT_RE = re.compile(r"\bvirtual\b[^;{]*?([A-Za-z_][\w]*)\s*\(", re.M)
+
+
+def virtual_names():
+    """Member names declared `virtual` in any header. A virtual call compiles to a vftable
+    slot load, not a symbol reference, so matching a virtual name at a call site says nothing
+    about linkability. Both of this tool's first two 'latent' hits were this artifact."""
+    out = set()
+    for h in list(ROOT.glob("src/**/*.h*")) + list(ROOT.glob("modules/openje/src/**/*.h*")):
+        out |= set(VIRT_RE.findall(_clean(h.read_text(errors="replace"))))
+    return out
 
 
 def main(argv):
@@ -113,45 +163,67 @@ def main(argv):
     compiled_names = listed  # same set: being named by a build list is what "compiled" means
     tus = all_tus()
 
-    orphans = []
-    provided_by_compiled = {}
+    orphans, parse_blind = [], []
+    provided = {}                    # (qualified_name, sig) -> {files}
+    all_defs = {}
     for t in tus:
-        defs, nss = definitions_of(t)
+        defs, _ = definitions_of(t)
+        all_defs[t] = defs
+        if not defs:
+            parse_blind.append(t)
         if t.name in compiled_names:
             for d in defs:
-                provided_by_compiled.setdefault(d, set()).add(t.name)
-                for n in nss:                       # qualified alias spelling
-                    provided_by_compiled.setdefault(f"{n}::{d}", set()).add(t.name)
-        else:
-            orphans.append((t, defs, nss))
+                provided.setdefault(d, set()).add(t.name)
 
     virts = virtual_names()
-    dead, latent = [], []
-    for t, defs, nss in orphans:
-        # Which of this TU's definitions are ALSO defined by a compiled TU?
-        dup = {d for d in defs if provided_by_compiled.get(d, set()) - {t.name}}
-        uniq = defs - dup
+    dead, latent, twins = [], [], []
+    for t in all_tus():
+        if t.name in compiled_names:
+            continue
+        defs = all_defs[t]
+        if not defs:
+            # already in parse_blind; do not also file it as dead weight
+            continue
+        names_here = {n for n, _g in defs}
+        dup = {d for d in defs if provided.get(d, set()) - {t.name}}
+        # same NAME, different SIGNATURE: an overload twin, NOT a link collision. The
+        # Display.cpp case: `bool F3::Display::CreateGameWindow(uint)` here vs the compiled
+        # `BOOL F3::Display::CreateGameWindow(int)` in F3.cpp - different mangled names, so
+        # registering Display.cpp produces no LNK2005. Keying duplicates on name alone would
+        # call every overload pair a collision forever.
+        dup_names = {n for n, _g in dup}
+        twin = {d for d in defs
+                if d[0] in {n for n, _ in provided} and d not in dup and d[0] not in dup_names}
+        uniq = defs - dup - twin
+        if twin and not uniq:
+            twins.append((t, sorted(f"{n}({g})" for n, g in twin)[:3]))
+            continue
         if not uniq:
-            dead.append((t, sorted(defs)[:4], len(defs), len(dup)))
-        else:
-            # Unique definitions only matter if something the build DOES compile references them.
-            refs = set()
-            for c in tus:
-                if c.name in compiled_names and c != t:
-                    txt = c.read_text(errors="replace")
-                    for u in uniq:
-                        leaf = u.split("::")[-1]
-                        if leaf in virts:
-                            continue          # vftable dispatch, not a link reference
-                        # Match the QUALIFIED name. A bare leaf match is noise: this tool's
-                        # first two 'latent' hits were both artifacts of it - SkinSet::Get /
-                        # ::At / ::Find looked 'referenced by StringFormat.cpp' purely because
-                        # `Get(` appears there, and ActionMoveTo::Update was a virtual call.
-                        pat = r"\b" + re.escape(u.replace("::", "::").split("::")[-2]) + r"::" + re.escape(leaf) + r"\s*\("
-                        if re.search(pat, txt):
-                            refs.add((u, c.name))
-            (latent if refs else dead).append(
-                (t, sorted(uniq)[:4], len(uniq), sorted(refs)[:4]))
+            dead.append((t, sorted(n for n, _ in dup)[:4], len(defs), len(dup)))
+            continue
+        refs = set()
+        for c in tus:
+            if c.name in compiled_names and c != t:
+                txt = _clean(c.read_text(errors="replace"))
+                for u, _g in uniq:
+                    leaf = u.split("::")[-1]
+                    if leaf in virts:
+                        continue                    # vftable dispatch, not a link reference
+                    qual = re.escape(u.replace("::", "::"))
+                    if re.search(r"\b" + qual + r"\s*\(", txt) or \
+                       (u.count("::") == 0 and re.search(r"\b" + re.escape(leaf) + r"\s*\(", txt)):
+                        refs.add((u, c.name))
+        (latent if refs else dead).append(
+            (t, sorted(uniq)[:4], len(uniq), sorted(refs)[:4]))
+
+    orphans = [x[0] for x in dead] + [x[0] for x in latent] + [x[0] for x in twins] \
+            + list(parse_blind)
+    # A TU may legitimately sit in parse_blind AND another bucket only if the classes leak;
+    # a count that is a sum of overlaps is not a set, so this is checked, not assumed.
+    if len(orphans) != len(set(orphans)):
+        print(f"FATAL: orphan classes overlap ({len(orphans)} rows, {len(set(orphans))}"
+              " distinct) - the count would be a sum, not a set. Refusing the verdict.")
+        return 2
 
     # GUARD ON THE DETECTOR ITSELF. A listing regex that matches nothing would otherwise
     # report every TU as an orphan and, because no orphan would then look "referenced",
@@ -163,11 +235,11 @@ def main(argv):
         print(f"FATAL: only {len(compiled_names)} sources parsed from {BUILD_FILES}; the build-list")
         print("       regex is broken or the lists moved. Refusing to emit a verdict.")
         return 2
-    if not provided_by_compiled:
+    if not provided:
         print("FATAL: no definitions parsed from any compiled TU - the definition regex is")
         print("       broken; a latent-LNK2019 PASS from here would be vacuous.")
         return 2
-    if len(orphans) == len(tus):
+    if len(orphans) == len(list(tus)):
         print("FATAL: every TU is an orphan - that is a parser failure, not a finding.")
         return 2
 
@@ -184,6 +256,13 @@ def main(argv):
         print(f"    {rel(t)}  defines {uniq}{' ...' if n > 4 else ''}")
         for u, c in refs:
             print(f"        referenced by built {c} via {u}(")
+    print(f"  OVERLOAD TWIN (same name, different signature -> NOT a collision): {len(twins)}")
+    for t, ex in twins:
+        print(f"    {rel(t)}  {ex}")
+    print(f"  PARSE-BLIND (no definitions matched; UNKNOWN, not evidence)   : {len(parse_blind)}")
+    for t in parse_blind:
+        print(f"    {rel(t)}   <- may be genuinely definition-free (registry tables, main())")
+        print("              or a parser blind spot; NEVER treat as 'no symbols here'")
     print(f"  DEAD WEIGHT / unreferenced (delete-or-absorb PARK list)  : {len(dead)}")
     for row in dead:
         t = row[0]
