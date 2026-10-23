@@ -215,6 +215,48 @@ Inventory: every `F3::`-named function in the live IDB (names anchored by EA per
 - `F3::GameWeapon::UnloadPrimaryAmmo_0x4135c0` @ 0x4135c0
 - `F3::GameWeapon::UnloadSecondaryAmmo_0x413810` @ 0x413810
 
+## Batch C shard rulings, as of 6aaa62d (TrueRaven, integration)
+
+**RULING 1 - WildUnion's row 8 is RE-ASSIGNED out of the `GameWeapon` shard, and the reason is the batch's own
+predicted failure mode.** `GameWeapon::ReadAttackModeData_0x40dba0` is named a weapon method and behaves as a
+**creature-side** reader: sole caller `GameCreature::ReadData_0x40e360` @0x40e481, `ecx` = creature list-owner,
+loop count from `[esi+6F0h]`, `'GWAM'` chunk test @0x40e46f, append target `owner+0x6F8`; the true weapon-side
+twin is `0x4148a0`, called from `GameWeapon::ReadData` @0x415242. So the shard is **9 rows, not 10**, and
+porting row 8 under `GameWeapon` would have copied an IDB error into product code. It goes to the unassigned
+batch-C **creature-read** work, and it goes there **paired with `0x4148a0`** - WildUnion's argument, adopted:
+the two bodies differ only in list-owner and count field, so one seat reading them side by side is the check on
+whether they are one function, and a seat that ports them separately can never discover that.
+
+Precedent value, because this is the fifth name-attribution failure this batch has caught (the `je->f3`
+corruption, `GameActionEquip::` on server functions, `DisplayStringRef` missing a prefix, `0x420990` labelled
+GUI::Window, and the 0x56b470 double-port): **an IDB method's class is a claim, and the caller is the
+evidence.** Any port where the class matters must cite the sole caller's owner, not the name. Deferred
+deliberately: the IDB rename itself. Mid-wave, with three seats reading the same DB, a rename is a write whose
+save discipline (the lane's `save_database` + mtime + census rule) nobody should take on casually - the
+mis-attribution is recorded in the ledger and the docs now, and the IDB correction rides with the next
+IDB-writer wave.
+
+**RULING 2 - `ResolveTargets` 0x415740 is (b), deferred, with (a)'s stub kept for now.** The synthesis rather
+than the vote, because both of WildUnion's options were half right:
+- **(b) is correct on ownership**: sole caller is `GameActionAttack::meth_0x402e00+0x95`, inside FastNova's
+  reservation, and the body is a ~1.7KB octree/Map/LOS/cone search whose seams (JE::Map + octree) are exactly
+  the vocabulary FastNova is mid-flight on. A second seat inventing that seam vocabulary is how two ports grow
+  two incompatible map interfaces.
+- **but NOT now**: FastNova has 18 rows plus P-CMBT Step 2 in front of them, and a 1.7KB spatial search is the
+  single biggest thing in the shard. Handing it over mid-wave would stall the critical path to buy nothing.
+- **so**: WildUnion's shard **closes clean with a documented era-defer and the seams named** - the (a) text,
+  without the (a) risk - and `ResolveTargets` becomes its **own row in the ledger**, carrying WildUnion's RE
+  notes so the next seat starts from evidence, including the finding that the mode switch's `0xD..0x22` cases
+  do nothing but log `"Recieved an Unarmed attack type. Error."` (a shipped defect worth asserting, not
+  fixing). It is scheduled **after Step 2 lands**, when the caller's calling convention is fresh in FastNova's
+  hands and the map seams exist rather than being invented twice.
+
+**Standing instruction to all three shards, from WildUnion applying it to themselves first**: do not believe an
+exit code for a TU this batch has already mis-tracked twice - show `GameWeapon.cpp.obj` in the msvc log. That
+is item 76a(1) on a fresh target, and the double-port of 0x56b470 is exactly what unverified inclusion looks
+like. Also: commit doc/ledger-only parts rather than holding everything behind a build-line dependency, so a
+seat that dies mid-wave strands RE instead of shipping it.
+
 ## Batch D-stragglers — D-stragglers
 - `F3::Attack` @ 0x459eb0
 - `F3::Debug` @ 0x5c32f0
