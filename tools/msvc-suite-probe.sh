@@ -50,7 +50,7 @@ probe_one() {
   # The image's ENTRYPOINT is `bash -c`, so `-e VAR=` flags get consumed as the COMMAND (observed:
   # "/bin/bash: SUITE=cls_0x4d8d70: No such file or directory"). Environment has to be set INSIDE the
   # -lc script, which is also exactly how devenv/scripts/msvc-build.nix invokes this image.
-  out="$($DOCKER run --rm -i --cap-add=NET_RAW --security-opt seccomp=unconfined \
+  out="$($DOCKER run --rm --cap-add=NET_RAW --security-opt seccomp=unconfined \
       -v "$PWD:/work" -w /work "$IMAGE" -lc \
       "export SUITE=$s; export SRCWIN='$win'; bash /work/tools/msvc-suite-probe-inner.sh" 2>&1)"
 

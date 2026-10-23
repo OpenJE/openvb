@@ -24,23 +24,45 @@
           ];
         };
 
-        mingw32 = pkgs.mkShell {
+        # The compiler for this project is MSVC 2002 cl, which lives in the docker image (it is a Windows
+        # binary, so it cannot be a nix package). This shell therefore provides docker plus the image
+        # pointer, and NOT a C++ compiler: everything that builds the reimplementation, the test suites, the
+        # sim driver and the symbol checker goes through tools/msvc-test-compile.sh or
+        # tools/msvc-cl-check.sh.
+        #
+        # The previous shell here was named `mingw32` and exported
+        #   CC=i686-w64-mingw32-clang   CXX=i686-w64-mingw32-clang++
+        # which is how a host that ships an MSVC-built product ended up with a clang cross compiler as its
+        # default toolchain: anything built by hand in the shell silently differed from the shipped binary.
+        # Those exports are gone, so `cc`/`c++` resolve to nothing here and an accidental gcc build cannot
+        # happen by muscle memory.
+        msvc = pkgs.mkShell {
           packages = [
             pkgs.cmake
+            pkgs.docker
             pkgs.ninja
+            # LSP/analysis only (clangd, clang-format, clang-tidy) - kept at the user's request. Neither
+            # compiles the reimplementation; they index and lint it.
             pkgs.llvmPackages.clang-tools
-
-            pkgs.pkgsCross.mingw32.clangStdenv.cc
-            pkgs.pkgsCross.mingw32.windows.mcfgthreads.dev
           ];
 
           shellHook = ''
-            export CC=i686-w64-mingw32-clang
-            export CXX=i686-w64-mingw32-clang++
+            export MSVC_IMAGE="${msvcImage}"
+            printf 'openvb shell: compiler = MSVC 2002 cl in %s (docker). No CC/CXX is set on purpose.\n' "$MSVC_IMAGE"
           '';
         };
 
-        default = mingw32;
+        # Retired name, kept as an alias so `nix develop .#mingw32` does not fail for whoever still has it
+        # in a script or a muscle memory. It is the MSVC shell now, and it says so on entry.
+        mingw32 = pkgs.mkShell {
+          inputsFrom = [ msvc ];
+          shellHook = ''
+            export MSVC_IMAGE="${msvcImage}"
+            printf 'NOTE: .#mingw32 is retired - mingw/clang are no longer provided. This is the MSVC cl shell.\n'
+          '';
+        };
+
+        default = msvc;
       };
     };
 

@@ -30,7 +30,20 @@ out="${1#./}"; shift
 
 srcs=()
 for s in "$@"; do
-  s="${s#./}"
+  f="$s"
+  # Path normalisation is a correctness issue, not tidiness. An ABSOLUTE path was previously turned into
+  # Z:\work\/mnt/shanes-.../probe.cpp by prefixing blindly, and a command line that confused produced no
+  # error at all - cmd fell back to its INTERACTIVE PROMPT and blocked on stdin forever. Observed as a
+  # 90s timeout with no diagnostic, and `timeout` could not even interrupt the docker client cleanly.
+  # So: make every source relative to the repo root first, refuse anything outside it, and never let a
+  # container inherit stdin (see the </dev/null below).
+  case "$f" in
+    "$PWD"/*) f="${f#"$PWD"/}" ;;
+    ./*)      f="${f#./}" ;;
+    /*)       echo "REFUSE: '$f' is outside the repo root ($PWD) - the container mounts only the tree" >&2
+              exit 3 ;;
+  esac
+  s="$f"
   if [ -f "$s" ]; then srcs+=("$s"); else echo "REFUSE: '$s' is not in the tree (compiling nothing can only report green)" >&2; exit 3; fi
 done
 
@@ -50,7 +63,9 @@ OUTWIN="Z:\\work\\build\\msvc-tests\\$(basename "$out")"
 # the whole build in `-lc "...wine cmd /c \"...\"..."` produced a command string bash tried to execute as a
 # single filename. Values with backslashes and spaces have no business being quoted twice, so the container
 # gets a variable-free one-word command and every string it needs arrives out of band.
-"$DOCKER" run --rm -i --cap-add=NET_RAW --security-opt seccomp=unconfined \
+# No -i and no -t: attaching stdin is what turned a malformed path into an endless hang, because
+# cmd drops to an interactive prompt and blocks reading input that never arrives.
+"$DOCKER" run --rm --cap-add=NET_RAW --security-opt seccomp=unconfined \
     -v "$PWD:/work" -w /work \
     -e SRCWIN="$SRCWIN" -e OUTWIN="$OUTWIN" -e OBJWIN="$STAGE_OBJ" -e STAGE="$STAGE" \
     "$IMAGE" -lc 'bash /work/tools/msvc-test-compile-inner.sh'

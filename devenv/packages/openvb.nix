@@ -229,7 +229,10 @@ in
     gdb
     ninja
     (lib.getBin pkgs.cppcheck)
-    pkgsCross.mingw32.stdenv.cc
+    # pkgsCross.mingw32.stdenv.cc REMOVED: it put i686-w64-mingw32-g++ on the PATH, which is how hand-run
+    # compiles could diverge from the MSVC cl that builds the product, the suites, the sim driver and the
+    # symbol checker. Nothing in this repo needs a cross compiler any more - cl IS a Windows compiler and it
+    # runs in $MSVC_IMAGE. (dxvk below is unaffected: it is a vendored Windows build nixpkgs makes for us.)
     uv
     iproute2
     # T-024/M-001: a virtual X server so wine's d3d8/wined3d path can be exercised headlessly

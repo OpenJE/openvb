@@ -3,7 +3,12 @@
 { pkgs, ... }:
 let
   wine = "${pkgs.wine}/bin/wine";
-  mingxCxx = "${pkgs.pkgsCross.mingw32.stdenv.cc}/bin/i686-w64-mingw32-g++";
+  # The suites are built by MSVC 2002 cl in $MSVC_IMAGE via tools/msvc-test-compile.sh - the same compiler
+  # that builds F3.exe. The mingw g++ binding and its OPENVB_TEST_TOOLCHAIN=gcc escape hatch are removed
+  # (they were kept for one transition to distinguish newly-broken-under-cl from already-broken; that
+  # transition is done: 14/14 gates green under cl with every floor identical, plus one real C++98 defect in
+  # SpawnMove that gcc had been accepting as an extension). A second toolchain here would be a second set of
+  # bugs to keep in agreement, and every green would again be evidence about a compiler the product is not.
   statBin = "${pkgs.coreutils}/bin/stat";
 in {
   scripts.run-all-tests = {
@@ -167,7 +172,7 @@ in {
         "''${stamp_dirty:-0}" "''${stamp_build_dirty:-0}"
       printf '  payload  : %s\n  table    : %s rows, hash %s\n' \
         "$0" "''${#suites[@]}" "$stamp_hash"
-      printf '  compiler : %s\n' "$(if [ "''${OPENVB_TEST_TOOLCHAIN:-msvc}" = gcc ]; then "${mingxCxx}" --version 2>/dev/null | head -1; else printf 'MSVC 2002 cl (docker $MSVC_IMAGE) via tools/msvc-test-compile.sh\n'; fi)" 
+      printf '  compiler : MSVC 2002 cl (docker $MSVC_IMAGE) via tools/msvc-test-compile.sh\n'  
       printf '  exe      : %s\n\n' "$(${statBin} -c '%y %s' "''${OPENVB_TEST_EXE:-$root/build/F3.exe}" 2>/dev/null || printf absent)"
 
       fails=0
@@ -235,14 +240,8 @@ in {
         # delete it once the cl path has been green across a wave, because a second toolchain is a second
         # set of bugs to keep in agreement.
         # shellcheck disable=SC2086
-        if [ "''${OPENVB_TEST_TOOLCHAIN:-msvc}" = "gcc" ]; then
-          log="$("${mingxCxx}" -std=c++98 -static -w -Isrc -Imodules/openje/src -Imodules/tracing/src \
-                $srcs -o "$exe" 2>&1)"
-          cstat=$?
-        else
-          log="$(tools/msvc-test-compile.sh "$exe" $srcs 2>&1)"
-          cstat=$?
-        fi
+        log="$(tools/msvc-test-compile.sh "$exe" $srcs 2>&1)"
+        cstat=$?
         if [ $cstat -ne 0 ] || [ ! -f "$exe" ]; then
           # Classify, do not just count: an 'error C' grep misses link failures (LNK2019 /
           # undefined reference), which is exactly what a missing source looks like

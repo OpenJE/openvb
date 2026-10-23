@@ -19,7 +19,10 @@
 
 set -u
 
-TMP="$(mktemp -d 2>/dev/null || echo /tmp/verify-symbol.$$)"
+# Scratch lives INSIDE the repo: the compiler runs in a docker container whose only mount is $PWD, so a
+# mktemp directory under /tmp is invisible to it and every probe would fail with C1083 "cannot open source
+# file" - i.e. the tool would report errors about the CODE when what is broken is its own input plumbing.
+TMP="${TMP_DIR_OVERRIDE:-$(pwd)/build/verify-symbol-tmp}"
 mkdir -p "$TMP" 2>/dev/null
 trap 'rm -rf "$TMP"' EXIT
 # (TMP is created here, BEFORE pick_compiler: the Win32 capability probe writes into it.
@@ -42,7 +45,8 @@ modes (exactly one required)
 options
   --header  path      header the probe includes (default: auto-detect the declaring .hpp)
   --root    dir       repo root (default: this script's parent)
-  --compiler c++      force the compiler; default prefers clang++ (it reports tag mismatches)
+  --compiler NAME     REJECTED: the site compiler is MSVC cl in the docker image (the product toolchain);
+                    host compilers are no longer substitutable, and clang++ only runs the tag ANALYSIS
   --no-tag-check      skip the BUG-007 struct/class diagnostic scan
   --self-test         prove this checker can fail (scratch copy; repo untouched)
   -h, --help          this text
@@ -70,36 +74,36 @@ done
 # cannot resolve windows.h does not report a STALE SYMBOL, it reports itself - so candidates are
 # tried against a real Win32 TU, not merely `command -v`. Note ${CXX} here is `g++`, which cannot:
 # the same trap run-all-tests.nix:129-131 documents. Preference is a capability test, not a guess.
-win32_ok() {
-  printf '#include <windows.h>\nint main(void){ return 0; }\n' > "$TMP/cap.c"
-  "$1" -std=c++98 -fsyntax-only "$TMP/cap.c" -o /dev/null >/dev/null 2>&1
-}
+CHECK_SH="$(pwd)/tools/msvc-cl-check.sh"
 
 pick_compiler() {
+  # The site compiler is the product's compiler, with no capability hunt: MSVC 2002 cl in $MSVC_IMAGE,
+  # reached through tools/msvc-cl-check.sh (/Zs ~ gcc -fsyntax-only). The previous chain
+  # (${CXX} -> i686-w64-mingw32-g++ -> clang++ -> g++ -> c++ -> cc) existed only because mingw was the sole
+  # Windows-targeting front end in the shell. cl IS a Windows compiler, so the requirement "must resolve
+  # windows.h and emit PE-relevant diagnostics" is satisfied by construction, and a fallback list that could
+  # silently land on host g++ was a way for the verdict to come from a toolchain the shipped binary never
+  # uses. --compiler is therefore retired rather than re-pointed: a forced host compiler is no longer a
+  # meaningful request.
   if [ -n "$CC_FORCED" ]; then
     # A forced compiler is a promise about WHICH toolchain produced the verdict. Silently
     # substituting a working one when the requested one is broken prints a green that the user
     # did not ask for - and hides that their toolchain cannot do the job at all.
-    command -v "$CC_FORCED" >/dev/null 2>&1 || { echo "SETUP ERROR: --compiler $CC_FORCED not found." >&2; exit 2; }
-    win32_ok "$CC_FORCED" || { echo "SETUP ERROR: --compiler $CC_FORCED cannot resolve the Win32 headers." >&2
-      echo "  Our sources include windows.h via JE.hpp, so this compiler cannot verify them." >&2
-      echo "  Not substituting another: the verdict must name the toolchain that ran." >&2
-      exit 2; }
-    printf '%s' "$CC_FORCED"; return 0
+    echo "SETUP ERROR: --compiler is retired. The site compiler is MSVC cl in the docker image - the" >&2
+    echo "  same toolchain that builds the product and the suites. A host compiler cannot be substituted" >&2
+    echo "  for a verdict about this codebase." >&2
+    exit 2
   fi
-  # ${CXX} is FIRST only because the user set it; on this host it is g++, which cannot resolve
-  # windows.h, and the capability test below rejects it (run-all-tests.nix:129-131 notes the same).
-  for c in "${CXX:-}" i686-w64-mingw32-g++ clang++ g++ c++ cc; do
-    [ -n "$c" ] || continue
-    command -v "$c" >/dev/null 2>&1 || continue
-    if win32_ok "$c"; then printf '%s' "$c"; return 0; fi
-  done
-  return 1
+  [ -n "${MSVC_IMAGE:-}" ] || { echo "SETUP ERROR: MSVC_IMAGE not set - run inside the devenv shell." >&2
+    echo "  That makes the check UNVERIFIABLE, not verified - refusing to report a pass." >&2; exit 2; }
+  [ -f "$CHECK_SH" ] || { echo "SETUP ERROR: $CHECK_SH missing." >&2; exit 2; }
+  printf 'cl-docker'
+  return 0
 }
 
 CC="$(pick_compiler)" || { echo "SETUP ERROR: no compiler here can resolve the Win32 headers." >&2
   echo "  That makes the check UNVERIFIABLE, not verified - refusing to report a pass." >&2; exit 2; }
-CC_VER="$("$CC" --version 2>/dev/null | head -1)"
+CC_VER="MSVC 2002 cl (docker \$MSVC_IMAGE) via tools/msvc-cl-check.sh /Zs"
 
 INC="-I$ROOT/src"
 for m in "$ROOT"/modules/*/src; do [ -d "$m" ] && INC="$INC -I$m"; done
@@ -163,7 +167,7 @@ probe_compile() {
     echo '}'
   } > "$TMP/probe.cpp"
   # NOT piped: the exit status of a pipe is the last command's, which is how a green is faked.
-  "$CC" $CFLAGS $INC -I"$ROOT" "$TMP/probe.cpp" -o /dev/null > "$log" 2>&1
+  bash "$CHECK_SH" "$TMP/probe.cpp" > "$log" 2>&1
   printf '%s' "$?"
 }
 
@@ -171,8 +175,8 @@ compile_site() {
   local f="$1" log="$2"
   case "$f" in
     *.hpp|*.h) printf '#include "%s"\n' "${f#$ROOT/}" > "$TMP/site.cpp"
-               "$CC" $CFLAGS $INC -I"$ROOT" "$TMP/site.cpp" -o /dev/null > "$log" 2>&1 ;;
-    *)         "$CC" $CFLAGS $INC -I"$ROOT" "$f" -o /dev/null > "$log" 2>&1 ;;
+               bash "$CHECK_SH" "$TMP/site.cpp" > "$log" 2>&1 ;;
+    *)         bash "$CHECK_SH" "$f" > "$log" 2>&1 ;;
   esac
   if [ "$?" -eq 0 ]; then printf 'ok'; return 0; fi
   # A missing platform header is the TOOLCHAIN failing, not the CODE. Calling that a stale
@@ -196,9 +200,13 @@ tag_capability() {
   # opposite capability, so they are resolved separately. Reporting "tag-blind" when a capable
   # compiler is sitting on the PATH would be a false limit.
   local tc="" c
-  for c in clang++ "$CC"; do
+  # Host ANALYZERS only - neither of these builds anything we ship, and saying so matters: cl /Zs does not
+  # warn on a struct/class tag mismatch, so the one check that needs a second opinion takes it from a
+  # linter-grade front end and labels it. This is the same category as cppcheck and clang-tidy, not a
+  # second toolchain.
+  for c in clang++ g++; do
     command -v "$c" >/dev/null 2>&1 || continue
-    "$c" -std=c++98 -Wall -fsyntax-only "$TMP/tag.cpp" -o /dev/null > "$TMP/tag.log" 2>&1
+    "$c" -std=c++98 -Wall -fsyntax-only "$TMP/tag.cpp" -o /dev/null > "$TMP/tag.log" 2>&1  # analysis only
     if grep -qi "mismatched-tags\|defined as a class here\|previously declared as a struct" "$TMP/tag.log"; then
       tc="$c"; break
     fi
@@ -206,7 +214,7 @@ tag_capability() {
   if [ -n "$tc" ]; then
     TAG_CC="$tc"
     if [ "$tc" != "$CC" ]; then
-      echo "  tag-check  : DETECTS BUG-007 via $tc (the site compiler $CC cannot emit this warning)"
+      echo "  tag-check  : DETECTS BUG-007 via host analyzer $tc (ANALYSIS ONLY - the site compiler cl /Zs does not warn on tag mismatches)"
     else
       echo "  tag-check  : DETECTS BUG-007 (struct/class tag mismatch)"
     fi
@@ -267,7 +275,13 @@ expect() {
 self_test() {
   BAD=0
   local scratch name
-  scratch="$(mktemp -d)"
+  # Scratch lives INSIDE the tree, deliberately: the checker compiles in a docker container whose only mount
+  # is the repo root, so a /tmp scratch made every scenario "fail" for a reason that had nothing to do with
+  # detection - the container could not see the sources. Unverifiable sites still exit non-zero and still
+  # print a site list, which is exactly how a falsification test passes while proving nothing. Same rule as
+  # the TMP change above: an instrument that cannot see its own inputs reports about the code, not itself.
+  scratch="$(pwd)/build/verify-symbol-selftest"
+  rm -rf "$scratch"; mkdir -p "$scratch"
   echo "== self-test (falsification; scratch copy, repo untouched) =="
   echo "  root under test: $ROOT"
 

@@ -28,7 +28,7 @@ Our sources are Win32 — nearly every TU reaches `windows.h` through `JE.hpp`. 
 against a real Win32 TU, not `command -v`, because a compiler that cannot resolve platform headers
 reports **itself**, not the code. Two consequences worth knowing:
 
-- `${CXX}` on this host is `g++`, which cannot; `i686-w64-mingw32-g++` can. The same trap is noted
+- `${CXX}` on a host is `g++`, which cannot resolve the Win32 headers. The answer used to be `i686-w64-mingw32-g++`; **it is now MSVC 2002 cl in `$MSVC_IMAGE`** (see below), because cl is the compiler that builds the product. The same trap is noted
   in `devenv/scripts/run-all-tests.nix:129-131`.
 - `--compiler X` does **not** fall back when X is broken. A forced compiler is a promise about which
   toolchain produced the verdict; silently substituting another prints a green nobody asked for.
@@ -41,7 +41,7 @@ mismatched forward declaration is a real ABI bug here. Tested directly:
 | Compiler | Verdict |
 |---|---|
 | `clang++` | **detects it** — `-Wmismatched-tags`: *"valid, but may result in linker errors under the Microsoft C++ ABI"* |
-| `g++` / `i686-w64-mingw32-g++` | **blind** — compiles the mismatch silently, exit 0 |
+| `g++` | **blind** — compiles the mismatch silently, exit 0. (The row used to read `g++ / i686-w64-mingw32-g++`; the cross compiler is retired, and cl in `$MSVC_IMAGE` now does this job because it is the product's compiler.) |
 
 So the tool resolves the site compiler (Win32-capable) and the tag check (diagnostic-capable)
 **separately**, and prints which compiler produced each. If neither on a host can see it, the tool

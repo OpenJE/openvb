@@ -21,20 +21,25 @@ SRCS=$( { grep -E "$ROW_GREP" "$TABLE"; grep -E '^ *"SpawnMove\|' "$TABLE"; } | 
 SRCS=${SRCS//\$SRC/$SRC}
 SRCS=${SRCS//\$JE/$JE}
 
-# compiler: same binary the suite table uses (devenv/scripts/run-all-tests.nix: mingw32 cross).
-if [ -n "${MINGW_CXX:-}" ]; then CXX="$MINGW_CXX"; elif command -v i686-w64-mingw32-g++ >/dev/null; then
-  CXX=i686-w64-mingw32-g++
-else
-  CXX=$(ls /nix/store/*/bin/i686-w64-mingw32-g++ 2>/dev/null | head -1)
-fi
-if ! { [ -n "$CXX" ] && { [ -x "$CXX" ] || command -v "$CXX" >/dev/null 2>&1; }; }; then
-  echo "sim-driver-build FAIL: mingw g++ not resolvable (set MINGW_CXX)"; exit 1
-fi
+# Compiler: MSVC 2002 cl in the docker image - the same toolchain the product and the test suites now use
+# (tools/msvc-test-compile.sh). This was mingw g++ only because the suite harness was, and the requirement
+# here was never "a cross compiler": the artifact has to be a Windows PE that runs under wine, and cl is
+# literally a Windows compiler, so that requirement is satisfied natively rather than by cross-compiling.
+CC_SH="tools/msvc-test-compile.sh"   # the script cd's to the repo toplevel, so this is relative to the tree root
+[ -x "$CC_SH" ] || [ -f "$CC_SH" ] || { echo "sim-driver-build FAIL: $CC_SH missing"; exit 1; }
+[ -n "${MSVC_IMAGE:-}" ] || { echo "sim-driver-build FAIL: MSVC_IMAGE not set - run inside the devenv shell"; exit 1; }
 
 # the merged rows carry everything the T-030 seam's acceptance test links; no extra srcs needed.
 EXTRA=""
 
 echo "[sim-driver-build] sources generated from PathManager row ($(echo "$SRCS" | wc -w) files) + $EXTRA"
-"$CXX" -std=c++98 -static -w -Isrc -Imodules/openje/src -Imodules/tracing/src \
-    tools/sim-driver.cpp $SRCS $EXTRA -o tools/sim-driver.exe
-echo "[sim-driver-build] OK -> tools/sim-driver.exe"
+# `|| rc=$?` is load-bearing under `set -euo pipefail` at the top of this file: a bare call would abort the
+# script on cl's nonzero status before the artifact check could say WHY it failed.
+rc=0
+bash "$CC_SH" tools/sim-driver.exe tools/sim-driver.cpp $SRCS $EXTRA || rc=$?
+# Verdict comes from the artifact, not from a line count in the log: the gcc version of this script decided
+# success by grepping for 6 occurrences of "Error", which passes on a build that produced no exe at all.
+if [ "$rc" -ne 0 ] || [ ! -f tools/sim-driver.exe ]; then
+  echo "sim-driver-build FAIL: cl rc=$rc, exe $([ -f tools/sim-driver.exe ] && echo present || echo ABSENT)"; exit 1
+fi
+echo "[sim-driver-build] OK -> tools/sim-driver.exe (MSVC cl)"
