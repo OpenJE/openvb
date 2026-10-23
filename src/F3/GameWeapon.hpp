@@ -189,6 +189,33 @@ namespace F3 {
 	// (+0x3EC/+0x3F4 = +8, +0x3B8/+0x3C4 = +12, +0x424/+0x428 = +4) - the asymmetry is WHY two
 	// port bodies were correct. Not chased (theirs/era-open): callee semantics of meth_0x46d700 /
 	// meth_0x46d7f0 beyond firing.
+	// RECORD LAYOUT + APPEND MECHANICS (certified by verifier NiceTiger's whole-body census of
+	// sub_40C970/sub_40B510/sub_40A980, cross-checked on my frames): append COPIES - element =
+	// operator new(0x70) @0x40b531, header cells 0/4 = owner/delta, payload via copy-ctor
+	// sub_40A980: 14 u32 +0x00..0x34, 4 bytes +0x38..0x3B, 3 u32 +0x3C..0x44, SSO string +0x48
+	// (cap 0xF, dst-init 0/0xF/byte seen @the ctor; via meth_0x401b20), trailing 3 bytes
+	// +0x64..0x66; then grow(this,1) sub_40AA40 + STL-style link @0x40c994-9c.
+	// RECORD-KIND CELL +0x40, ANCHORED ON BOTH FRAMES INDEPENDENTLY (the verifier's derivation;
+	// my dumps agree): creature record base 0x14, anim-glyph store 0x54; weapon base 0x10
+	// (local_78), glyph store 0x50 (var_38) - delta 0x40 on BOTH sides, inside the 3-u32 group.
+	// The whole 56..104 ladder writes record+0x40: name that cell the record kind in the port.
+	// SITE COUNTS (correction to MY sentence, accepted): sub_40A980 = one copy-ctor, FIVE call
+	// sites {0x40b564 append-path, 0x40c438, 0x40e243, 0x414ff7, 0x415060}, NOT "the only copy
+	// path" - that phrasing conflated role with use and would have scoped a census wrong.
+	// sub_40AA40 grow has 7 xrefs: the template is broader than the record list; "the list"
+	// scopes to sub_40C970's 3 sites only. 0x40c438/0x40e243 owners UNVERIFIED - next census
+	// rows on the verifier's seat.
+	// THE 62 LITERAL IS REAL (verified on my disasm): third function sub_414EF0 writes
+	// [local_38]=3Eh @0x415024 (adjacent [local_34]=248h @0x415019) immediately before its
+	// sub_40C970 append @0x41502f. Bound: write + adjacency + append ordering mine; the cell's
+	// identity as a +0x40-kind slot IN THAT FUNCTION is the verifier's reading (its frame base
+	// differs; their census matched it). Effect on (b): the dead-branch narrative strengthens -
+	// the weapon reader picked the +0x38 arm of a live 0x38/0x3E pair whose sibling is a plain
+	// immediate across the hall. NOT evidence the weapon reader can ever take 62: init still
+	// pins 56 there.
+	// PORT SHAPE (all prereqs now certified): record struct 0x70 with named cells (kind @+0x40),
+	// shared format-core reader, per-side (a) gate + (c) derivation legs, append via ported
+	// copy-semantics list stand-in, tested twice.
 	// LAYOUT LAW (TrueRaven, committed as layout law 20+): +0x6F4 (creature, base:false complete
 	// object) and +0x168 (Entity, base:TRUE virtual-base subobject) are TWO COORDINATE SYSTEMS,
 	// not one field in two views - 0x6F4-0x168=0x58C is valid arithmetic with NO semantics and
