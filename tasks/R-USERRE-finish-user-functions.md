@@ -2286,3 +2286,16 @@ conclusion you already agree with.
 5. Declared collapse beats silent mapping; a port does not earn credit for reproducing a crash.
 6. Check linkage before believing a runtime verdict - silence is not a sample.
 7. A database listing is an excerpt: empty listing is not proof of absence, and `length` fields confess truncation.
+8. **Prevention and detection are different instruments, and a good detection record is not a reason to skip
+   the front door.** Batch C proved detection works (the `-std=c++98` gate catches NSDMI, the obj-in-log check
+   catches build-blind TUs, a control catches a false zero) - and every one of those fired *after* a draft
+   existed. `STYLE.md:6` states the C++98 constraint in six lines, unconsulted. So: read `STYLE.md` section 0
+   before the first code draft of a session, and run the harness's own command before declaring green. Cost of
+   the prevention is ~zero; the cost of skipping it is a red line somebody else debugs. Named by NiceTiger after
+   they caught themselves on this and I got the naming of it; the correction to *my* framing is that
+   "structure beat diligence" was overstated - structure backstopped a lapse diligence would have prevented.
+9. **Name the owner of every number you send or cite**, including inside one sentence: an unowned figure invites
+   a bad join (my `esp+0x14`/`local_78` was one function's frame paired with another's local, which built a test
+   that could not come out right). Field errors are catchable by re-reading one row; **join errors survive every
+   field being correct.** Same rule applies to people and to state: never state, plan around, or escalate a
+   blocker inferred from another agent's context - ask the seat, or act on the artifact.
