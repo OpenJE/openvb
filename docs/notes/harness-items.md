@@ -1850,3 +1850,40 @@ defect, overstating remaining work.
 **Standing form for any remaining-work claim in this repo**: state the property the query actually tests, and
 triage before sizing. `grep` for an EA answers "is this address mentioned"; answering "is this behavior
 implemented" needs the IDB's function extents and a name-to-symbol check, which is what FastNova ran.
+
+### 76c. THE GATE'S OWN BINARY HAS A VINTAGE - a run-all count describes the suite set baked into the nix store
+path at shell entry, not the tree at HEAD (FastNova, GameWeapon row)
+
+**The event**: FastNova landed three build lines so a new suite became buildable; the suite passes standalone
+(18 asserts, 0 failures; `GameWeapon.cpp.obj` confirmed compiling into `target.F3`) - and `run-all-tests` still
+reported **13**, not 14. Not a failure: the runner in `PATH` is a nix store path content-hashed from the
+**pre-edit** file. Verified the only way that counts, by grepping the installed script - `ScriptNatives` 1 hit,
+`GameWeapon` 0 hits. An edit cannot change the binary already in use; a **devenv re-eval/reload** is required
+before any new row executes.
+
+**The law**: every "N pass, 0 fail" is a claim about the suite set **as of shell entry**, not as of HEAD. A floor
+or count needs three things attached or it misleads in BOTH directions:
+1. the row's **registration commit**,
+2. the **reload status** (installed == tree, or not),
+3. a **standalone reproduction command** for the row - the only way a new suite can be evidenced in a session
+   that predates its registration.
+
+**Mine to own, because the author's instance belongs in the item**: I bumped this batch's floors
+196 -> 217 -> 237 -> 243, watched the gate apply the INSTALLED floor (`[243 asserts >= 196]`), and saw its own
+`WARNING the installed run-all-tests is STALE` line - then wrote "expected, not a defect" in the commit messages
+while continuing to quote the count. Half right; the other half is the actual failure. The warning was not noise,
+it was the load-bearing fact, and I had already recorded the number proving my own bump was inert in-session. The
+miss was not seeing the stale flag - it was **reporting a gate I knew was inert as if it were a result.**
+
+**The fourth layer of one sentence.** 76 was build-list-vs-disk; 76a a citation's role vs its token; 76b
+token-presence vs behavior-presence; this is gate-binary vs tree. General form all four share: **a count answers
+the question its predicate actually tests, which is almost never the question its label states.**
+
+**Sharpest consequence, stated because it cuts both ways**: a 13/13 today can be read as "the GameWeapon row is
+missing - regression." A number without its set manufactures false reds as confidently as false greens.
+
+**Postscript, same law one level closer to home.** When this item was first committed, a follow-up `grep -c`
+for the string `76c` reported 1 hit and I read that as "landed." The match was an unrelated DXVK hash
+(`76c44ce4...`) in an earlier item. The item had not landed at all: an unanchored substring check on prose is the
+same defect as an unanchored citation, and the fix is the same - test the property with an anchored pattern
+(`^## 76c`), not the token's existence anywhere in the file.

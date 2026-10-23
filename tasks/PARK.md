@@ -20,6 +20,15 @@ Rules (see tasks/README.md § Lane contract): every closed row names a PARK succ
 
 | R-KEEPER | **Standing seat: RedQuartz = rig keeper.** Board entry point `tools/rig-g1-run.sh` (cfeb8df): idempotent, self-documenting (five walls named in header), warm-reuse/cold-bootstrap both proven (5th replication c815809), run-identity ledger appends UTC+HEAD+exe-sha256 to g1-runs.log (dcbb28e CODE + 69a0e73 PAPER — board-exe can move mid-window, proven), item-59 capture gate IMPLEMENTED in the runner (dcbb28e; histogram-poll SCREENSHOT, honest WARN on pre-occlusion). Contract: lanes call the script; never kill :96/prefix blind (pid file + environ gates); copy wanted PNGs before next run. Queue: item-5 sink-proofs, then slice-2 acceptance | **RedQuartz, holding** |
 
+**GATE-VINTAGE CAVEAT, binding on every count in this file (harness 76c, FastNova)**: `run-all-tests` in `PATH`
+is a nix store path baked from an earlier `devenv/scripts/run-all-tests.nix`, so an "N pass, 0 fail" claim
+describes the suite set **as of shell entry**, not as of HEAD. A floor or suite count is only meaningful with
+(a) the row's registration commit, (b) reload status, (c) a standalone reproduction command. Two live
+consequences: this batch's floor bumps (196 -> 217 -> 237 -> 243) were INERT in-session - the installed payload
+kept applying the old floor, and the gate said so on its own WARNING line, which the wave read as noise rather
+than as the load-bearing fact; and GameWeapon's 18-assert suite passes standalone while run-all still reports 13,
+so a 13/13 today can be misread as "a row is missing = regression."
+
 ## READY NOW (no deps, no slot conflicts)
 | R-MVE-A | Close the BIKi-v1 chunk table + trailing-quad roles + fixture-build recipe: run in-tree radinfo/smkinfo/binkplay on BISlogo/IPlogo (.mve) — one seating, all three open cells | **GATED on a wine-capable runner** — M-001's boot lane may mint it incidentally; until then this row is honest paper |
 | R-CODEC | RadTools SDK audit + Bink 1.5u container spec + MSS-vs-dsound settle (task file R-CODEC-radtools-bink-mss.md; everything in-tree: user drop, shipped dlls, seed notes tools/scripts/bink15_facts.md) | **SwiftMoon** (re-seated after their honest decline — task file was already theirs by that name) |
