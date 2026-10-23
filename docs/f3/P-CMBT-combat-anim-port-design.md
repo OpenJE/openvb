@@ -180,6 +180,27 @@ DEFERRED-NOTES' deviations section via the T-079 batch lane (LIST, per lane law)
 **Risk named:** multi-attacker same-frame interleave = block-order question (two inbox walks
 compete per target pump order) — named in §7, no invention.
 
+## Step 2 open item — DO NOT unify the HP clamp with the death test (FastNova, `GameActionAttack` shard)
+
+`0x4629C0` has **no lower clamp**. Raw: `mov edx,[esp+4]; mov eax,[ecx+20h]; cmp edx,eax; mov [ecx+24h],edx;
+jle ret; mov [ecx+24h],eax` — i.e. `min(new, max)` with the **store before the test** and no floor, so shipped
+legitimately holds **negative HP**. This corroborates what batch B already asserted (HpSetterChain's
+"upper cap ONLY, no floor", 0x4629ce-era) and it contradicts a comment FastNova had written in their own
+header ("cur in [0..max]") — corrected in-file, because the claim was plausible, inherited, and false.
+
+**The trap, and it is a sequencing trap not a value trap**: the port currently floors at 0, and the port's
+death test is `statCur == 0`. Shipped's flip at `0x45c5b2` is not a value comparison at all — it is
+`call [edx+0x50]`, a **state predicate** (`test al,al; je 0x45c62b`). So "adopt shipped's clamp first, then
+fix the death test later" is the unsafe order: between the two edits, victims with HP < 0 would satisfy
+neither `statCur == 0` nor shipped's state predicate, and the port would produce **over-kill victims that
+never die** — a wrong HP value traded for a silently immortal enemy, which is worse because it is invisible
+to the digest.
+
+Order required: re-derive the death trigger from the state predicate FIRST, prove it against the shipped
+pair (T-068 `hp=` records are where a digest will or will not show negative HP), and only then relax the
+clamp to match. And a clamp change without a paired death-test change should be treated as a red flag on the
+diff itself, not a partial step toward fidelity.
+
 ## Step 3 — the `+0x171` busy mark (cheap, pins the world-step coupling)
 
 Shipped: effect fire sites store `movb $1,[ent+0x171]` (0x54c631/0x55b082/0x54c429); the WORLD
