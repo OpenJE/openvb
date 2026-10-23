@@ -17,16 +17,26 @@ WINE=$(command -v wine || ls /nix/store/*/bin/wine 2>/dev/null | head -1)
 run() { "$WINE" tools/sim-driver.exe "$1" >/dev/null 2>&1; }
 
 # 1) determinism: same script twice -> byte-identical digests (diff-digest.sh exit 0)
+# G-FLAKY (b) root cause: a driver run's exit code was discarded and its digest file
+# persisted across invocations, so a silently-failed wine boot graded the next leg
+# against the PREVIOUS invocation's digest (symptom: different legs dediding per run).
+# Every run is now graded before anything reads its digest, and the digests are rm'd
+# (same rule as the sd-pos.rm line: never grade a stale digest if the wineserver lags).
+rm -f /tmp/sd-a.digest /tmp/sd-b.digest
 sed 's#/tmp/sd-demo.digest#/tmp/sd-a.digest#' tools/scripts/host-demo.txt > /tmp/sd-a.txt
 sed 's#/tmp/sd-demo.digest#/tmp/sd-b.digest#' tools/scripts/host-demo.txt > /tmp/sd-b.txt
 run /tmp/sd-a.txt
+check "driver run sd-a (determinism A) exits 0" "$?" "0"
 run /tmp/sd-b.txt
+check "driver run sd-b (determinism B) exits 0" "$?" "0"
 ./tools/diff-digest.sh /tmp/sd-a.digest /tmp/sd-b.digest >/dev/null 2>&1
 check "same script twice -> identical digests (want 0)" "$?" "0"
 
 # 2) mutation reaches the digest: bump flatDamageBonus -> divergence that NAMES a field
+rm -f /tmp/sd-c.digest  # stale sd-c poisoned the mutant leg (G-FLAKY (b)); never grade old bytes
 sed 's/attack actor victim 2 2 0 0/attack actor victim 2 2 0 9/; s#/tmp/sd-demo.digest#/tmp/sd-c.digest#' tools/scripts/host-demo.txt > /tmp/sd-c.txt
 run /tmp/sd-c.txt
+check "driver run sd-c (mutant) exits 0" "$?" "0"
 ./tools/diff-digest.sh /tmp/sd-a.digest /tmp/sd-c.digest >/tmp/sd-diff.txt 2>&1
 rc=$?
 [ $rc -eq 1 ] || true
@@ -56,9 +66,12 @@ check "draws=NA present" "$?" "0"
 # 6b) D-3 lifecycle boundary PRINTED, not claimed as coverage: target is a raw pointer in
 # our port; the shipped record stores a ref KEY re-resolved every use (0x54BE10), so
 # "target despawned mid-attack" is UNREPRESENTABLE here, not merely untested.
+# both D-3 legs go through check: an ungraded grep/case leg is exactly the silent-failure
+# class G-FLAKY named - a nonzero tail with no line that says FAIL (see below).
 "$WINE" tools/sim-driver.exe /tmp/sd-a.txt 2>&1 >/dev/null | grep -q "GameStateLoop"
+check "D-3 boundary line on stderr (GameStateLoop branch)" "$?" "0"
 d3=$(grep -c "unrepresentable\|ref-key\|despawn" tools/sim-driver.cpp)
-[ "$d3" -ge 1 ] && echo "D-3 boundary documented in driver source" || echo "D-3 MISSING"
+[ "$d3" -ge 1 ]; check "D-3 boundary documented in driver source (unrepresentable/ref-key/despawn)" "$?" "0"
 
 # 7) reach the round pump: some frame shows victim hp below max (a single-shive melee lands once)
 grep -Eq 'hp=[0-9]+/30' /tmp/sd-a.digest || true

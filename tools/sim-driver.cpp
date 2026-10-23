@@ -48,6 +48,7 @@
 // (renamed by T-035 after this driver found the collision; both headers now co-TU —
 // tools/odr-demo.cpp).
 #include "F3/CombatManager.hpp"
+#include "F3/CombatMath.hpp"        // F3::SeedShippedRand (test-only LCG-state seam)
 #include "F3/SimDigest.hpp"
 #include "JE/PathManager.hpp"
 
@@ -346,6 +347,23 @@ int main( int argc, char** argv ) {
 				F3::SpawnedEntity* e = findEnt( who );
 				if ( e ) { g_cm.AddToTurns( e ); }
 			}
+		} else if ( strcmp( verb, "seed" ) == 0 ) {
+			// G-FLAKY (b) root cause: the shipped dice draw sub_48CCC0 lazily seeds its LCG
+			// from the WALL CLOCK IN SECONDS on the first draw (0x48cccb call __time32(0);
+			// CombatMath.cpp ShippedRand -> time(NULL)). An unseeded scripted boot's to-hit
+			// rolls therefore depend on which second the run happens in: same-wallclock runs
+			// are byte-identical (why the suite passed) while a second-flip reroll lands or
+			// misses randomly across invocations (suite saw victim hp 28 vs no land at all,
+			// ~1-in-10). Shipped fidelity is NOT changed: unpinned boots still lazy-seed from
+			// time(NULL); this verb is a HARNESS INPUT, same category as `run`'s stepMs - the
+			// harness owns every unsimulated clock, and time is one. SeedShippedRand is the
+			// documented test-only reseed mirroring SetStartupTime (0x48CCA0: state, flag=1).
+			unsigned int s = 0;
+			if ( sscanf( line, " seed %u", &s ) != 1 ) {
+				fprintf( stderr, "SIM-DRIVER FAIL line %d: seed needs a state operand\n", lineno );
+				rc = 1; break;
+			}
+			F3::SeedShippedRand( s );
 		} else if ( strcmp( verb, "run" ) == 0 ) {
 			int frames = 0, stepMs = 16;
 			if ( sscanf( line, " run %d %d", &frames, &stepMs ) < 1 || frames <= 0 || stepMs <= 0 ) {

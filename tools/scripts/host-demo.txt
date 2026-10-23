@@ -2,6 +2,10 @@
 # one wait, 400 simulated frames of both pumps. Digest on: same script + same everything
 # must produce byte-identical digests (T-026 acceptance reused).
 digest /tmp/sd-demo.digest
+# seed pin: the shipped dice draw is wall-clock-seeded when unpinned (sub_48CCC0 ->
+# time(NULL)), which makes an unpinned replay vary across invocations (G-FLAKY (b)).
+# The harness pins it like it pins stepMs - production boots stay lazy-seeded.
+seed 12345
 spawn actor   0 20.0 0.0 0.0 45
 spawn victim  1 20.4 0.0 0.0 30
 melee actor melee 100
