@@ -36,6 +36,7 @@ Usage:
 import json
 import re
 import subprocess
+import subprocess
 import sys
 from pathlib import Path
 
@@ -162,15 +163,25 @@ def main(argv):
     listed = listed_sources()
     compiled_names = listed  # same set: being named by a build list is what "compiled" means
     tus = all_tus()
+    # basenames are the join key both build lists actually use; the same basename in two dirs
+    # would silently merge two files, so it is detected rather than assumed away.
+    compiled_tus = {t for t in tus if t.name in compiled_names}
+    dup_basenames = {t.name for t in tus if sum(1 for u in tus if u.name == t.name) > 1}
 
-    orphans, parse_blind = [], []
+    parse_blind, listed_unparsed = [], []
     provided = {}                    # (qualified_name, sig) -> {files}
     all_defs = {}
     for t in tus:
         defs, _ = definitions_of(t)
         all_defs[t] = defs
+        # PARSE-BLIND IS NOT AN ORPHAN CLASS. A LISTED TU whose defs do not parse is a
+        # statement about the parser, not about the build. Collecting it unconditionally is how
+        # three COMPILED files (main.cpp, CommandRegistry.cpp, ModelCache.cpp - each named in
+        # BOTH build lists) were counted as orphans, and why 43 listed + 11 orphans came to 54
+        # against 50 TUs on disk. Reported separately below so the blind spot stays visible
+        # without polluting the census.
         if not defs:
-            parse_blind.append(t)
+            (listed_unparsed if t.name in compiled_names else parse_blind).append(t)
         if t.name in compiled_names:
             for d in defs:
                 provided.setdefault(d, set()).add(t.name)
@@ -199,7 +210,8 @@ def main(argv):
             twins.append((t, sorted(f"{n}({g})" for n, g in twin)[:3]))
             continue
         if not uniq:
-            dead.append((t, sorted(n for n, _ in dup)[:4], len(defs), len(dup)))
+            dead.append((t, sorted(f'{a}({b})' for a, b in dup)[:3], len(defs),
+                             'DUPLICATE: signature also defined by a built TU'))
             continue
         refs = set()
         for c in tus:
@@ -213,11 +225,34 @@ def main(argv):
                     if re.search(r"\b" + qual + r"\s*\(", txt) or \
                        (u.count("::") == 0 and re.search(r"\b" + re.escape(leaf) + r"\s*\(", txt)):
                         refs.add((u, c.name))
-        (latent if refs else dead).append(
-            (t, sorted(uniq)[:4], len(uniq), sorted(refs)[:4]))
+        if refs:
+            latent.append((t, sorted(u for u, _g in uniq)[:4], len(uniq), sorted(refs)[:4]))
+        else:
+            # UNIQUE definitions that nothing in the build references. GameWeapon.cpp is this
+            # case, and an earlier print line labelled it "dup-with-compiled" using the same
+            # tuple slot as the real duplicates - a label asserting the OPPOSITE of its own
+            # data, which is how a correct bucket became a wrong ruling: "delete an active
+            # shard mid-wave". Reason strings are per-row now, so the label cannot drift.
+            dead.append((t, sorted(f'{u}()' for u, _g in uniq)[:3], len(uniq),
+                         'UNREFERENCED: unique defs, no reference from any built TU'))
 
     orphans = [x[0] for x in dead] + [x[0] for x in latent] + [x[0] for x in twins] \
             + list(parse_blind)
+    # OUTER IDENTITY. The disjoint-partition check below cannot do this: a partition of the
+    # WRONG set satisfies disjointness happily - which is exactly how today's 11 passed it while
+    # containing three built files. So: every on-disk TU is listed XOR orphan.
+    disk = set(tus)
+    both = compiled_tus & set(orphans)
+    unaccounted = disk - compiled_tus - set(orphans)
+    if both or unaccounted or len(orphans) != len(set(orphans)):
+        print(f"FATAL: outer identity violated: on-disk={len(disk)} listed={len(compiled_tus)}"
+              f" orphans={len(orphans)} (distinct={len(set(orphans))})")
+        if both:
+            print(f"  listed AND orphan (parser/census bug): {sorted(x.name for x in both)}")
+        if unaccounted:
+            print(f"  on-disk, unlisted, unclassified: {sorted(x.name for x in unaccounted)}")
+        print("  Refusing the verdict rather than printing a count that does not add up.")
+        return 2
     # A TU may legitimately sit in parse_blind AND another bucket only if the classes leak;
     # a count that is a sum of overlaps is not a set, so this is checked, not assumed.
     if len(orphans) != len(set(orphans)):
@@ -250,6 +285,16 @@ def main(argv):
     print(f"  sources listed   : {len(compiled_names)} basenames")
     print(f"  TUs on disk      : {len(tus)}  (src/** + modules/openje/src/**)")
     print(f"  orphans          : {len(orphans)}")
+    print(f"  identity         : listed {len(compiled_tus)} + orphans {len(orphans)}"
+          f" == on-disk {len(disk)} ->"
+          f" {'OK' if len(compiled_tus) + len(orphans) == len(disk) else 'BROKEN'}")
+    if listed_unparsed:
+        print(f"  listed but 0 defs parsed (PARSER BLIND SPOT, NOT orphans):"
+              f" {len(listed_unparsed)}")
+        for t in listed_unparsed:
+            print(f"    {rel(t)}")
+    if dup_basenames:
+        print(f"  WARNING: basename join-key collisions: {sorted(dup_basenames)}")
     print()
     print(f"  LATENT LNK2019 (unique def referenced by a COMPILED TU) : {len(latent)}")
     for t, uniq, n, refs in latent:
@@ -263,10 +308,34 @@ def main(argv):
     for t in parse_blind:
         print(f"    {rel(t)}   <- may be genuinely definition-free (registry tables, main())")
         print("              or a parser blind spot; NEVER treat as 'no symbols here'")
+    # IN-FLIGHT SIGNAL. "UNREFERENCED + UNLISTED" is also the exact fingerprint of a shard
+    # another seat is mid-writing: GameWeapon.cpp showed up that way while its consumer was
+    # still unwritten, and a reader acting on "delete-or-absorb" would have deleted an active
+    # shard mid-wave. git status gives the distinction for free, so the row is annotated rather
+    # than left for a human to go and check.
+    untracked = set()
+    git_ok = False
+    try:
+        out = subprocess.run(["git", "status", "--porcelain", "-uall"], cwd=str(ROOT),
+                             capture_output=True, text=True, timeout=30).stdout
+        untracked = {ln.split(" ", 1)[1].strip() for ln in out.splitlines()
+                     if ln.startswith("??") and len(ln) > 3}
+        git_ok = True
+    except Exception as exc:                      # a missing git must not fake a clean tree
+        print(f"  WARNING: git status unavailable ({exc}); IN-FLIGHT column is UNKNOWN, not 'no'"
+              " - do not read the delete-or-absorb list as safe to act on.")
+    # UNKNOWN must render distinctly: a git failure means the in-flight column
+    # was never computed, and "no" would read as "safe to delete".
+    state = None if git_ok else "UNKNOWN (git status unavailable)"
     print(f"  DEAD WEIGHT / unreferenced (delete-or-absorb PARK list)  : {len(dead)}")
+    print("     (in-flight = untracked in git: do NOT delete, its consumer may be mid-write)")
     for row in dead:
         t = row[0]
-        print(f"    {rel(t)}  ({row[2]} defs, dup-with-compiled={row[1][:2] if row[1] else ''})")
+        flight = (f"in-flight={state}" if state else
+                  f"in-flight={'YES' if rel(t) in untracked else 'no'}")
+        print(f"    {rel(t)}  ({row[2]} defs) {row[3]}  [{flight}]")
+        for ex in row[1]:
+            print(f"        {ex}")
     print()
     ok = not latent
     print("VERDICT:", "PASS - the image is not lying about its linkability" if ok
