@@ -49,6 +49,12 @@ dependencies
 !.pi/skills/
 !.pi/mcp.json
 
+# GLLA runtime state: pid/instance owner locks, live goal jsonl, update scratch.
+# Machine-local by design - committing it makes another host inherit (and fight)
+# this machine's ownership claims. Durable findings belong in docs/f3, discoveries/,
+# and artifacts/ledgers instead.
+.pi-glla/
+
 # Engram memory: .engram/config.json (project identity) is tracked; the exported
 # chunks are memory payloads that would be permanent once committed.
 .engram/chunks/
