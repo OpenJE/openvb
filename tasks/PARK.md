@@ -67,12 +67,11 @@ They are THREE eras, and a suite-green file absent from the image means the prod
    on interface work and P-CMBT step 6.
    is likely unbuildable in the product.** Substantive gap, not plumbing; bears on interface work and P-CMBT
    step 6.
-3. **`Display.cpp` - RULING SETTLED by FastNova: delete or absorb, do NOT add.** `main.cpp` (in target.F3)
 
 **SET IS NOW 8, not 7, and the two deltas mean different things:** `src/F3/GameWeapon.cpp` appeared after
 NiceTiger's sweep - that is **WildUnion's in-flight new TU awaiting FastNova's two build lines**, not a
 historical orphan. So the historical set stays {`Display.cpp`, `src/F3/GameActionMoveTo.cpp`, + 5 submodule}
-and the actionable ruling is unchanged: **the mover pair is one build ruling; Display is delete/absorb.**
+and the actionable rulings are: **the mover pair is ONE build ruling (still held, and it gates a seat); Display is genuinely OPEN** - FastNova's `862c9fb` signature-keyed sweep found ZERO true duplicate definitions, so my earlier "do NOT add (LNK2005)" framing died, and so did the "silent divergence" extension NiceTiger retracted. Only the verified ground survives: `main.cpp` never includes `Display.hpp`, so registering the TU adds a symbol nothing references. Delete vs register-as-dead is ops taste, not correctness.
 
 **Permanent gate landed and it classifies rather than counts:** `tools/build-orphan-check.py` - LATENT LNK2019
 (unique definition a *built* TU references) => exit 1; DEAD WEIGHT/duplicate => PARK list, exit 0. Today:
