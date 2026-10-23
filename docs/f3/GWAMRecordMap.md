@@ -26,7 +26,7 @@ esp+0x14; weapon esp+0x10). Copy-ctor = `sub_40A980` walk order.
 | 11   | +0x2C       | var_4C (0x40)     | u32   | r9 @0x40dd2d |
 | 12   | +0x30       | var_48 (0x44)     | u32   | r10 (next window; decompile v19) |
 | 13   | +0x34..+0x37| var_44 (0x48, printed size 1 - metal wins: lea+push 4 fills the whole u32 @0x40dd5d) | u32 | r11, UNCONDITIONAL (11th read; verifier's "gated" was her reading the stream-FAIL exit jz@0x40dd6f as a version gate - the version gate is cmp edi,1/jb @0x40dd9d/40dda4, AFTER this read) |
-| bytes| +0x38..+0x3B  | var_40,3F,3E,3D (0x4C..0x4F) | 4x u8 | +0x38=flag byte, UNCONDITIONAL store @0x40dda0 (a2!=0 chain, BEFORE the gate jb); +0x39=CLAIMED, +0x3A=v22, +0x3B=v23 - these three inside the version!=0 extension, survivors when gate closed (A2 90h-pair/B2 FCh-pair verified) |
+| bytes| +0x38..+0x3B  | creature var_40,3F,3E,3D (0x4C..0x4F); weapon local_40,3F,3E,3D (0x48..0x4B) | 4x u8 | +0x38 = NORMALIZED presence flag, stored 0/1 by a setnz chain - creature cmp bl @0x40dd93-a0, weapon test cl @0x414a91-99 (same semantics, different glyph) - UNCONDITIONAL, before the gate jb; NOT stream-verbatim, and the ctor copies the canonical value. +0x39=CLAIMED, +0x3A, +0x3B gated (version!=0), survivors when gate closed (A2 90h-pair/B2 FCh-pair verified) |
 | 15   | +0x3C       | var_3C (0x50)     | u32   | gated v24 = COUNTER (+3 in kind-3 consumer arms; 90h-pair verified) |
 | 16   | +0x40       | var_38 (0x54)     | u32   | anim ladder target + version>=2 v25 = KIND (creature 8Ch-pair, weapon 88h-pair verified) |
 | 17   | +0x44       | var_34 (0x58)     | u32   | version>=3 v26 |
@@ -49,6 +49,28 @@ var_6C low). Third display-vs-identity instance of the hour: frame-table SIZE
 fields are hints, not facts (var_44 prints size 1 and is filled 4; var_6C
 prints 8 and is filled 4-low-only) - lea+push size is the fact.
 
+## CREATURE-vs-WEAPON RENDER RECONCILIATION - FINAL PORT-BLOCKING LEG, CLOSED
+Both legs answerable from held dumps (no new reads needed; EAs in the tables):
+- CELL IDENTITY maps 1:1 on the base-relative axis (creature base var_78@0x14,
+  weapon base local_78@0x10; the 4-byte difference is the creature's extra
+  push ebp @0x40dbc2 - mechanism certified in the pair-diff): every row's
+  builder offset is identical on BOTH sides - r1 +0x04, r2 +0x08, step over
+  +0x0C/+0x10, r3 +0x14, ..., +0x34 u32, +0x38 normalized flag, gate after.
+- RENDERING differs in three independent ways, none of which is a metal fact:
+  (a) naming convention (var_XX in the creature, local_XX in the weapon, and
+  the weapon's own dump mixes BOTH families for different locals - within-
+  function convention-mix, the verifier's finding); (b) SIZE-field
+  fragmentation (creature prints char[4] and one char[8] aggregate; weapon
+  prints byte-fragment labels whose listed sizes disagree with the 4-byte
+  reads they annotate) - so table SIZES are hints on both sides, lea+push sizes
+  are facts (the hour's third display-vs-identity instance, now with both
+  functions as specimens); (c) branch glyphs for identical semantics
+  (cmp-against-bl vs test-after-mov for the +0x38 normalization).
+- CONSEQUENCE FOR THE PORT: a single builder function on the doc's axis;
+  per-side legs are exactly the two certified divergences (gate SOURCE
+  chunk+0xC vs record+0x30; type DERIVATION derived vs pinned-3) plus append
+  TARGET (weapon+0x40C vs owner+0x6F8, both containers per the trio). Nothing
+  else about the twins is function-specific.
 ## Metal facts (verifier raw-disasm 0x40dc01-0x40dd17 + my confirming window)
 COORDINATES - RULE, NOT ORIGIN (my previous commit's translation advice is
 RETRACTED: "subtract 4 from the verifier's numbers" presumed they had a single
