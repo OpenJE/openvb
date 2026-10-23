@@ -1,7 +1,8 @@
 ---
-status: in-progress
-assignee: SwiftMoon `01a16092` (PULLED per standing-order seat; R-PORT-Q successor stays queued behind
-P-CMBT steps 1-2, unaffected — this row is the boot-adjacent foreign-runtime lane, independent)
+status: delivered 2026-10-23 (splitseat persisted the deliverable page from these Notes:
+discoveries/2026-10-23-r-codec-foreign-runtime-deliverable.md — verdicts credited, unchanged in
+substance; open tails = per-frame bitstream (only for in-proc decoder reimpl), anchor-quad roles,
+.rht sound-name payloads, inline code-RIFF ~0x4c6e80)
 type: research (offline analysis of in-tree artifacts; discoveries/ DIRTY-until-checkpoint)
 depends: nothing — everything needed is now in the tree
 ---
