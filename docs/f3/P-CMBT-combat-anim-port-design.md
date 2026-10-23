@@ -210,8 +210,11 @@ setter, not a stray write:
   `mov [esi+1E0h],eax`, a **register** store. That is why no immediate 7 exists anywhere near this field:
   the value always arrives as an argument. The five `"Invalid state change"` strings this batch censused live
   in this function.
-- **State 7 is produced by `Entity::virt_meth_0x5509b0`**: at `0x550a38`, `push 7; mov ecx,esi; call
-  0x5507f0`. Sibling `Entity::virt_meth_0x550970` pushes 4, and both `net::critical_section::meth_0x551c80`
+- **State 7 is produced by `Entity::virt_meth_0x5509b0`**, byte-decoded and independently re-verified by
+  FastNova's PE reader: **`push 7` is at `0x550a35`**, `mov ecx,esi` at `0x550a37`, and the `e8 b3 fd ff ff`
+  call at **`0x550a38` resolves to `0x5507f0`**. (My first draft pinned the producer to `0x550a38`, which is
+  the *call*, not the push - and in a lane that keys cites on EAs, a reader grepping `6a 07` at `0x550a38`
+  finds a call opcode and concludes the producer does not exist. Off-by-three in the wrong direction.) Sibling `Entity::virt_meth_0x550970` pushes 4, and both `net::critical_section::meth_0x551c80`
   and `meth_0x5a9330` do `cmp [reg+1E0h],5 / jne / push 4` - a guarded 5 -> 4 transition. The field is
   written only through the validator, never ad hoc.
 - **The `== 7` query is its own accessor**: `Entity::virt_meth_0x549030` = `cmp [ecx+1E0h],7 / sete al /
