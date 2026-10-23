@@ -244,6 +244,26 @@ idle-arm transient makes this easy now: post-idle frame, q=0, inbox=1 ⇒ mark p
 **Risk:** the re-gate walk `0x54aa78` iterates via mbr_0x2ec..0x2f0 — SAME container ops as step 1's
 walk; reuse, do not duplicate (the T-074 §1b "instance chosen by this" law).
 
+## Layout law for the batch-C read work: `base: true` and `base: false` are DIFFERENT frames of reference
+
+Raised by WildUnion's GWAM-pair hazard note, and the correction matters more than their version of it. From
+`artifacts/F3.json`, verified this pass:
+
+- `Entity::mbr_0x168` -> **`base: true`** (offset measured from the **Entity virtual-base subobject**)
+- `GameCreature::mbr_0x6f0`, `0x6f4`, `0x6f8` -> **`base: false`** (measured from the **complete object**)
+- `GameCreature` is size 3036 and its member `0x0` is the embedded `GameEntity` subobject, size **1148**
+
+So `+0x168` and `+0x6F4` are not two views of one field and **not two fields separated by a fixed shift** -
+they live in different coordinate systems, and the subtraction between them (0x58C) is arithmetically valid
+and semantically meaningless. A "so the base delta is ~0x58c" step therefore *permits* exactly the mistake it
+was written to avoid: it hands a reader a conversion factor to apply where no conversion exists.
+
+For the port: every offset in batch-C data work must carry **both** the object it is measured from **and** the
+DB's base flag - `+0x6F4 (from GameCreature*, base: false)` - because the two failure modes are distinct:
+wrong class, and right class wrong frame. This batch has already hit the second form at `0x4678fd` (the vbptr
+base+delta walk) and in `SetHP`'s `+0x1DC`, where the resolution was that Entity-base and GameEntity-offset
+are different rulers for the same byte.
+
 ## Step 4 — state-7 `+0x1BC` semantics, aligned not renamed-blind
 
 Shipped writers: set on state 4/7 transitions @0x451c34-0x451c3a; **cleared by the anim-deque pop
