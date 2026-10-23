@@ -167,7 +167,7 @@ in {
         "''${stamp_dirty:-0}" "''${stamp_build_dirty:-0}"
       printf '  payload  : %s\n  table    : %s rows, hash %s\n' \
         "$0" "''${#suites[@]}" "$stamp_hash"
-      printf '  compiler : %s\n' "$(${mingxCxx} --version 2>/dev/null | head -1)"
+      printf '  compiler : %s\n' "$(if [ "''${OPENVB_TEST_TOOLCHAIN:-msvc}" = gcc ]; then "${mingxCxx}" --version 2>/dev/null | head -1; else printf 'MSVC 2002 cl (docker $MSVC_IMAGE) via tools/msvc-test-compile.sh\n'; fi)" 
       printf '  exe      : %s\n\n' "$(${statBin} -c '%y %s' "''${OPENVB_TEST_EXE:-$root/build/F3.exe}" 2>/dev/null || printf absent)"
 
       fails=0
