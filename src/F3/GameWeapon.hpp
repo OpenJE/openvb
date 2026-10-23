@@ -128,18 +128,20 @@ namespace F3 {
 	//                                (GWAM chunk loop; JE::Common::Chunk +
 	//                                MemStreamRead_0x498170 already ported).
 	// 0x4148a0 VERIFICATION STATE: PAIR ANALYSIS COMPLETE - verdict: ONE RECORD FORMAT, NOT ONE
-	// FUNCTION. Table comparison (jump tables read from the exe, base 0x400000): 27 of 28 legs
-	// are byte-identical modulo a 4-byte slot shift ([esp+54h] creature vs [esp+50h] weapon;
-	// record esp+14 vs esp+10) - cause CORRECTED per verifier NiceTiger: the shift is the
-	// creature prologue's extra callee-saved push (push ebp @0x40dbc2), NOT the weapon's SEH
-	// record; and the shift is CONSISTENCY, not evidence of cloneness - the clone claim rests
-	// on the legs themselves and stands without it. BOUND ON THE COUNT, because it mixes
-	// instruments: all 28 weapon-side legs were read from instruction text; creature-side legs
-	// are RAW-BYTE confirmed for only 7 (cases 1, 2, 4, 6, 10, 13, 34 - exe walk) and
-	// RENDERING-ONLY for the rest (the creature decompiler's constant list, one instrument).
-	// 27/28 is THIS SEAT'S figure; the verifier-PASSED stamp below does NOT cover it - a
-	// programmatic all-34-slot pair-diff (tables 0x40e0f4 / 0x414e60) is delegated to
-	// NiceTiger's seat to extend or correct it. The behavioral set:
+	// FUNCTION. Table comparison (jump tables read from the exe, base 0x400000): CERTIFIED FIGURE,
+	// verifier NiceTiger's programmatic all-34-slot pair-diff, which SUBSUMES my earlier 27/28:
+	// both tables are exactly 34 slots (idx 34 = 90 90 90 90 padding, no 35th target) + shared
+	// default arm (cases 3,5 resolve to one leg per side, no record store in the default leg) +
+	// 31 of 31 store-bearing matched legs with EQUAL imm32 and disp delta EXACTLY 4 at every one
+	// (the uniformity that converts the push-ebp-@0x40dbc2 story from claim to mechanism) + 1
+	// divergent-by-design leg (case 1, spelling only - see (b)). The slot shift stays CONSISTENCY,
+	// not evidence of cloneness - the legs themselves are the evidence. Stamp covers: table shape, the
+	// 31 equal legs + uniform delta, case-1 glyph bytes both sides, default-arm sharing. Stamp
+	// does NOT cover: port bodies, or anything derived rather than walked. My pre-diff bound
+	// (21 creature legs rendering-only under one instrument) was retired by their per-leg
+	// head-walk after their window-scan self-catch (fixed-40-byte scan read past an `e9` into
+	// the next leg and missed register stores - same class as my v3 false-LATENT, different
+	// seat, filed before sent). The behavioral set:
 	//  (a) GATE SOURCE: weapon keys extended reads on CHUNK version [ebx+0Ch] (cmpl 2/3/4/5 at
 	//      0x414b7c/414b99/414bbc/414bd4); creature keys on the RECORD's item-version (v3[12] =
 	//      byte 0x30, from GameCreature*'s embedded weapon record, base: false complete-object).
@@ -148,15 +150,22 @@ namespace F3 {
 	//      = 56|62 BY a flag; creature is `mov [esp+54h],38h` = constant 56 (@0x40df36). local_12
 	//      is referenced EXACTLY TWICE across all 377 instructions (six overlapping normalized
 	//      windows covering instrs 0-377 read personally): zero-init @0x4148e8 and the case-1
-	//      READ @0x414c81. No store exists in the function -> the conditional always selects 56
-	//      -> shipped weapon case 1 == creature case 1. CONTROLS, per the false-zero discipline:
-	//      the detector is personal reads of every window with both anchors (init + read) POSITIVELY
-//      present in the same detector, bounding the claim honestly: "no store among the normalized
-	//      windows read". ALIASING LIMIT CLOSED: the two-instrument cross-check was RUN and agrees -
-	//      raw objdump of the physical slot (mov %al,0x76(%esp) / mov 0x76(%esp),%al) shows exactly
-	//      one write (the init) and one read (case 1) over the whole function range; IDA's
-	//      depth-normalization makes that windows-claim physical anyway. Port takes ONE anim table
-	//      (56), faithful to shipped on every observed path, bound stated.
+	//      READ @0x414c81. The ONLY write in the function is the prologue zero-init, and its
+	//      value is provably 0 (`xor eax,eax` @0x4148cd, no write to eax until the store) - so
+	//      the selector can never be nonzero and 56 is chosen UNCONDITIONALLY. RESIDUE BOUND
+	//      TESTED AND REJECTED (LITERAL-PEER-PROBE, item 72): the verifier's scan reported
+	//      ZERO stores to the slot and inferred "56 iff uninitialized residue reads 0"; the
+	//      literal raw grep over 0x4148a0-0x414e43 returns ONE store (88 44 24 76 @0x4148e8 -
+	//      the init itself) and one read. Both counts on record. The pin is by initialization,
+	//      not stack luck; 62 is arithmetically the AND's other arm but statically unreachable.
+	//      The verifier's authorial reading (56/62 as a plausible anim PAIR - a dead BRANCH of a
+	//      two-value pick, not a dead check) survives as narrative about the source that was
+	//      compiled; shipped RUNTIME value is constant 56. CONTROLS: personal reads of every
+	//      window with both anchors (init + read) POSITIVELY present in the same detector;
+	//      cross-instrument raw-slot grep (88 44 24 76 write once = init, 8a 44 24 76 read once)
+	//      agrees; IDA depth-normalization makes the windows-claim physical by construction.
+	//      Port takes ONE anim table (56) - the pinned-side label is exact, and "== creature 56"
+	//      is now earned, not assumed.
 	//  (c) WEAPON-ONLY TYPE DERIVATION @0x414c18-0x414c5c: consumed flag (local_3d) -> record
 	//      type 2; else switch on [weapon + 0x3B0] (from GameWeapon*, complete object; DB member
 	//      mbr_0x3b0) item type: 1-5 -> 1, 6-8 -> 0, 9-10 -> 3. The creature side has NO such
