@@ -42,6 +42,31 @@ UNRESOLVED IN THIS DRAFT (the honest gaps; do not port over them):
 - claimed = +0x39 (second byte, payload base = node+8 proof @0x40e1fa/0x40c430).
 - counter = +0x3C, kind-3 += 3 dual-site (A2 @0x40e248-5b, B2 @0x41506c).
 
+## Metal facts (verifier raw-disasm 0x40dc01-0x40dd17 + my confirming window)
+COORDINATES FIRST, because the seats' numbering differs and this exact confusion
+already bit the v10/v11 line: BUILDER-BASE = var_78 @ esp+0x14 (this doc's
+coordinates); the verifier's message measured from esp+0x0C (+4 below builder
+base) - subtract 4 to translate. On THIS doc's axis, from my window at her EAs:
+- Unconditional stream reads ASCEND: +0x04 @0x40dc01, +0x08 @0x40dc42, then the
+  sequence STEPS OVER +0x0C/+0x10 to +0x14 @0x40dc6e. So order is clean UNTIL
+  THE GATE: the if(v4) extension block reaches BACK to the skipped +0x0C/+0x10
+  region (var_6C[8]) - non-monotonicity exists exactly (1) in the decompiler's
+  v-numbering layer and (2) at that gated reach-back, NOT in the unconditional
+  stream. My commit direction ("v10 read before v11") was right about SEQUENCE
+  but attached it to a general disorder that does not hold - the verifier's
+  correction stands and this line is the corrected form.
+- CONFIRMED, stronger form: cells +0x0C/+0x10 receive NO unconditional read -
+  they are gated fills only (type cell +0x00 is init, never read). A
+  stream-order map would INVENT reads at those coordinates. The draft's
+  r3 = "+0x14?" row is now RESOLVED: +0x14 IS read unconditionally (third
+  read); the "?" it pointed at lives one cell down.
+- Per-function frame renders still need reconciliation (creature prints
+  var_6C[8] for the gated pair; weapon prints single-size labels at its 4-shifted
+  base) - named port-blocking leg below.
+- RULE ENDORSED WITH RAW EVIDENCE: read sequence != cell order (at the gate);
+  cell order != cell EXISTENCE (gated fills). The ctor's fixed +4k walk is the
+  ONLY join. Unnamed cells stay offset-named, never guessed.
+
 ## Port-blocking before this file turns into code
 Complete rows r2..r10 with printed offsets from the creature decompile (in-session
 context or re-decompile 0x40dba0), join LOCAL→CELL by ctor walk order, name any
