@@ -82,18 +82,19 @@ PASS off a broken parser - item 70's rule, promoted from a law into code.
 
    calls `F3::Display::CreateGameWindow`, which I read as a latent unresolved reference - **wrong**:
    `F3.cpp:558` opens `namespace Display {` and defines `CreateGameWindow` @**0x56B470**, so the link is
-3. **`Display.cpp` - DEAD WEIGHT, class: `unreferenced-twin` (mechanism corrected twice; see below).**
-   `Display.hpp:9` declares `bool CreateGameWindow(UINT)` and `Display.cpp:8` defines it; `F3.cpp:579` defines a
-   SEPARATE `BOOL CreateGameWindow(int)`; `main.cpp:43` calls `F3::Display::CreateGameWindow(nCmdShow)`. The two
-   definitions have **different mangled names, so LNK2005 is impossible** - my previous line asserted it and was
-   wrong, and so was FastNova's original ruling. What actually happens if it is registered: it COMPILES AND
-   LINKS CLEAN, and the image carries two live definitions whose caller binds whichever declaration its
-   includes happen to expose. That is a silent-divergence hazard, not a link failure, which is worse to
-   diagnose and why `unreferenced-twin` should be its own category in FastNova's gate rather than folded into
-   dead-weight. Ruling stays delete/absorb - now for the right reason.
-   suspicion was mine and it was the wrong direction. Classified DEAD WEIGHT by the gate below.
-   and the only one of the seven I'd call an open question rather than a gap. Original wording said "two found", which was a lower bound; a gatekeeper needs the bound to be exact: `src/F3/Display.cpp` and `src/F3/GameActionMoveTo.cpp` are absent from BOTH `cmake.toml` and `CMakeLists.txt` (explicit lists; cmkr guard INACTIVE, item 60). `GameActionMoveTo.cpp` IS compiled by run-all's SpawnMove/PathManager rows, so suites pass and `msvc-build` passes and NEITHER result says anything about that TU - R-FINISH item 8's class, second instance. Decide per file: build it (add to both lists, expect undefined refs from a never-linked TU) or delete it. THEN the cheap permanent fix: a gate leg failing on the set difference between on-disk `src/**/*.cpp` and `cmake.toml`, so the next orphan is a red, not a discovery. | **any idle hand** (blocks NiceTiger's GameActionMoveTo shard from being honestly gated) |
-
+3. **`Display.cpp` = DEAD WEIGHT BY NON-REFERENCE. The `unreferenced-twin` mechanism two lines below was
+   FALSE and is retracted - see the strike-through.** Verified: `src/main.cpp` includes only `windows.h`,
+   `ctime`, `JE.hpp`, `F3.hpp`, `tracing.hpp`, `F3/RenderD3D8.hpp` and NEVER `Display.hpp` ("Display" occurs in
+   the file only at the two call sites, :43/:48, bound through `F3.hpp`). So registering `Display.cpp` adds a
+   symbol nothing references - **no collision, no overload ambiguity, no silent divergence.** It is an
+   internally-coherent unregistered pair (`Display.hpp:9` decl / `Display.cpp:8` def, UINT overload) that the
+   image never calls. Ruling: delete/absorb, or register as dead by ops taste - it stands on NON-REFERENCE, the
+   only true ground here. Census as of 3704d35.
+   ~~the image carries two live definitions whose caller binds whichever declaration its includes expose;
+   silent divergence~~ - FALSE consequence: main.cpp cannot see the second declaration, so nothing binds
+   ambiguously. FastNova's separate category proposal, `unreferenced-twin` keyed on MANGLED names rather than
+   basenames, still stands and is worth having: it is what would have told us this was two different symbols in
+   the first place.
 ## QUEUED (trigger-gated)
 | H-IDX | STANDING ROW (never closes): ea-index --check gate + refresh-on-drift, 'any idle hand, twenty minutes' — the freshness guarantee behind item 53 |
 | id | scope | trigger |
