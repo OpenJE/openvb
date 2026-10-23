@@ -247,6 +247,11 @@ namespace F3 {
 		// directions - =0 keeps the intro off even with rendering on, =1 forces it even without (a decode-
 		// only run). App-boot and CI stay exactly as they were: ungated means both off, and the boot check
 		// never enters here.
+		// PORT-SIDE gate — named absence, no shipped twin: the shipped game plays its intro logos
+		// unconditionally (the trigger above fires right after "Client: connected to server"; there is
+		// no environment-reading branch anywhere in the shipped open path cls_0x5b4f50::meth_0x5b5640).
+		// OPENVB_MOVIES / OPENVB_RENDER are harness-only scaffolding added for device-gated boots and CI
+		// (see the gate-semantics note below this block, changed 2026-10-23); ea-index has no "Gated" record.
 		bool Gated() {
 			char v[ 8 ];
 			DWORD n = GetEnvironmentVariableA( "OPENVB_MOVIES", v, (DWORD)sizeof( v ) );
