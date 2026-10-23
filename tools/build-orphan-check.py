@@ -285,9 +285,21 @@ def main(argv):
     print(f"  sources listed   : {len(compiled_names)} basenames")
     print(f"  TUs on disk      : {len(tus)}  (src/** + modules/openje/src/**)")
     print(f"  orphans          : {len(orphans)}")
+    # The two "listed" numbers DIFFER BY CONSTRUCTION (43 names in the lists vs 42 files found
+    # on disk), and printing both without reconciling them is exactly the ambiguity this tool
+    # exists to remove: a reader cannot tell whether 42 is a missed file or a stale entry. The
+    # first version left that explanation in a commit message, where no future reader of the
+    # output would find it.
+    listed_not_on_disk = sorted(compiled_names - {t.name for t in tus})
     print(f"  identity         : listed {len(compiled_tus)} + orphans {len(orphans)}"
           f" == on-disk {len(disk)} ->"
           f" {'OK' if len(compiled_tus) + len(orphans) == len(disk) else 'BROKEN'}")
+    if listed_not_on_disk:
+        print(f"    reconciliation   : {len(compiled_names)} names in the lists - "
+              f"{len(listed_not_on_disk)} not under these two globs = {len(compiled_tus)} files:")
+        for n in listed_not_on_disk:
+            print(f"      {n}   <- listed but outside src/** and modules/openje/src/**;"
+                  " its real path may be elsewhere (e.g. another module)")
     if listed_unparsed:
         print(f"  listed but 0 defs parsed (PARSER BLIND SPOT, NOT orphans):"
               f" {len(listed_unparsed)}")
