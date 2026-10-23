@@ -269,6 +269,69 @@ namespace F3 {
 	// one helper body for its 3 callers, six inline bodies inline; collapsing would invent a
 	// post-refactor source no byte evidences, identical-triple or not. The hint informs the
 	// story, never the code.
+	// TRANSACTIONAL SHAPE + FAMILY ROSTER, CLOSED (verifier whole-body on 414350; loop/rollback/
+	// iterator lines re-verified in MY window: SEH prologue, cmp-terminate loop, alloc src =
+	// [esi+8], forward chain [node+0] @0x4143ae, rollback re-walk from saved original
+	// (local_1c @0x41437c/43b5) to frontier, eraser calls, null __CxxThrowException rethrow:
+	// THE ONLY ERASER. My byte-level THIRD INSTRUMENT on the absence claims (raw e8 call-target
+	// scan across all sections) with a KNOWN-PRESENT CONTROL that makes the single-xref claim
+	// trustworthy rather than lucky:
+	//   eraser sub_40B4C0   -> exactly 1 call site: 0x4143cf (in the rollback handler).
+	//   allocator sub_40B510 -> exactly 7 sites {0x40c984 helper, 0x40db4a RV2, 0x40e202/0x40e270
+	//     twins A, 0x414395 range-inserter, 0x414fa2/0x41508f twins B} - SEVEN INSERT BODIES AND
+	//     SEVEN ALLOCATOR CALLS MATCH ONE-FOR-ONE: the alloc census IS the insert census, closed
+	//     at byte level with control passing (a scan that finds 7 known-present and 1 absent is
+	//     a scan; one that finds 0 of both is a bug).
+	//   range-erase sub_40B5E0 -> exactly 8 sites, verifier's 8 confirmed, AND MY SCAN LOCALIZES
+	//     THREE SITES ABSENT FROM HER SAMPLE LIST: 0x40d53e/0x40d574 (creature-read era) and
+	//     0x415610 (WEAPON FILE-READ era - a range-erase at/near the ReadFromFile path, i.e.
+	//     records cleared before population at open, directly in my reader's neighborhood).
+	//     Owner functions of all three pending - census complete, attribution not.
+	// CONSEQUENCE (strongest behavioral sentence in the family, and it now rests on three
+	// instruments + control, not one xref): RECORDS ARE NEVER REMOVED EXCEPT WHEN AN INSERTION
+	// FAILS - the success path is APPEND-ONLY; the list is monotonic history. Rollback is not
+	// removal-as-feature, it is insertion-atomicity; the eraser function exists solely inside
+	// an exception handler.
+	// PORT POLICY UPDATE: 'mirror at shipped granularity' now means THREE insert shapes -
+	// helper body (3 paths), bare inline triples (4 paths), transactional-with-rollback (1);
+	// the helper stops being THE template - it is one of three, the most-extracted, and
+	// 'extracted vs manual' remains unresolved and remains irrelevant to the code shape.
+	// NEW CELLS (whole-body/windows, bounded): kind-3 insertion mutates a PAIR - claims
+	// +0x39 AND increments record +0x3C by 3 (@0x40e248/4f/5b; B2 mirror cell verified
+	// e0-a4=3C, producer line unread) -> counter in steps of 3 beside the kind cell.
+	// Kind-2 = ASSIGN-with-CURSOR semantics (upgraded by the owner-trio, below): RANGE-erase,
+	// then owner-current compare.
+	// OWNER TRIO, ONE PER ROLE, CONFIRMED BOTH SIDES (verifier's skip-target reads; creature
+	// whole-body, weapon addendum byte-identical): +0x6F4/+0x408 NEXT-RECORD CURSOR (skip arm
+	// reads prev [node+4], null-checks, writes 0-or-next: creature @0x40e2df/0x40e2e9 ->
+	// [edi+6F4h], weapon @0x415102/0x41510c -> [edi+408h]); +0x6F8/+0x40C LIST CONTAINER (the
+	// helper's append anchor - my reader's cell); +0x6FC/+0x410 CURRENT-NODE ANCHOR (kind-2
+	// predicate). All from GameCreature* / GameWeapon*, complete object, base:false. UNIFORM
+	// +0x2EC DELTA ACROSS ALL THREE CELLS - the family's one clean mirror, and it completes
+	// rather than contradicts the non-uniform story: counters and flags drift, structural trios
+	// do not. CONVERGENCE WITH MY OWN BATCH B: weapon+0x408 is exactly the cursor GetWeaponRange
+	// (0x45b620) two-hops through (0x408 deref, +0x2C range field) - the native's 'current
+	// attack mode' read and this family's iterator cursor are THE SAME CELL; record payload
+	// +0x2C is what the native returns. Cites: NativeAbiEvidence.md GetWeaponRange section,
+	// ScriptNatives.cpp block. Consequence: the twins are ITERATORS WITH INSERT-ON-MISS -
+	// cursor advances on match, inserts a copy on miss - not mere inserters; the stream-order
+	// map gains a cursor per owner. NO OPEN WINDOWS FROM THE FAMILY THREAD: every leg the
+	// verifier bounded is closed, weapon skip-target included (0x4150F9, read and byte-matched
+	// at her addendum - the question I was about to answer arrived answered).
+	// +0x3C PRODUCER DUAL-SITE: A2 `mov edx,[local_3c]; add edx,3' @0x40e248-5b AND B2
+	// `mov eax,[local_a4]; add eax,3' @0x41506c between ctor and flag-write - kind-3's counter
+	// (+3) verified at both twins, both cells, not extrapolated.
+	// APPEND-ONLY PRINTS AS FACT, not ceiling: verifier's completed control (image-wide
+	// call/jmp operand scan: 1 hit @0x4143cf; DataRefsTo sub_40B4C0 ZERO, no pointer taken,
+	// vft regions swept) + my raw e8 scan agreement (1 site) + my known-present control
+	// (allocator exactly 7 sites == exactly the 7 insert bodies, one-for-one - a scan that
+	// finds 7 present and 1 absent is a scan; one that finds 0 of both is a bug). The rollback
+	// is the record list's ONLY removal path in the executable; success path is monotonic.
+	// FINAL ROSTER: 7 bodies / 9 paths; two erasers (single: rollback-only - removal exists ONLY
+	// inside the exception handler; range: 8 sites, 3 beyond the sample list localized by my
+	// scan); cells +0x39 claimed, +0x3C counter(+3, dual-site), +0x40 kind; owner trios
+	// +0x6F4/6F8/6FC and +0x408/40C/410 (uniform +0x2EC, cursor = batch-B GetWeaponRange cell);
+	// chain [node+0]; count [container+8]; dtor sub_40A400.
 	// THE 62 LITERAL IS REAL (verified on my disasm): third function sub_414EF0 writes
 	// [local_38]=3Eh @0x415024 (adjacent [local_34]=248h @0x415019) immediately before its
 	// sub_40C970 append @0x41502f. Bound: write + adjacency + append ordering mine; the cell's
