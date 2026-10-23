@@ -89,6 +89,14 @@ GFX2 = ("x/8wx $gfx+0x28", "x/1bx $gfx+0x48", "set $ad=*(int*)0x708380",
         "x/8wx $md", "x/8wx $md+32", "continue")
 
 tick = [0]; fun = [0]; r1 = [0]; post = [0]; segv = [0]; pump = [0]; seam = [0, 0]
+# S2 code-on-arrival legs (runbook ladder; numbers 11-20 == arm order after legacy 1-10;
+# raw reads go to the values log, PAIR/HISTOGRAM interpretation is OFFLINE per "no freelancing")
+ladder = {"raise": [0], "exh": [0], "clear": [0], "popA": [0], "popB": [0],
+          "sink": [0], "drain": [0], "mbox": [0], "factory": [0], "animpush": [0]}
+def bump(k, cap, n, extra=()):
+    ladder[k][0] += 1
+    send("print/x $ecx", "print/x $eax", *extra, "continue")
+    if ladder[k][0] >= cap: send("disable %d" % n)
 while time.time() < DEADLINE:
     chunk = readnew()
     if not chunk:
@@ -104,7 +112,7 @@ while time.time() < DEADLINE:
     # match BOTH or you silently mis-service stops (T-052 session J lesson).
     hit = {n: (("Breakpoint %d hit" % n) in chunk or
                re.search(r"Breakpoint %d[, ] 0x" % n, chunk) is not None or
-               ("hit Breakpoint %d," % n) in chunk) for n in range(1, 11)}
+               ("hit Breakpoint %d," % n) in chunk) for n in range(1, 21)}
     if hit[7]:
         send(*GFX1)
     elif hit[8]:
@@ -133,13 +141,36 @@ while time.time() < DEADLINE:
         elif tick[0] == 1: send("print/x $eax", "x/1wx 0x70c2b8", "set $srv=*(int*)0x70bd98", *R2AT, "continue")  # R2 frame-1 leg (unconditional)
         else: send("print/x $eax", "x/1wx 0x70c2b8", "continue")
     elif hit[9]:
-        seam[0] += 1; send("print/x $ecx", "print/x $eax", "continue")
+        seam[0] += 1; send("print/x $ecx", "print/x $eax", "x/1bx $ecx+0x8", "continue")  # +0x8 = mbr_0x8 depth byte (runbook bp11)
         if seam[0] >= 24: send("disable 9")
     elif hit[10]:
         seam[1] += 1; send("print/x $ecx", "print/x $eax", "continue")
         if seam[1] >= 24: send("disable 10")
+    elif hit[11]:   # runbook bp7 0x54c833 raiser R1 not-finished
+        bump("raise", 100, 11)
+    elif hit[12]:   # runbook bp8 0x54c864 EXHAUSTED (+0x318 two-occurrence debounce = raise pair)
+        bump("exh", 100, 12, extra=("x/1wx $ecx+0x318",))
+    elif hit[13]:   # runbook bp9 0x549090 clearer C1 (blind-clear + round-ms stamp)
+        bump("clear", 100, 13, extra=("x/1wx $ecx+0x300",))
+    elif hit[14]:   # runbook bp12a 0x54c9c1 pop path A
+        bump("popA", 200, 14, extra=("x/1wx $ecx+0x314",))
+    elif hit[15]:   # runbook bp12b 0x54c92a pop path B (either-or vs 14 is OFFLINE from the pair sequence)
+        bump("popB", 200, 15, extra=("x/1wx $ecx+0x314",))
+    elif hit[16]:   # runbook bp13 0x548d80 sink census (anim bypass clears +0x288)
+        bump("sink", 100, 16, extra=("x/1wx $ecx+0x288",))
+    elif hit[17]:   # bpN2 0x54c440 drain natives (return address -> native id, decode offline)
+        bump("drain", 100, 17, extra=("x/1wx $esp",))
+    elif hit[18]:   # bpN3 0x54ee60 sync mailbox (bare trio)
+        bump("mbox", 100, 18, extra=("x/1wx $esp",))
+    elif hit[19]:   # bpN4 0x46f290 CreateGameAction factory (pushed K -> kind histogram offline)
+        bump("factory", 200, 19, extra=("x/1wx $esp+4", "x/1wx $esp+8",))
+    elif hit[20]:   # bpN5 0x5505F0 anim deque pushes (engine Queue_* only, NEVER a native)
+        bump("animpush", 100, 20, extra=("x/1wx $esp+4",))
     elif "received signal" in chunk or "SIGTRAP" in chunk:
         send("continue")                 # THE DANCE: consume thread-start stops
     elif "exited" in chunk and "exit thread" not in chunk:
         vals.write("PROCESS-EXITED\n"); break
-vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d seamA=%d seamB=%d\n" % (r1[0], tick[0], pump[0], fun[0], post[0], seam[0], seam[1]))
+vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d seamA=%d seamB=%d raise=%d exh=%d clear=%d popA=%d popB=%d sink=%d drain=%d mbox=%d factory=%d animpush=%d\n" % (
+    r1[0], tick[0], pump[0], fun[0], post[0], seam[0], seam[1],
+    ladder["raise"][0], ladder["exh"][0], ladder["clear"][0], ladder["popA"][0], ladder["popB"][0],
+    ladder["sink"][0], ladder["drain"][0], ladder["mbox"][0], ladder["factory"][0], ladder["animpush"][0]))
