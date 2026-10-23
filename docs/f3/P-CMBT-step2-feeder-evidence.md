@@ -349,3 +349,34 @@ entrypoints as `vft(name, argc, cells[, out])` on a handle-resolved script objec
 execution must pick (b)'s shape; the OnDamage chain is the combat-side proof that (b) is live code, not
 just a network-packet curiosity. Script-vft exact class identity and slot 0/+4/+0Ch handler semantics
 (used by GetScript's load path) are named-deferred — not needed for the witness.
+
+## §8. Frame law and the second door (NiceTiger addendum, 2026-10-22, verification queue items 1–2)
+
+**The virtual base's position is a property of the complete object — proven by swap-in-the-same-slot.**
+`GameEntity`'s ctor @0x4678d4 stores descriptor `unk_666134` at `[obj+4]`, whose word[1] = **0xA0** (Entity
+subobject at GameEntity+0xA4 when GameEntity is complete). `GameCreature`'s ctor @0x40d03f does
+`lea ecx,[esi+804h]` and passes THAT as `this` to `Entity::ctor_0x5513a0`, storing descriptor `unk_64D7CC`
+(word[1] = **0x800**) at the same `[esi+4]` slot. One slot, two deltas — no flag-reading inference needed.
+**Cite rule adopted:** every Entity-frame offset travels with "of which complete object" — the §-predicate
+chain's `+0x1E0` (state leg) and `+0x24` (HP leg) are Entity-relative constants: `0x9E4`/`0x828` in raw
+GameCreature frames, `0x284`-region in bare-GameEntity frames. The predicate read yesterday resolves
+through `[[tgt+4]+4]` = 0xA0, so that path is GameEntity-complete; identical bytes under a GameCreature
+mover land at +0x800. A port that casts a mover before the call silently reads a DIFFERENT field —
+wrong-answer-with-no-error class.
+
+**The validator at `0x5507f0` is the COMPUTED-transition path, not the state field's only door.**
+Full-disasm sweep (695,906 instrs, dst-operand normalized so C6/C7/89/8B+SIB all fold to `[reg+1E0h]`):
+21 stores / 81 loads at *+0x1E0, ZERO immediate-7 stores (control store 0x550945 present in the list —
+control-first rule honored). Two Entity-side writers bypass the validator entirely:
+`0x54e733` inside `Entity::UnpackState_54e690` — `mov [edi+1E0h],edx` with edx straight off the packet
+stream (a server can deliver state 7 with no validator call, and the single-host digest structurally cannot
+observe this); and `0x551475` — the ctor's init-to-0 store (`ebx=0`). A port modeling only the validator is
+**stricter than shipped** in a way no local test can see. Consequence for predicate reasoning: every read
+of `+0x1E0` must name WHICH writer produced the value. The `push 7` producer site disassembles at
+**0x550a34** (1-byte opcode), `mov ecx,esi` 0x550a36, `call 0x5507f0` 0x550a38.
+
+**Census-definition law (76b extension):** the byte-pattern sweep said 41/35, the disasm-text sweep says
+21/81 — both green detectors, both wrong as THE count, in opposite directions (patterns miss encodings;
+text misses aliasing — and the aliasing hole lives in `UnpackState` itself: `lea eax,[edi+1E4h]` at
+0x54e72b then indirect store). A census answers only the question its representation can ask; print the
+scope, name the hole, claim the negative as "no normalized form", never "none".
