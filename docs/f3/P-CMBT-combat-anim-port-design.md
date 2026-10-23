@@ -111,6 +111,20 @@ earliest: the target's next pump (same frame iff the world pumps the target afte
 >    combat. Better grounds than the withdrawn death claim, and weaker than "combat exercises it": replay is a
 >    path a given demo session may never take. Both halves are bounded absences with windows stated - the 0xa0
 >    bytes around 0x55268c, and the still-unchecked equip-notice / `DropPayload` / `EffectTreeTrigger` feeders.
+>
+>    **FURTHER TIGHTENED the same hour, by NiceTiger `9a32ecd` - and this is the half Step 2 needs:** a
+>    *queued* damage entry is **ticked, never applied**. `[vft+0x2C]` @0x55a501 is the bare `retn`
+>    `0x404b70`, so the deferred path performs **no HP write**; the complete damage lifecycle is fire-inline,
+>    `+0xA/+0xB` set, no-op tick, dtor. Marked replay entries do fire immediately after push - post-push
+>    `0x5526a0` `meth_0x55af80` is a `+0xA`-gated fire-eligible leg, and the damage predicate at
+>    `[vft+0x1C]` is the always-true stub `0x408d30` (`mov al,1; retn`) - while clean entries wait for the
+>    pump (`0x54c398/9e` walk `+0x2E0`), and base assign `0x55ac10` COPIES `+0x8/+0x9/+0xA/+0xB` from the
+>    record. Corrected there too: `0x5525d3` is the SOURCE-deque **count** check, not the flag (outer flag
+>    `0x5525c6-0x5525cd`; per-entry retest `0x552644-49`, which **throws** on flag-off mid-loop).
+>
+>    So the line above was true and misleading: the first half does not resolve the container question.
+>    The strong form, which survives and is what Step 2 should be specified from: **damage never queues, and
+>    if it ever did it would not apply.** Same direction, one more reason the push side is the model.
 >    Full receipt is FastNova's `79b6c81` §2b; the question this section left open was closed by NiceTiger.
 >
 >    **The error class, in two layers, because both are needed.** (i) *A reused verb is not a shared data
