@@ -116,8 +116,7 @@ reading as "lower the bar," it is wrong.
 - **T-029's denominator understates.** Only 49 of its 171 "vanished" methods are mid-function tails; the other **122
   are secondary chunks of multi-chunk functions** (live IDB: `0x4154ef` marked "Not a function", `0x4154f0` ->
   `F3::GameWeapon::virt_meth_0x414680`). `list_funcs` is not a complete entry-point enumeration, so counts derived from
-  it are bounds, not totals.
-- **A named class can be missing from the export entirely.** `cls_0x49c610` (ratio 0.02, batch 1's worst case) is
+  it are bounds, not totals.- **A named class can be missing from the export entirely.** `cls_0x49c610` (ratio 0.02, batch 1's worst case) is
   `JE::ResourceSystem` — all 43 methods named so in the IDB, 36/43 with in-body member usage — and `F3.json` contains
   **zero** occurrences of `ResourceSystem` (coordinator-verified by grep), while our port ships `JE/ResourceSystem.hpp`.
   Stale export, not misattribution.
@@ -140,3 +139,23 @@ reading as "lower the bar," it is wrong.
 2. Which **measure** it is (class count ≠ function census ≠ suite count).
 3. Whether the evidence is **data, static, or runtime** — `docs/notes/harness-items.md` item 13: data first.
 4. Whether it is **self-consistency or parity**. Only T-031 changes that answer from the first to the second.
+
+## Refresh 2026-10-23 (splitseat; every figure with its command)
+
+- **PARK board**: **25 closed rows** — `grep -cE "^\| ~~" tasks/PARK.md`. All remaining open rows are
+  seat-held (SwiftOwl/TrueRaven/keeper/EpicRaven lanes), trigger-gated, or need the user (M-001-S2 slice 2).
+  Closures tonight: G-FLAKY (0719361+025693a), R-ST (verify+restore), X-PUSH tier-2 wave + successor band
+  (a1ae175/2f14403), ST-RENAME (03be695, verify+strike of wave-3), Q-W2b ×2 dupes (cb9ce7a, verify+strike
+  of wave-3/wave-4).
+- **Live IDB census** (evalfile over idautils.Functions on ida_original_f3): **10,173 functions /
+  7,648 semantically named (75.2%) / 1,718 `cls_`-prefix / 2,483 `sub_`-prefix** — the named share is the
+  live-DB reading; the T-029 route tables above remain the audited baseline (different join routes, do not
+  mix). The 75.2% live number includes this week's tier-2 mint waves (T-084: 129 mints; wave-3: 50 renames;
+  std-tier: 5 fns), which is tier movement, not new coverage of behavior.
+- **Wrapper transport defect CLOSED at root** (5d2597e, `action=evalfile`): the harness arg-envelope
+  corrupts long/quote-dense tool args (field-observed twice); renames/annotations now travel as /tmp
+  files, read by the wrapper, applied in one py_eval hop with in-payload read-back. Standing convention:
+  complex args never cross the envelope inline.
+- `docs/PROGRESS.md` itself was last stamped 2026-10-20; the three days of board motion are the rows
+  above. Suite figures were NOT re-stamped this refresh (heavy wine boot) — the run-all stamp from the
+  coverage table remains the last audited suite number.
