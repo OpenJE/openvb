@@ -42,7 +42,7 @@ namespace F3 {
 	// PORT: action-list plumbing implemented; the blocker pipeline degrades EXACTLY like the
 	// original with grid==NULL (step 1 return) until the spatial grid (map+364) lands.
 	struct GameActionMoveTo : public JE::ActionMoveTo {
-		GameActionMoveTo() : speed(8.0f) {}   // 8.0f = GE+0x94 ctor default (candidate source)
+		GameActionMoveTo() : speed(8.0f), lastRequestKind(0), lastRequestA0(0), lastRequestA4(0), moverGate0x90(0) {}   // 8.0f = GE+0x94 ctor default (candidate source)
 
 		// JE hook (secondary vft +0x14): the original routes it into the F3
 		// OnServerUpdate_0x4060b0 through the entity's action loop; ms = entity ServerUpdate
@@ -71,6 +71,55 @@ namespace F3 {
 		// OnServerUpdate vft slot on the entity-facing interface; called by the world pump
 		// after the JE movement update.
 		virtual int OnServerUpdate_0x4060b0( unsigned ms );
+
+		// ---- batch C rows: the four entity-facing vft slots GameActionMoveTo adds over
+		// ActionMoveTo (derived vft 0x649c1c cells +0x20/+0x24/+0x28/+0x2C), ported per
+		// docs/f3/GameActionMoveToEvidence.md (all bodies read whole, raw bytes).
+		// Destructor cells need no port-side code: 0x405710 is vft-restore + tail-jmp to
+		// ActionMoveTo::dtor_0x55b460 (compiler's job here), 0x4058b0 is the scalar deleting
+		// dtor (call dtor; flag&1 -> free) = operator delete semantics. Whole-body read
+		// found NO own-side frees in either.
+		//
+		// Twin forwarders (0x405770/0x405790): shipped bodies are byte-identical except the
+		// kind word - call [mover+0x14]'s vft slot 18 (+0x48) as (kind, arg0, 0, arg4),
+		// retn 8, with NO null test (B8-family unguarded deref @0x405777). The mover-side
+		// resolver (GameEntity [vft+0x48] = 0x467ae0 thunk -> 0x467830: anim-pair fill via
+		// [mover+0xC0] set + AnimMeshInstance::0x467780 hit-test + dword_6F3960 translate
+		// loop, kinds read as anim request ids) is NOT ported (Gfx anim era), so the port
+		// records the request as an observable on the ACTION instead of faking the resolve.
+		// STATUS: the forwarder CALL is a named gap; the recording fields are port-side
+		// observability, NOT shipped behavior parity. Kinds 0x1B2/0x1A0 stay opaque (law 1).
+		virtual void MoverRequest_0x405770( unsigned a0, unsigned a4 ) {
+			lastRequestKind = 0x1B2;   // 434
+			lastRequestA0 = a0;
+			lastRequestA4 = a4;
+		}
+		virtual void MoverRequest_0x405790( unsigned a0, unsigned a4 ) {
+			lastRequestKind = 0x1A0;   // 416
+			lastRequestA0 = a0;
+			lastRequestA4 = a4;
+		}
+		int lastRequestKind;   // 0 = never; else 0x1B2/0x1A0
+		unsigned lastRequestA0, lastRequestA4;
+
+		// Slot 10 (0x4057b0): RTTI Entity->GameEntity cast of the mover with SILENT return
+		// on failure (null is the testable failure arm); stamps the server clock
+		// (0x548f90 -> Entity+0x184, store @0x548fb8/0x548fa2); drains the mover ring
+		// (0x54bd90 over [+0x1B0 size, +0x1B4 cursor, +0x1B8 count]) - RING UNMODELED in the
+		// port (no SpawnedEntity +0x1B0 trio), drain is a cited no-op; co-caller of the same
+		// drain is GameActionDie::virt_meth_0x404e90 @0x404ed4. Then queues anim 29 when
+		// mover GE+0x90 == 1, else anim 32 (QueueAnimEvent_0x4673d0 seam =
+		// SpawnedEntity::queuedAnimEvent record-field, precedent MapEntitySpawn.cpp:745).
+		// The +0x90 gate is mirrored on the action (SpawnedEntity has no +0x90 field yet);
+		// same "explicit field until the first read site proves the mapping" convention as
+		// `speed` above; retires with the GameEntity-side field.
+		virtual void OnAnimChoice_0x4057b0( unsigned ms );
+
+		// Slot 11 (0x406780): cast (silent fail) + clock stamp + QueueAnimEvent(1, 0).
+		// Whole-body contrast vs slot 10, byte-verified: NO ring drain, NO +0x90 gate.
+		virtual void OnAnimStamp1_0x406780( unsigned ms );
+
+		int moverGate0x90;   // port mirror of GE+0x90 (see slot-10 note); drives 29 vs 32
 
 		// fresh re-issue copy (original writes +24 job, +36..44 goal, +48 flag on the new
 		// action): copies target snapshot fields from a predecessor.

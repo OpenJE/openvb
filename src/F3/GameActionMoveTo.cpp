@@ -152,6 +152,38 @@ namespace F3 {
 		return 0;
 	}
 
+	// ---- batch C rows: entity-facing anim slots (docs/f3/GameActionMoveToEvidence.md,
+	// whole-body reads). Cast convention: shipped RTTI-casts the [this+0x14] mover
+	// Entity->GameEntity and SILENTLY returns on failure; the port's mover is always
+	// SpawnedEntity in this lane (GetMoveSpeed precedent), so the testable failure arm is
+	// the null-mover silent return. STATUS (owners attached, per the relay law): the
+	// forwarder CALL is a named gap (header note); stamp/anim arms consume live
+	// SpawnedEntity seams; the drain arm is a cited no-op until the mover ring models.
+	void GameActionMoveTo::OnAnimChoice_0x4057b0( unsigned ms ) {
+		tracing::instrument( tracing::LOCATION, "ms=%u gate=%d", ms, moverGate0x90 );
+		if ( !mover ) {
+			return;   // cast-fail arm, null form (shipped: silent retn @0x4057cf-era)
+		}
+		SpawnedEntity* ge = static_cast<SpawnedEntity*>( mover );
+		ge->actionStartMs0x184 = (int)ms;   // 0x548f90 clock store @0x548fb8/0x548fa2
+		// 0x54bd90 ring drain (mover +0x1B0 size / +0x1B4 cursor / +0x1B8 count):
+		// UNMODELED in the port - no SpawnedEntity trio exists; no-op named gap. The
+		// co-caller of the same drain is GameActionDie::virt_meth_0x404e90 @0x404ed4;
+		// retires when the ring lands (same class as the +0x2E0/+0x304 deques, per the
+		// type-vs-instance law kept in the evidence doc).
+		ge->queuedAnimEvent = ( moverGate0x90 == 1 ) ? 29 : 32;   // 0x4057ef: cmp [esi+90h],1 -> 1Dh else 20h
+	}
+
+	void GameActionMoveTo::OnAnimStamp1_0x406780( unsigned ms ) {
+		tracing::instrument( tracing::LOCATION, "ms=%u", ms );
+		if ( !mover ) {
+			return;
+		}
+		SpawnedEntity* ge = static_cast<SpawnedEntity*>( mover );
+		ge->actionStartMs0x184 = (int)ms;   // same clock arm as slot 10
+		ge->queuedAnimEvent = 1;            // QueueAnimEvent(1, 0) tail; NO drain, NO gate (byte-verified contrast)
+	}
+
 	// Field copy used by the re-issue paths (0x4065B9+ writes on the freshly created action:
 	// +24 = predecessor's job... ours: goal snapshot + target identity).
 	void GameActionMoveTo::CopyTargetFrom( const GameActionMoveTo* other ) {
