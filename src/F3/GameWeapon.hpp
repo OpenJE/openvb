@@ -228,7 +228,27 @@ namespace F3 {
 	// record-local greps must match {var_78, local_78} renderings AND exclude local_e0 by
 	// identity, not adjacency. Final shape of the record family: three construction sites
 	// (reader pair + save), five copy-ctor uses, two consumer twins, inserts via helper or
-	// inline triple - one record, 0x70 bytes, kind cell +0x40.
+	// inline triple (see APPEND/INSERT CENSUS) - one record, 0x70 bytes, kind cell +0x40.
+	// APPEND/INSERT CENSUS, COMPLETE (verifier NiceTiger's attribution of all 7 grow xrefs, each
+	// route through sub_40B510 = the fixed-0x70 allocator making family-membership a fact without
+	// whole-bodies; ReadVersion2 leg spot-checked IN MY WINDOW): SEVEN record-insertion sites -
+	// 3 via helper sub_40C970 (0x40e0bc, 0x414e11, 0x41502f) + 4 INLINE across 4 functions:
+	// sub_40E180 x2 (0x40e20d, 0x40e27b), sub_414EF0 x2 (0x414fad, 0x41509a), GameCreature::
+	// ReadVersion2_0x40d9e0 (alloc/grow/link @0x40db4a-5a - MY WINDOW: triple verified, link is
+	// the same three writes, param_1 = tail node), sub_414350 (0x414395-a6, 0xA6-byte fn, verifier-
+	// scoped). Any future "N appenders" claim must say SEVEN with the 3-helper/4-inline split or
+	// bound itself - a 3-site census is my 'only copy path' conflation one level up, named while
+	// warm. Twin symmetry so far: each consumer twin carries EXACTLY TWO inline append arms and
+	// its copy-ctor site lies in ADDRESS ORDER between them - a layout HINT of branch structure;
+	// whole-bodies make it fact (verifier's queued pass). AUTHORSHIP QUESTION - "was sub_40C970
+	// the extracted helper the twins predate, or is per-callsite duplication deliberate?" - is
+	// UNANSWERABLE FROM STATIC FACTS: both hypotheses fit every byte read; the structural fact
+	// stands alone (identical link triple {tail.next=node; node.prev=tail; [node+4 link]} at
+	// every site, 23-instr helper body repeating it as the inline sites do). PORT CONSEQUENCE,
+	// stated before anyone 'cleans it up': the port mirrors insertion at SHIPPED granularity -
+	// collapsing 4 inline sites into the helper would invent a post-refactor source state that
+	// no byte evidences, even though behavior is identical at every site read so far (bounded:
+	// site-level link shape, whole-bodies pending).
 	// THE 62 LITERAL IS REAL (verified on my disasm): third function sub_414EF0 writes
 	// [local_38]=3Eh @0x415024 (adjacent [local_34]=248h @0x415019) immediately before its
 	// sub_40C970 append @0x41502f. Bound: write + adjacency + append ordering mine; the cell's
