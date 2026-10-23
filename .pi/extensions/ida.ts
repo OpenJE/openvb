@@ -223,6 +223,7 @@ const Params = Type.Object({
 	action: Type.Union([
 		Type.Literal("health"),
 		Type.Literal("list_tools"),
+		Type.Literal("evalfile"),
 		Type.Literal("call"),
 		Type.Literal("batch"),
 		Type.Literal("save"),
@@ -230,6 +231,7 @@ const Params = Type.Object({
 	tool: Type.Optional(Type.String({ description: "server tool name (action=call) - LEGACY, may be stripped by harness arg-envelope hygiene; prefer srvtool or shape inference" })),
 	srvtool: Type.Optional(Type.String({ description: "server tool name (action=call) - explicit override, use when args-shape is ambiguous (e.g. addrs = xrefs_to vs callees, items = set_comments vs patch_asm)" })),
 	args: Type.Optional(Type.Record(Type.String(), Type.Unknown(), { description: "arguments for the server tool" })),
+	file: Type.Optional(Type.String({ description: "evalfile only: path to a Python file (UTF-8) executed via py_eval server-side; the wrapper reads it, so no code crosses the tool-args envelope" })),
 	ops: Type.Optional(
 		Type.Array(
 			Type.Object({ tool: Type.String(), args: Type.Optional(Type.Record(Type.String(), Type.Unknown())) }),
@@ -361,6 +363,36 @@ export default function (pi: ExtensionAPI) {
 							!!r.isError,
 						);
 						break;
+					}
+					case "evalfile": {
+						// DURABLE FIX for the py_eval quoting/transport corruption class
+						// (field-observed 2026-10-23 twice: quoted model-side payloads and hand-copied
+						// hex both arrived corrupted at params). The model writes /tmp/*.py with its
+						// write tool (lossless); this wrapper reads the FILE and performs the
+						// exec(compile(code,'<ida-eval>','exec'), globals()) wrap itself, which also
+						// fixes the upstream py_eval scoping bug (exec_globals/exec_locals split made
+						// comprehension bodies unable to see `;`-chain module-level names).
+						if (!params.file) return emit("action=evalfile requires file=<path to python file>", true);
+						let code: string;
+						try {
+							code = fs.readFileSync(params.file, "utf8");
+						} catch (err) {
+							return emit(`evalfile cannot read ${params.file}: ${err instanceof Error ? err.message : String(err)}`, true);
+						}
+						if (!code.trim()) return emit(`evalfile: ${params.file} is empty`, true);
+						const b64 = Buffer.from(code, "utf8").toString("base64");
+						const r = await mcpRequest(t, {
+							jsonrpc: "2.0",
+							id: 2,
+							method: "tools/call",
+							params: {
+								name: "py_eval",
+								arguments: {
+									code: `exec(compile(__import__("base64").b64decode("${b64}").decode(), "<ida-eval>", "exec"), globals())`,
+								},
+							},
+						}, timeoutMs);
+						return emit(textOf(r), !!r.isError);
 					}
 					case "call": {
 						// SERVER-TOOL RESOLUTION: the harness arg-envelope strips top-level `tool` from
