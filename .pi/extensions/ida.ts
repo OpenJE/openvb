@@ -227,7 +227,8 @@ const Params = Type.Object({
 		Type.Literal("batch"),
 		Type.Literal("save"),
 	]),
-	tool: Type.Optional(Type.String({ description: "server tool name (action=call) - verify with list_tools first" })),
+	tool: Type.Optional(Type.String({ description: "server tool name (action=call) - LEGACY, may be stripped by harness arg-envelope hygiene; prefer srvtool or shape inference" })),
+	srvtool: Type.Optional(Type.String({ description: "server tool name (action=call) - explicit override, use when args-shape is ambiguous (e.g. addrs = xrefs_to vs callees, items = set_comments vs patch_asm)" })),
 	args: Type.Optional(Type.Record(Type.String(), Type.Unknown(), { description: "arguments for the server tool" })),
 	ops: Type.Optional(
 		Type.Array(
@@ -362,13 +363,37 @@ export default function (pi: ExtensionAPI) {
 						break;
 					}
 					case "call": {
-						if (!params.tool) return emit("action=call requires tool=<name from list_tools>", true);
+						// SERVER-TOOL RESOLUTION: the harness arg-envelope strips top-level `tool` from
+						// custom-tool params (field-observed 2026-10-23: four consecutive action=call
+						// rounds with tool=<name> all arrived params.tool=falsy while no-tool calls
+						// auto-ran fine). So explicit `tool` can no longer be trusted. Resolution order:
+						// srvtool (safe alias) -> legacy tool -> shape inference over args keys.
+						const inferSrvTool = (a: Record<string, unknown>): string | undefined => {
+							if ("queries" in a) return "lookup_funcs";
+							if ("code" in a) return "py_eval";
+							if ("batch" in a) return "rename";
+							if ("patterns" in a) return "find_bytes";
+							if ("items" in a) return "set_comments"; // patch_asm also uses items: pass srvtool
+							if ("addrs" in a) return "xrefs_to"; // callees also uses addrs: pass srvtool
+							if ("patches" in a) return "patch";
+							if ("decls" in a) return "declare_type";
+							if ("edits" in a) return "set_type";
+							if ("roots" in a) return "callgraph";
+							if ("filter" in a) return "search_structs";
+							if ("regions" in a) return "get_bytes";
+							if ("inputs" in a) return "int_convert";
+							if ("query" in a) return "find_regex";
+							return undefined;
+						};
+						const srvArgs = normArgs(params.args);
+						const srvTool = params.srvtool || params.tool || inferSrvTool(srvArgs);
+						if (!srvTool) return emit("action=call could not resolve the server tool: pass srvtool=<name from list_tools> (top-level `tool` is stripped by the harness) or use an inferable args shape (queries/code/batch/items/...)", true);
 						// (return stays explicit above; never return emit's void)
 						const r = await mcpRequest(t, {
 							jsonrpc: "2.0",
 							id: 2,
 							method: "tools/call",
-							params: { name: params.tool, arguments: normArgs(params.args) },
+							params: { name: srvTool, arguments: srvArgs },
 						}, timeoutMs);
 						return emit(textOf(r), !!r.isError);
 					}
