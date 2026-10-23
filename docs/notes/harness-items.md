@@ -1803,3 +1803,23 @@ list, and the list is hand-maintained by whoever last added a file - which for t
 or dead (delete, don't leave an unwatched file that suites compile and the product does not); (b) add a gate leg
 that fails on the *set difference* between on-disk sources and cmake.toml, so the next orphan is a red instead of
 a discovery. (b) is the cheap one and is the only reason (a) stops recurring.
+
+### 76a. Two corollaries, added the same day (FastNova committed the backtick bug minutes after item 76 was filed)
+
+**(1) The check belongs on the OUTPUT, at whatever layer the write happened.** FastNova ran
+`git commit -m "... both carry \`// 0x56b470\` ..."` — bash ate the backticks as command substitution and the
+message shipped as **"both carry ."** — the literal deleted, in a commit whose entire subject WAS the literal.
+Exit 0, message wrong. Same law as the phantom commit and the line-indexed duplicate, one layer further out:
+**an exit code is not a property of the result.** Standing practice, cheap and total: any message containing
+backticks, `$`, or quotes goes through `-F <file>`/heredoc, and after any write whose purpose is to carry
+literal text, grep the literal back out of the artifact — file, commit message, or generated doc alike
+(`git log -1 --format=%B | grep -c '<the bytes you meant to ship>'`).
+
+**(2) FastNova's generalization — "before calling an orphan a product question, ask whether two TUs cite the
+same EA" — is right, but only if the EA is a self-identify citation.** Tested against all seven orphans:
+the four GUI-skin files share almost nothing with built TUs (2/57, 1/17, 2/48, 1/67 overlapping cites) —
+**distinct addresses, so that gap is real and stays user-facing.** `Display.cpp` overlaps 3/5, consistent with
+supersession. And the false positive that proves the caveat: `JE/ActionMoveTo.cpp` "overlaps" on `0x550720`,
+which is the **enqueue seam it calls**, not a function it defines. A body cites EAs in two roles — *what I am*
+and *what I call* — and a supersession test keyed on either reads every shared helper as evidence of
+duplication. Same shape as the cells-vs-bytes trap: a citation's meaning is its role, not its token.

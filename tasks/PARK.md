@@ -61,6 +61,12 @@ They are THREE eras, and a suite-green file absent from the image means the prod
 2. **GUI skin era (4 files)** - all in the GUILoading suite, none in the image: **the port's GUI
    skin-loading path is likely unbuildable in the product.** Scale, corrected after a relay mistook the
    run-all gate FLOOR for the assert COUNT: GUILoading is **197 asserts** (the row's field 3, `116`, is the
+   **Status after FastNova's supersession test, run on all seven orphans: this one is REAL, not a draft
+   artifact.** The four GUI files share almost no EA cites with the 43 built TUs (2/57, 1/17, 2/48, 1/67), so
+   they are distinct addresses - genuinely absent from the image, not superseded copies. Contrast
+   `Display.cpp` (3/5 overlapping, supersession) and the mover pair (`JE/ActionMoveTo.cpp` overlapping on
+   `0x550720`, which is the enqueue seam it CALLS - a shared callee, not a duplicate identity, and the false
+   positive that keeps the supersession test honest: key it on self-identification cites only).
    T-024 anti-shrinkage floor, 81 below the real count, and the tree's own latest record reads `197 >=`). So
    197 asserts of behavior the suites exercise and the product image cannot reach - EIGHTY-ONE MORE than the
    first relay implied, and the gap being ruled on is bigger than it looked. Substantive, not plumbing; bears
