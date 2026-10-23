@@ -36,6 +36,14 @@ in {
 
       f3-wine-userdirs-fix "$prefix"
 
+      # Render lane self-heal, machine-portable: the prefix is host-local but outlives
+      # nixpkgs/lock drift, and this working tree can be booted from either of two hosts whose
+      # declared dxvk builds differ. `ensure` re-arms from THIS host's source whenever the
+      # verdict is not ARMED, so a stale-armed or foreign-armed prefix can never silently
+      # render through the Wine builtin (the M-001 / item-68 failure class, made self-repairing).
+      # `|| true`: a REG-ERROR must be LOUD but must never abort the boot it is reporting on.
+      f3-wine-dxvk ensure "$prefix" | grep '^verdict:' >&2 || true
+
       # THE RUNNER WORKS OR IT SAYS WHAT IS MISSING - the user ran this and got JE::FatalError as a
       # MessageBox with a silent terminal, because the app booted from a cwd with no resource.rht and the
       # staging lives in a SEPARATE script nobody had a reason to run first. A prerequisite the script knows

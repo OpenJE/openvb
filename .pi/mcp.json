@@ -1,0 +1,44 @@
+{
+  "autoEnableCodemode": false,
+  "mcpServers": {
+    "math": {
+      "command": "math-mcp",
+      "exposure": "direct"
+    },
+
+    "ida_original_f3": {
+      "url": "http://127.0.0.1:8745/mcp?ext=dbg",
+      "exposure": "deferred",
+      "timeout": 300
+    },
+    "ida_reimplementation_openvb": {
+      "url": "http://127.0.0.1:8746/mcp?ext=dbg",
+      "exposure": "deferred",
+      "timeout": 300
+    },
+
+    "imhex": {
+      "command": "imhex-mcp-server",
+      "args": ["--host", "127.0.0.1", "--port", "31337"],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      },
+      "exposure": "deferred",
+      "timeout": 120
+    },
+    "microsoft": {
+      "url": "https://learn.microsoft.com/api/mcp",
+      "exposure": "deferred"
+    },
+    "codegraph": {
+      "command": "codegraph",
+      "args": ["serve", "--mcp"],
+      "exposure": "deferred"
+    },
+    "devenv": {
+      "command": "devenv",
+      "args": ["mcp"],
+      "exposure": "deferred"
+    }
+  }
+}

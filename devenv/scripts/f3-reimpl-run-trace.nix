@@ -41,7 +41,13 @@ in {
       # Say out loud which d3d8 the render path will get (an "armed" prefix that is really using
       # the Wine builtin looks identical from the trace stream).
       # `|| true`: a REG-ERROR verdict must be LOUD but must never abort the boot it is reporting on.
-      f3-wine-dxvk status "$prefix" | grep '^verdict:' >&2 || true
+      # Render lane self-heal, machine-portable: the prefix is host-local but outlives
+      # nixpkgs/lock drift, and this working tree can be booted from either of two hosts whose
+      # declared dxvk builds differ. `ensure` re-arms from THIS host's source whenever the
+      # verdict is not ARMED, so a stale-armed or foreign-armed prefix can never silently
+      # render through the Wine builtin (the M-001 / item-68 failure class, made self-repairing).
+      # `|| true`: a REG-ERROR must be LOUD but must never abort the boot it is reporting on.
+      f3-wine-dxvk ensure "$prefix" | grep '^verdict:' >&2 || true
 
       # Stage the original demo's data directory (read-only symlinks) so the engine finds
       # resource.rht, *.grp, STF, Fonts... exactly like f3-reimpl-run-data's `cd "$dataDir"`.

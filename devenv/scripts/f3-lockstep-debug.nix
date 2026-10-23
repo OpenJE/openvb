@@ -40,6 +40,7 @@ in {
           "${wineboot}" -u >/dev/null
         fi
         f3-wine-userdirs-fix "$prefix"
+      f3-wine-dxvk ensure "$prefix" | grep '^verdict:' >&2 || true
       }
 
       run_wineboot "$origPrefix"

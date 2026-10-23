@@ -42,12 +42,13 @@ in {
       # usage: f3-wine-dxvk status            # $WINEPREFIX, else the shared reimpl prefix
       #        f3-wine-dxvk arm   [prefix]    # install + overrides, then re-report
       #        f3-wine-dxvk disarm [prefix]   # remove both (the law-55 clean-revert state)
+      #        f3-wine-dxvk ensure [prefix]   # status; re-arm from THIS host's source unless already ARMED
 
       cmd="''${1:-status}"
       case "$cmd" in
-        status|arm|disarm) ;;
+        status|arm|disarm|ensure) ;;
         -h|--help) sed -n '12,44p' "$0"; exit 0 ;;
-        *) printf 'f3-wine-dxvk: unknown command: %s (status|arm|disarm)\n' "$cmd" >&2; exit 2 ;;
+        *) printf 'f3-wine-dxvk: unknown command: %s (status|arm|disarm|ensure)\n' "$cmd" >&2; exit 2 ;;
       esac
 
       stateDir="$PWD/.devenv/state"
@@ -260,7 +261,25 @@ in {
         done
       }
 
+      do_ensure() {
+        # Machine-portable self-heal: the prefix is LOCAL (.devenv/state is not in git) but
+        # survives nixpkgs/lock drift, and a shared working tree can see a prefix armed by
+        # ANOTHER host's dxvk build. Either way "the declared source" is THIS host's current
+        # $DXVK_SRC, so anything not ARMED gets re-armed from it, idempotently, at boot.
+        local verdict
+        verdict="$( { report 2>/dev/null || true; } | sed -n 's/^verdict: \([A-Z-]\+\).*/\1/p' | head -1)"
+        if [ "$verdict" = ARMED ]; then
+          printf 'verdict: ARMED (ensure: no change)\n'
+          return 0
+        fi
+        printf 'ensure: verdict %s on %s -> re-arming from the declared source of this host\n' "''${verdict:-NOVERDICT}" "$prefix" >&2
+        do_arm
+        printf '\n'
+        report
+      }
+
       case "$cmd" in
+        ensure) do_ensure ;;
         arm) do_arm; printf '\n'; report ;;
         disarm) do_disarm; printf '\n'; report ;;
         *) report ;;

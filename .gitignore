@@ -40,8 +40,14 @@ van-buren-docs
 
 dependencies
 
-# pi agent state
-.pi/
+# pi agent state: per-machine by default, but the HARNESS CODE is shared.
+# settings.json, npm/, messenger/ and APPEND_SYSTEM.md stay machine-local; extensions,
+# skills and mcp.json are the repo's RE-harness implementation and belong in git so both
+# hosts run identical tooling.
+.pi/*
+!.pi/extensions/
+!.pi/skills/
+!.pi/mcp.json
 
 # Engram memory: .engram/config.json (project identity) is tracked; the exported
 # chunks are memory payloads that would be permanent once committed.

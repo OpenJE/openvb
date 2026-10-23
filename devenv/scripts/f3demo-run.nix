@@ -26,6 +26,7 @@ in {
       fi
 
       f3-wine-userdirs-fix "$prefix"
+      f3-wine-dxvk ensure "$prefix" | grep '^verdict:' >&2 || true
 
       cd "${demoRoot}"
       exec "${wine}" F3.exe

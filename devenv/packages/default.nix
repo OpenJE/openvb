@@ -4,6 +4,7 @@
   imports = [
     ./openvb.nix
     ./codegraph.nix
+    ./ghidra.nix
     ./opencode.nix
     #./cuda.nix
     #./llama-cpp.nix

@@ -28,6 +28,7 @@ in {
       fi
 
       f3-wine-userdirs-fix "$prefix"
+      f3-wine-dxvk ensure "$prefix" | grep '^verdict:' >&2 || true
 
       printf '%s\n' \
         "Original demo GDB stub listening on 127.0.0.1:$gdbPort" \
