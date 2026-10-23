@@ -129,8 +129,11 @@ namespace F3 {
 	//                                MemStreamRead_0x498170 already ported).
 	// 0x4148a0 VERIFICATION STATE: PAIR ANALYSIS COMPLETE - verdict: ONE RECORD FORMAT, NOT ONE
 	// FUNCTION. Table comparison (jump tables read from the exe, base 0x400000): 27 of 28 legs are
-	// byte-identical modulo the SEH 4-byte slot shift ([esp+54h] creature vs [esp+50h] weapon;
-	// record lea esp+14 vs esp+10), including case 34 -> 0x68. THREE REAL DIVERGENCES:
+	// byte-identical modulo a 4-byte slot shift ([esp+54h] creature vs [esp+50h] weapon;
+	// record esp+14 vs esp+10) - cause CORRECTED per verifier NiceTiger: the shift is the
+	// creature prologue's extra callee-saved push (push ebp @0x40dbc2), NOT the weapon's SEH
+	// record; and the shift is CONSISTENCY, not evidence of cloneness - the clone claim rests
+	// on the 27/28 byte-identical legs, which stand without it:
 	//  (a) GATE SOURCE: weapon keys extended reads on CHUNK version [ebx+0Ch] (cmpl 2/3/4/5 at
 	//      0x414b7c/414b99/414bbc/414bd4); creature keys on the RECORD's item-version (v3[12] =
 	//      byte 0x30, from GameCreature*'s embedded weapon record, base: false complete-object).
@@ -157,7 +160,18 @@ namespace F3 {
 	//      (from GameWeapon*, complete object - excerpt member mbr_0x40c), record built at
 	//      local_78 then destroyed post-append (sub_40A240 @0x414e1a). Creature side appends to
 	//      owner+0x6F8 (from GameCreature*, base: false; DB mbr_0x6f8). Different coordinate
-	//      systems, different owners - see the annotation law below.
+	//      systems, different owners. sub_40C970 has a THIRD caller beyond the pair:
+	//      0x41502f in sub_414EF0 (size 0x24e, the RTTI-casting path between the readers,
+	//      uninvestigated) - three construction sites of this record list exist, not two.
+	// THREE REAL DIVERGENCES (header continues; case 34 -> 0x68 both):
+	// PORTED + VERIFIER-PASSED (NiceTiger, whole-body raw-byte reads of 0x412b10-0x412b88 and
+	// 0x412b90-0x412c08, EQUAL sizes 0x78/0x78): all five shipped-side claims of the Deduct pair
+	// CONFIRMED, zero corrections - jbe-target-is-the-sub (wrap kept), sub-ZF-only flag gate, no
+	// path reaches retn without the sync (bounded: whole-body; both branches land unconditional),
+	// strings terminate 64 2e 0a 00 verbatim, and the mirror field deltas are NOT uniform
+	// (+0x3EC/+0x3F4 = +8, +0x3B8/+0x3C4 = +12, +0x424/+0x428 = +4) - the asymmetry is WHY two
+	// port bodies were correct. Not chased (theirs/era-open): callee semantics of meth_0x46d700 /
+	// meth_0x46d7f0 beyond firing.
 	// LAYOUT LAW (TrueRaven, committed as layout law 20+): +0x6F4 (creature, base:false complete
 	// object) and +0x168 (Entity, base:TRUE virtual-base subobject) are TWO COORDINATE SYSTEMS,
 	// not one field in two views - 0x6F4-0x168=0x58C is valid arithmetic with NO semantics and
