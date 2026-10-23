@@ -107,3 +107,18 @@ Vocabulary law for relays from now on: **quote EAs, never bare bp names** — "b
 falsifier)" not "bp10". Both tables use it, the numbers diverge, the EAs do not.
 Also corrected: the driver's SHAPE-OF-USE header still shows the softpipe env (wined3d era) — the
 sitting arms the DXVK env per hazard 4; header gets updated at S1 commit (tools/ = keeper lane).
+
+## S2 window attempt 2026-10-23 15:53-16:02 (splitseat; ABORTED-ghost, torn down clean)
+What was tried: the banked recipe (clone r-rig DXVK prefix, fifo + held-writer, winedbg --gdb
+--port 31440 scratch, unified arm order 1-20, driver v3, 560s deadline) via nohup-detached script.
+What failed: the held-writer + fifo dance does NOT survive detached launches — the gdb frontend
+started (banner in dbg.log), the arm-push blocked on the fifo (no reader had opened), the held
+writer vanished from the process table, and the inferior free-ran debugger-LESS (the exact ghost
+family the dance exists to prevent: silent EOF detach). Arm list never landed; values.log empty.
+Disposition: environ+cmdline-gated teardown of every sitting-redquartz process (winedbg 0120,
+held writers, drivers); survivors 0; managed 31337/31338/31437 verified untouched throughout;
+prefix clone kept for the retry (dosdevices diff vs r-rig = transient dll tmps + one F3.log only).
+DURABLE CORRECTION for the next attempt: run the window FOREGROUND under a session-owned long
+timeout (the prior keeper's S1 window was a foreground window; detached nohup breaks the
+process-group assumptions the dance relies on). Also fixed incident-wise: the t052 driver has no
+WINEPREFIX in its environ — cmdline-gating is required for it, environ alone misses it.
