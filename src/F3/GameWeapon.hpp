@@ -203,8 +203,32 @@ namespace F3 {
 	// sites {0x40b564 append-path, 0x40c438, 0x40e243, 0x414ff7, 0x415060}, NOT "the only copy
 	// path" - that phrasing conflated role with use and would have scoped a census wrong.
 	// sub_40AA40 grow has 7 xrefs: the template is broader than the record list; "the list"
-	// scopes to sub_40C970's 3 sites only. 0x40c438/0x40e243 owners UNVERIFIED - next census
-	// rows on the verifier's seat.
+	// scopes to sub_40C970's 3 sites plus INLINE appends - see twins.
+	// ALL FIVE COPY SITES ATTRIBUTED (verifier census + my window cross-check): 0x40b564 =
+	// allocator-internal (the append path); 0x40c438 = inside JE::SaveCRT_0x40bb80 (extent
+	// 0x40bb80-0x40c890, verifier windows-bounded) building a record FROM THE SAVE STREAM,
+	// count-bounded -> the record is SAVE-SERIALIZED and the port struct is a disk-visible
+	// shape; 0x70-per-record on-disk stride is IMPLIED at that site, not yet confirmed against
+	// stream stride - save-docs task, bound carried. 0x40e243 and 0x414ff7/0x415060 = the two
+	// CONSUMER TWINS (below).
+	// CONSUMER TWINS (verifier find; sub_40E180 leg CONFIRMED on my window): sub_40E180 and
+	// sub_414EF0 share the switch vocabulary EXACTLY (main arm 2,6-12,14-21,23,25-27,30-32,34;
+	// default 3-5,13,22,24,28,29,33 - @0x40e223/0x40e230 vs @0x414fce arms), both gate on
+	// `mov al,[edi+39h]; test al,al; jnz default` (@0x40e237/@0x415050), and BOTH copy-ctor into
+	// stack locals. CORRECTION TO THE CENSUS PARENTHETICAL: edi = node+8 = the record PAYLOAD
+	// base (`add edi,8` @0x40e1fa before push @0x40e1fd; element header is owner/delta at 0/4),
+	// so the gate byte is record +0x39 = the SECOND byte of the certified +0x38..+0x3B group,
+	// not the first. Gate MEANING open (both test, branch identically; skip-vs-valid unnamed).
+	// MY ADDITION, WINDOW-BOUNDED: sub_40E180 does not merely consume - it performs an INLINE
+	// APPEND TRIPLE (allocator 0x40e202 -> grow 0x40e20b -> link 0x40e212-218, link writes are
+	// the sub_40C970 shape @0x40c994-9c line-for-line) BEFORE its switch. So list insertion
+	// happens BOTH through sub_40C970 (3 sites) and inline; any append census that stops at 3
+	// is the same class as my 'only copy path'. Frame-join guard (theirs, adopted): sub_414EF0
+	// keeps a SECOND 0x70-class local (local_e0 @0x41505c) distinct from its record local -
+	// record-local greps must match {var_78, local_78} renderings AND exclude local_e0 by
+	// identity, not adjacency. Final shape of the record family: three construction sites
+	// (reader pair + save), five copy-ctor uses, two consumer twins, inserts via helper or
+	// inline triple - one record, 0x70 bytes, kind cell +0x40.
 	// THE 62 LITERAL IS REAL (verified on my disasm): third function sub_414EF0 writes
 	// [local_38]=3Eh @0x415024 (adjacent [local_34]=248h @0x415019) immediately before its
 	// sub_40C970 append @0x41502f. Bound: write + adjacency + append ordering mine; the cell's
