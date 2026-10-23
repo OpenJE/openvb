@@ -226,10 +226,23 @@ in {
         # Stale-exe invariant: remove the binary and never run what a failed compile left behind.
         rm -f "$exe"
 
+        # Compile with the SAME compiler the product uses: MSVC 2002 cl inside $MSVC_IMAGE, bootstrapped
+        # exactly as devenv/scripts/msvc-build.nix does it. Until now suites were built by mingw g++, so
+        # every green suite was evidence about a compiler the shipped binary does not use.
+        #
+        # OPENVB_TEST_TOOLCHAIN=gcc keeps the old path for one transition, and only so a suite that newly
+        # fails under cl can be told apart from one that was already broken. It is not a supported mode:
+        # delete it once the cl path has been green across a wave, because a second toolchain is a second
+        # set of bugs to keep in agreement.
         # shellcheck disable=SC2086
-        log="$("${mingxCxx}" -std=c++98 -static -w -Isrc -Imodules/openje/src -Imodules/tracing/src \
-              $srcs -o "$exe" 2>&1)"
-        cstat=$?
+        if [ "''${OPENVB_TEST_TOOLCHAIN:-msvc}" = "gcc" ]; then
+          log="$("${mingxCxx}" -std=c++98 -static -w -Isrc -Imodules/openje/src -Imodules/tracing/src \
+                $srcs -o "$exe" 2>&1)"
+          cstat=$?
+        else
+          log="$(tools/msvc-test-compile.sh "$exe" $srcs 2>&1)"
+          cstat=$?
+        fi
         if [ $cstat -ne 0 ] || [ ! -f "$exe" ]; then
           # Classify, do not just count: an 'error C' grep misses link failures (LNK2019 /
           # undefined reference), which is exactly what a missing source looks like
@@ -238,8 +251,14 @@ in {
           # Name the missing symbols right on the summary line: a new engine file that is not in
           # the table below shows up as exactly this, and the fix is to add that .cpp (or to pass
           # OPENVB_TEST_EXTRA_SOURCES while the author is still mid-edit), never to weaken a test.
+          # gcc says "undefined reference to `X'"; cl says "unresolved external symbol X". Capture both,
+          # or the row that exists to name the missing source prints no symbol at all.
           syms=$(printf '%s' "$log" | tr '`' ' ' | sed -n 's/.*undefined reference to //p' \
+                | sed -n 's/.*unresolved external symbol //p;s/.*unresolved external symbol //p' \
                 | tr -d "'" | tr -s ' ' | sort -u | head -3 | tr '\n' ' ')
+          syms="$syms$(printf '%s' "$log" | sed -n 's/.*unresolved external symbol //p' \
+                | cut -c1-70 | sort -u | head -3 | tr '\n' ' ')"
+          syms=$(printf '%s' "$syms" | tr -s ' ' | sort -u | head -3 | tr '\n' ' ')
           tail=""
           [ -n "$syms" ] && tail=" missing: $syms"
           printf '%-15s BUILD-FAIL (exit %d) kind=%s%s\n' "$name" "$cstat" "''${kind:-unknown}" "$tail"
