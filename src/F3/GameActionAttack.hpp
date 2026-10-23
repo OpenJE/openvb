@@ -26,6 +26,18 @@ namespace F3 {
 	//    creating+attaching GameEffectDamage objects (effect/updater layer unported).
 	//    HP write follows GameEntity::meth_0x4629C0 semantics: cur in [0..max] at
 	//    +0x24/+0x20 == our statCur/statMax; death -> kStateDying then kStateDead.
+	//    ** THE "[0..max]" CLAIM ABOVE IS FALSE AS WRITTEN - corrected 2026-10-23 from bytes. **
+	//    meth_0x4629C0 is: `mov edx,[esp+4]` (NEW value) ; `mov eax,[ecx+0x20]` (MAX) ;
+	//    `cmp edx,eax` ; `mov [ecx+0x24],edx` (STORE FIRST, UNCONDITIONALLY) ; `jle return` ;
+	//    `mov [ecx+0x24],eax`. So it computes `cur = min(new, max)` with NO LOWER BOUND, and the
+	//    store precedes the test - a hit for more than remaining HP leaves NEGATIVE health in a
+	//    shipped GameEntity. The port floors at 0 instead (`statCur = cur < 0 ? 0 : cur`), which is
+	//    a REAL behavior difference, not a rounding detail.
+	//    Kept, and NOT unified here, deliberately: the port's death test reads `statCur == 0`, so
+	//    adopting the shipped clamp WITHOUT first re-deriving what shipped's flip actually consumes
+	//    (the vft+0x50 gate at 0x45c5b2 is a STATE test - `test al,al; je` @0x45c5b5 - not an HP
+	//    compare) would trade a wrong HP value for a worse outcome: over-kill victims that never
+	//    die. Open item for Step 2; the write site carries the same note.
 	//  - hit test: chance >= RandRange(0,100) per RollToHit_0x402260 (session 17 §1) - note the
 	//    inclusive 0..100 range (101 outcomes), NOT 1..100 (chat C-33 §1).
 	//  - the shipped damage fork is the action's +0x71 "unarmed" bool (0x4040a8/0x4040d4):
