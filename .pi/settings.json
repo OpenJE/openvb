@@ -1,0 +1,96 @@
+{
+  "defaultProvider": "opencode-go",
+  "defaultModel": "glm-5.3-flash",
+  "extensions": [
+    "-builtin:codemode"
+  ],
+  "packages": [
+    "npm:pi-messenger",
+    "npm:pi-intercom",
+    "npm:gentle-engram@0.4.2",
+    "npm:pi-goal-list-loop-audit@0.39.45",
+    "npm:pi-verdict@0.15.0",
+    "npm:@zazencodes/pi-jev-model-router@2.0.0",
+    "npm:pi-jev-extension@0.3.1",
+    "npm:@cr1ms0n/pi-subagent@0.13.0",
+    "npm:pi-jev@0.7.0",
+    "npm:@henryqw/pi-codegraph@0.7.3",
+    "npm:pi-ghidra@0.3.0"
+  ],
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 52429,
+    "keepRecentTokens": 32768,
+    "modelOverrides": {
+      "opencode-go/glm-5.3-flash": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode-go/qwen3.8-flash": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode/deepseek-v4-flash": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode-go/gpt-6-luna": {
+        "reserveTokens": 210000,
+        "keepRecentTokens": 65536
+      },
+      "opencode-go/claude-haiku-5-5": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode-go/deepseek-v4-pro": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode/claude-sonnet-5-5": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode/step-5-preview-free": {
+        "reserveTokens": 200000,
+        "keepRecentTokens": 65536
+      },
+      "opencode/deepseek-v4.1-flash-free": {
+        "reserveTokens": 40000,
+        "keepRecentTokens": 20000
+      },
+      "battlemage/qwen38-flash-next": {
+        "reserveTokens": 52429,
+        "keepRecentTokens": 20000
+      },
+      "battlemage/dsv4-flash": {
+        "reserveTokens": 209715,
+        "keepRecentTokens": 65536
+      },
+      "opencode/jev-1.13": {
+        "reserveTokens": 6400,
+        "keepRecentTokens": 20000
+      },
+      "opencode/jev-1.13-free": {
+        "reserveTokens": 6400,
+        "keepRecentTokens": 20000
+      }
+    },
+    "_note": "Trimmed 2026-10-23 to the RE shortlist (enabledModels in this file is the single source of truth; regenerate overrides from it: reserveTokens=20% of contextWindow, keepRecent=~1/3 of reserve clamped 20k-65k). Catalog models outside enabledModels stay fetchable but out of cycling scope; this layer is project-scoped, the laptop gets the same list on pull.",
+    "_regenerate": "python: for m in enabledModels: ctx from models-store.json/models.json; reserve=round(ctx*0.2)"
+  },
+  "enabledModels": [
+    "opencode-go/glm-5.3-flash",
+    "opencode-go/qwen3.8-flash",
+    "opencode/deepseek-v4-flash",
+    "opencode-go/gpt-6-luna",
+    "opencode-go/claude-haiku-5-5",
+    "opencode-go/deepseek-v4-pro",
+    "opencode/claude-sonnet-5-5",
+    "opencode/step-5-preview-free",
+    "opencode/deepseek-v4.1-flash-free",
+    "battlemage/qwen38-flash-next",
+    "battlemage/dsv4-flash",
+    "opencode/jev-1.13",
+    "opencode/jev-1.13-free"
+  ]
+}

@@ -48,6 +48,7 @@ dependencies
 !.pi/extensions/
 !.pi/skills/
 !.pi/mcp.json
+!.pi/settings.json
 
 # GLLA runtime state: pid/instance owner locks, live goal jsonl, update scratch.
 # Machine-local by design - committing it makes another host inherit (and fight)
