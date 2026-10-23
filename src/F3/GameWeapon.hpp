@@ -203,7 +203,8 @@ namespace F3 {
 	// sites {0x40b564 append-path, 0x40c438, 0x40e243, 0x414ff7, 0x415060}, NOT "the only copy
 	// path" - that phrasing conflated role with use and would have scoped a census wrong.
 	// sub_40AA40 grow has 7 xrefs: the template is broader than the record list; "the list"
-	// scopes to sub_40C970's 3 sites plus INLINE appends - see twins.
+	// sites. Any census sentence about "the list" must scope per the corrected 7-body/9-path
+	// census above.
 	// ALL FIVE COPY SITES ATTRIBUTED (verifier census + my window cross-check): 0x40b564 =
 	// allocator-internal (the append path); 0x40c438 = inside JE::SaveCRT_0x40bb80 (extent
 	// 0x40bb80-0x40c890, verifier windows-bounded) building a record FROM THE SAVE STREAM,
@@ -229,26 +230,45 @@ namespace F3 {
 	// identity, not adjacency. Final shape of the record family: three construction sites
 	// (reader pair + save), five copy-ctor uses, two consumer twins, inserts via helper or
 	// inline triple (see APPEND/INSERT CENSUS) - one record, 0x70 bytes, kind cell +0x40.
-	// APPEND/INSERT CENSUS, COMPLETE (verifier NiceTiger's attribution of all 7 grow xrefs, each
-	// route through sub_40B510 = the fixed-0x70 allocator making family-membership a fact without
-	// whole-bodies; ReadVersion2 leg spot-checked IN MY WINDOW): SEVEN record-insertion sites -
-	// 3 via helper sub_40C970 (0x40e0bc, 0x414e11, 0x41502f) + 4 INLINE across 4 functions:
-	// sub_40E180 x2 (0x40e20d, 0x40e27b), sub_414EF0 x2 (0x414fad, 0x41509a), GameCreature::
-	// ReadVersion2_0x40d9e0 (alloc/grow/link @0x40db4a-5a - MY WINDOW: triple verified, link is
-	// the same three writes, param_1 = tail node), sub_414350 (0x414395-a6, 0xA6-byte fn, verifier-
-	// scoped). Any future "N appenders" claim must say SEVEN with the 3-helper/4-inline split or
-	// bound itself - a 3-site census is my 'only copy path' conflation one level up, named while
-	// warm. Twin symmetry so far: each consumer twin carries EXACTLY TWO inline append arms and
-	// its copy-ctor site lies in ADDRESS ORDER between them - a layout HINT of branch structure;
-	// whole-bodies make it fact (verifier's queued pass). AUTHORSHIP QUESTION - "was sub_40C970
-	// the extracted helper the twins predate, or is per-callsite duplication deliberate?" - is
-	// UNANSWERABLE FROM STATIC FACTS: both hypotheses fit every byte read; the structural fact
-	// stands alone (identical link triple {tail.next=node; node.prev=tail; [node+4 link]} at
-	// every site, 23-instr helper body repeating it as the inline sites do). PORT CONSEQUENCE,
-	// stated before anyone 'cleans it up': the port mirrors insertion at SHIPPED granularity -
-	// collapsing 4 inline sites into the helper would invent a post-refactor source state that
-	// no byte evidences, even though behavior is identical at every site read so far (bounded:
-	// site-level link shape, whole-bodies pending).
+	// APPEND/INSERT CENSUS, COMPLETE - COUNT CORRECTED AT SOURCE (verifier caught her own
+	// conflation AFTER my d342898 adopted it verbatim - role/use one level deeper, caught by
+	// counting BODIES against CALLERS, not trusting prose): the clean form is
+	// **7 insertion IMPLEMENTATIONS = 1 helper body + 6 inline bodies; 9 runtime insertion PATHS
+	// = 3 helper callers (0x40e0bc, 0x414e11, 0x41502f) + 6 inline sites (sub_40E180 x2,
+	// sub_414EF0 x2, ReadVersion2 x1, sub_414350 x1)**. Any future "N appenders" claim must
+	// split bodies-vs-paths or bound itself; "3+4" names nothing correctly. ReadVersion2 leg
+	// spot-checked in my window (triple @0x40db4a-5a exact); sub_414350 is a RANGE inserter
+	// (cmp-loop inserting successive node payloads - bulk copy-merge, fifth community function,
+	// verifier-window-bounded, loop bounds unread).
+	// TRIPLE NO-DIVERGENCE (the experiment's null, worth as much as a positive): alloc(record,
+	// [tail+4], tail) -> grow(this,1) -> link([x+4]=node; t=[node+4]; [t]=node) is BYTE-CONSISTENT
+	// at all seven sites, same order same writes, registers varying only where allocation did;
+	// inline sites are FULL inlinings including grow. My bound WIDENED as invited: triple-level
+	// identity now, not just link-shape. Extracted-vs-manual stays formally unresolved.
+	// RECORD SOURCE, THREE-WAY TAXONOMY (where the sites ACTUALLY diverge - verifier's windows,
+	// arms' trigger conditions + one A2 push-source line unread, bounded accordingly):
+	//  KIND 1 stack-built: helper's 3 reader sites + ReadVersion2 - site writes cells directly;
+	//    RV2 pre-sets trailing +0x64/65/66 = (1,0,0) (verified arithmetic: var_14/13/12 from
+	//    var_78 base) and does NOT set the gate.
+	//  KIND 2 raw re-insert, ungated: BOTH twins' FIRST arms (alloc @0x40e202/@0x414fa2) -
+	//    source = node+8 frame-loaded payload COPY, inserting someone else's record unmodified;
+	//    matches my own window's 'add edi,8; push edi' line exactly.
+	//  KIND 3 gated copy-and-claim: BOTH twins' SECOND arms - `mov al,[edi+39h]; test; jnz
+	//    default` BEFORE the copy-ctor (0x40e237/0x415050; copy runs ONLY when gate==0 - my
+	//    0x40e237-243 window shows the fall-through) and the inserted record's own +0x39 written
+	//    1 just before its alloc (frame arithmetic verified on both dumps: creature 0x49-0x10 =
+	//    0x39, weapon 0x4d-0x14 = 0x39).
+	// GATE +0x39 SEMANTICS RAISED from "tested-and-branched-identically" to: **already-copied/
+	// claimed - clear means eligible, and the Kind-3 copy marks its own copy claimed.** That
+	// sentence is now the whole true one at window scope; the NAME stays a package decision.
+	// Helper-vs-inline structural difference is exactly one: inline arms DO MORE per call (gate
+	// test + ctor + flag-set around Kind 3) than the 23-instr helper body - which HINTS toward
+	// the extracted-helper source story and stays labeled HINT by our own boundary law:
+	// authorial intent, not static fact. PORT POLICY stated where the hint lives, so nobody
+	// infers permission to refactor from it: the port mirrors insertion at SHIPPED GRANULARITY -
+	// one helper body for its 3 callers, six inline bodies inline; collapsing would invent a
+	// post-refactor source no byte evidences, identical-triple or not. The hint informs the
+	// story, never the code.
 	// THE 62 LITERAL IS REAL (verified on my disasm): third function sub_414EF0 writes
 	// [local_38]=3Eh @0x415024 (adjacent [local_34]=248h @0x415019) immediately before its
 	// sub_40C970 append @0x41502f. Bound: write + adjacency + append ordering mine; the cell's
