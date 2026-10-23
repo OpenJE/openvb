@@ -202,10 +202,28 @@ someone discovers it mid-relaxation is the whole point.** The shipped digest car
 only `hp=28` and `hp=45` - so it is *consistent* with the `<= 0` threshold but never *exercises* it. Step 3's
 floor relaxation therefore needs a fixture that actually reaches 0, which does not exist today; until one does,
 the digest cannot discharge the death-threshold claim and a "proved against T-068" line would be a false
-certificate. Also still unsourced: state-7's **producer** - the predicate leg is READ and traced to the byte
-(`[vft+0x50] == (entityState+0x1E0 == 7) OR (curHealth+0x24 <= 0)`), but nobody has found who writes 7, and
-`GameEntity`'s ctor @0x4678fd stores into at least two slots in a multiple-inheritance layout, so the survey
-covered one vft. Read, not traced: say it that way in any further claim about the death predicate.
+certificate. **UPDATE, same day: state-7's producer is SOURCED from the image** (TrueRaven), and it is a validated
+setter, not a stray write:
+- **`Entity::meth_0x5507f0` (384 bytes) is the state machine's setter/validator.** Prologue reads
+  `mov eax,[esp+4]` (the NEW state), `mov esi,ecx` (entity), `mov ecx,[esi+1E0h]` (CURRENT state),
+  `test ecx,ecx`, `cmp eax,1` - it validates a transition, and the store at `0x550945` is
+  `mov [esi+1E0h],eax`, a **register** store. That is why no immediate 7 exists anywhere near this field:
+  the value always arrives as an argument. The five `"Invalid state change"` strings this batch censused live
+  in this function.
+- **State 7 is produced by `Entity::virt_meth_0x5509b0`**: at `0x550a38`, `push 7; mov ecx,esi; call
+  0x5507f0`. Sibling `Entity::virt_meth_0x550970` pushes 4, and both `net::critical_section::meth_0x551c80`
+  and `meth_0x5a9330` do `cmp [reg+1E0h],5 / jne / push 4` - a guarded 5 -> 4 transition. The field is
+  written only through the validator, never ad hoc.
+- **The `== 7` query is its own accessor**: `Entity::virt_meth_0x549030` = `cmp [ecx+1E0h],7 / sete al /
+  retn` - one comparison, reached from vft `0x666044` slot 20 via the thunk `0x467a10`. So NiceTiger's
+  cell-20 survey and this predicate are the same path named from two ends.
+- **Consequence for Step 3**: the death predicate's state leg now has a named producer and a named query, so
+  the relaxation order FastNova insisted on (predicate first, clamp second) has a subject instead of a mystery
+  field. The missing `hp=0` fixture is unaffected - that blocker still stands.
+- **Method kept because both of today's clean zeros were my instrument, not the binary**: my `cmp` scan used
+  ModRM `83 8?` (the `mov` form) when `cmp`'s reg field is 7, and MCP `find_bytes` returned 0 for
+  `C6 46 0B 01`, a sequence I had read from the PE myself minutes earlier. Rule: sanity-check a detector
+  against a value known to exist before believing its zero - item 76 applied to my own tools.
 clamp to match. And a clamp change without a paired death-test change should be treated as a red flag on the
 diff itself, not a partial step toward fidelity.
 
