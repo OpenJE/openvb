@@ -124,7 +124,7 @@ PASS off a broken parser - item 70's rule, promoted from a law into code.
    basenames, still stands and is worth having: it is what would have told us this was two different symbols in
    the first place.
 ## QUEUED (trigger-gated)
-| H-IDX | STANDING ROW (never closes): ea-index --check gate + refresh-on-drift, 'any idle hand, twenty minutes' — the freshness guarantee behind item 53 |
+| H-IDX | STANDING ROW (never closes): ea-index --check gate + refresh-on-drift, 'any idle hand, twenty minutes' — the freshness guarantee behind item 53. **Last refresh 9f2df73 (2026-10-23)**: 200→202 docs / 7,913→8,061 EAs / 12,873→13,151 mentions, refused 1,061→1,069 (delta = unresolved-table slot-offset +7, outside-span +1, NO new citation shapes); --check green, verify 0 missed; drift source = entity-band-vbptr-roundtrip (12a3a91) + server-packet-dispatch-idmap (b0998fc), both indexed post-refresh — log in tasks/H-IDX-ea-refresh.md |
 | id | scope | trigger |
 |----|-------|---------|
 | R-ST | StringTree/multi-host embedded-component split annotations (T-059 split queue + T-086 GfxCameraHolder decode notes) — annotation wave | after Q-W2 |
