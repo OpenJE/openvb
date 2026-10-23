@@ -134,12 +134,20 @@ namespace F3 {
 	//  (a) GATE SOURCE: weapon keys extended reads on CHUNK version [ebx+0Ch] (cmpl 2/3/4/5 at
 	//      0x414b7c/414b99/414bbc/414bd4); creature keys on the RECORD's item-version (v3[12] =
 	//      byte 0x30, from GameCreature*'s embedded weapon record, base: false complete-object).
-	//  (b) CASE-1 ANIM: weapon is CONDITIONAL - `mov al,[esp+76h]` (local_12) `neg/sbb/and 6/add
-	//      38h` = 56 or 62 (bytes 8a 44 24 76 f6 d8 1b c0 83 e0 06 83 c0 38 @0x414c81); creature
-	//      is CONSTANT 56 (c7 44 24 54 38 @0x40df36). local_12's WRITER IS STILL UNIDENTIFIED
-	//      (init to 0 @0x4148e8; no store seen in dumped windows) - until it is found, do NOT
-	//      conclude "dead condition"; a zero from a pattern search needs a known-present control
-	//      (TrueRaven's two false zeros + the DB's own excerpt failure below prove the class).
+	//  (b) CASE-1 ANIM: DIFFERENT SPELLING, SAME SHIPPED VALUE - dead conditional resolved.
+	//      Weapon leg @0x414c81 is `mov al,[esp+76h] (local_12) / neg / sbb / and 6 / add 38h`
+	//      = 56|62 BY a flag; creature is `mov [esp+54h],38h` = constant 56 (@0x40df36). local_12
+	//      is referenced EXACTLY TWICE across all 377 instructions (six overlapping normalized
+	//      windows covering instrs 0-377 read personally): zero-init @0x4148e8 and the case-1
+	//      READ @0x414c81. No store exists in the function -> the conditional always selects 56
+	//      -> shipped weapon case 1 == creature case 1. CONTROLS, per the false-zero discipline:
+	//      the detector is personal reads of every window with both anchors (init + read) POSITIVELY
+//      present in the same detector, bounding the claim honestly: "no store among the normalized
+	//      windows read". ALIASING LIMIT CLOSED: the two-instrument cross-check was RUN and agrees -
+	//      raw objdump of the physical slot (mov %al,0x76(%esp) / mov 0x76(%esp),%al) shows exactly
+	//      one write (the init) and one read (case 1) over the whole function range; IDA's
+	//      depth-normalization makes that windows-claim physical anyway. Port takes ONE anim table
+	//      (56), faithful to shipped on every observed path, bound stated.
 	//  (c) WEAPON-ONLY TYPE DERIVATION @0x414c18-0x414c5c: consumed flag (local_3d) -> record
 	//      type 2; else switch on [weapon + 0x3B0] (from GameWeapon*, complete object; DB member
 	//      mbr_0x3b0) item type: 1-5 -> 1, 6-8 -> 0, 9-10 -> 3. The creature side has NO such
@@ -156,11 +164,11 @@ namespace F3 {
 	// must never appear as a "conversion delta". Every offset in this shard carries object AND
 	// base flag. The DB's usages list is itself an excerpt: mbr_0x6f0 lists 0x40d2ce but NOT
 	// 0x40e441, where my own disasm read `mov eax,[esi+6F0h]` - absence in usages != no usage.
-	// PORT DECISION: shared reader CORE ports as a file-static (format: the 9 base reads + 4/1/
-	// 4/1/1/1 extension + string at >=4), the THREE divergent legs stay PER-SIDE - a merged
-	// "one function" would have to invent which side owns (b) and (c), which is fabrication.
-	// Tested twice: weapon triple (gate chunk+0xC, type derivation, append 0x40C) and creature
-	// triple (gate byte 0x30, pinned type 3, append 0x6F8). GameCreature::ReadData WIRING stays
+	// PORT DECISION (updated after (b) resolution): shared reader CORE ports as a file-static
+	// (format: the base reads + gated extension + string at >=4 + ONE anim table incl. case 1=56),
+	// the TWO live divergences stay PER-SIDE - gate source (a) and type derivation (c) - plus the
+	// append target, which is not divergence but ownership (weapon+0x40C vs owner+0x6F8). Tested
+	// twice: weapon triple and creature triple. GameCreature::ReadData WIRING stays
 	// deliberately unowned (read-family seat's; ledger ruling).
 	// ERA-DEFERRED with reason:      ResolveTargets 0x415740 - octree/Map/LOS cone search
 	//                                (~1.7KB, mode-type switch 0..0x22, 'Unarmed attack type'
