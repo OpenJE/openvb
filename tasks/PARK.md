@@ -67,7 +67,23 @@ They are THREE eras, and a suite-green file absent from the image means the prod
    on interface work and P-CMBT step 6.
    is likely unbuildable in the product.** Substantive gap, not plumbing; bears on interface work and P-CMBT
    step 6.
-3. **`Display.cpp`** - blind on BOTH pipelines, so genuinely undetermined: dead weight or a missing feature,
+3. **`Display.cpp` - RULING SETTLED by FastNova: delete or absorb, do NOT add.** `main.cpp` (in target.F3)
+
+**SET IS NOW 8, not 7, and the two deltas mean different things:** `src/F3/GameWeapon.cpp` appeared after
+NiceTiger's sweep - that is **WildUnion's in-flight new TU awaiting FastNova's two build lines**, not a
+historical orphan. So the historical set stays {`Display.cpp`, `src/F3/GameActionMoveTo.cpp`, + 5 submodule}
+and the actionable ruling is unchanged: **the mover pair is one build ruling; Display is delete/absorb.**
+
+**Permanent gate landed and it classifies rather than counts:** `tools/build-orphan-check.py` - LATENT LNK2019
+(unique definition a *built* TU references) => exit 1; DEAD WEIGHT/duplicate => PARK list, exit 0. Today:
+**0 latent, 8 dead-weight.** It also refuses to emit any verdict when its own parse is implausible
+(`listed<20`, all-orphan, zero-definitions => exit 2), because its first two versions each printed a confident
+PASS off a broken parser - item 70's rule, promoted from a law into code.
+
+   calls `F3::Display::CreateGameWindow`, which I read as a latent unresolved reference - **wrong**:
+   `F3.cpp:558` opens `namespace Display {` and defines `CreateGameWindow` @**0x56B470**, so the link is
+   already satisfied and adding the TU yields LNK2005 duplicate symbols. `rc0` was honest all along; the
+   suspicion was mine and it was the wrong direction. Classified DEAD WEIGHT by the gate below.
    and the only one of the seven I'd call an open question rather than a gap. Original wording said "two found", which was a lower bound; a gatekeeper needs the bound to be exact: `src/F3/Display.cpp` and `src/F3/GameActionMoveTo.cpp` are absent from BOTH `cmake.toml` and `CMakeLists.txt` (explicit lists; cmkr guard INACTIVE, item 60). `GameActionMoveTo.cpp` IS compiled by run-all's SpawnMove/PathManager rows, so suites pass and `msvc-build` passes and NEITHER result says anything about that TU - R-FINISH item 8's class, second instance. Decide per file: build it (add to both lists, expect undefined refs from a never-linked TU) or delete it. THEN the cheap permanent fix: a gate leg failing on the set difference between on-disk `src/**/*.cpp` and `cmake.toml`, so the next orphan is a red, not a discovery. | **any idle hand** (blocks NiceTiger's GameActionMoveTo shard from being honestly gated) |
 
 ## QUEUED (trigger-gated)
