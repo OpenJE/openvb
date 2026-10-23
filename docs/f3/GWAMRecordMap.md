@@ -100,14 +100,14 @@ On this doc's (var-name) axis, from my window at her EAs:
   stream-order map would INVENT reads at those coordinates. The draft's
   r3 = "+0x14?" row is now RESOLVED: +0x14 IS read unconditionally (third
   read); the "?" it pointed at lives one cell down.
-- Per-function frame renders still need reconciliation (creature prints
-  var_6C[8] for the gated pair; weapon prints single-size labels at its 4-shifted
-  base) - named port-blocking leg below.
+- Per-function frame renders RECONCILED - see the section above (creature
+  var_6C[8] vs weapon's byte-fragment labels and 4-shifted base: cosmetic
+  classes only; cells map 1:1 on the base-relative axis).
 - RULE ENDORSED WITH RAW EVIDENCE: read sequence != cell order (at the gate);
   cell order != cell EXISTENCE (gated fills). The ctor's fixed +4k walk is the
   ONLY join. Unnamed cells stay offset-named, never guessed.
 
-## Port-blocking before this file turns into code
+## Boundary adjudication (the formerly port-blocking leg) - CLOSED
 Complete rows r2..r10 with printed offsets from the creature decompile (in-session
 context or re-decompile 0x40dba0), join LOCAL→CELL by ctor walk order, name any
 cell whose consumer role is already certified (range +0x2C per batch-B
