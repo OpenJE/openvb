@@ -82,7 +82,15 @@ PASS off a broken parser - item 70's rule, promoted from a law into code.
 
    calls `F3::Display::CreateGameWindow`, which I read as a latent unresolved reference - **wrong**:
    `F3.cpp:558` opens `namespace Display {` and defines `CreateGameWindow` @**0x56B470**, so the link is
-   already satisfied and adding the TU yields LNK2005 duplicate symbols. `rc0` was honest all along; the
+3. **`Display.cpp` - DEAD WEIGHT, class: `unreferenced-twin` (mechanism corrected twice; see below).**
+   `Display.hpp:9` declares `bool CreateGameWindow(UINT)` and `Display.cpp:8` defines it; `F3.cpp:579` defines a
+   SEPARATE `BOOL CreateGameWindow(int)`; `main.cpp:43` calls `F3::Display::CreateGameWindow(nCmdShow)`. The two
+   definitions have **different mangled names, so LNK2005 is impossible** - my previous line asserted it and was
+   wrong, and so was FastNova's original ruling. What actually happens if it is registered: it COMPILES AND
+   LINKS CLEAN, and the image carries two live definitions whose caller binds whichever declaration its
+   includes happen to expose. That is a silent-divergence hazard, not a link failure, which is worse to
+   diagnose and why `unreferenced-twin` should be its own category in FastNova's gate rather than folded into
+   dead-weight. Ruling stays delete/absorb - now for the right reason.
    suspicion was mine and it was the wrong direction. Classified DEAD WEIGHT by the gate below.
    and the only one of the seven I'd call an open question rather than a gap. Original wording said "two found", which was a lower bound; a gatekeeper needs the bound to be exact: `src/F3/Display.cpp` and `src/F3/GameActionMoveTo.cpp` are absent from BOTH `cmake.toml` and `CMakeLists.txt` (explicit lists; cmkr guard INACTIVE, item 60). `GameActionMoveTo.cpp` IS compiled by run-all's SpawnMove/PathManager rows, so suites pass and `msvc-build` passes and NEITHER result says anything about that TU - R-FINISH item 8's class, second instance. Decide per file: build it (add to both lists, expect undefined refs from a never-linked TU) or delete it. THEN the cheap permanent fix: a gate leg failing on the set difference between on-disk `src/**/*.cpp` and `cmake.toml`, so the next orphan is a red, not a discovery. | **any idle hand** (blocks NiceTiger's GameActionMoveTo shard from being honestly gated) |
 
