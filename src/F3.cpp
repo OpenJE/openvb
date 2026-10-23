@@ -19,6 +19,7 @@
 #include "JE/Strings.hpp"
 #include "JE/Network.hpp"
 #include "F3/RenderD3D8.hpp"   // M-001 slice 1 (opt-in render slot; un-gated path is a strict no-op)
+#include "F3/StartupMovies.hpp" // M-MOVIES: intro logo movies; strict no-op unless OPENVB_MOVIES=1
 #include "F3/GameAnimationCache.hpp"
 #include "F3/GameWorld.hpp"
 #include "F3/MapEntitySpawn.hpp"
@@ -734,6 +735,13 @@ namespace F3 {
 			}
 			ShowWindow( pwinWindow, nCmdShow );
 			F3::Render::InitOnce( g_window );   // M-001: opt-in d3d8 device; NO-OP unless OPENVB_RENDER=1
+			// M-MOVIES: the logos need a live device AND a window, so this sits immediately after InitOnce.
+			// TIMING DEVIATION, stated rather than buried: shipped plays these from the client-CONNECT path
+			// (JE::Client::virt_meth_0x58a620 @0x58a620, after "Client: connected to server" and the startup-
+			// movies flag at *(this+86)), not from window creation. The port has no connect path carrying that
+			// class yet, so this is the earliest point where a frame can actually reach the screen. NO-OP unless
+			// OPENVB_MOVIES=1, so app-boot and every CI leg stay exactly as they are.
+			F3::Movies::PlayStartupMovies();
 			return UpdateWindow( g_window );
 		}
 

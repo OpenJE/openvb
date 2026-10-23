@@ -52,7 +52,7 @@ WIN="$(printf '%s\n' "${files[@]}" | sed 's#^#Z:\\work\\#; s#/#\\#g' | tr '\n' '
     -v "$PWD:/work" -w /work \
     -e SRCWIN="$WIN" \
     "$IMAGE" -lc '
-      VC="call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL"
+      VC="call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat >NUL"
       # /I Z:\work is not decorative. The probes in verify-symbol include headers by REPO-RELATIVE path
       # (#include "modules/openje/src/JE/Foo.hpp"), so without the tree root on the include path every probe
       # fails C1083 and the tool reports a stale symbol when what is actually missing is its own -I.

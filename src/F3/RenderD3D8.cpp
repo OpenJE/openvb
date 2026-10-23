@@ -211,6 +211,13 @@ namespace F3 {
 		// ready-flag era, which this slot deliberately does not touch.
 		int DeviceState() { return g_state; }
 
+		// PORT-SIDE accessor (M-MOVIES): the live device for callers that must touch pixels - the intro movies
+		// blit decoded frames into the back buffer. No shipped twin: shipped hands its frames to a Gfx texture
+		// ([MovieFrame], cls_0x5b4f50::meth_0x5b5640 @0x5b56f8) and never exposes the device, because the whole
+		// renderer sits behind it. Returns 0 unless the device is live, so a caller can never dereference a
+		// stale pointer after Shutdown().
+		void* Device() { return ( g_state == 1 ) ? (void*)g_dev : (void*)0; }
+
 		// PORT-SIDE diagnostic (M-001): settles execution-reach questions with bytes. No shipped
 // twin anywhere in the 0x56B810 prologue era; invented during the probe-vs-theory fight.
 		void Probe( const char* line ) {

@@ -43,6 +43,12 @@ namespace F3 {
 		// 0 = not enabled, 1 = device live, 2 = enabled but no device (failure logged).
 		int DeviceState();
 
+		// The live IDirect3DDevice8*, or 0. Returned as void* to keep d3d8.h out of this header the same way
+		// InitOnce takes a void* hwnd. Added for M-MOVIES: StartupMovies must copy decoded frames into the
+		// back buffer, and reaching into g_dev from another TU is exactly the internal-linkage trap that
+		// LNK2019 already caught once in this file's history (see InitOnce's comment).
+		void* Device();
+
 		// Diagnostics hook: writes one line to the render trace channel if (and only if)
 		// the operator set OPENVB_RENDER_TRACE or the render gate is on. Used to settle
 		// "was this code path executed at all" questions with bytes, not theories.

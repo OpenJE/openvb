@@ -179,6 +179,7 @@ say "run: exe=$EXE timeout=${TIMEOUT_S}s trace=$RIG_DIR/$TRACE2 rc->g1-rc.txt"
   DISPLAY=":${DISPLAY_NUM}" VK_DRIVER_FILES="$ICD" \
   DXVK_LOG_LEVEL=info DXVK_LOG_PATH="Z:$(echo "$RIG_DIR/dxvk-logs" | sed 's#/#\\#g')" \
   OPENVB_RENDER=1 OPENVB_RENDER_TRACE="$WIN_TRACE" \
+  OPENVB_MOVIES="${OPENVB_MOVIES:-0}" OPENVB_MOVIES_TRACE="${OPENVB_MOVIES_WINTRACE:-}" \
   timeout "$TIMEOUT_S" "$WINE" "$EXE" ) > "$RIG_DIR/g1-stderr.log" 2>&1 &
 RUNPID=$!
 

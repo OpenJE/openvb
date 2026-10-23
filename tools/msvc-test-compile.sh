@@ -53,10 +53,17 @@ done
 # because host-side state dirs are owned by a different uid than the container's build user. msvc-build.nix
 # already works around exactly this by creating /work/build and /work/obj INSIDE the container; build/ is
 # the writable-by-convention tree, so intermediate output stays there and only the finished exe is moved.
-STAGE="build/msvc-tests"
-STAGE_OBJ="Z:\\work\\build\\msvc-tests\\objs"
+# Per-invocation scratch, keyed on PID. A fixed path here was a REAL cross-run corruption bug: two lanes
+# building suites at the same moment (normal in this project) shared build/msvc-tests/objs, and each run's
+# cleanup deleted the other's objects mid-compile. The victim did not report "another process is using this
+# directory" - it reported
+#   fatal error C1083: Cannot open compiler generated file: ...\o18.obj: No such file or directory
+# which reads as "a source file is missing from the table row" and sent me looking for a deleted .cpp. A
+# shared mutable path under concurrency produces a wrong diagnosis, not a queue.
+STAGE="build/msvc-tests/$$"
+STAGE_OBJ="Z:\\work\\build\\msvc-tests\\$$\\objs"
 SRCWIN="$(printf '%s\n' "${srcs[@]}" | sed 's#^#Z:\\work\\#; s#/#\\#g' | tr '\n' ' ')"
-OUTWIN="Z:\\work\\build\\msvc-tests\\$(basename "$out")"
+OUTWIN="Z:\\work\\build\\msvc-tests\\$$\\$(basename "$out")"
 
 # Env goes through `-e` BEFORE the image name. Two failed attempts taught this: `-e VAR=` after the image is
 # parsed as the COMMAND (observed: "/bin/bash: SUITE=cls_0x4d8d70: No such file or directory"), and embedding

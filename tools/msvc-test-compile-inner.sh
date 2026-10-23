@@ -20,10 +20,10 @@ set -uo pipefail
 
 # The container creates and destroys its own scratch: it runs as uid 100999, so host-side `rm -rf` on its
 # leftovers fails with Permission denied and litters the tree.
-mkdir -p "/work/${STAGE:-build/msvc-tests}/objs" || { echo "CLRC=1 EXE=no STAGE=args"; exit 1; }
-trap 'rm -rf "/work/${STAGE:-build/msvc-tests}/objs"' EXIT
+mkdir -p "/work/${STAGE:?STAGE not set}/objs" || { echo "CLRC=1 EXE=no STAGE=args"; exit 1; }
+trap 'rm -rf "/work/${STAGE}/objs"' EXIT
 
-VC='call Z:\home\msvc2002\bin\vcvars32.bat >NUL'
+VC='call Z:\home\msvc2002\bin\vcvars32.bat >NUL && call Z:\work\devenv\scripts\msvc-sdk-prerelease.bat >NUL'
 INC='/I Z:\work\src /I Z:\work\modules\openje\src /I Z:\work\modules\tracing\src'
 # /W0 ~ gcc's -w ; /MT ~ -static ; /EHsc matches cmake.toml's own msvc options.
 # No /std:c++98 - VC7.0 has no such switch, C++98 is simply what it speaks.

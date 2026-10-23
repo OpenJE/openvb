@@ -1,0 +1,43 @@
+; src/F3/binkw32.def - import library for the nine Bink functions F3.exe uses.
+;
+; WHY A .def, AND WHY THESE ORDINALS
+; The MSVC 2002 image has no binkw32.lib (RadTools ships headers + DLLs, not import libs for this compiler).
+; LoadLibrary/GetProcAddress was rejected because shipped F3.exe statically imports these nine, and a
+; dynamically-bound port would differ visibly in the one place a PE comparison can see.
+;
+; EVERY NAME AND ORDINAL HERE WAS READ FROM THE SHIPPED binkw32.dll (dumpbin /exports), not from bink.h:
+; the SDK header is Bink 1.0p (2000-06-26) and the runtime is 1.5u, a delta this lane has already been bitten
+; by once (header declares BinkGetTrackLargest; the DLL exports BinkGetTrackMaxSize).
+;
+; THE NONAME+ORDINAL FORM IS LOAD-BEARING, and three failed spellings prove it:
+;   1. `_BinkOpen@8` alone        -> lib prefixes another underscore, member becomes __BinkOpen@8, so cl's
+;                                    reference to _BinkOpen@8 is unresolved (LNK2019 x9 at product link).
+;   2. `BinkOpen@8 = _BinkOpen@8` -> links fine, but the RECORDED IMPORT NAME is the LEFT side, giving an
+;                                    exe that imports "BinkOpen@8". The DLL exports "_BinkOpen@8". Link-time
+;                                    success, load-time abort: wine printed "unimplemented function
+;                                    binkw32.dll.BinkSetSoundSystem@8" and killed the process. This is the
+;                                    shape where a green build means nothing - only running it found it.
+;   3. `_BinkOpen@8 = _BinkOpen@8` -> back to case 1 (lib still prefixes).
+; So the import is bound by ordinal (NONAME), which the loader resolves without consulting the name at all.
+; Deviation stated plainly: shipped's import table carries the decorated NAMES, ours carries ordinals with the
+; same nine functions behind them. Behaviourally identical at load; visibly different under dumpbin /imports,
+; and that is a deliberate trade to get a binary that starts rather than one that looks right.
+;
+; Verified by building a consumer that calls BinkSetSoundSystem + BinkOpen on the real Movies/IPlogo.mve:
+; it loads and returns a non-null handle, where spelling (2) aborted. Ordinals: Open=36 Close=16 DoFrame=22
+; NextFrame=35 Wait=57 CopyToBuffer=18 GetError=23 OpenDirectSound=37 SetSoundSystem=53.
+;
+; Regenerated every msvc-build BEFORE cmake configures (lib /def:src\F3\binkw32.def
+;   /out:build-msvc\binkw32.lib /machine:IX86); the link line references it unconditionally so a missing
+; import lib fails the LINK instead of silently producing an exe that cannot play movies.
+LIBRARY binkw32
+EXPORTS
+    BinkOpen@8 @36 NONAME
+    BinkClose@4 @16 NONAME
+    BinkDoFrame@4 @22 NONAME
+    BinkNextFrame@4 @35 NONAME
+    BinkWait@4 @57 NONAME
+    BinkCopyToBuffer@28 @18 NONAME
+    BinkGetError@0 @23 NONAME
+    BinkOpenDirectSound@4 @37 NONAME
+    BinkSetSoundSystem@8 @53 NONAME

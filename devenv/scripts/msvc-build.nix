@@ -123,7 +123,17 @@ in {
             cp "$cmkr_bin" build/cmkr_gen.exe
             WINEPREFIX=/work/build/wineprefix wine "Z:\\work\\build\\cmkr_gen.exe" gen || exit 1
           fi
+          # M-MOVIES: build the binkw32 import library from src/F3/binkw32.def BEFORE cmake configures.
+          # Order is load-bearing, not tidiness: CMakeLists.txt gates the link on if(EXISTS
+          # "''${CMAKE_BINARY_DIR}/binkw32.lib"), and EXISTS is evaluated at CONFIGURE time - generating the
+          # .lib after configure would silently leave the product without the import and the exe with no
+          # Bink thunks, i.e. a build that "succeeds" while the feature cannot possibly run. Re-running
+          # lib.exe each build is cheap and keeps the def file as the single source of truth.
+          # /machine:IX86 because F3.exe is 32-bit; the def lists the nine names read out of the shipped
+          # dll with dumpbin /exports, not the header (Bink 1.0p headers vs 1.5u runtime).
           WINEPREFIX=/work/build/wineprefix \
+            wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && lib /nologo /def:Z:\\work\\src\\F3\\binkw32.def /out:Z:\\work\\build-msvc\\binkw32.lib /machine:IX86" || echo "msvc-build: binkw32.lib generation FAILED - F3 will link without Bink and the intro cannot play"
+                    WINEPREFIX=/work/build/wineprefix \
             wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat && %CMAKE_EXE_WIN% -S Z:\\work -B Z:\\work\\build-msvc -DCMAKE_BUILD_TYPE=Release -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DCMKR_SKIP_GENERATION=ON"
           WINEPREFIX=/work/build/wineprefix \
             wine cmd /c "call Z:\\home\\msvc2002\\bin\\vcvars32.bat >NUL && call Z:\\work\\devenv\\scripts\\msvc-sdk-prerelease.bat && %CMAKE_EXE_WIN% --build Z:\\work\\build-msvc"
