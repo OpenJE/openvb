@@ -1807,7 +1807,7 @@ a discovery. (b) is the cheap one and is the only reason (a) stops recurring.
 ### 76a. Two corollaries, added the same day (FastNova committed the backtick bug minutes after item 76 was filed)
 
 **(1) The check belongs on the OUTPUT, at whatever layer the write happened.** FastNova ran
-`git commit -m "... both carry \`// 0x56b470\` ..."` — bash ate the backticks as command substitution and the
+git commit -m with a double-quoted message containing two literal backtick-delimited spans around the EA cite — bash ate the backticks as command substitution and the
 message shipped as **"both carry ."** — the literal deleted, in a commit whose entire subject WAS the literal.
 Exit 0, message wrong. Same law as the phantom commit and the line-indexed duplicate, one layer further out:
 **an exit code is not a property of the result.** Standing practice, cheap and total: any message containing
