@@ -163,7 +163,8 @@ namespace F3 {
 	//      systems, different owners. sub_40C970 has a THIRD caller beyond the pair:
 	//      0x41502f in sub_414EF0 (size 0x24e, the RTTI-casting path between the readers,
 	//      uninvestigated) - three construction sites of this record list exist, not two.
-	// THREE REAL DIVERGENCES (header continues; case 34 -> 0x68 both):
+	// (case 34 -> 0x68 on both sides; (a)/(b)/(c) above are the complete behavioral difference
+	// set between the pair - everything else is spelling or ownership.)
 	// PORTED + VERIFIER-PASSED (NiceTiger, whole-body raw-byte reads of 0x412b10-0x412b88 and
 	// 0x412b90-0x412c08, EQUAL sizes 0x78/0x78): all five shipped-side claims of the Deduct pair
 	// CONFIRMED, zero corrections - jbe-target-is-the-sub (wrap kept), sub-ZF-only flag gate, no
