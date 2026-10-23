@@ -117,3 +117,31 @@ a float at mover+0x94** — read as "speed-like accessor" but NAME IS NOT EVIDEN
   frees nothing beyond the flag-1 path; nothing in the 7 reads/writes `+0x2E0` or `+0x304`.
 - Unresolved, named: kind words 434/416 (mover `[vft+0x48]` request surface), mover `+0x90` state meaning,
   `+0x94` float identity, anim ids 29/32/1 semantics (GameAnimationCache era), slot 3 = 0x4010d0 owner.
+
+## Status update (NiceTiger, 2026-10-22, post-port): rulings and landed code
+
+The shard question this doc left open is CLOSED twice over: FastNova's b945fff ruled the mover pair
+(port proceeds; IMAGE INCLUSION deferred until a built TU first needs a symbol - register-on-first-need),
+and the port landed at 83d2146. Row-by-row final state:
+
+| row | port member | state |
+|---|---|---|
+| ctor 0x4056f0 | pre-existing inline ctor | PORTED (field init per bytes) |
+| dtor 0x405710 / deleting 0x4058b0 | compiler dtor semantics | DOCUMENTED, no own-side code (whole-body read found no frees to port) |
+| twin 0x405770 (kind 0x1B2) | `MoverRequest_0x405770` | PORT-MIRROR: kind+args recorded on the action; forwarder CALL named-gap |
+| twin 0x405790 (kind 0x1A0) | `MoverRequest_0x405790` | same, kind 0x1A0 |
+| slot 10 0x4057b0 | `OnAnimChoice_0x4057b0(ms)` | stamp + anim 29/32 arms LIVE on SpawnedEntity seams (`actionStartMs0x184`, `queuedAnimEvent`); RING DRAIN = cited no-op (+0x1B0/1B4/1B8 unmodeled; co-caller `GameActionDie::virt_meth_0x404e90` @0x404ed4); +0x90 gate mirrored as `moverGate0x90`, retires with the GameEntity-side field |
+| slot 11 0x406780 | `OnAnimStamp1_0x406780(ms)` | stamp + anim 1; byte-verified contrast: NO drain, NO gate |
+| slot 7 0x405720 (bonus row) | `GetMoveSpeed` | pre-existing, unchanged |
+| slot 12 0x4060b0 | `OnServerUpdate_0x4060b0` | pre-existing (SpawnMove era) |
+
+Suite asserts for the new members are QUEUED to FastNova (tests/ single-writer set) as a paste-ready
+nine-check leg, floor call 149 -> ~158 theirs. Honest status line that must travel with any citation of
+this port: **the forwarder CALL is a named gap; the observability is a port mirror; this is NOT
+shipped-behavior parity** - it is translation-ready evidence made compilable, which is exactly what the
+ungate ruling permitted while inclusion stays deferred.
+
+Compile note filed against me: first draft used C++11 in-class initializers; the harness compiles
+`-std=c++98` (run-all-tests.nix:230, i686-w64-mingw32). Caught by replicating the EXACT harness command
+rather than my usual flags - same class as floor-vs-count: a syntax check under different flags is a
+proxy for the gate, not the gate. Final state: c++98 rc=0, cppcheck rc=0, grep-backed commit stat +82/-1.
