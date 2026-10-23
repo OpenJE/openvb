@@ -128,12 +128,18 @@ namespace F3 {
 	//                                (GWAM chunk loop; JE::Common::Chunk +
 	//                                MemStreamRead_0x498170 already ported).
 	// 0x4148a0 VERIFICATION STATE: PAIR ANALYSIS COMPLETE - verdict: ONE RECORD FORMAT, NOT ONE
-	// FUNCTION. Table comparison (jump tables read from the exe, base 0x400000): 27 of 28 legs are
-	// byte-identical modulo a 4-byte slot shift ([esp+54h] creature vs [esp+50h] weapon;
+	// FUNCTION. Table comparison (jump tables read from the exe, base 0x400000): 27 of 28 legs
+	// are byte-identical modulo a 4-byte slot shift ([esp+54h] creature vs [esp+50h] weapon;
 	// record esp+14 vs esp+10) - cause CORRECTED per verifier NiceTiger: the shift is the
 	// creature prologue's extra callee-saved push (push ebp @0x40dbc2), NOT the weapon's SEH
 	// record; and the shift is CONSISTENCY, not evidence of cloneness - the clone claim rests
-	// on the 27/28 byte-identical legs, which stand without it:
+	// on the legs themselves and stands without it. BOUND ON THE COUNT, because it mixes
+	// instruments: all 28 weapon-side legs were read from instruction text; creature-side legs
+	// are RAW-BYTE confirmed for only 7 (cases 1, 2, 4, 6, 10, 13, 34 - exe walk) and
+	// RENDERING-ONLY for the rest (the creature decompiler's constant list, one instrument).
+	// 27/28 is THIS SEAT'S figure; the verifier-PASSED stamp below does NOT cover it - a
+	// programmatic all-34-slot pair-diff (tables 0x40e0f4 / 0x414e60) is delegated to
+	// NiceTiger's seat to extend or correct it. The behavioral set:
 	//  (a) GATE SOURCE: weapon keys extended reads on CHUNK version [ebx+0Ch] (cmpl 2/3/4/5 at
 	//      0x414b7c/414b99/414bbc/414bd4); creature keys on the RECORD's item-version (v3[12] =
 	//      byte 0x30, from GameCreature*'s embedded weapon record, base: false complete-object).
@@ -165,8 +171,9 @@ namespace F3 {
 	//      uninvestigated) - three construction sites of this record list exist, not two.
 	// (case 34 -> 0x68 on both sides; (a)/(b)/(c) above are the complete behavioral difference
 	// set between the pair - everything else is spelling or ownership.)
-	// PORTED + VERIFIER-PASSED (NiceTiger, whole-body raw-byte reads of 0x412b10-0x412b88 and
-	// 0x412b90-0x412c08, EQUAL sizes 0x78/0x78): all five shipped-side claims of the Deduct pair
+	// PORTED + VERIFIER-PASSED (scope: the five shipped-side claims of the DEDUCT PAIR only -
+	// does not extend to the GWAM clone count above): NiceTiger, whole-body raw-byte reads of
+	// 0x412b10-0x412b88 and
 	// CONFIRMED, zero corrections - jbe-target-is-the-sub (wrap kept), sub-ZF-only flag gate, no
 	// path reaches retn without the sync (bounded: whole-body; both branches land unconditional),
 	// strings terminate 64 2e 0a 00 verbatim, and the mirror field deltas are NOT uniform
