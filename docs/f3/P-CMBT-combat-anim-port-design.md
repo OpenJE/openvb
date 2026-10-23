@@ -220,9 +220,23 @@ setter, not a stray write:
 - **The `== 7` query is its own accessor**: `Entity::virt_meth_0x549030` = `cmp [ecx+1E0h],7 / sete al /
   retn` - one comparison, reached from vft `0x666044` slot 20 via the thunk `0x467a10`. So NiceTiger's
   cell-20 survey and this predicate are the same path named from two ends.
-- **Consequence for Step 3**: the death predicate's state leg now has a named producer and a named query, so
-  the relaxation order FastNova insisted on (predicate first, clamp second) has a subject instead of a mystery
-  field. The missing `hp=0` fixture is unaffected - that blocker still stands.
+- **CORRECTION, self-caught: "the field is written ONLY through the validator" is FALSE, and I stated it as
+  fact.** My store scan matched only `89 8?` - ModRM `0x80..0x87`, which is *source register = eax only* - and
+  missed every other source register, all SIB forms (`89 ac 24` = `[esp+1E0h]`), and the `C6/C7 84 24`
+  immediate forms. A complete sweep of the same bytes gives **41 stores and 35 loads** at `+0x1E0`, not the
+  5 and 19 I reported. Two of the additional stores are Entity sites the DB had already listed and I had
+  already seen - **`0x54e733`** (`89 97` = `mov [edi+1E0h],edx`) and **`0x551475`** (`89 9e` =
+  `mov [esi+1E0h],ebx`) - so there are at least **three** register-write sites besides `meth_0x5507f0`'s.
+  The load list grew the same way (19 -> 35), so the "no immediate 7 anywhere" claim is also now bounded to
+  *the forms my second scan matched*, not the binary.
+  What survives, and it is what Step 3 actually needs: the `push 7; call 0x5507f0` producer at `0x550a35`
+  is real and re-verified by two instruments, and `0x549030` is a real `==7` query. What does NOT survive is
+  any claim about **exhaustiveness** of writers - so the predicate's state leg has *a* producer and *at
+  least two more write sites to characterise*, which is a different and weaker statement than the one filed an
+  hour ago. Note the irony worth keeping: I wrote the control-first rule into this file after my two false
+  zeros, then published a census from an incomplete pattern without running the same control.
+  The control that caught it was a single line - the known store at `0x550945` must appear in any result -
+  and it would have failed the first scan too. The missing `hp=0` fixture is unaffected - that blocker still stands.
 - **Method kept because both of today's clean zeros were my instrument, not the binary**: my `cmp` scan used
   ModRM `83 8?` (the `mov` form) when `cmp`'s reg field is 7, and MCP `find_bytes` returned 0 for
   `C6 46 0B 01`, a sequence I had read from the PE myself minutes earlier. Rule: sanity-check a detector
