@@ -60,11 +60,26 @@ and the registration arrives with a digest pair to prove it, not as a housekeepi
 
 ## The rest of the census (8 orphans at this stamp; 0 latent LNK2019)
 
-- `src/F3/Display.cpp` — **OPEN, not settled.** Dead by non-reference: its
-  `CreateGameWindow(uint)` is an overload twin of the compiled `CreateGameWindow(int)` at
-  `F3.cpp:579`, so registering it causes no LNK2005. The honest options are "register Display.cpp
-  and retire the F3.cpp twin" or "delete the twin" — which one is a product call about which
-  implementation the image should carry, and it is not mine to close silently.
+- `src/F3/Display.cpp` — **RESOLVED, no user decision needed.** Both files carry the SAME cite
+  `// 0x56b470` (`Display.cpp:7`, `F3.cpp:578`), so they are two reconstructions of ONE shipped
+  function, not two product implementations competing for the image. The tie-break is maturity, not
+  taste: `F3.cpp`'s version is the renamed port (`pcSaveDirectoryRelativePath`, `nParameterValue`,
+  …) and is what the built image runs; `Display.cpp`'s is a raw IDA draft — 12 of its first 13 body
+  lines are `v2`/`v3`/`v4`/`eax` register-noise comments. So `Display.cpp` is a SUPERSEDED EARLIER
+  DRAFT: delete it, or move it under a scratch path if the draft history is wanted. Registering it
+  was never the alternative I first thought, because the "overload twin" difference
+  (`bool (uint)` vs `BOOL (int)`) is an artifact of the draft's unfinished signature, not a design
+  choice. Correcting my own overcorrection: my first answer ("delete, it duplicates") had the right
+  conclusion and the wrong reason (LNK2005 never existed); the reason is what mattered, and the
+  check that settled it was one grep for a shared EA cite.
+
+  A general lesson for this repo's orphan pile, since it explains how to rule the rest without
+  product debate: **before asking "register or delete", ask whether two TUs cite the same original
+  EA.** Two reconstructions of one address is a supersession question answerable from the
+  artifacts; only genuinely distinct addresses are a product question. Dead by non-reference: its
+  (An earlier revision of this file left Display.cpp OPEN as an overload-twin product call.
+  That was over-caution born from my having been wrong about it once: the shared-EA check below
+  settles it without any product question.)
 - 4 GUI files (`InterfaceFile`, `SkinDefaults`, `SkinFragments`, `SkinTable`) — a separate GUI-era
   question with the same shape as the mover pair: suite-compiled, image-unreachable.
 - `src/F3/GameWeapon.cpp` — **in-flight** (`[in-flight=YES]`, untracked), NOT a historical orphan.
