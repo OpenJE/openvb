@@ -210,9 +210,9 @@ setter, not a stray write:
   `mov [esi+1E0h],eax`, a **register** store. That is why no immediate 7 exists anywhere near this field:
   the value always arrives as an argument. The five `"Invalid state change"` strings this batch censused live
   in this function.
-- **State 7 is produced by `Entity::virt_meth_0x5509b0`**, byte-decoded and independently re-verified by
-  FastNova's PE reader: **`push 7` is at `0x550a34`** (`6a 07`; `0x550a35` is its operand byte - both FastNova's
-  cite and mine were one late), `mov ecx,esi` at `0x550a36`, and the `e8 b3 fd ff ff` call at `0x550a38` resolves to `0x5507f0`**. (My first draft pinned the producer to `0x550a38`, which is
+- **State 7 is produced by `Entity::virt_meth_0x5509b0`**, byte-decoded by this lane and the offsets re-read
+  from the PE twice: **`push 7` is at `0x550a34`** (`6a 07`; `0x550a35` is its operand byte),
+  `mov ecx,esi` at `0x550a36`, `e8 b3 fd ff ff` call at `0x550a38` resolving to `0x5507f0`**. (My first draft pinned the producer to `0x550a38`, which is
   the *call*, not the push - and in a lane that keys cites on EAs, a reader grepping `6a 07` at `0x550a38`
   finds a call opcode and concludes the producer does not exist. Off-by-three in the wrong direction.) Sibling `Entity::virt_meth_0x550970` pushes 4, and both `net::critical_section::meth_0x551c80`
   and `meth_0x5a9330` do `cmp [reg+1E0h],5 / jne / push 4` - a guarded 5 -> 4 transition. The field is
