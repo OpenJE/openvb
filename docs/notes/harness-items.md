@@ -1823,3 +1823,30 @@ supersession. And the false positive that proves the caveat: `JE/ActionMoveTo.cp
 which is the **enqueue seam it calls**, not a function it defines. A body cites EAs in two roles — *what I am*
 and *what I call* — and a supersession test keyed on either reads every shared helper as evidence of
 duplication. Same shape as the cells-vs-bytes trap: a citation's meaning is its role, not its token.
+
+### 76b. "UNCITED" IS NOT "UNPORTED" - a census keyed on EA-citations measures the ledger's memory, not the
+code, and it will tell a seat to port a function that already exists (FastNova, `0x4011d0`)
+
+**Triggered by**: the batch-C census I reported as "40 rows, 0 cited by EA in src/" - computed by grepping each
+row's EA string through the sources. FastNova then triaged their first row and found **`0x4011d0` is already
+ported as `Start()`, cited internally at `0x4011da`/`0x401229`**. The row was *uncited as a batch-C item* and
+*already implemented*, because the port cites a shipped function at the place it uses it, not at the place that
+named row EA appears, and because internal cites exist for work tracked under a different batch. The census was
+not wrong about the string it searched; it was measuring the wrong property while being reported as measuring
+the work.
+
+**The law, as a triage and not a count**: before a row is called unported, classify it three ways -
+**already-ported-uncited** (needs a cite, zero new code), **genuinely absent** (needs a port), **deliberately
+absent** (needs cite-and-absent, the lane's existing annotation for era-deferred work). The distinction changes
+the size of the remaining work and the nature of it: a `0x4`-byte accessor (`Get_mbr_0x58`) is a
+cite-and-absent candidate, not a port, and "port it" would duplicate a one-line body into the product.
+
+**Why this belongs with 76a rather than as its own rule**: it is the same failure - a green instrument reporting
+a property it does not measure. Item 76's version was *suite-compiled vs build-included*; 76a's was *a citation's
+role vs its token*; this is *absence-of-citation vs absence-of-implementation*. Three times the same sentence,
+and the census number I put in front of the user ("batch C: 40 rows, 0 cited -> the gap") inherited exactly this
+defect, overstating remaining work.
+
+**Standing form for any remaining-work claim in this repo**: state the property the query actually tests, and
+triage before sizing. `grep` for an EA answers "is this address mentioned"; answering "is this behavior
+implemented" needs the IDB's function extents and a name-to-symbol check, which is what FastNova ran.

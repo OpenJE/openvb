@@ -197,7 +197,15 @@ never die** — a wrong HP value traded for a silently immortal enemy, which is 
 to the digest.
 
 Order required: re-derive the death trigger from the state predicate FIRST, prove it against the shipped
-pair (T-068 `hp=` records are where a digest will or will not show negative HP), and only then relax the
+pair. **CORRECTION (FastNova, `6aaa62d`): this check was unsatisfiable as I wrote it, and saying so BEFORE
+someone discovers it mid-relaxation is the whole point.** The shipped digest carries **no `hp=0` leg at all** -
+only `hp=28` and `hp=45` - so it is *consistent* with the `<= 0` threshold but never *exercises* it. Step 3's
+floor relaxation therefore needs a fixture that actually reaches 0, which does not exist today; until one does,
+the digest cannot discharge the death-threshold claim and a "proved against T-068" line would be a false
+certificate. Also still unsourced: state-7's **producer** - the predicate leg is READ and traced to the byte
+(`[vft+0x50] == (entityState+0x1E0 == 7) OR (curHealth+0x24 <= 0)`), but nobody has found who writes 7, and
+`GameEntity`'s ctor @0x4678fd stores into at least two slots in a multiple-inheritance layout, so the survey
+covered one vft. Read, not traced: say it that way in any further claim about the death predicate.
 clamp to match. And a clamp change without a paired death-test change should be treated as a red flag on the
 diff itself, not a partial step toward fidelity.
 
