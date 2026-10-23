@@ -58,7 +58,13 @@ substitution is the expensive half.
 They are THREE eras, and a suite-green file absent from the image means the product cannot reach that behavior:
 1. **Movement era, 2 files** - `src/F3/GameActionMoveTo.cpp` + `JE/ActionMoveTo.cpp`, ONE ruling. Their
    build-blindness together means **the whole mover pipeline is test-only in the image today.**
-2. **GUI skin era, 4 files** - all in the GUILoading suite, none in the image: **the port's GUI skin-loading path
+2. **GUI skin era (4 files)** - all in the GUILoading suite, none in the image: **the port's GUI
+   skin-loading path is likely unbuildable in the product.** Scale, corrected after a relay mistook the
+   run-all gate FLOOR for the assert COUNT: GUILoading is **197 asserts** (the row's field 3, `116`, is the
+   T-024 anti-shrinkage floor, 81 below the real count, and the tree's own latest record reads `197 >=`). So
+   197 asserts of behavior the suites exercise and the product image cannot reach - EIGHTY-ONE MORE than the
+   first relay implied, and the gap being ruled on is bigger than it looked. Substantive, not plumbing; bears
+   on interface work and P-CMBT step 6.
    is likely unbuildable in the product.** Substantive gap, not plumbing; bears on interface work and P-CMBT
    step 6.
 3. **`Display.cpp`** - blind on BOTH pipelines, so genuinely undetermined: dead weight or a missing feature,
