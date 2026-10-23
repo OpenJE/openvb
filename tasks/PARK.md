@@ -81,7 +81,21 @@ PASS off a broken parser - item 70's rule, promoted from a law into code.
 
    calls `F3::Display::CreateGameWindow`, which I read as a latent unresolved reference - **wrong**:
    `F3.cpp:558` opens `namespace Display {` and defines `CreateGameWindow` @**0x56B470**, so the link is
-3. **`Display.cpp` = DEAD WEIGHT BY NON-REFERENCE. The `unreferenced-twin` mechanism two lines below was
+3. **`Display.cpp` - QUESTION DISSOLVED, and it was the wrong question (as of 9990869).** Both bodies
+   cite the SAME shipped EA: `Display.cpp:7` (`bool CreateGameWindow(UINT)`) and `F3.cpp:578`
+   (`BOOL CreateGameWindow(int)`) each carry `// 0x56B470`. So this is not "which implementation should the
+   image carry" - it is **one shipped function ported twice, by different eras of this project**:
+   `Display.cpp` is a raw decompile paste (191 lines, `CHAR *v2 // edx`, `// [esp-2Ch] [ebp-1B0h]` stack
+   comments - IDB output, unstyled), and `F3.cpp:579` is the hand-cleaned successor with tracing
+   instrumentation, `pcSaveDirectoryRelativePath`, and real names. `RenderD3D8.cpp:28` separately records that
+   its own port-side helper has NO shipped twin at 0x56B470, so the EA belongs to the window-create path
+   already carried.
+   **Ruling: delete or move out of `src/` for reference; it is not a candidate for registration** - adding it
+   would give the image two ports of one shipped function, one of them unstyled, with nothing referencing it.
+   Every earlier framing was a wrong question: "LNK2005 duplicate" (impossible, different manglings), "silent
+   divergence" (retracted, `main.cpp` never includes `Display.hpp`), "which should the image carry" (answered -
+   the one it already calls), "genuine open product choice" (my own last row, over-corrected a third time).
+   The class: **when two claims cite one EA, the question is provenance, not preference.**
    FALSE and is retracted - see the strike-through.** Verified: `src/main.cpp` includes only `windows.h`,
    `ctime`, `JE.hpp`, `F3.hpp`, `tracing.hpp`, `F3/RenderD3D8.hpp` and NEVER `Display.hpp` ("Display" occurs in
    the file only at the two call sites, :43/:48, bound through `F3.hpp`). So registering `Display.cpp` adds a
