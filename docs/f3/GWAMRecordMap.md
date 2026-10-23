@@ -7,44 +7,43 @@ Every offset below is RE-EMITTED from instruction text / the saved decompile's
 own frame comments, not from printed decimal. Builder-base = `&v8` (creature
 esp+0x14; weapon esp+0x10). Copy-ctor = `sub_40A980` walk order.
 
-## Stream order (reads in sequence; sizes are push immediates @EA)
+## COMPLETED TABLE (var-name axis: stack_frame table offsets, base var_78@0x14
+## = builder +0x00; reads from my windows @0x40dc01-0x40dd32; gated block from
+## the creature decompile, cross-checked against ctor sub_40A980's +4k walk;
+## verifier's six esp-based stamps re-verified same-base-pair 6/6 - cites below
+## carry that construction, not her memory)
 
-| seq | size | creature local | builder off | gate | note |
-|-----|------|----------------|-------------|------|------|
-| init| -    | v8 (type)      | +0x00       | -    | `mov [esp+14h],3` @0x40dc0d (RV2-era arms mutate; readers pin 3) |
-| r1  | 4    | v9             | +0x04       | always | anim-mode id (feeds the 56..104 ladder: `switch(v9)`) |
-| r2  | 4    | v11[0..3]      | +0x0C       | version!=0 (v4) | extension block head |
-| r3  | 4    | v10            | +0x14?      | version!=0 | |
-| ... |      |                |             |      | |
+| cell | builder off | var (frame-table) | fills | source |
+|------|-------------|-------------------|-------|--------|
+| 0    | +0x00       | var_78 (0x14)     | type  | INIT-only mov @0x40dc0d; never read; passed to append @0x40e0ad |
+| 1    | +0x04       | var_74 (0x18)     | u32   | r1 @0x40dc01 - anim-mode id (feeds 56..104 ladder) |
+| 2    | +0x08       | var_70 (0x1C)     | u32   | r2 @0x40dc42 |
+| 3    | +0x0C       | var_6C lo (0x20)  | u32   | GATED (version!=0) reach-back fill |
+| 4    | +0x10       | var_6C hi (0x24)  | u32   | NEVER WRITTEN by reader; ctor copies stack value blind - shipped reality, mirror don't fix |
+| 5    | +0x14       | var_64 (0x28)     | u32   | r3 @0x40dc6e (first after step-over) |
+| 6..9 | +0x18..+0x24| var_60,5C,58,54   | u32   | r4-r7 @0x40dca6/bb/dc17/dcf7 |
+| 10   | +0x28       | var_50 (0x3C)     | u32   | r8 @0x40dd0c |
+| 11   | +0x2C       | var_4C (0x40)     | u32   | r9 @0x40dd2d |
+| 12   | +0x30       | var_48 (0x44)     | u32   | r10 (next window; decompile v19) |
+| 13   | +0x34       | var_44 (0x48) byte| u8    | r11 flag v20[4]=a2!=0 - BOUNDARY OPEN BELOW |
+| bytes| +0x38..+0x3B  | var_40,3F,3E,3D (0x4C..0x4F) | 4x u8 | +0x39=CLAIMED (gated v21; A2 90h-pair/B2 FCh-pair verified), +0x3A=v22, +0x3B=v23 |
+| 15   | +0x3C       | var_3C (0x50)     | u32   | gated v24 = COUNTER (+3 in kind-3 consumer arms; 90h-pair verified) |
+| 16   | +0x40       | var_38 (0x54)     | u32   | anim ladder target + version>=2 v25 = KIND (creature 8Ch-pair, weapon 88h-pair verified) |
+| 17   | +0x44       | var_34 (0x58)     | u32   | version>=3 v26 |
+| str  | +0x48       | var_30..(0x5C..)  | SSO   | version>=4 v27 via sub_49C8D0 = StreamReadString_0x49c8d0; cap/len init 15 |
+| tail | +0x64..+0x66  | var_14,13,12 (0x78..0x7A) | 3x u8 | version>=5 v31,v32 (RV2 presets (1,0,0); 84h-pair verified) |
 
-UNRESOLVED IN THIS DRAFT (the honest gaps; do not port over them):
-1. The creature locals' exact frame offsets between +0x14 and +0x4C must be
-   tabulated from `v10,v12..v19,v20[5]` printed offsets before use - the rows
-   above are PARTIAL; `v10` and `v11` printed as esp+0x28 / esp+0x20 (not
-   monotonic with read order), which means the builder is NOT dense in stream
-   order at every gap. Gaps are where the copy-ctor's `+4k` walk supplies the
-   truth: cell k reads param_1+4k, so cell order = RECORD order, and the
-   LOCAL↔CELL join is the map proper.
-2. u8 r-read @0x40dcf0-era → `v20[4]=a2!=0` flag placement vs the ctor's
-   byte-cells +0x38..+0x3B (4 bytes; +0x39=claimed, +0x38/+0x3A/+0x3B unnamed).
-3. Extension block (version!=0): `v11(4),u8→v21, v24(4), u8→v22, u8→v23` - the
-   consumed(XOR)thrown pair = v22/v23 (FatalError @0x40de73 reads both).
-4. Version-gated: >=2 → v25 (+0x54 region; anim-override cell == record +0x40
-   ladder target via the ctor's 3-u32 group); >=3 → v26; >=4 → v27 STRING via
-   `sub_49C8D0` = ported `StreamReadString_0x49c8d0`; >=5 → v31,v32 two u8s
-   (ctor trailing +0x64..+0x66 triple; RV2 presets (1,0,0)).
+MESH RESULT: the gated block lands EXACTLY on the three role-cells certified
+independently from consumers (+0x39/+0x3C/+0x40), and string/trailing cells
+match the ctor walk end-for-end - the map and the census agree from opposite
+ends. Cell 4 never-written is NEW to this map: ctor copies it blind; the port
+mirrors (shipped reality, unnamed cell, offset-named only).
 
-## Certified anchors this map must reproduce
-- `sub_40A980` copy walk: 14 u32 (+0..+0x34), 4 bytes (+0x38..0x3B), 3 u32
-  (+0x3C..0x44), SSO string (+0x48), 3 bytes (+0x64..0x66). [verifier-stamped]
-- kind cell = +0x40 (dual-frame, computed on the VAR-NAME axis from
-  stack_frame table offsets - creature var_38(0x54)-var_78(0x14), weapon
-  var_38(0x50)-local_78(0x10) - invariant by construction; the verifier's
-  same-base pair re-check independently confirms, and her cross-PC sequence
-  numbers were retracted as sawtooth, this cell NOT among them). [verifier +
-  my dumps, axis-stamped]
-- claimed = +0x39 (second byte, payload base = node+8 proof @0x40e1fa/0x40c430).
-- counter = +0x3C, kind-3 += 3 dual-site (A2 @0x40e248-5b, B2 @0x41506c).
+ONE BOUNDARY OPEN before code: ctor treats +0x34 as the LAST u32 of its
+14-u32 run, but the reader's u8 flag sits AT var_44(+0x34) - so the flag is
+cell 13's LOW BYTE and +0x35..+0x37 are ctor-copied unwritten stack. Resolve
+by walking r10/r11 EAs + the init stores to 0x49..0x4B; until then the byte
+group's left edge is unnamed by rule.
 
 ## Metal facts (verifier raw-disasm 0x40dc01-0x40dd17 + my confirming window)
 COORDINATES - RULE, NOT ORIGIN (my previous commit's translation advice is
