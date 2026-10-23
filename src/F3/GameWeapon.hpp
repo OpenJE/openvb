@@ -5,8 +5,24 @@
 
 #include "F3.hpp"
 #include "F3/GameItem.hpp"
+#include "JE/ResourceSystem.hpp"   // JE::ResourceSystem::MemStream, MemStreamRead_0x498170, StreamReadString_0x49c8d0
+#include "JE/Common/Chunk.hpp"
 
 namespace F3 {
+	// LAYOUT TRUTH (slice 2; verifier TrueRaven measured with a live cl probe): the port
+	// chain GameWeapon : GameItem : GameEntity ... packs members DENSELY - no gap arrays
+	// upstream - so sizeof here is 0x5E0 vs shipped 0x808, and every mbr_0xXXX names its
+	// OWN actual byte, NOT the shipped byte (mbr_0x3b0 = real 0x568). This class is a
+	// NAME LEDGER, not a byte-faithful mirror. Binding consequences:
+	//   1. Port AND test code access fields BY NAME only. Raw (char*)&w+DB-offset
+	//      arithmetic writes inside the base subobject (it did, today, in slice 2) and
+	//      is banned in this file. Metal cites like [esi+3B0h] below are EVIDENCE bytes,
+	//      not addresses, until (2) lands.
+	//   2. Byte-parity / save-compat requires anchoring this subtree with explicit
+	//      gap_ members (JE/ActionMoveTo.hpp:30 convention: sized by subtraction).
+	//      Tripwire to enable WITH that change, never before:
+	//        typedef char GameWeaponSizeCheck[( sizeof(GameWeapon) == 0x808 ) ? 1 : -1];
+	//      Anchoring ownership is the GameItem/GameEntity lane, not this shard.
 	struct GameWeapon : public GameItem {
 		//: Members
 			dword mbr_0x3b0;
@@ -16,6 +32,10 @@ namespace F3 {
 			dword mbr_0x3c0;
 			dword mbr_0x3c4;
 			dword mbr_0x3c8;
+			dword mbr_0x3cc;   // parent-reader STRING cell. Store at the metal: lea
+			                   // edx,[esi+3CCh]; push; call sub_49C8D0 @0x412d5c-64
+			                   // (inside sub_412CD0). The DB usages absence over the
+			                   // 0x414xxx range was checked; it does not survive this store.
 			byte mbr_0x3d0;
 			dword mbr_0x3e0;
 			dword mbr_0x3e4;
@@ -111,7 +131,81 @@ namespace F3 {
 	const char *GameWeaponGetLastLog();
 	void        GameWeaponResetLastLog();
 
-	// ---- shard status (verified against the live IDB before writing; see also the
+	// ---- batch C slice 2: GWAM attack-mode record + readers -------------------------
+	// Layout certified in docs/f3/GWAMRecordMap.md (base-relative var axis; ctor
+	// sub_40A980 walk; verifier 6/6 base-pair construction notes per cell). Payload
+	// is 0x68 bytes; element = 8-byte header + payload = 0x70 (new @0x40b531).
+	// This struct is SAVE-SERIALIZED-visible (JE::SaveCRT_0x40bb80, 0x40c438 site);
+	// on-disk stride IMPLIED 0x70 there, unconfirmed (save-docs task, bound in doc).
+	struct GWAMRecord {
+		unsigned int cells[ 14 ];      // +0x00..+0x34. cell0=type (init 3; readers pin),
+		                              // cell1=anim mode id (ladder input), cells 3/4 =
+		                              // +0x0C gated reach-back / +0x10 NEVER-WRITTEN
+		                              // survivor (ctor copies blind - mirrored, not fixed),
+		                              // cell13 +0x34 = unconditional u32 stream fill.
+		unsigned char bytes[ 4 ];      // +0x38..+0x3B: [+0]=NORMALIZED presence flag
+		                              // (setnz 0/1, NOT stream verbatim, unconditional);
+		                              // [+1]=+0x39 CLAIMED (clear=eligible; kind-3 marks
+		                              // its copy claimed); [+2]/[+3] gated - survivors
+		                              // when version<1.
+		unsigned int counter;          // +0x3C (kind-3 consumer arms += 3, dual-site)
+		unsigned int kind;             // +0x40 (56..104 anim ladder target; version>=2 fill)
+		unsigned int ext44;            // +0x44 (version>=3)
+		char *pcText;                // +0x48 SSO string object: internals opaque (field order
+			                               // unverified) - port models the owning char* that
+			                               // StreamReadString_0x49c8d0 fills (cap-15 init era).
+			                               // meth_0x401b20 deep-copy semantics belong to whoever
+			                               // ports the container; the reader asserts stream
+			                               // content only.
+		unsigned char tail[ 3 ];       // +0x64..+0x66 (version>=5 v31,v32; RV2 (1,0,0))
+	};
+
+	// Reader seam: installed per-call by the suite/product; stands in for the
+	// ported JE stream layer ONLY where the shipped body used the global resource
+	// system. Ported bodies call JE stream functions directly (MemStreamRead_
+	// 0x498170 / StreamReadString_0x49c8d0 exist in the port) - this seam is for
+	// the list-append TARGET only: shipped appends via sub_40C970(list, &record)
+	// whose three targets differ per owner (weapon+0x40C container per my trio;
+	// creature owner+0x6F8). The port injects the append so the shared CORE has
+	// one copy-semantics owner instead of inventing the container's port home
+	// before the container seat exists. NULL seam = record returned unfilled-
+	// appended: PORT-DEFENSIVE, named, not shipped (shipped always has a list).
+	typedef void ( *GWAMAppendFn )( void *listOwner, const GWAMRecord &rec );
+	void GameWeaponSetGWAMAppend( GWAMAppendFn fn );
+
+	// Shared builder (the certified common metal; docs/f3/GWAMRecordMap.md).
+	// Reads one GWAM chunk record from ms into rec EXCEPT the two certified
+	// divergent legs, which are parameters, not assumptions:
+	//   nGateVersion  - weapon side passes CHUNK version (chunk+0xC); creature
+	//                   side passes RECORD item-version (byte 0x30 of its record).
+	//                   Gates per metal: !=0 -> extension block; >=2/3/4/5 ->
+	//                   counter/kind ladder override, ext44, string, tail.
+	//   nTypeIn       - creature leg pins 3; the weapon leg derives
+	//                   (consumed->2, item-type switch 1-5->1, 6-8->0, 9-10->3)
+	//                   and passes the result in. Derivation stays CALLER-side
+	//                   because its inputs (owner item type, consumed flag) are
+	//                   per-side; the ladder below is shared and byte-certified.
+	// Returns 0 on any stream failure - shipped bodies all fail closed to 0
+	// (free/exit legs @0x40dc2x-era etc.); failures are first-fail, no partial
+	// append anywhere (append happens only on the success path @0x40e0ad/414e11).
+	int GameWeaponReadGwamRecordCore( JE::ResourceSystem::MemStream *ms, GWAMRecord &rec,
+	                                    unsigned int nGateVersion );
+
+	// Per-side thin wrappers (the "tested twice" unit): each supplies its own
+	// certified gate source, type leg, and append target per the reconciliation
+	// section. nChunkVersion/nRecordItemVersion are passed by the CALLING readers
+	// (chunk loop / creature seat's wiring when it lands).
+	int GameWeaponReadAttackModeData_Weapon( JE::ResourceSystem::MemStream *ms, unsigned int nChunkVersion,
+	                                          unsigned int nWeaponItemType, void *pWeaponList );
+	int GameWeaponReadAttackModeData_Creature( JE::ResourceSystem::MemStream *ms, unsigned int nRecordItemVersion,
+	                                           void *pCreatureList );
+
+	// GameWeapon::ReadData 0x415190 (chunk loop; sole caller was the file-read
+	// vtable thunk 0x415660). parent-prefix reader (sub_412CD0) ports as a
+	// file-static here per the no-blocker ruling; its GameItem-shard promotion
+	// question stays a QUESTION for a seat that exists.
+	int GameWeaponReadData( JE::ResourceSystem::MemStream *ms, GameWeapon &w, const JE::Common::Chunk &firstChunk );
+	// ---- batch C shard status (verified against the live IDB before writing; see also the
 	// ---- attribution finding on the second ReadAttackModeData row) --------------------
 	// Ported here (this slice):      DeductPrimary 0x412b10, DeductSecondary 0x412b90.
 	// Verified, awaiting seams:      ReloadPrimary 0x413a90, UnloadPrimary 0x4135c0 (inventory /
