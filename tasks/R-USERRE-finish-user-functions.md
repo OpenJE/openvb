@@ -1940,7 +1940,14 @@ excerpt of the image, not the image. Walking shipped's F3 game-lib native table 
 
 Full write-up: `docs/f3/NativeInstallerEvidence.md` §5-6, `docs/f3/TaskJournalTrio.md` §2a.
 
-## Next-slice recipe (TrueRaven, banked at the context cliff 2026-10-22 ~22:0x) — NOT started, so the next seat does not re-derive
+## Next-slice recipe (TrueRaven, 2026-10-22 ~22:0x) — NOT started, so the next seat does not re-derive
+
+> **Seating correction:** an earlier version of this block dated itself to "the context cliff" and claimed
+> `reserve` cannot be released. Both were wrong and both came from the same bad habit - reading a seat's
+> *capacity* off the mesh status display (which reports a **cumulative** token figure, not window occupancy) and
+> repeating a peer's **self-report** as fact. `release` exists and works; the reservations named below were
+> released and are free. Rule for this file: **do not state, plan around, or escalate a blocker that is
+> inferred from another agent's context state.** Ask the seat, or act on the artifact.
 
 WildUnion's `.int` trace (docs/f3/NativeAbiEvidence.md, d61aa78) makes a real parity oracle available. What I
 VERIFIED myself against `.devenv/state/f3-reimpl-data/data/Scripts.grp` (5,832,974 bytes):
@@ -2044,11 +2051,12 @@ worst outcome for this lane would be two half-seats both assuming the other re-r
   with themselves. And the calibration that matters for the decision record: DOA evidence for signature
   migration is **15 call sites across two natives**, not systemic payload rot - the majority population is the
   live one in both rows.
-- **The helper parameterisation** (the ONLY src-touching job left; parked with TrueRaven at the context cliff
-  because `reserve` cannot be released from this seat): make `ResolveNativeEntity` take the cell count **and the
-  comparison kind** so set A's 13 rows stop carrying a decorative `nExpectedCells`. `HideInterfaces`' shipped
-  arity **0** bites first, and 0 is a real value, not the `-1` "no gate exists" sentinel. Needs a fresh seat
-  seated on `src/F3/ScriptNatives.{cpp,hpp}` + `modules/openje/tests/je/ScriptNatives`, then full gates.
+- **The helper parameterisation** (the ONLY src-touching job left, **unowned and unblocked**): make
+  `ResolveNativeEntity` take the cell count **and the comparison kind** so set A's 13 rows stop carrying a
+  decorative `nExpectedCells`. `HideInterfaces`' shipped arity **0** bites first, and 0 is a real value, not the
+  `-1` "no gate exists" sentinel. `src/F3/ScriptNatives.{cpp,hpp}` + `modules/openje/tests/je/ScriptNatives`
+  were **released** by this seat - any session may claim them; then full gates, and a known-present control on
+  every negative.
 
 **TWO-GATE LAW (FastNova 248f842; verified from instruction text here)**: shipped has TWO arity gates -
 `0x59AF40` EXACT (`cmp/je`, 4 args) and `0x59AF90` MINIMUM (`cmp/jge` @0x59afa7, 5 args with `&out_actual`
