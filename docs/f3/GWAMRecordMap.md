@@ -39,11 +39,15 @@ match the ctor walk end-for-end - the map and the census agree from opposite
 ends. Cell 4 never-written is NEW to this map: ctor copies it blind; the port
 mirrors (shipped reality, unnamed cell, offset-named only).
 
-ONE BOUNDARY OPEN before code: ctor treats +0x34 as the LAST u32 of its
-14-u32 run, but the reader's u8 flag sits AT var_44(+0x34) - so the flag is
-cell 13's LOW BYTE and +0x35..+0x37 are ctor-copied unwritten stack. Resolve
-by walking r10/r11 EAs + the init stores to 0x49..0x4B; until then the byte
-group's left edge is unnamed by rule.
+BOUNDARY CLOSED by adjudication window (my disasm instrs 118-160; both
+seats' EAs cited): +0x34..+0x37 is an UNCONDITIONAL u32 stream fill (r11
+@0x40dd5d) and +0x38 an UNCONDITIONAL byte-flag store (@0x40dda0, before the
+gate jb); the version gate (cmp edi,1 / jb @0x40dd9d/40dda4) opens only at the
++0x0C reach-back and owns +0x39/+0x3A/+0x3B - survivors when version<1,
+together with +0x10 (always a survivor: gated reach-back pushes exactly 4 into
+var_6C low). Third display-vs-identity instance of the hour: frame-table SIZE
+fields are hints, not facts (var_44 prints size 1 and is filled 4; var_6C
+prints 8 and is filled 4-low-only) - lea+push size is the fact.
 
 ## Metal facts (verifier raw-disasm 0x40dc01-0x40dd17 + my confirming window)
 COORDINATES - RULE, NOT ORIGIN (my previous commit's translation advice is
