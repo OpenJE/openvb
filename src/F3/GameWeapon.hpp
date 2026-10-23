@@ -119,9 +119,29 @@ namespace F3 {
 	//                                ReloadSecondary 0x413ca0 + UnloadSecondary 0x413810 NOT yet
 	//                                byte-verified as mirrors - verify before claiming symmetry).
 	// Verified, portable on existing primitives: ReadData 0x415190 (calls sub_412CD0 = GameItem
-	//                                parent - cross-shard dependency) and ReadAttackModeData
-	//                                0x4148a0 (GWAM chunk loop; JE::Common::Chunk +
+	//                                parent - VERIFIED a flat 15-read prefix reader over BYTES
+	//                                0x3B0..0x404, [esi+3B0h] @0x412ce1; the decompiler renders
+	//                                it char*-relative +944..+1028, which IS byte math - lands
+	//                                inside this excerpt's named region; string at [3CCh] via
+	//                                sub_49C8D0 = already ported StreamReadString_0x49c8d0;
+	//                                ports as file-static) and ReadAttackModeData 0x4148a0
+	//                                (GWAM chunk loop; JE::Common::Chunk +
 	//                                MemStreamRead_0x498170 already ported).
+	// 0x4148a0 VERIFICATION STATE (slice-2 prep, decompiler FAILS on it - 377 instrs of SEH;
+	//                                reading from raw instruction text + objdump): the extension
+	//                                block 0x414aa4-0x414b6b is byte-for-byte the creature-side
+	//                                twin's sequence (4/1/4/1/1/1 reads, setnz booleans, the
+	//                                consumed-and-thrown check @0x414b67; FatalError @0x414b74;
+	//                                anim-default cmps 0x9..0x21 @0x414c35/0x414c71; append
+	//                                sub_40C970 @0x414e11). ONE REAL DIFFERENCE, pinned: gate
+	//                                SOURCE - weapon side keys extended reads on CHUNK version
+	//                                [ebx+0Ch] (@0x414b7c/414bbc/414bd4: cmpl 2/4/5), creature
+	//                                side keys on the RECORD's item-version field (v3[12] = byte
+	//                                0x30). Port must mirror each gate's own source, not unify
+	//                                them. STILL UNMAPPED, port-gating: the weapon-side append
+	//                                TARGET (ecx=esp+0x10 at the add vs creature's owner+0x6F8 -
+	//                                which list receives the modes in the weapon) and the switch
+	//                                leg-by-leg table. Do not port until both are read to the byte.
 	// ERA-DEFERRED with reason:      ResolveTargets 0x415740 - octree/Map/LOS cone search
 	//                                (~1.7KB, mode-type switch 0..0x22, 'Unarmed attack type'
 	//                                error rows); sole caller is GameActionAttack::meth_0x402e00
