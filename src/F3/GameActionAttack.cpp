@@ -326,7 +326,35 @@ namespace F3 {
 				// Entity::meth_0x550720; we mirror that with a static ring (no heap, same
 				// lifetime as the Wait/OperateDoor pools in GameActionMoveTo.cpp). The victim's
 				// OWN pump runs it next tick - the action is not executed inline here.
-				if ( target->statCur == 0 && target->entityState == kStateActive ) {
+				// P-CMBT clamp item, STEP 1 of the agreed order (re-derive death from the
+				// predicate -> prove against T-068's hp= pairs -> only then relax the write
+				// floor). Shipped's [vft+0x50] predicate is now derived to the byte, not inferred:
+				//   apply's target is the virtual-Entity BASE subobject at tgt+0xA4 (descriptor
+				//   [raw+4] word0 = 0xA0), its vft 0x666044 has cell 20/+0x50 OVERRIDDEN to the
+				//   thunk 0x467a10 (`2b 49 fc` sub ecx,[ecx-4]; `e9 58 af ff ff` jmp), NOT the pure
+				//   Entity-base 0x549030 found at vft 0x692084+0x50; the thunk lands in 0x462970,
+				//   whose body is two legs:
+				//     LEG 1 `8b 86 60 ff ff ff` mov eax,[esi-0xA0] ; `8b 48 04` ; lea-readjust ;
+				//           call 0x549030 = (*[this+0x1E0] == 7) -> if true, `b0 01` return 1
+				//     LEG 2 `8b 46 80` mov eax,[esi-0x80] ; `85 c0` TEST eax,eax ;
+				//           `0f 9e c0` SETLE al  ->  (tgt+0x24 = CurHealth) <= 0
+				//   So [vft+0x50] == (entityState(+0x1E0) == 7) OR (curHealth <= 0).
+				// THE THRESHOLD IS <= 0, NOT == 0. Two consequences, and they are one design:
+				//  (a) This test now reads the shipped threshold. It is BEHAVIOUR-PRESERVING today
+				//      only because our write floors at 0, where <= 0 and == 0 coincide; that is
+				//      exactly why the threshold had to be re-derived BEFORE the floor could move.
+				//  (b) It also explains a null result honestly rather than leaving it as evidence:
+				//      FastNova's scan for `cmp DWORD PTR [reg+0x24], 0` across all of .text returned
+				//      zero hits and was STRUCTURALLY guaranteed to - leg 2 is `test`+`setle`, never
+				//      a cmp-with-immediate. A zero-hit scan on an assumed instruction form is a
+				//      statement about the pattern, not the binary (item 73/76a).
+				// Note the subobject rendering: inside the thunk the field is [esi-0x80]; raw it is
+				// +0x24. Reading the thunk's text without resolving the +0xA4 base "finds" a -0x80
+				// field that exists nowhere in the object.
+				// STILL OPEN, step 2: prove this against T-068's paired hp= digest, then relax the
+				// write floor at 0x4629C0's site. A floor relaxation without this line already
+				// carrying <= 0 is the red flag on the diff.
+				if ( target->statCur <= 0 && target->entityState == kStateActive ) {
 					static GameActionDie s_dies[4];
 					static int s_di = 0;
 					GameActionDie& die = s_dies[ s_di = ( s_di + 1 ) & 3 ];
