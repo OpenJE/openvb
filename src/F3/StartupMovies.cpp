@@ -239,9 +239,19 @@ namespace F3 {
 			}
 		} // namespace
 
+		// Gate semantics (changed 2026-10-23 after the user's normal run showed no logos): OPENVB_MOVIES was a
+		// SECOND knob someone had to know about on top of the render gate, and ``OPENVB_RENDER=1 f3-run``
+		// therefore showed a device but no intro - the user's report, verbatim. Now the movie gate DEFAULTS
+		// to the render slot's decision: one knob (OPENVB_RENDER=1) is the whole story, because a movie
+		// without a device can only ever decode into nothing. An explicit OPENVB_MOVIES still wins in both
+		// directions - =0 keeps the intro off even with rendering on, =1 forces it even without (a decode-
+		// only run). App-boot and CI stay exactly as they were: ungated means both off, and the boot check
+		// never enters here.
 		bool Gated() {
 			char v[ 8 ];
 			DWORD n = GetEnvironmentVariableA( "OPENVB_MOVIES", v, (DWORD)sizeof( v ) );
+			if ( n != 0 && *v ) { return strcmp( v, "1" ) == 0; }
+			n = GetEnvironmentVariableA( "OPENVB_RENDER", v, (DWORD)sizeof( v ) );
 			return ( n != 0 && strcmp( v, "1" ) == 0 );
 		}
 
