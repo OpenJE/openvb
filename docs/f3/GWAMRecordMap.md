@@ -37,16 +37,31 @@ UNRESOLVED IN THIS DRAFT (the honest gaps; do not port over them):
 ## Certified anchors this map must reproduce
 - `sub_40A980` copy walk: 14 u32 (+0..+0x34), 4 bytes (+0x38..0x3B), 3 u32
   (+0x3C..0x44), SSO string (+0x48), 3 bytes (+0x64..0x66). [verifier-stamped]
-- kind cell = +0x40 (dual-frame: glyph store esp+0x54 vs base 0x14; weapon
-  0x50 vs 0x10). [verifier + my dumps]
+- kind cell = +0x40 (dual-frame, computed on the VAR-NAME axis from
+  stack_frame table offsets - creature var_38(0x54)-var_78(0x14), weapon
+  var_38(0x50)-local_78(0x10) - invariant by construction; the verifier's
+  same-base pair re-check independently confirms, and her cross-PC sequence
+  numbers were retracted as sawtooth, this cell NOT among them). [verifier +
+  my dumps, axis-stamped]
 - claimed = +0x39 (second byte, payload base = node+8 proof @0x40e1fa/0x40c430).
 - counter = +0x3C, kind-3 += 3 dual-site (A2 @0x40e248-5b, B2 @0x41506c).
 
 ## Metal facts (verifier raw-disasm 0x40dc01-0x40dd17 + my confirming window)
-COORDINATES FIRST, because the seats' numbering differs and this exact confusion
-already bit the v10/v11 line: BUILDER-BASE = var_78 @ esp+0x14 (this doc's
-coordinates); the verifier's message measured from esp+0x0C (+4 below builder
-base) - subtract 4 to translate. On THIS doc's axis, from my window at her EAs:
+COORDINATES - RULE, NOT ORIGIN (my previous commit's translation advice is
+RETRACTED: "subtract 4 from the verifier's numbers" presumed they had a single
+origin; they did not. IDA prints [esp+BASEh+var_Y] and BASE drifts with live
+pushes - the failed sequence spanned 8 instructions at 3 different printed
+bases (94h/98h/90h); esp-absolute arithmetic across those is arithmetic on a
+SAWTOOTH, and no constant translation rescues it). The invariant axis is the
+FRAME VAR NAME: this doc's builder coordinates are var-name deltas (base cell
+var_78 = +0x00 by definition; r1 = var_74, etc.), which are stable regardless
+of printed base. VALIDITY BOUNDARY (verifier's own ruling, certified at her
++0x40 re-check): single-origin esp arithmetic IS valid WITHIN a constant
+live-push depth - the +0x40 pair (var_38 vs var_78) printed under one base on
+each side and was checked BEFORE the push @0x40e0b1 that separates depths;
+the trap is the multi-PC drifting-base sequence, not the two-PC same-base
+pair. DEFAULT: var-name deltas.
+On this doc's (var-name) axis, from my window at her EAs:
 - Unconditional stream reads ASCEND: +0x04 @0x40dc01, +0x08 @0x40dc42, then the
   sequence STEPS OVER +0x0C/+0x10 to +0x14 @0x40dc6e. So order is clean UNTIL
   THE GATE: the if(v4) extension block reaches BACK to the skipped +0x0C/+0x10
