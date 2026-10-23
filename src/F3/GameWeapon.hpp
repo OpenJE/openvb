@@ -287,11 +287,16 @@ namespace F3 {
 	//     0x415610 (WEAPON FILE-READ era - a range-erase at/near the ReadFromFile path, i.e.
 	//     records cleared before population at open, directly in my reader's neighborhood).
 	//     Owner functions of all three pending - census complete, attribution not.
-	// CONSEQUENCE (strongest behavioral sentence in the family, and it now rests on three
-	// instruments + control, not one xref): RECORDS ARE NEVER REMOVED EXCEPT WHEN AN INSERTION
-	// FAILS - the success path is APPEND-ONLY; the list is monotonic history. Rollback is not
-	// removal-as-feature, it is insertion-atomicity; the eraser function exists solely inside
-	// an exception handler.
+	// CONSEQUENCE - STOPPED AND CORRECTED by the verifier herself, both legs re-verified on MY
+	// instruments (0x40e1ca `mov ecx,esi` -> range-erase @0x40e1cc, SAME esi inserts @0x40e200;
+	// sub_40B5E0 body: splice-unlink -> sub_40A400 destruct -> j__free -> --count, per node):
+	// the earlier "RECORDS ARE NEVER REMOVED EXCEPT WHEN AN INSERTION FAILS / success path is
+	// APPEND-ONLY / monotonic history" was FALSE AS PHRASED - assignment arms remove-and-free
+	// nodes on the SUCCESS PATH in RANGE form. The accurate claim, still strong: SELECTIVE
+	// (single-node) removal does not exist outside failure. Port-correct sentence: **records are
+	// never individually deleted - a range can be REPLACED (assign arms, open reset) or a failed
+	// insert ROLLED BACK (the only per-node erase).** Rollback is insertion-atomicity, not a
+	// feature; but range removal is a feature, and it runs in normal flow.
 	// PORT POLICY UPDATE: 'mirror at shipped granularity' now means THREE insert shapes -
 	// helper body (3 paths), bare inline triples (4 paths), transactional-with-rollback (1);
 	// the helper stops being THE template - it is one of three, the most-extracted, and
@@ -321,15 +326,24 @@ namespace F3 {
 	// +0x3C PRODUCER DUAL-SITE: A2 `mov edx,[local_3c]; add edx,3' @0x40e248-5b AND B2
 	// `mov eax,[local_a4]; add eax,3' @0x41506c between ctor and flag-write - kind-3's counter
 	// (+3) verified at both twins, both cells, not extrapolated.
-	// APPEND-ONLY PRINTS AS FACT, not ceiling: verifier's completed control (image-wide
-	// call/jmp operand scan: 1 hit @0x4143cf; DataRefsTo sub_40B4C0 ZERO, no pointer taken,
-	// vft regions swept) + my raw e8 scan agreement (1 site) + my known-present control
-	// (allocator exactly 7 sites == exactly the 7 insert bodies, one-for-one - a scan that
-	// finds 7 present and 1 absent is a scan; one that finds 0 of both is a bug). The rollback
-	// is the record list's ONLY removal path in the executable; success path is monotonic.
-	// FINAL ROSTER: 7 bodies / 9 paths; two erasers (single: rollback-only - removal exists ONLY
-	// inside the exception handler; range: 8 sites, 3 beyond the sample list localized by my
-	// scan); cells +0x39 claimed, +0x3C counter(+3, dual-site), +0x40 kind; owner trios
+	// REMOVAL SEMANTICS, FINAL (supersedes this header's own 'APPEND-ONLY PRINTS AS FACT'
+	// sentence, which overstated what its three-instrument control certified): single-node
+	// eraser sub_40B4C0 truly has ONE caller (image-wide operand scan 1 hit @0x4143cf,
+	// DataRefsTo zero, my e8 scan agrees, allocator control green) - that census stands; the
+	// INFERENCE drawn from it did not. Removal per se = range-erase sub_40B5E0, 8 sites, of
+	// which success-path roles now named: two assign arms (twins), OPEN RESET in sub_4155E0
+	// (0x4155e0-0x415635 - the 0x415610 site my scan localized, owner now NAMED by the
+	// verifier: weapon records cleared at file-open before population - a lifecycle leg, same
+	// mechanism as assign, not a new kind), remaining sites pending attribution. PORT POLICY
+	// STRENGTHENED BY THE FIX: the port must mirror the range-erase call SITES; a true
+	// append-only would have let them be skipped - the overstatement was the kind that hides
+	// work from a port plan. LESSON (verifier's, filed with her credit): a CONTROL ON A COUNT
+	// IS NOT A CONTROL ON THE SENTENCE THE COUNT SUPPORTS - sentence-vs-census is the third
+	// sibling of data-in-hand-role-blind, and its falsifier lived two paragraphs above it in
+	// the same thread, both seats' messages.
+	// FINAL ROSTER: 7 bodies / 9 paths; removal in TWO forms - single-node erase (sub_40B4C0,
+	// rollback-only, failure path) and RANGE erase (sub_40B5E0, 8 sites, SUCCESS path: assign
+	// arms + open reset sub_4155E0 + pending); cells +0x39 claimed, +0x3C counter(+3, dual-site), +0x40 kind; owner trios
 	// +0x6F4/6F8/6FC and +0x408/40C/410 (uniform +0x2EC, cursor = batch-B GetWeaponRange cell);
 	// chain [node+0]; count [container+8]; dtor sub_40A400.
 	// THE 62 LITERAL IS REAL (verified on my disasm): third function sub_414EF0 writes
