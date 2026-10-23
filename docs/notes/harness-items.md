@@ -1769,3 +1769,37 @@ would make checking worse than not checking" can fix it in advance.
 and every adoption of a peer's number into code should re-derive it. Where a peer reports a red they did not
 cause, convert it into a landing signal with an owner and a reproducible file pair - "not mine, and here is whose"
 is the useful half; "not mine" alone is a mystery handed forward.
+
+## 76. PROVE THE TU WAS COMPILED, DON'T INFER IT FROM rc=0 - two on-disk sources are in NEITHER build list,
+so "msvc-build passes" has been quietly silent about them
+
+**Filed by**: TrueRaven `01a1652d`, 2026-10-22, while answering a parallelism question - the third time today a
+*question about how to share work* found a defect in the work itself.
+
+**The find**: `cmake.toml` enumerates sources **explicitly** (no glob). Diffing on-disk `src/F3/*.cpp` against
+the two hand-synced lists (cmake.toml AND CMakeLists.txt - the cmkr regen guard is INACTIVE, item 60) leaves two
+orphan TUs, on disk but compiled by neither the MSVC build nor any product link:
+
+    src/F3/Display.cpp            (absent from both lists)
+    src/F3/GameActionMoveTo.cpp   (absent from both; IS listed in run-all-tests' SpawnMove/PathManager rows)
+
+The last one is the trap: `GameActionMoveTo.cpp` **is** compiled by the mingw suites, because run-all passes an
+explicit file list per suite. So a suite passes, `msvc-build` returns 0, and both are honest results about
+**different file sets** - the TU is exercised in one pipeline and never built in the other. This is not a new
+class: R-FINISH item 8 was exactly this (`StringFormat.cpp` missing from BOTH cmake lists, hiding an LNK2019),
+which is why the rule is a check and not a reminder.
+
+**The law**: any claim of the form "gate X passed" must name what X actually compiled. For a build gate, that
+means showing the TU appears in the build's own input - grep the build log for the object name, or `grep -c
+<file>.cpp cmake.toml CMakeLists.txt` returning 1/1 - not the exit status. Exit status is evidence about the
+files the build was told to read.
+
+**Applied to this batch's own claims**: batch B's "msvc rc=0" is sound because `ScriptNatives.cpp` is in both
+lists (checked). But the lane must not carry that comfort forward: the gate statement is only as wide as the
+list, and the list is hand-maintained by whoever last added a file - which for two of them was nobody.
+
+**Standing fix**: two rows to close - (a) decide `Display.cpp` and `GameActionMoveTo.cpp` are intended
+(build them: add to both lists, run msvc, expect and resolve whatever undefined refs a never-linked TU reveals)
+or dead (delete, don't leave an unwatched file that suites compile and the product does not); (b) add a gate leg
+that fails on the *set difference* between on-disk sources and cmake.toml, so the next orphan is a red instead of
+a discovery. (b) is the cheap one and is the only reason (a) stops recurring.
