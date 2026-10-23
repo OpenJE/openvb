@@ -198,6 +198,7 @@ Inventory: every `F3::`-named function in the live IDB (names anchored by EA per
 - `F3::GameActionMoveTo::virt_meth_0x4057b0` @ 0x4057b0
 - `F3::GameActionMoveTo::virt_meth_0x4058b0` @ 0x4058b0
 - `F3::GameActionMoveTo::virt_meth_0x406780` @ 0x406780
+- `F3::GameActionMoveTo::meth_0x405720` @ 0x405720   <!-- UNLISTED MEMBER, added by NiceTiger's vft sweep (3571f3e): vft slot 7 / byte +0x1C, present in the 13-cell table but absent from this inventory. Third instance of the filter-hole class (DisplayStringRef, then this): an inventory built from a NAME filter cannot see a slot whose IDB name does not match the pattern. Behavior per that read: clamp-to-positive-int float roundtrip on mover+0x94, SILENT 0.0f on cast failure. So GameActionMoveTo is EIGHT rows, not seven. -->
 - `F3::GameCharacter::ReadData_0x4117a0` @ 0x4117a0
 - `F3::GameCreature::ReadData_0x40e360` @ 0x40e360
 - `F3::GameCreature::ReadVersion2_0x40d9e0` @ 0x40d9e0
