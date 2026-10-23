@@ -19,14 +19,14 @@ esp+0x14; weapon esp+0x10). Copy-ctor = `sub_40A980` walk order.
 | 1    | +0x04       | var_74 (0x18)     | u32   | r1 @0x40dc01 - anim-mode id (feeds 56..104 ladder) |
 | 2    | +0x08       | var_70 (0x1C)     | u32   | r2 @0x40dc42 |
 | 3    | +0x0C       | var_6C lo (0x20)  | u32   | GATED (version!=0) reach-back fill |
-| 4    | +0x10       | var_6C hi (0x24)  | u32   | NEVER WRITTEN by reader; ctor copies stack value blind - shipped reality, mirror don't fix |
+| 4    | +0x10       | var_6C+4 (0x24; table prints var_6C size 0x8, NO var_68 in either function's rendering - verifier's proposed name would make future greps structurally blind, adjudicated by table dump 0x40dba0 window @118) | u32   | NEVER WRITTEN: gated reach-back pushes exactly 4 @0x40ddab into var_6C's low dword; ctor copies the high survivor blind - shipped reality, mirror don't fix |
 | 5    | +0x14       | var_64 (0x28)     | u32   | r3 @0x40dc6e (first after step-over) |
 | 6..9 | +0x18..+0x24| var_60,5C,58,54   | u32   | r4-r7 @0x40dca6/bb/dc17/dcf7 |
 | 10   | +0x28       | var_50 (0x3C)     | u32   | r8 @0x40dd0c |
 | 11   | +0x2C       | var_4C (0x40)     | u32   | r9 @0x40dd2d |
 | 12   | +0x30       | var_48 (0x44)     | u32   | r10 (next window; decompile v19) |
-| 13   | +0x34       | var_44 (0x48) byte| u8    | r11 flag v20[4]=a2!=0 - BOUNDARY OPEN BELOW |
-| bytes| +0x38..+0x3B  | var_40,3F,3E,3D (0x4C..0x4F) | 4x u8 | +0x39=CLAIMED (gated v21; A2 90h-pair/B2 FCh-pair verified), +0x3A=v22, +0x3B=v23 |
+| 13   | +0x34..+0x37| var_44 (0x48, printed size 1 - metal wins: lea+push 4 fills the whole u32 @0x40dd5d) | u32 | r11, UNCONDITIONAL (11th read; verifier's "gated" was her reading the stream-FAIL exit jz@0x40dd6f as a version gate - the version gate is cmp edi,1/jb @0x40dd9d/40dda4, AFTER this read) |
+| bytes| +0x38..+0x3B  | var_40,3F,3E,3D (0x4C..0x4F) | 4x u8 | +0x38=flag byte, UNCONDITIONAL store @0x40dda0 (a2!=0 chain, BEFORE the gate jb); +0x39=CLAIMED, +0x3A=v22, +0x3B=v23 - these three inside the version!=0 extension, survivors when gate closed (A2 90h-pair/B2 FCh-pair verified) |
 | 15   | +0x3C       | var_3C (0x50)     | u32   | gated v24 = COUNTER (+3 in kind-3 consumer arms; 90h-pair verified) |
 | 16   | +0x40       | var_38 (0x54)     | u32   | anim ladder target + version>=2 v25 = KIND (creature 8Ch-pair, weapon 88h-pair verified) |
 | 17   | +0x44       | var_34 (0x58)     | u32   | version>=3 v26 |
