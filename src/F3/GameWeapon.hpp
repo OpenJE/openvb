@@ -127,21 +127,41 @@ namespace F3 {
 	//                                ports as file-static) and ReadAttackModeData 0x4148a0
 	//                                (GWAM chunk loop; JE::Common::Chunk +
 	//                                MemStreamRead_0x498170 already ported).
-	// 0x4148a0 VERIFICATION STATE (slice-2 prep, decompiler FAILS on it - 377 instrs of SEH;
-	//                                reading from raw instruction text + objdump): the extension
-	//                                block 0x414aa4-0x414b6b is byte-for-byte the creature-side
-	//                                twin's sequence (4/1/4/1/1/1 reads, setnz booleans, the
-	//                                consumed-and-thrown check @0x414b67; FatalError @0x414b74;
-	//                                anim-default cmps 0x9..0x21 @0x414c35/0x414c71; append
-	//                                sub_40C970 @0x414e11). ONE REAL DIFFERENCE, pinned: gate
-	//                                SOURCE - weapon side keys extended reads on CHUNK version
-	//                                [ebx+0Ch] (@0x414b7c/414bbc/414bd4: cmpl 2/4/5), creature
-	//                                side keys on the RECORD's item-version field (v3[12] = byte
-	//                                0x30). Port must mirror each gate's own source, not unify
-	//                                them. STILL UNMAPPED, port-gating: the weapon-side append
-	//                                TARGET (ecx=esp+0x10 at the add vs creature's owner+0x6F8 -
-	//                                which list receives the modes in the weapon) and the switch
-	//                                leg-by-leg table. Do not port until both are read to the byte.
+	// 0x4148a0 VERIFICATION STATE: PAIR ANALYSIS COMPLETE - verdict: ONE RECORD FORMAT, NOT ONE
+	// FUNCTION. Table comparison (jump tables read from the exe, base 0x400000): 27 of 28 legs are
+	// byte-identical modulo the SEH 4-byte slot shift ([esp+54h] creature vs [esp+50h] weapon;
+	// record lea esp+14 vs esp+10), including case 34 -> 0x68. THREE REAL DIVERGENCES:
+	//  (a) GATE SOURCE: weapon keys extended reads on CHUNK version [ebx+0Ch] (cmpl 2/3/4/5 at
+	//      0x414b7c/414b99/414bbc/414bd4); creature keys on the RECORD's item-version (v3[12] =
+	//      byte 0x30, from GameCreature*'s embedded weapon record, base: false complete-object).
+	//  (b) CASE-1 ANIM: weapon is CONDITIONAL - `mov al,[esp+76h]` (local_12) `neg/sbb/and 6/add
+	//      38h` = 56 or 62 (bytes 8a 44 24 76 f6 d8 1b c0 83 e0 06 83 c0 38 @0x414c81); creature
+	//      is CONSTANT 56 (c7 44 24 54 38 @0x40df36). local_12's WRITER IS STILL UNIDENTIFIED
+	//      (init to 0 @0x4148e8; no store seen in dumped windows) - until it is found, do NOT
+	//      conclude "dead condition"; a zero from a pattern search needs a known-present control
+	//      (TrueRaven's two false zeros + the DB's own excerpt failure below prove the class).
+	//  (c) WEAPON-ONLY TYPE DERIVATION @0x414c18-0x414c5c: consumed flag (local_3d) -> record
+	//      type 2; else switch on [weapon + 0x3B0] (from GameWeapon*, complete object; DB member
+	//      mbr_0x3b0) item type: 1-5 -> 1, 6-8 -> 0, 9-10 -> 3. The creature side has NO such
+	//      block - its v8 stays at the init value 3.
+	// APPEND TARGET RESOLVED (was port-gating): `mov ecx,[local_7c]; add ecx,40Ch; call
+	//      sub_40C970` @0x414e07-0x414e11 - the weapon appends to ITS OWN list at WEAPON+0x40C
+	//      (from GameWeapon*, complete object - excerpt member mbr_0x40c), record built at
+	//      local_78 then destroyed post-append (sub_40A240 @0x414e1a). Creature side appends to
+	//      owner+0x6F8 (from GameCreature*, base: false; DB mbr_0x6f8). Different coordinate
+	//      systems, different owners - see the annotation law below.
+	// LAYOUT LAW (TrueRaven, committed as layout law 20+): +0x6F4 (creature, base:false complete
+	// object) and +0x168 (Entity, base:TRUE virtual-base subobject) are TWO COORDINATE SYSTEMS,
+	// not one field in two views - 0x6F4-0x168=0x58C is valid arithmetic with NO semantics and
+	// must never appear as a "conversion delta". Every offset in this shard carries object AND
+	// base flag. The DB's usages list is itself an excerpt: mbr_0x6f0 lists 0x40d2ce but NOT
+	// 0x40e441, where my own disasm read `mov eax,[esi+6F0h]` - absence in usages != no usage.
+	// PORT DECISION: shared reader CORE ports as a file-static (format: the 9 base reads + 4/1/
+	// 4/1/1/1 extension + string at >=4), the THREE divergent legs stay PER-SIDE - a merged
+	// "one function" would have to invent which side owns (b) and (c), which is fabrication.
+	// Tested twice: weapon triple (gate chunk+0xC, type derivation, append 0x40C) and creature
+	// triple (gate byte 0x30, pinned type 3, append 0x6F8). GameCreature::ReadData WIRING stays
+	// deliberately unowned (read-family seat's; ledger ruling).
 	// ERA-DEFERRED with reason:      ResolveTargets 0x415740 - octree/Map/LOS cone search
 	//                                (~1.7KB, mode-type switch 0..0x22, 'Unarmed attack type'
 	//                                error rows); sole caller is GameActionAttack::meth_0x402e00
