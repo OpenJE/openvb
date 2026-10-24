@@ -1,5 +1,5 @@
 ---
-status: in-progress (ACCEPTED from offer 38a97c8 — keeper's first solo crown event; the gate was a
+status: CLOSED 2026-10-24 (S1+S2+S3 windows complete; PARK struck, successor S3-INJ). Was: ACCEPTED from offer 38a97c8 — keeper's first solo crown event; the gate was a
   working rig, the rig has been built twice from paper, the docs carry the harness shape, and the
   readings are pre-written. Declining a seat whose fire conditions I built myself would contradict
   every thesis on this board tonight.)
