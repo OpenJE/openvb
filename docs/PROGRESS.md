@@ -181,3 +181,30 @@ reading as "lower the bar," it is wrong.
   toolchains, sequence EA-named), FastNova hp=0 fixture (damage routes through the inbox since
   P-CMBT Step 2 — constructible), the cls_0x616328 dual-role band-evidence re-cut, item5b
   probe-line, keyboard-channel injection, ~793 unsighted 801-pool members.
+
+## Refresh 2026-10-24 #2 (executor seat; every figure with its command)
+
+- **PARK board: 47 closed rows** — `grep -cE "^\| ~~" tasks/PARK.md` (was 38 at refresh #1). The 9
+  strikes since: PROGRESS-TALLY (refresh #1 itself), HP0-FIXTURE (the hp=0 death-threshold digest
+  fixture: seed-pinned 2-dmg push, full death arc in the digest, dieQueued=1 in the
+  ApplyDamageEffect path), FLOOR-RELAX (P-CMBT Step 3 landed: the HP write floor RETIRED —
+  ApplyDamageEffect writes min(new,max) only, shipped-faithful to 0x4629C0's bytes; the over-kill
+  arc holds hp=-3/2 with the `<= 0` death conversion still firing; SpawnMove floor 157→166→175),
+  BUSYMARK-171 (P-CMBT design Step 3: the +0x171 effect busy mark — set at fire sites + drain
+  tail, cleared once per world step after the pump, Busy0x54ab00() composite predicate; SpawnMove
+  floor now 175), and OWNER-CHASE-C1..C5 (the values-era owner chase 21-row batch **COMPLETE
+  21/21**: C1 the five-interface switch module confirmed no-owner; C2 the dialogue-list owner
+  PINNED to GameServer.mbr_0x5064; C3 the display-settings wrapper band ×7 rows with the
+  adapter-array stride 0x44C surface; C4 the map sound/effect group + Bink movie player family
+  ×5; C5 the final rows including 3 STALE holds re-censused — the re-census-before-re-hold
+  lesson).
+- **Live IDB census** (ida action=save census): **10,173 functions / 7,690 named (75.5%)** —
+  unchanged count; this refresh's chase cells landed ~20 def-site comments instead (C1..C5, all
+  read-back verified + saved, ledgers 02-00-35Z..02-12-51Z).
+- **Standing rows** (both live, not owed): R-KEEPER's seat and H-IDX. **No actionable open rows
+  remain**; the named successors NOW QUEUED: P2-surface instantiation (~35 undefined vft
+  virtuals, LNK2001 both toolchains, sequence EA-named), the cls_0x616328 dual-role band-evidence
+  re-cut, item5b probe-line, keyboard-channel injection, ~793 unsighted 801-pool members — plus
+  the chase's newly exposed port-era surfaces: the shipped adapter array (byte_708380, stride
+  0x44C) and the Bink movie player (cls_0x5b4f50, byte_707CE4 device, movie flag
+  global_area_map_icons->[+2C]+0x108).
