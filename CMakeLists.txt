@@ -72,6 +72,8 @@ set(openje_SOURCES
 	"modules/openje/src/JE/cls_0x48d750.cpp"
 	"modules/openje/src/JE/cls_0x50dbb0.cpp"
 	"modules/openje/src/JE/net/base.cpp"
+	"modules/openje/src/JE/net/buffer.cpp"
+	"modules/openje/src/JE/net/connection.cpp"
 	"modules/openje/src/JE/net/client.cpp"
 	"modules/openje/src/JE/net/critical_section.cpp"
 	"modules/openje/src/JE/net/socket.cpp"
