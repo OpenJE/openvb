@@ -197,6 +197,45 @@ out=$(tools/orig-digest.sh --capture "$W/cap-synthetic.txt" \
 check_rc "lockstep claim against the wrong binary -> refused" "$rc" "3"
 check_has "  and says the md5 is what disagreed" "filemd5" "$out"
 
+# R-PORT-Q: the r5 guard for numbered qi= fields - the same sloppy-proof q=/r3 gets, exercised
+# in both directions: numbered qi WITHOUT the r5 read is refused; numbered qi WITH a consistent
+# r5 read is accepted; and a pre-inbox-era capture (no qi at all) still renders NA without any r5.
+cat > "$W/cap-qi-nor5.txt" <<CAP
+record=read read=r3 address=Entity+0x314 value=2 when=mid-round breakpoint=0x459f5d
+record=read read=r4b address=[action+0x00] value=$VT_ATK when=mid-round breakpoint=0x459f5d
+record=frame frame=300 tickms=100 clocksec=100
+record=entity frame=300 slot=0 name=QIFIX pos=1.00/2.00/0.00 yaw=0.50 hpcur=9 hpmax=9 state=4 moving=0 acted=0 q=2 vt=$VT_MOVE,$VT_ATK,-,- qi=3
+record=world frame=300 pathjobs=0 turns=1 turnorder=QIFIX
+CAP
+out=$(tools/orig-digest.sh --capture "$W/cap-qi-nor5.txt" --provenance "lockstep r3,r4b session=41 exe=$MD5" \
+	      --out "$W/qi-nor5.digest" 2>&1); rc=$?
+check_rc "  numbered qi= without an r5 read -> refused" "$rc" "3"
+check_has "  and names r5 as the missing read" "r5" "$out"
+# (no-op removed: the fixtures below carry their own qi fields)
+cat > "$W/cap-qi-r5.txt" <<CAP
+record=read read=r3 address=Entity+0x314 value=2 when=mid-round breakpoint=0x459f5d
+record=read read=r4b address=[action+0x00] value=$VT_ATK when=mid-round breakpoint=0x459f5d
+record=read read=r5 address=Entity+0x2F0 value=3 when=mid-round breakpoint=0x55a3a0
+record=frame frame=300 tickms=100 clocksec=100
+record=entity frame=300 slot=0 name=QIFIX pos=1.00/2.00/0.00 yaw=0.50 hpcur=9 hpmax=9 state=4 moving=0 acted=0 q=2 vt=$VT_MOVE,$VT_ATK,-,- qi=3
+record=world frame=300 pathjobs=0 turns=1 turnorder=QIFIX
+CAP
+out=$(tools/orig-digest.sh --capture "$W/cap-qi-r5.txt" --provenance "lockstep r3,r4b,r5 session=41 exe=$MD5" \
+	      --out "$W/qi-r5.digest" 2>&1); rc=$?
+check_rc "  numbered qi= WITH a consistent r5 read -> accepted" "$rc" "0"
+check_has "  and the frame renders the numbered field" ",qi=3" "$(cat "$W/qi-r5.digest")"
+sed '/read=r5/d; s/ qi=3//' "$W/cap-qi-r5.txt" > "$W/cap-qi-era.txt"
+out=$(tools/orig-digest.sh --capture "$W/cap-qi-era.txt" --provenance "lockstep r3,r4b session=41 exe=$MD5" \
+	      --out "$W/qi-era.digest" 2>&1); rc=$?
+check_rc "  pre-inbox-era capture (no qi) still renders" "$rc" "0"
+check_has "  and says the field was absent, not zero" "qi=NA:absent-in-capture" "$(cat "$W/qi-era.digest")"
+# r5 read whose value contradicts the frames is refused too: the guard checks, not requires.
+sed 's/value=3 when/value=7 when/' "$W/cap-qi-r5.txt" > "$W/cap-qi-badr5.txt"
+out=$(tools/orig-digest.sh --capture "$W/cap-qi-badr5.txt" --provenance "lockstep r3,r4b,r5 session=41 exe=$MD5" \
+	      --out "$W/qi-badr5.digest" 2>&1); rc=$?
+check_rc "  r5 value that appears in no qi= field -> refused" "$rc" "3"
+check_has "  and says the records and frames disagree" "disagree" "$out"
+
 # a SYNTHETIC side against a verified-capture side is the trap the whole guard exists for:
 # it looks exactly like a divergence finding and is a fixture bug.
 out=$(tools/diff-digest.sh "$W/orig-a.digest" "$W/locked.digest" 2>&1); rc=$?

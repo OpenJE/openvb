@@ -61,7 +61,7 @@ def die(code, *lines):
 # here" from either file. Text mirrors src/F3/SimDigest.hpp WriteHeader field-for-field.
 # --------------------------------------------------------------------------------------------
 CONTRACT = (
-    "# SIM-DIGEST v1 include=frame clockDelta ents <eN=name,pos,yaw,hp,st,ak> "
+    "# SIM-DIGEST v1 include=frame clockDelta ents <eN=name,pos,yaw,hp,st,ak,qi> "
     "pathJobs turns turnOrder draws\n"
     "# entity-fields=name pos[3] yaw hp=cur/max st=entityState,moving,acted q=QUEUED ACTION COUNT "
     "(shipped Entity+0x314, the action deque's ELEMENT COUNT - ++ at 0x54ea71, -- at "
@@ -69,10 +69,15 @@ CONTRACT = (
     "4, and a shipped q above 4 beside our q=4 is deviation D-2, i.e. a DROPPED ORDER, not a "
     "digest bug - T-039 verdict, harness item 22; it is printed as a COUNT and was never a busy "
     "flag, which is why it left the st= triple) "
+    "qi=EFFECT-INBOX COUNT (shipped Entity+0x2F0, the effect deque's live count - the "
+    "field virt_meth_0x54ab00's busy predicate reads as != 0, T-074 §4e; our side derives it "
+    "from inbox.fx[] - inbox-era state since P-CMBT steps 1-2 route damage through the inbox; "
+    "the shipped side renders NA:absent-in-capture when its capture predates the inbox era, "
+    "and a lockstep capture carrying numbered qi must name an r5 read) "
     "ak=ACTION CLASS NAMES: our side maps port kind->class in code, the original side maps "
     "[action+0x00] vftptr->class via artifacts/F3.json, UNKNOWN_VT=<ea> when unresolved and those "
     "are counted, never named | cap 12 entities, excess -> entsMore=1\n"
-    "# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/q/ak pathJobs turns turnOrder draws | "
+    "# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/q/ak/qi pathJobs turns turnOrder draws | "
     "CONTEXT(after ' ctx:')=tickMs clock (ABSOLUTE) - printed, captured, NOT hashed: uptime and the "
     "shipped first-Update leap make both incomparable across processes, so the digest carries "
     "clockDelta (seconds elapsed since frame 0) as the comparable axis instead; promote a CONTEXT "
@@ -171,6 +176,10 @@ RECORD_KEYS = {
     "frame": ("frame", "tickms", "clocksec", "lcgstate"),
     "entity": ("frame", "slot", "name", "pos", "yaw", "hpcur", "hpmax",
                "state", "moving", "acted", "q", "vt"),
+    # R-PORT-Q: qi (the effect-inbox count, Entity+0x2F0) is OPTIONAL in captures - older
+    # ones predate the inbox era; a capture that carries it as a number must name the r5
+    # read (the lockstep guard enforces that in classify_provenance).
+    "OPTIONAL": {"entity": ("qi",)},
     "world": ("frame", "pathjobs", "turns", "turnorder"),
     "end": ("frames",),
 }
@@ -206,15 +215,16 @@ def parse_capture(path):
             die(EXIT_INVARIANT,
                 "INVARIANT-VIOLATION: capture line %d: unknown record=%s (known: %s)"
                 % (ln, kind, ",".join(sorted(RECORD_KEYS))))
-        allowed = set(RECORD_KEYS[kind])
+        allowed = set(RECORD_KEYS[kind]) | set(RECORD_KEYS.get("OPTIONAL", {}).get(kind, ()))
         unknown = sorted(set(fields) - allowed)
         if unknown:
             die(EXIT_INVARIANT,
                 "INVARIANT-VIOLATION: capture line %d: record=%s has unknown field(s) %s"
                 % (ln, kind, ",".join(unknown)))
         if kind == "entity":
+            opt = set(RECORD_KEYS.get("OPTIONAL", {}).get(kind, ()))
             for req in RECORD_KEYS["entity"]:
-                if req not in fields:
+                if req not in fields and req not in opt:
                     die(EXIT_INVARIANT,
                         "INVARIANT-VIOLATION: capture line %d: record=entity missing %s"
                         % (ln, req))
@@ -258,10 +268,14 @@ def classify_provenance(text, recs, db):
             named.add(chunk)
     # r3 (the deque count behind `q=`) and r4b (the action vftptrs behind `ak=`) are the two reads
     # THIS artifact depends on; a claim without them cannot produce a shipped-side digest at all.
-    need = {"r3", "r4b"} - named
+    # r5 (the effect-inbox count behind `qi=`, R-PORT-Q) joins the requirement ONLY when the
+    # capture actually carries numbered qi= fields - pre-inbox-era captures stay renderable.
+    carry_qi = any(str(r.get("qi", "")).isdigit() for k, r in recs if k == "entity")
+    need = ({"r3", "r4b"} | ({"r5"} if carry_qi else set())) - named
     if need:
-        return None, ("claims lockstep but does not name %s - the digest's q= and ak= columns come "
-                      "from those reads" % ",".join(sorted(need)))
+        return None, ("claims lockstep but does not name %s - the digest's q=/ak= columns come "
+                      "from r3/r4b, and numbered qi= fields come from r5"
+                      % ",".join(sorted(need)))
     reads = {}
     for kind, r in recs:
         if kind == "read":
@@ -276,6 +290,7 @@ def classify_provenance(text, recs, db):
     # cross-check each claimed read against what the capture actually renders
     lcg = set(str(r.get("lcgstate", "")).lower().lstrip("0x") for k, r in recs if k == "frame")
     qs = set(str(r.get("q", "")).lower() for k, r in recs if k == "entity")
+    qis = set(str(r.get("qi", "")) for k, r in recs if k == "entity")
     vts = set()
     for k, r in recs:
         if k == "entity":
@@ -292,6 +307,8 @@ def classify_provenance(text, recs, db):
         hexval = "0x%x" % val
         if rn == "r3" and str(val) not in qs:
             disagree.append("r3 value %s appears in no q= field" % hexval)
+        elif rn == "r5" and str(val) not in qis:
+            disagree.append("r5 value %s appears in no qi= field" % hexval)
         elif rn == "r4b" and hexval not in vts:
             disagree.append("r4b value %s appears in no vt= field" % hexval)
         elif rn == "r1" and hexval.lstrip("0x") not in {x.lstrip("0x") for x in lcg if x}:
@@ -403,7 +420,15 @@ def build(recs, db, require_resolved_ak):
                     "guess, and an ak column of UNKNOWN_VT cannot be compared as state"
                     % unresolved)
             ak = "/".join(names)
-            parts.append(" e%d=%s,pos=%.2f/%.2f/%.2f,yaw=%.2f,hp=%d/%d,st=%d,%d,%d,q=%d,ak=%s"
+            # qi: the effect-inbox count (shipped Entity+0x2F0). A capture that predates the
+            # inbox era has no read for it - that renders NA (absent, not zero), the same
+            # NA discipline as pathJobs: a silent 0 would claim an observation nobody made.
+            qi = r.get("qi")
+            if qi is None:
+                qi = "NA:absent-in-capture"
+            else:
+                qi = str(_int(r, "qi", "entity slot %d" % slot))
+            parts.append(" e%d=%s,pos=%.2f/%.2f/%.2f,yaw=%.2f,hp=%d/%d,st=%d,%d,%d,q=%d,ak=%s,qi=%s"
                          % (shown, r.get("name") or "-",
                             _pos(r.get("pos"))[0], _pos(r.get("pos"))[1], _pos(r.get("pos"))[2],
                             float(r.get("yaw") or 0.0),
@@ -412,7 +437,7 @@ def build(recs, db, require_resolved_ak):
                             _int(r, "state", "entity slot %d" % slot),
                             _int(r, "moving", "entity slot %d" % slot),
                             _int(r, "acted", "entity slot %d" % slot),
-                            q, ak))
+                            q, ak, qi))
             shown += 1
         if len(ents) > shown:
             parts.append(" entsMore=1")
