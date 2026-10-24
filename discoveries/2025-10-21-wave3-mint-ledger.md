@@ -20,8 +20,8 @@ IDB chain: baseline 00:56:49Z pre-write sync (live==disk) -> 50 renames 00:57:22
 |---|---|
 | 0x442BF0 | bare-namespace holder: key sites resolve to F3::Command*/JE: - **C1 RESOLVED 2026-10-24 (owner chase): NO owner class exists - the class IS the five-interface switch module (five member pairs this+8..+2C, per-case CLoadMapInterface show/hide + [vft+0x168] tags); sole consumers F3::CommandOptionsWindow + F3::CommandGameOptions; amendment-3 verdict: module CONFIRMED, domain rename withheld (no confident shipped name)** |
 | 0x4433E0 | bare-namespace holder: key sites resolve to F3::Command*/JE: - **C1 RESOLVED 2026-10-24: the 9-instruction wrapper (meth_0x442bf0 + meth_0x442dc0 param 1-5 switch) selecting which interface to open; same consumer evidence as 0x442BF0; amendment-3 verdict stands** |
-| 0x55BF60 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
-| 0x55BFA0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
+| 0x55BF60 | bare-namespace holder: key sites resolve to F3::Command*/JE: - **C2 RESOLVED 2026-10-24 (owner chase): owner PINNED - instance = GameServer.mbr_0x5064 (JE::Server field; both consumers chain global_area_map_icons->[+18]->[+5064]); body = the list-contains predicate ([node+0x18]==param OR [node+0x1C]==param, walk via cls_0x55bb70 iterator); sole consumer JE::IsInDialogue; amendment-3: rename withheld - cls_0x55bf60/cls_0x55bfa0 are likely ONE class mis-split, no confident shipped name** |
+| 0x55BFA0 | bare-namespace holder: key sites resolve to F3::Command*/JE: - **C2 RESOLVED 2026-10-24: the list-FIND variant ([node+0x1C]==param -> returns [node+0x18] the dialogue object); sole consumer JE::PCSpeaker anchored by its own "Could not find a dialogue" string; owner = JE::Server via GameServer+0x5064; amendment-3: rename withheld (mis-split pair, see 0x55BF60)** |
 | 0x5813A0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
 | 0x5813C0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
 | 0x5813E0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
