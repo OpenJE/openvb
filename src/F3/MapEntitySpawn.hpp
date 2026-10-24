@@ -36,7 +36,7 @@ namespace F3 {
 		              queuedAnimEvent(0), lastHitVeg(0),
 		              frameDt0x300(0), actedLatch0x319(0), turnDeadline0x29C(0),
 		              effectsFired(0), effectsFreed(0), lastFireKind(0), lastFireDmg(0),
-		              lastFireSource(0),
+		              lastFireSource(0), effectMark0x171(false),
 		              inMap0x1E4(0),
 		              doorByte0xBC(0), doorByte0xBD(0), doorLock0xC0(0), moveSpeed0x94(8.0f), animCountdown94(0), animLastMs(0) {
 		name[0] = 0;
@@ -289,6 +289,13 @@ namespace F3 {
 		// skip-past behavior are testable.
 		int effectsFired;           // count of generic fire sites reached (@0x55a501; a NO-OP for
 		                            // damage, whose apply runs push-side - see above)
+		bool effectMark0x171;       // P-CMBT Step 3 (design doc): the busy mark shipped's effect
+		                            // fire sites store (`mov byte $1,[ent+0x171]` @0x54c631/0x55b082;
+		                            // the drain tail @0x54c429 sets it too) and the world-step's
+		                            // re-gate walk meth_0x54aa20 CLEARS @0x54aa82 after the pump.
+		                            // Consumed by the composite busy predicate virt_meth_0x54ab00
+		                            // (Busy0x54ab00 below). Set by fire sites here, cleared once per
+		                            // world step after each entity's pump - never toggled twice.
 		int effectsFreed;           // count of dispose(1) sites reached (0x55a570 -> [vft+0x0C](,1))
 		int lastFireKind;
 		int lastFireDmg;
@@ -320,6 +327,16 @@ namespace F3 {
 			unsigned int n = 0;
 			for ( int i = 0; i < 4; ++i ) { if ( inbox.fx[ i ].kind != 0 ) { ++n; } }
 			return n;
+		}
+
+		// P-CMBT Step 3: the composite busy predicate, mirror of virt_meth_0x54ab00 (T-074 §4e):
+		// busy = live actions (+0x314-derived) OR pending inbox (+0x2F0 != 0) OR the effect busy
+		// mark (+0x171). The inbox term is the one that matters for Step 3: an entity with a
+		// pending inbox and an EMPTY action deque stays pump-registered (shipped keeps walking
+		// pending effects through the re-gate). Feeds the same consumers QueuedActionCount did;
+		// the mark term is cleared by the world step after each pump.
+		bool Busy0x54ab00() const {
+			return QueuedActionCount() != 0u || InboxCount() != 0u || effectMark0x171;
 		}
 	};
 

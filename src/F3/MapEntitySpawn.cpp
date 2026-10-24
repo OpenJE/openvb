@@ -397,6 +397,9 @@ namespace F3 {
 			return;                       // 0x55a4f8: not pending, no [vft+0x2C] call
 		}
 		pe->pending0xA = 0;               // cleared before the call, as 0x55a4f0 does
+		e->effectMark0x171 = true;        // P-CMBT Step 3: the fire site's busy mark (0x54c631
+		                                  // family: `mov byte $1,[ent+0x171]`); cleared by the
+		                                  // world step's re-gate walk AFTER the pump, below
 		e->effectsFired++;
 		e->lastFireKind = pe->kind;
 		e->lastFireDmg = pe->dmg;
@@ -570,14 +573,21 @@ namespace F3 {
 			e->inboxTrace[2] = 2;
 		}
 		e->inbox.fxCount = (int)e->InboxCount();
-		// 0x54c422 calls the GUI-busy de-reg meth_0x54bf00 and 0x54c429 sets +0x171; both belong to
-		// Step 3 and the unported GUI seam (cited-and-absent law), so neither is faked here.
+		e->effectMark0x171 = true;   // 0x54c429 sets +0x171 at the drain tail (Step 3, NOW LANDED;
+		                             // the tail's OTHER call - the GUI-busy de-reg meth_0x54bf00
+		                             // @0x54c422 - stays cited-and-absent with the unported GUI seam,
+		                             // NOT faked); cleared by the world step after the pump
 	}
 
 	static void PumpEntity( SpawnedEntity* e, int ms, int combatantDispatch );
 
 	static void TickOneEntity( SpawnedEntity* e, int ms ) {
 		PumpEntity( e, ms, 0 );   // the world loop's own step-5 pump (0x545e71-0x545ebd)
+		// P-CMBT Step 3: the world-step's re-gate walk meth_0x54aa20 runs AFTER the pump and
+		// clears the effect busy mark @0x54aa82 (walks +0x2E0 firing gate-satisfied entries
+		// @0x54aa78). The mark is set by fire sites and cleared ONCE here - set/clear-once, no
+		// toggling (the fixture asserts both directions).
+		if ( e ) { e->effectMark0x171 = false; }
 	}
 
 	void TickWorldForEntity( SpawnedEntity* e, int ms ) { TickOneEntity( e, ms ); }
