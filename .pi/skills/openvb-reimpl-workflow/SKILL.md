@@ -42,6 +42,14 @@ and reimpl IDB freshness; `[FAIL]` rows carry the fix command.
   instead of rendering silently through the Wine builtin.
 - devenv scripts never hot-reload into a live shell: `devenv-reload --check NAME` then
   `source /tmp/openvb-dev-env.sh` (harness item 1).
+- `run-all-tests` MUST be the devenv-env resolution. A shell that never sourced the captured env
+  falls back to the base-PATH shim from an OLDER devenv build, whose suite table predates the
+  current dependency rows - observed 2026-10-24: it compiled 9 of the ResourceSystem row's 39 TUs
+  and reported false LNK2019 reds with the suite's own symbols missing. Symptom signature: the
+  link only saw the row's FIRST handful of impl TUs plus `$SRC`. The runner's own stale-payload
+  guard ("WARNING the installed run-all-tests is STALE vs tree", it names the payload store path)
+  is the tell; verify with `command -v run-all-tests` before and after sourcing the env and trust
+  the one the devenv env provides.
 - Standard CMake layout in `build/`; `cmake.toml` + `cmkr` generate the CMake files.
 
 After a reimplementation rebuild, `$OPENVB_REIMPL_IDB` is deleted/regenerated; refresh only the
