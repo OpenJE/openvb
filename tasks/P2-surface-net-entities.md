@@ -31,14 +31,26 @@ The "first body" of band 1 is not one body: slot 0 (0x45f2e0) is the scalar dele
 | 3' | 0x59c790 | net::client teardown: SEH guard, vft store 0x6A1934, call net::client::virt_meth_0x59c360, address-vft store 0x6647A0 at +0x30, call net_base::meth_0x59d530 — 28 instructions |
 | 4 | 0x59c360 | 13 instructions: vft[+0x34] call, release the [+0x2C] member, done |
 | 4' | 0x59d530 | net_base teardown, COMPLETE (58 instr): SEH, vft store 0x6A1D1C, release [+0x1C] (deleting-dtor or direct free via [ecx-4]); **net_socket::close_socket 0x5B8D40 called TWICE** (on socket +0x14 and the socket object after vft store 0x6A1D14); debug-stream-vft store 0x6A1D0C at +8; call net_critical_section::dtor_0x5B92A0; SEH cleanup paths (63a840-63a867) name the same helpers |
-| BOTTOM | 0x5B8D40 close_socket + 0x5B92A0 critical_section dtor + free/delete | the cascade bottoms here; port-side 0x5b8d40 is declared (net/socket.hpp line 19) but UNDEFINED — the next body reads; critical_section's dtor port-state unchecked |
+| BOTTOM | 0x5B8D40 close_socket + 0x5B92A0 critical_section dtor + free/delete | the cascade bottoms here; **0x5B8D40 and 0x5B92A0 are PORTED** (net/socket.cpp + net/critical_section.cpp, submodule 862592b, gates green) |
 
-CASCADE COMPLETE (band-1 slot-0 path): port band-1 slice 1 = bodies
-0x45f2e0, 0x45e6a0, 0x5897d0, 0x588d90, 0x59c790, 0x59c360, 0x59d530 + the bottom helpers
-(0x5B8D40 close_socket, 0x5B92A0 critical_section dtor, plus the CameraControl dtor 0x586570
-for the +0x84 release). That is the linkable minimum for factory-1's vft slot 0.
+## CameraControl-leaf subtree (the +0x84 release) — closure COMPLETE, port pending
 
-CONSEQUENCE (supersedes the earlier note): the factory-construction strike gate
+The +0x84 release forces the whole subtree into the linkable closure (each call odr-uses
+the callee). Read whole 2026-10-24:
+
+| EA | body |
+|----|------|
+| 0x586570 | CameraControl dtor (4 instr): vft store 0x69BF28, [this+8] = Gfx::CamCtrl::Orbit vft 0x670FB8, tail-jmp 0x529FB0 |
+| 0x529FB0 (== IDB dtor_0x4c68a0 alias) | Gfx_CamCtrl_Orbit dtor (22 instr): vft store 0x670FA8, call cls_0x50dbb0::meth_0x4c6680 (list params = full span), free block, null fields |
+| 0x4c6680 | whole-span fast path at the dtor call (both params == head → 79 instr body, fast path = meth_0x4c6600 + list reset); **the search path calls 0x425e90** |
+| 0x4c6600 | PORTED (recursive chain-free, 25 instr, submodule df7a861) |
+| 0x425e90 | **std-tree erase with the "invalid map/set<T> iterator" out_of_range GUARD** (70+ instr read, cursor continuing): SEH frame, flag test → throw std::out_of_range via std_logic_error ctor 0x401ca0 + _CxxThrowException, then the unlink algorithm calling cls_0x48d750::meth_0x48d750 — the port of this body pulls the EXCEPTION machinery into the closure (std exception ctors, throw support) — a named slice of its own |
+
+The forced chain for factory-1 slot 0 is therefore:
+0x45f2e0 → 0x45e6a0 → 0x5897d0 → 0x588d90 → {13 releases incl 0x586570 → 0x529FB0 →
+0x4c6680 → 0x425e90 → 0x48d750 + std-exception path} and → 0x59c790 → 0x59c360, 0x59d530.
+Porting order: bottom-up — 0x425e90's remaining tail + 0x48d750 + the exception ctor chain
+next, then the leaf dtors, then the 7-body chain in one atomic multi-TU slice. the factory-construction strike gate
  implicitly requires this whole path defined, because any TU odr-using the vft emits slot 0,
  whose body's call chain must link. Band-1 slice 1 = port the depth-0..3' bodies plus the
  children they name until the cascade bottoms out in free/delete + already-ported helpers.
