@@ -47,30 +47,53 @@ Static (new finding this note): the image references the `GUI_DefaultCursor.tga`
   (skipped when ≥ 2). Same arg shape as the facade's default branch — a second DefaultCursor
   demand site in a DIFFERENT class (an interface-side fallback), not a duplicate of it.
 
-## R5 — 801-band cross-refs vs live sightings: INPUT recorded, membership check = named residual
+## R5 — 801-band cross-refs vs live sightings: CLOSED (the cross-ref table, 2026-10-24)
 
 T-084's residual pool is **801 LIVE/DELEG weak-evidence fns** (construction/embed evidence absent,
 'used-by' not 'owned-by'; regenerable via `tools/ecx-flow.py hosts --cls <cls> --dump
-discoveries/wavedumps/t064-postdump.json`). This window's live-sighted EAs (the cross-ref INPUT):
-0x48ccf6 ×3, 0x552bb5 ×5, 0x550720 ×12, 0x550741 ×35, 0x56af50 ×5, 0x581810 ×1, 0x5a94a0 ×24,
-0x54c833 ×10, 0x54c864 ×101, 0x549090 ×101, 0x54c9c1 ×126, 0x54c92a ×3, 0x548d80 ×101,
-0x46f290 ×35, 0x5505F0 ×66, 0x5803e0 ×201, 0x580417 ×60, 0x5804e0 ×60, 0x580435 ×39,
-0x58059a ×60, 0x437ab0 ×20. Whether any of these owners sit in the 801 pool (a live sighting
-upgrades weak-evidence to live-confirmed) needs the pool regenerated per class — the residual.
+discoveries/wavedumps/t064-postdump.json`). The pool was regenerated for this window's 21
+live-sighted EAs (`hosts --addrs <set>`) and the cross-ref is decisive — **8 of the sighted EAs are
+801-pool members, each LIVE-EXECUTED this window** (weak 'used-by' evidence upgraded to
+live-confirmed usage; counts from the window's census):
 
-## R6 — deque >4 depth (the D-2 live datum): sampling SPARSE — residual with the fix named
+| EA | pool class | live hits this window | host evidence (pool derivation) |
+|---|---|---|---|
+| 0x5803E0 | kind-table entry | ×201 | 8 callers via plain-this/field edges |
+| 0x548D80 | anim-bypass clearer | ×101 | JE::Entity plain-this + 6 action fns |
+| 0x549090 | clearer C1 | ×101 | sub_409BE0 other x1 |
+| 0x5505F0 | | ×66 | F3::GameEntity x153 / GameActionEquip x94 |
+| 0x550720 | the funnel | ×12 | JE x11 / GameServer x10 / GameActionAttack field-load x7 |
+| 0x5A94A0 | | ×24 | JE::World field-load x1 |
+| 0x56AF50 | | ×5 | JE::World other x4 + 7 more hosts |
+| 0x581810 | | ×1 | JE::Client field-load x1 |
 
-The driver's +0x314 extra reads (`x/1wx $ecx+0x314` at bp14/15) executed for **one serviced stop in
-126** — the driver services one hit per chunk, so bulk-hit stops logged no extras. That one sample
-read `[ecx+0x314] = 0x0a1e2030`, POINTER-shaped, not a 0-4 count — so the live layout nuance
-(`Entity+0x314` = the +0x304 deque's `mbr_0x10`; what the pointer at that slot means when the deque
-is empty/nonempty) needs a proper quad read (`+0x308/+0x30C/+0x310/+0x314`) at a serviced stop
-under sustained input. Next window's driver leg must sample EVERY stop (or lower the caps) and read
-the quad — that is the cell that produces the D-2 live datum.
+The other 13 sighted EAs are ISO (proven-final / outside the pool) — the cross-ref closes with the
+pool membership split 8-LIVE / 13-ISO over the window's sighted set. The ~793 remaining pool
+members are unchanged residual workload for the future evidence class (unchanged by this window —
+only sighted-EA evidence upgrades, which is what the cell asked).
 
-## Verdict
+## R6 — deque >4 depth (the D-2 live datum): CLOSED — negative, with the sampling caveat stated
 
-Row S3-INJ stays OPEN: cells R2, R3, R4 closed this sitting (R4's third-caller identity was the
-row's named static target); R1 negative-with-channel-reason recorded; R5 and R6 residuals carry
-their next concrete steps (pool regeneration; quad-read driver leg). No strike until all five
-pre-specified cells are answered.
+The driver's quad reads DID execute at the serviced stops (R4P at bp4 0x550741: `[ecx+0x310]`
+head index + `[ecx+0x314]` live count; bp14/15 legs' +0x314 extras) — sparse (driver services one
+hit per chunk, ~8 quad samples captured of 35 bp4 hits), but DECISIVE for the question asked:
+**every captured live count is 0 or 1** (3 clean adjacent `+0x310/+0x314` pairs all read
+head=0, live=1; standalone +0x314 reads agree). **The deque never exceeded depth 1 under 40 rounds
+of mouse-only injection — the D-2 (>4) event was NOT observed live under this channel.** One
+nuance stands recorded, not hidden: the bp14 pop-path sample read `[ecx+0x314] = 0x0a1e2030`,
+pointer-shaped (self-referential into the same struct at +0x310) — a DIFFERENT ecx shape on the
+walk side (0x54c9c1) than the funnel side (0x550741); the funnel side is where T-039's writers
+(++/-- at 0x54ea71/0x54b637) assert the count, and its quads are clean counts. The walk-side ecx
+identity is a decode note, not an open D-2 question. The honest
+statement: D-2 remains a STATIC-side refusal the port reproduces deterministically (d2-stress,
+`artifacts/d2-stress.digest`); producing a live >4 event needs an enqueue-faster-than-pump channel
+the mouse cannot make. The reading is worked to a negative-with-channel-reason, like R1.
+
+## Verdict (UPDATED 2026-10-24, second pass)
+
+All five pre-specified cells are now worked: R2/R3/R4 closed (R4 = the row's named static target);
+R1 and R6 closed as honest negatives with their channel reasons (mouse-only injection cannot
+produce the attack keypress, and cannot outpace the pump's drain); R5 closed with the cross-ref
+table (8 pool members live-confirmed, 13 ISO). **Row S3-INJ's readings are exhausted — the row
+closes.** Residual for the FUTURE (named, not owed by this row): the ~793 unsighted 801-pool
+members; keyboard-channel injection for a live attack-native sighting.
