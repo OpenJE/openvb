@@ -79,6 +79,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/cls_0x5ac2b0.cpp"
 	"modules/openje/src/JE/cls_0x5ac9e0.cpp"
 	"modules/openje/src/JE/net/exception.cpp"
+	"modules/openje/src/JE/net/address.cpp"
 	"modules/openje/src/JE/cls_0x45f060.cpp"
 	"modules/openje/src/JE/net/client.cpp"
 	"modules/openje/src/JE/net/critical_section.cpp"
