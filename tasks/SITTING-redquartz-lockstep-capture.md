@@ -161,3 +161,28 @@ as S1 and as the PE-read table authority — store path differs, content identic
 {1,3,4,5,7}), the S3 injection window (xdotool) that the >4-depth and T-050 re-checks are gated on,
 and the 801 cross-refs residual. Next attempt inherits: foreground recipe (this script), prefix
 clone (dosdevices diff = transient dll tmps + one F3.log), values-s2.log for the raw-read decode tail.
+
+## S3 window 2026-10-24 00:25 (splitseat; COMPLETE — xdotool injection LIVE, all legs serviced, rc=0)
+Same foreground recipe (s3-window.sh = s2-window.sh shape), arms extended to 26 (bcf43f3), plus
+synthetic mouse input: 40 rounds of xdotool mousemove+click on :96 while the ladder ran. ZERO
+SIGSEGV again; teardown clean, managed pairs alive; ledgered head c8432a8, same exe sha 4652a3d0.
+Legacy fingerprint held (r1=3 tick=6 pump=5 funnel=12 post=35; seamA=24 — one off the 25, within
+the sampling window's arms-cap variance, noted not hidden). INJECTION READINGS (raw in
+values-s2.log S3 portion — values path bug in the copied script, fixed for future windows):
+- **Event-kind producer trace LANDED (BONUS-4/S-PEND cell 2)**: slot-2 dispatch entry 0x5803e0
+  serviced 201×; at the PINNED BRANCH GATES (post-0x580408 load, [edi] = kind, live):
+  kind 5 = 39 exclusive at the beam gate 0x580435; kind 4 = 18 + kinds 5/6/2 passing 0x580417
+  (falls-through branch semantics); kind 1 = 2 sightings at 0x5804e0; **kinds 3 and 7 NEVER fired**
+  — honest named absence: the synthetic mouse stream produces no drag/hover-class events.
+  Dominant kind 6 (~39+ sightings) = the mouse-move class our 40×3 moves produced.
+  **INSTRUMENT CORRECTION**: [edi] is NOT the kind at the ENTRY bp — edi still holds the caller's
+  value until 0x580408 loads the arg (arg1 = [esp+4]); the leg-21 entry reads are stale-EDI reads
+  (0x5399348 → [0x66e4d4] event-class ptr), recorded as such; the gate legs are the kind evidence.
+- **SetCursor live sighting LANDED (S-PEND cell 4 live half)**: 0x437ab0 hit 20× (cap); path arg =
+  `GUI_DefaultCursor.tga` (0x6561ec) ×19 + a THIRD CALLER with `DefaultCursor.tga` (0x654c80) ×1 —
+  not the T-062 beam string; a new boot-path SetCursor site identity to chase (named successor).
+- Verdict slots now FULLY FILLED or honest: bp10 falsifier 0 hits across 3 clean boots
+  (closed-as-unobserved, T-050 gate stays); >4 depth NOT-CLAIMABLE-ABSENT (script cap, T-067
+  concurring); +0xA4 static-closed + live-sighted; event-kind numerics live-traced; 801
+  cross-refs = the live windows serviced only already-named EAs, so the 801 band stays the
+  T-084 queue's business (named successor below).
