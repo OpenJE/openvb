@@ -68,6 +68,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/World.cpp"
 	"modules/openje/src/JE/cls_0x4d8d70.cpp"
 	"modules/openje/src/JE/cls_0x50db20.cpp"
+	"modules/openje/src/JE/cls_0x50dbb0.cpp"
 	"modules/openje/src/JE/net/critical_section.cpp"
 	"modules/openje/src/JE/net/socket.cpp"
 )
