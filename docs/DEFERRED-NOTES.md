@@ -821,6 +821,14 @@ leg was written from the withdrawn fire-time schedule and is superseded by the d
 rebuilt sim-driver.exe (MSVC, objects=21) -> hp=28/30 (one 2-dmg hit at the push, frame 11) and
 hp=45/45 legs - the SAME 28/45 pair the doc's correction names - with q=0 in every frame (unchanged by
 inbox traffic) and NO re-apply across the target's own pumps (frames 12-16 stable). The floor
-relaxation (write floor at 0x4629C0's site) remains BLOCKED on a fixture that actually reaches hp=0
+relaxation (write floor at 0x4629C0's site) was BLOCKED on a fixture that actually reaches hp=0
 (FastNova 6aaa62d: the shipped digest has no hp=0 leg, so the digest cannot discharge the
-death-threshold claim) - named, not silently dropped.
+death-threshold claim) - named, not silently dropped. UNBLOCKED 2026-10-24 (same sitting): the
+fixture EXISTS now - tools/scripts/hp0-death.txt (t071-r3-pair recipe, seed-pinned 1 per the
+G-FLAKY seed-pin convention: dmin=dmax=2 makes the DAMAGE deterministic, the pin decides the
+TO-HIT roll) through the rebuilt sim-driver lands artifacts/hp0-death.digest with the FULL death
+arc the digest never had: frame 4 hp=2/2 st=4 -> frame 5 hp=0/2 st=4 q=1 ak=GameActionDie (the
+damage at the push, the floor holding, the death conversion queued on <=0) -> frame 6 st=6 ->
+frame 7 st=7 -> frames 8-16 stable (DEAD gate: no double damage, death terminal). The
+death-threshold claim is now discharging material; the relaxation itself remains the named next
+step (Step 3 of the design), proven against this leg.

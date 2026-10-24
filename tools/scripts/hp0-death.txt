@@ -1,0 +1,21 @@
+# hp=0 death-threshold leg (P-CMBT Step 3 gate: the fixture the floor relaxation was
+# BLOCKED on - FastNova 6aaa62d: "the shipped digest has no hp=0 leg, so the digest
+# cannot discharge the death-threshold claim"). Shape = the proven t071-r3-pair recipe:
+# spawn takes an hp arg; one pushed attack = one 2-dmg hit at the push (the Step 2
+# landed schedule); a victim at 2 hp takes EXACTLY the threshold - <=0 fires the
+# death conversion (GameActionDie queued at the push), the victim's own pump runs it
+# next tick (Active -> Dying), and the DEAD gate refuses any further damage (no
+# double damage; the 6->7 edge stays the server-gated OnDeath work, not ours).
+# Assert on the digest: hp=0 appears AND st=6 follows on a LATER frame - the digest
+# now carries the leg it could not discharge before.
+seed 1
+digest artifacts/hp0-death.digest
+spawn sentinel 0 20.0 0.0 0.0 45
+peek
+spawn lowhp 1 20.4 0.0 0.0 2
+peek
+run 2 16
+push sentinel lowhp 2 2 0 0
+peek
+run 12 16
+end
