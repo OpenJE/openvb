@@ -49,16 +49,33 @@ in {
     # ImHex never binds -> IPv4-only listener looks "refused"). Clients must pass --host 127.0.0.1.
     OPENVB_IMHEX_MCP_PORT = "31337";
 
-    # Engram memory (agent memory server). NOTE: deliberately NO ENGRAM_DATA_DIR here.
+    # Engram memory (agent memory server). 2026-10-23 DECISION REVERSAL (user-approved, goal
+    # 20261023205641-q4x65d): the store now lives IN THIS REPO at .engram-data/ (gitignored,
+    # location-only - never committed to git history; it is a live SQLite+WAL database, not a
+    # mergeable text asset), migrated with `engram migrate-copy`, and ENGRAM_DATA_DIR is pinned
+    # here so openvb dev sessions resolve to the repo store. ~/.engram is kept untouched as a
+    # fallback and stays the shared store for every OTHER project (openvb-only split, accepted).
+    # WHY pin here despite the incident below: the split-brain risk is real but only bites
+    # sessions booted OUTSIDE the devenv shell - those read ~/.engram default, see an
+    # instance-id mismatch with the running server, and FAIL CLOSED (no adopt, no spawn, no
+    # kill) rather than corrupting anything. In-shell sessions and any `engram serve` started
+    # with this env all resolve to .engram-data/ consistently. The prior breakage ('2026 live
+    # session') came from pinning one path in the shell while the running server sat on the
+    # other WITHOUT a decision to reverse it; the two were never reconciled. If memory ever
+    # silently stops working in a session, check: which store the running server holds (see
+    # the .instance-id it matches) and whether this env pin is present in that shell.
     # The pi extension compares the running server's instance-id against
     # `$ENGRAM_DATA_DIR/.instance-id` and FAILS CLOSED (no adopt, no spawn, no kill) on a
-    # mismatch, so pinning a repo-local path would hand in-shell sessions one store and
-    # out-of-shell sessions the ~/.engram default: two stores, two instance-ids, and memory
-    # that silently stops working for anyone booted outside the devenv (which is exactly what
-    # happened to a live session). One canonical store (~/.engram); project separation comes
-    # from the tracked .engram/config.json (verified: GET /project/current returns
-    # project_source "config"), not from the directory. `engram sync` still exists if
-    # memories ever need to travel through the repo.
+    # mismatch.
+    # Project separation ALSO comes from the tracked .engram/config.json (verified:
+    # GET /project/current returns project_source "config"). `engram sync` still exists if
+    # memories ever need to travel through git.
+    # NOTE on the path expression: this file lives at devenv/environment/, and Nix resolves
+    # relative path literals against the CONTAINING FILE's directory - so the repo root is
+    # ../../. (first auditor falsification pass, 2026-10-23: a ../. pin silently resolved to
+    # devenv/.engram-data, a nonexistent path, exporting a broken pin while "nix parse OK")
+    # Verify with: devenv print-dev-env | grep ENGRAM_DATA_DIR
+    ENGRAM_DATA_DIR = "${toString ../../.}/.engram-data";
     # ENGRAM_URL stays unset: setting it marks the server externally managed and skips the
     # ownership check. ENGRAM_PORT 7437 is already the extension default, so it is unset too.
     # The release binary phones home for update checks at startup; offline determinism wins.

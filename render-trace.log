@@ -1,0 +1,6 @@
+[render] PHASE1 enter, gate OK (max-free VA)
+[render] Direct3DCreate8 SUCCEEDED pre-Startup (VA/ORDER was the wall)
+[render] PHASE2 opt-in enabled, hwnd=0x000A0072
+[render] GetAdapterDisplayMode hr=0x00000000 format=0x00000016
+[render] CreateDevice OK; magenta clear+present armed per frame
+[render] probe: F3::Main entered (loop driver)

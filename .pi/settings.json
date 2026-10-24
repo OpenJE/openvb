@@ -9,11 +9,9 @@
     "npm:pi-intercom",
     "npm:gentle-engram@0.4.2",
     "npm:pi-goal-list-loop-audit@0.39.45",
-    "npm:pi-verdict@0.15.0",
     "npm:@zazencodes/pi-jev-model-router@2.0.0",
     "npm:pi-jev-extension@0.3.1",
-    "npm:@cr1ms0n/pi-subagent@0.13.0",
-    "npm:pi-jev@0.7.0",
+    "npm:pi-subagents@0.81.0",
     "npm:@henryqw/pi-codegraph@0.7.3",
     "npm:pi-ghidra@0.3.0"
   ],
@@ -79,8 +77,6 @@
     "opencode-go/deepseek-v4-pro",
     "opencode/claude-sonnet-5-5",
     "opencode/deepseek-v4.1-flash-free",
-    "opencode/minimax-m3.1-flash-free",
-    "battlemage/qwen38-flash-next",
-    "battlemage/dsv4-flash"
+    "opencode/minimax-m3.1-flash-free"
   ]
 }

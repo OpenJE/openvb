@@ -61,6 +61,12 @@ dependencies
 .engram/chunks/
 .engram/manifest.json
 
+# Engram LIVE store (2026-10-23): migrated copy of ~/.engram, openvb-only canonical
+# store for in-shell sessions (ENGRAM_DATA_DIR in devenv/environment/openvb.nix).
+# Deliberately gitignored IN FULL - it is a live SQLite+WAL/SHM database; committing
+# it would put an unmergeable, constantly-changing binary in git history.
+.engram-data/
+
 # host-built driver/probe binaries (tools/*.sh generate these; not artifacts)
 tools/*.exe
 tools/__pycache__/
