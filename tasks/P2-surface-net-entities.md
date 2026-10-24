@@ -13,6 +13,26 @@ declares the virtuals (hpp) but defines only the ctors. LNK2001 on BOTH toolchai
 honest current state; the port-guard path on factory-0 is the named deviation (shipped
 factories never return 0).
 
+## Band 1 slot 0 = the deleting-dtor path — CASCADE MAP (bodies read whole this pass)
+
+The "first body" of band 1 is not one body: slot 0 (0x45f2e0) is the scalar deleting
+ destructor and its port pulls the whole teardown cascade. Read whole (IDA original,
+ 2026-10-24 pass):
+
+| depth | EA | body (shipped bytes) |
+|-------|-----|----------------------|
+| 0 | 0x45f2e0 | deleting dtor: call dtor_0x45e6a0; if (flags&1) free(this); return this; `retn 4` — 11 instructions |
+| 1 | 0x45e6a0 | GameClient dtor: vft store 0x664804, tail-jmp JE::Client::meth_0x5897d0 — 2 instructions |
+| 2 | 0x5897d0 | JE::Client teardown: SEH guard, vft store 0x69C814, call virt_meth_0x588d90, then net::client::meth_0x59c790 — 24 instructions (SEH frame) |
+| 3 | 0x588d90 | the MEMBER-RELEASE CHAIN: test-then-release ~10+ member objects via their own deleting-dtors (slots +0xF8, +0xB8, +0xB0, +0xAC, +0x9C, +0xA0, +0xA4, +0xA8, ... — 60-instruction head read, cursor continuing) |
+| 3' | 0x59c790 | net::client teardown: SEH guard, vft store 0x6A1934, call net::client::virt_meth_0x59c360, address-vft store 0x6647A0 at +0x30, call net_base::meth_0x59d530 — 28 instructions |
+
+Cascade continues below depth 3 (0x59c360, 0x59d530, and 0x588d90's remaining release
+ slots) — each is a subsequent body read. CONSEQUENCE: the factory-construction strike gate
+ implicitly requires this whole path defined, because any TU odr-using the vft emits slot 0,
+ whose body's call chain must link. Band-1 slice 1 = port the depth-0..3' bodies plus the
+ children they name until the cascade bottoms out in free/delete + already-ported helpers.
+
 ## The sequence (EA-named, verified this scope pass)
 
 ### Band 1 — F3::GameClient vft 0x664804 (56 slots), 15 overrides in the GameClient band
