@@ -26,11 +26,13 @@ it is for.
   `# SYNTHETIC - exercises the tool, proves nothing about F3.exe`. Deliberately synthetic input is
   expected and fine; a synthetic side that does not say so is not.
 * a `lockstep` claim is **checked, not believed**. It must
-  1. name the reads it used (`r3` and `r4b` at minimum — they are what `q=` and `ak=` come from),
+  1. name the reads it used (`r3` and `r4b` at minimum — they are what `q=` and `ak=` come from;
+     **`r5` additionally when the capture carries numbered `qi=` fields** — the effect-inbox count,
+     R-PORT-Q; pre-inbox-era captures omit `qi` entirely and render `NA:absent-in-capture`),
   2. carry a `record=read` line per named read (address / value / when / breakpoint — the same four
      columns T-034's acceptance demands),
   3. be **consistent with its own frames**: `r3`'s value must appear as some entity's `q=`, `r4b`'s
-     as some `vt=`, `r1`'s as some frame's `lcgstate=`,
+     as some `vt=`, `r1`'s as some frame's `lcgstate=`, `r5`'s as some `qi=` field,
   4. cite `exe=<md5>` equal to `artifacts/F3.json`'s `filemd5` — otherwise the capture and the class
      table describe different binaries and every resolved name is a coincidence.
 
@@ -53,7 +55,7 @@ record=provenance provenance=lockstep r1,r3,r4,r4b session=<id> exe=<md5>
 record=read  read=r3 address=Entity+0x314 value=2 when=mid-round breakpoint=0x459f5d
 record=frame frame=100 tickms=3456789 clocksec=34567 [lcgstate=0x12345678]
 record=entity frame=100 slot=0 name=CREEP pos=20.00/0.00/0.00 yaw=0.00 hpcur=45 hpmax=45 \
-                 state=4 moving=0 acted=0 q=1 vt=0x649c1c,-,-,-
+                 state=4 moving=0 acted=0 q=1 vt=0x649c1c,-,-,- [qi=0]
 record=world frame=100 pathjobs=0 turns=2 turnorder=CREEP,OTHER
 record=end frames=3
 ```
@@ -68,6 +70,7 @@ record=end frames=3
 | `state` `moving` `acted` | `+0x1E0` (dword), the mover flag, `+0x319` (byte) | `st=` is three values since T-039 |
 | **`q`** | **R3 — `Entity+0x314`, the action deque's live element count** (`++` at 0x54ea71, `--` at 0x54b637/0x54b672) | the D-2 number: shipped `q>4` beside our `q=4` **is** a dropped order, visible in the diff |
 | **`vt`** | **R4b — `[action+0x00]` per deque slot**, four entries, `-` when the slot is empty | mapped to a CLASS NAME offline through `artifacts/F3.json`; unresolved prints `UNKNOWN_VT=<ea>` and is **counted** in `# AK-RESOLUTION=`, never named. `--require-resolved-ak` turns an unresolved slot into a refusal |
+| **`qi`** (optional, R-PORT-Q) | **R5 — `Entity+0x2F0`, the effect-inbox deque's live element count** | the field `virt_meth_0x54ab00`'s busy predicate reads as `!= 0` (T-074 §4e). Omit it in pre-inbox-era captures (renders `qi=NA:absent-in-capture`); a capture that carries it as a number must name the `r5` read, and the value must appear in some `qi=` field — the same sloppy-proof the `q=`/`r3` pair gets |
 | `pathjobs` | `PathManager+0x0C` | omit it and the file prints `pathJobs=NA:...` — NA means *not measured*, never *unchanged* |
 | `turns` `turnorder` | initiative manager `world+0x8C`: count `+0x20`, circular list `+0x1C` (order needs the WALK, not the count) | omit ⇒ `turns=NA:...` |
 

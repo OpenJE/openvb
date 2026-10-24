@@ -236,3 +236,16 @@ receipts in `docs/f3/CombatTurnDispatch.md` §T-079 batch-3). Nothing in this bl
 moves — `0x54c833` analog landed, `0x54c864` stays cited-and-absent — but any FUTURE reader of the
 "animated-event" naming (T-039-era wording elsewhere in the corpus) should read T-074 (+0x2E0 =
 effect inbox) / T-085 (+0x1A8 = anim deque) before building on a queue identity.
+
+## R-PORT-Q: `qi=` — the effect-inbox count joins the COMPARED contract (2026-10-24)
+
+`qi=` is the paired field to `q=`: where `q=` counts the ACTION deque (shipped `Entity+0x314`), `qi=`
+counts the EFFECT-INBOX deque (shipped `Entity+0x2F0` — the live count the busy predicate
+`virt_meth_0x54ab00` reads as `!= 0`, T-074 §4e). The port renders it from the derived
+`InboxCount()` mirror; the shipped side renders it from an `r5` read in the capture, or
+`NA:absent-in-capture` when the capture predates the inbox era. It became COMPARED state now — not
+later — because P-CMBT steps 1-2 (landed `75a30ab` + `b02b6b3`) route DAMAGE through this inbox: a
+frame whose damage delivery changes shape shows up as a `qi`/`q`/`hp` triple divergence instead of an
+invisible `hp` change. The shipped-side grammar lives in `docs/f3/OrigCapture.md` (`r5` read +
+optional `qi` entity field); the lockstep provenance guard enforces r5 exactly like r3/r4b, but only
+for captures that actually carry numbered `qi=`.
