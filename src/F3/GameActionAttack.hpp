@@ -31,13 +31,14 @@ namespace F3 {
 	//    `cmp edx,eax` ; `mov [ecx+0x24],edx` (STORE FIRST, UNCONDITIONALLY) ; `jle return` ;
 	//    `mov [ecx+0x24],eax`. So it computes `cur = min(new, max)` with NO LOWER BOUND, and the
 	//    store precedes the test - a hit for more than remaining HP leaves NEGATIVE health in a
-	//    shipped GameEntity. The port floors at 0 instead (`statCur = cur < 0 ? 0 : cur`), which is
-	//    a REAL behavior difference, not a rounding detail.
-	//    Kept, and NOT unified here, deliberately: the port's death test reads `statCur == 0`, so
-	//    adopting the shipped clamp WITHOUT first re-deriving what shipped's flip actually consumes
-	//    (the vft+0x50 gate at 0x45c5b2 is a STATE test - `test al,al; je` @0x45c5b5 - not an HP
-	//    compare) would trade a wrong HP value for a worse outcome: over-kill victims that never
-	//    die. Open item for Step 2; the write site carries the same note.
+	//    shipped GameEntity. The port's former floor (`statCur = cur < 0 ? 0 : cur`) was a
+	//    REAL behavior difference, not a rounding detail.
+	//    STEP 3 RESOLVED (2026-10-24): the death test was re-derived FIRST (the Apply carries
+	//    the `<= 0` state-predicate-shaped conversion, not an HP == 0 compare) and the hp=0-
+	//    reaching digest fixture EXISTS (tools/scripts/hp0-death.txt -> artifacts/hp0-death.digest,
+	//    exact-0 arc + over-kill leg). With that order complete the floor is RETIRED in
+	//    GameActionAttack.cpp's HP update - the write is now min(new, max) only,
+	//    shipped-faithful. Deviation retired; the bytes stay recorded here as the evidence.
 	//  - hit test: chance >= RandRange(0,100) per RollToHit_0x402260 (session 17 §1) - note the
 	//    inclusive 0..100 range (101 outcomes), NOT 1..100 (chat C-33 §1).
 	//  - the shipped damage fork is the action's +0x71 "unarmed" bool (0x4040a8/0x4040d4):

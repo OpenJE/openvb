@@ -1,0 +1,15 @@
+# OVER-KILL leg for the Step-3 floor RELAXATION (shipped 0x4629C0 = min(new,max), NO
+# lower bound - negative hp legitimate; batch B corroboration). Same recipe as
+# hp0-death.txt but a 2-hp victim takes a 5-dmg hit: with the floor retired the victim
+# HOLDS NEGATIVE hp (-3/2) and the death conversion STILL fires on <= 0 - the exact case
+# a `== 0` port test would have stranded alive. Seed pinned 1 (same roll logic).
+digest artifacts/hp0-overkill.digest
+spawn sentinel 0 20.0 0.0 0.0 45
+peek
+spawn lowhp 1 20.4 0.0 0.0 2
+peek
+run 2 16
+push sentinel lowhp 5 5 0 0
+peek
+run 12 16
+end

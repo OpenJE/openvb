@@ -370,11 +370,19 @@ namespace F3 {
 		if ( pe.dmg == 0 ) {
 			return 1;
 		}
-		// 3. HP update @0x45c1a3 -> SetCurrentHealth min-clamp @0x4629C0
+		// 3. HP update @0x45c1a3 -> SetCurrentHealth @0x4629C0 - STEP 3 FLOOR RELAXATION LANDED
+		// (2026-10-24, executor seat): shipped is `cur := min(new, max)` with NO LOWER BOUND
+		// (store-before-test, negative HP legitimate); the port's `cur < 0 ? 0 : cur` floor is
+		// retired. Lawful because the order the design required is complete: the death test was
+		// re-derived from shipped's state predicate FIRST (the `<= 0` conversion below, not an
+		// HP == 0 compare), and the hp=0-reaching digest fixture EXISTS
+		// (tools/scripts/hp0-death.txt -> artifacts/hp0-death.digest: exact-0 death arc + the
+		// over-kill leg). A relaxation without that line carrying <= 0 was the red flag; the
+		// line predates this edit.
 		const int oldHp = target->statCur;
 		int cur = oldHp - pe.dmg;
 		if ( cur > target->statMax ) { cur = target->statMax; }
-		target->statCur = cur < 0 ? 0 : cur;
+		target->statCur = cur;   // no lower clamp - shipped-faithful (0x4629C0 bytes, batch B corroboration)
 		// 4. hit angle. Shipped shape (Apply 0x45C243..0x45C29C): the negated delta
 		// Euler components are prescaled by flt_649C50 = pi/180, run through the two
 		// transform helpers 0x47272B / 0x471357, and combined as atan2 via fpatan. The
@@ -428,9 +436,11 @@ namespace F3 {
 		//           `0f 9e c0` SETLE al  ->  (tgt+0x24 = CurHealth) <= 0
 		//   So [vft+0x50] == (entityState(+0x1E0) == 7) OR (curHealth <= 0).
 		// THE THRESHOLD IS <= 0, NOT == 0. Two consequences, and they are one design:
-		//  (a) This test now reads the shipped threshold. It is BEHAVIOUR-PRESERVING today
-		//      only because our write floors at 0, where <= 0 and == 0 coincide; that is
-		//      exactly why the threshold had to be re-derived BEFORE the floor could move.
+		//  (a) This test now reads the shipped threshold. With the Step-3 floor relaxation
+		//      LANDED (2026-10-24: the HP write above is min(new,max) only) the two thresholds
+		//      NO LONGER coincide - a `== 0` port test would strand over-kill victims (negative
+		//      hp) alive. The threshold was re-derived BEFORE the floor moved, per the
+		//      design's required order.
 		//  (b) It also explains a null result honestly rather than leaving it as evidence:
 		//      FastNova's scan for `cmp DWORD PTR [reg+0x24], 0` across all of .text returned
 		//      zero hits and was STRUCTURALLY guaranteed to - leg 2 is `test`+`setle`, never
@@ -439,9 +449,9 @@ namespace F3 {
 		// Note the subobject rendering: inside the thunk the field is [esi-0x80]; raw it is
 		// +0x24. Reading the thunk's text without resolving the +0xA4 base "finds" a -0x80
 		// field that exists nowhere in the object.
-		// STILL OPEN, step 2: prove this against T-068's paired hp= digest, then relax the
-		// write floor at 0x4629C0's site. A floor relaxation without this line already
-		// carrying <= 0 is the red flag on the diff.
+		// STEP 3 DISCHARGE: proven against the hp=0-reaching digest fixture
+		// (tools/scripts/hp0-death.txt -> artifacts/hp0-death.digest: exact-0 death arc +
+		// the over-kill leg with negative hp), the instrument the relaxation was gated on.
 		if ( target->statCur <= 0 && target->entityState == kStateActive ) {
 			static GameActionDie s_dies[4];
 			static int s_di = 0;
