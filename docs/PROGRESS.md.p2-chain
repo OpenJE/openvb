@@ -1,0 +1,6 @@
+# P2 ogg/ResourceSystem chain — state
+DONE: sub_5FEB80, meth_0x4c7600, CMusic::meth_0x4c68f0 (CMusic.cpp new), OpenFile_0x49ae90, meth_0x49b670, RhtRecord struct typed in hpp.
+STUCK POINT: meth_0x50ca40/0x50ca50 = body-less decls (cls_0x50ca00.cpp has only ctor/0x50ca20). FileStreamOpen_49b9f0 not yet landed.
+NEXT: (1) decompile 0x50ca40+0x50ca50, land pair in cls_0x50ca00.cpp; (2) port FileStreamOpen_49b9f0 (FindRht interim + synthesized RhtRecord, direct band, probe teardown); (3) meth_0x4c76a0 then 4c79e0 re-land.
+
+Iteration 125-126 stuck-loop diagnosis: the plan needs the 0x50ca40/0x50ca50 enter/leave bodies landed BEFORE FileStreamOpen_49b9f0 can call them (they are body-less decls in cls_0x50ca00.hpp). No tool call was made the last two turns — the IDA decompile step was narrated but not executed. Step 1 = decompile both, land in cls_0x50ca00.cpp, build, commit. Then (2) FileStreamOpen_49b9f0, (3) meth_0x4c76a0.
