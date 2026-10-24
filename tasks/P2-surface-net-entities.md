@@ -27,8 +27,18 @@ The "first body" of band 1 is not one body: slot 0 (0x45f2e0) is the scalar dele
 | 3 | 0x588d90 | the MEMBER-RELEASE CHAIN: test-then-release ~10+ member objects via their own deleting-dtors (slots +0xF8, +0xB8, +0xB0, +0xAC, +0x9C, +0xA0, +0xA4, +0xA8, ... — 60-instruction head read, cursor continuing) |
 | 3' | 0x59c790 | net::client teardown: SEH guard, vft store 0x6A1934, call net::client::virt_meth_0x59c360, address-vft store 0x6647A0 at +0x30, call net_base::meth_0x59d530 — 28 instructions |
 
-Cascade continues below depth 3 (0x59c360, 0x59d530, and 0x588d90's remaining release
- slots) — each is a subsequent body read. CONSEQUENCE: the factory-construction strike gate
+| 3 | 0x588d90 | the MEMBER-RELEASE CHAIN, COMPLETE (112-instr body read): releases +0x9C, +0xA0, +0xA4, +0xA8, +0xB4 via deleting-dtors; **CameraControl at +0x84** = `call CameraControl::dtor_0x586570` then `free`; slot releases +0x88, +0x8C, +0x94, +0x98, +0x80, +0x7C, +0x78, +0x74, +0x70; then **tail-jmp net::client::virt_meth_0x59c360** — note the bytes run 59c360 TWICE on this path (once via this tail-jmp, once from 0x59c790's own call) — record as-shipped |
+| 3' | 0x59c790 | net::client teardown: SEH guard, vft store 0x6A1934, call net::client::virt_meth_0x59c360, address-vft store 0x6647A0 at +0x30, call net_base::meth_0x59d530 — 28 instructions |
+| 4 | 0x59c360 | 13 instructions: vft[+0x34] call, release the [+0x2C] member, done |
+| 4' | 0x59d530 | net_base teardown, COMPLETE (58 instr): SEH, vft store 0x6A1D1C, release [+0x1C] (deleting-dtor or direct free via [ecx-4]); **net_socket::close_socket 0x5B8D40 called TWICE** (on socket +0x14 and the socket object after vft store 0x6A1D14); debug-stream-vft store 0x6A1D0C at +8; call net_critical_section::dtor_0x5B92A0; SEH cleanup paths (63a840-63a867) name the same helpers |
+| BOTTOM | 0x5B8D40 close_socket + 0x5B92A0 critical_section dtor + free/delete | the cascade bottoms here; port-side 0x5b8d40 is declared (net/socket.hpp line 19) but UNDEFINED — the next body reads; critical_section's dtor port-state unchecked |
+
+CASCADE COMPLETE (band-1 slot-0 path): port band-1 slice 1 = bodies
+0x45f2e0, 0x45e6a0, 0x5897d0, 0x588d90, 0x59c790, 0x59c360, 0x59d530 + the bottom helpers
+(0x5B8D40 close_socket, 0x5B92A0 critical_section dtor, plus the CameraControl dtor 0x586570
+for the +0x84 release). That is the linkable minimum for factory-1's vft slot 0.
+
+CONSEQUENCE (supersedes the earlier note): the factory-construction strike gate
  implicitly requires this whole path defined, because any TU odr-using the vft emits slot 0,
  whose body's call chain must link. Band-1 slice 1 = port the depth-0..3' bodies plus the
  children they name until the cascade bottoms out in free/delete + already-ported helpers.
