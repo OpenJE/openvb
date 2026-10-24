@@ -208,3 +208,30 @@ reading as "lower the bar," it is wrong.
   the chase's newly exposed port-era surfaces: the shipped adapter array (byte_708380, stride
   0x44C) and the Bink movie player (cls_0x5b4f50, byte_707CE4 device, movie flag
   global_area_map_icons->[+2C]+0x108).
+
+## Refresh 2026-10-24 #3 (executor seat; every figure with its command)
+
+- **PARK board: 51 closed rows** — `grep -cE "^\| ~~" tasks/PARK.md` (was 47 at refresh #2). The 4
+  strikes since: PROGRESS-STAMP-2 (refresh #2 itself), RE-CUT-616328 (the cls_0x616328 dual-role
+  band-evidence re-cut: `0x616328` = MSVC adjustor thunk raw-verified, `0x70BD98` = the
+  world-server singleton by 30+-xref consumer census, the shared-adjacency check FAILED
+  (band = ~65 fns 5-829 bytes, no vft clustering) so no rename minted — label split),
+  PAYLOAD-PIN-0x34 (the "0x34 AddAction payload class" = **F3::GameActionDie**, pinned from the
+  shipped RTTI TypeDescriptors at the Apply tail 0x45c5f7; `0x6165e0` = `___RTDynamicCast` — its
+  `push 34h` = SEH frame size, not an allocation; the victim's EXISTING die action is
+  cast-and-filled {+0x1C/+0x20/+0x28} then enqueued via 0x550720 — NO allocation at the site;
+  the "stays unnamed" caveat retires), and KEYBOARD-INJ (the S3 R1 enabler executed to its
+  answer: S4 window 02:42:14Z drvrc=0, 1017 stops, bp5 0x459f5d F3::Attack = 0 hits under the
+  XTEST key sweep; kind-stream numerics reproduce the mouse-only census exactly — two channels,
+  same dispatched shape; T-037's static law explains the negative: the script natives are the
+  AMX second door, a live sighting requires a script-driven attack; keyboard injection SPENT).
+- **Live IDB census** (ida action=save census): **10,173 functions / 7,690 named (75.5%)** —
+  unchanged; this wave's RE yield = the RE-CUT + PIN comments (read-back verified, ledgers
+  02-17-35Z / 02-21-55Z) and the S4 live window's negative datum (s4a-winedbg.log, 1017 stops).
+- **Standing rows** (both live, not owed): R-KEEPER's seat and H-IDX. **No actionable open rows
+  remain**; the successor queue now: P2-surface instantiation (~35 undefined vft virtuals,
+  LNK2001 both toolchains, sequence EA-named) as the top blocker; script-driven attack via the
+  AMX/script door (the keyboard-inj re-point); item5b probe-line (lawfully parked — the
+  device-arm is unreachable until the anim-model era); ~793 unsighted 801-pool members; the
+  port-era surfaces from the chase (adapter array byte_708380 stride 0x44C; Bink movie player
+  cls_0x5b4f50 / byte_707CE4 device / movie flag +0x108).
