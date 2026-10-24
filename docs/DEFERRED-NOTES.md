@@ -811,7 +811,16 @@ sites stay generic-only ([vft+0x2C] is the bare `retn` 0x404b70 for GameEffectDa
 damage entry is ticked, never applied); the DEAD gate's volley-stop is observed post-apply by the
 finisher's loop; the 4-slot inbox capacity refusal is unreachable for damage traffic (inline-fired
 effects never occupy slots). Gates at landing: msvc rc0, cppcheck rc0, run-all 14 pass/0 fail,
-port-annot 0/476 uncited. OPEN acceptance legs (docs/f3/P-CMBT-combat-anim-port-design.md §Step 2):
-(1) the deferral/order assert fixture, (3) the T-068 paired-instants digest re-run with the `q=`
-unchanged assert. The floor relaxation (write floor at 0x4629C0's site) stays BLOCKED on leg (3)
-per the clamp item's agreed order.
+port-annot 0/476 uncited. Acceptance legs NOW DISCHARGED: (1) the deferral/order assert landed in the
+SpawnMove suite (166 asserts, floor bumped 157 -> 166): target's pump applies nothing before/after the
+push, the ready damage effect inline-fires synchronously (return 0, HP write at the push, inbox empty,
+q= unchanged by inbox traffic), and the ticked-never-applied law is exercised by replay-shaped traffic
+(a not-done damage entry is skip-past, writes NO HP, stays queued); the doc's "frame N+1" acceptance
+leg was written from the withdrawn fire-time schedule and is superseded by the doc's own corrections
+(T-079 errata item). (3) the T-068 paired-instants digest RE-RAN green: t071-r3-pair.txt through the
+rebuilt sim-driver.exe (MSVC, objects=21) -> hp=28/30 (one 2-dmg hit at the push, frame 11) and
+hp=45/45 legs - the SAME 28/45 pair the doc's correction names - with q=0 in every frame (unchanged by
+inbox traffic) and NO re-apply across the target's own pumps (frames 12-16 stable). The floor
+relaxation (write floor at 0x4629C0's site) remains BLOCKED on a fixture that actually reaches hp=0
+(FastNova 6aaa62d: the shipped digest has no hp=0 leg, so the digest cannot discharge the
+death-threshold claim) - named, not silently dropped.
