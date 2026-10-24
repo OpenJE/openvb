@@ -61,3 +61,14 @@ whether the mention is current - supersession judgment stays with the canonical 
 - **inferred-keys ledger unchanged in kind** (53 listed via --inferred; compressed prose like
   slash-lists is flagged, never silently counted).
 - No doc content touched; --check green at commit: corpus_docs=189 indexed_eas=7649.
+
+## 2026-10-24 refresh (executor seat, this window)
+- Trigger: `tools/ea-index.py --check` STALE (corpus 211 docs / 8,106 EAs vs index's 202 / 8,061
+  from 9f2df73). Refresh: 211 docs / 8,106 EAs / 13,443 mentions / 1,093 refused tokens
+  (1,061 -> 1,069: outside-span +8 — the heap-pointer captures class, correct to refuse per the
+  pairing law). NO new refusal categories in kind.
+- Drift sources (this window's landings): discoveries/2025-10-24-s3-inj-deep-input-readings.md,
+  docs/f3/SimDigest.md qi= section, docs/f3/OrigCapture.md r5/qi rows, docs/f3/P-CMBT design doc
+  era — the S3-INJ + R-PORT-Q + P-CMBT closure wave.
+- `--verify` recall spot-check 60 EAs x 211 docs = 12,660 (EA,doc) pairs, 0 missed.
+- --check green at commit: corpus_docs=211 indexed_eas=8106.
