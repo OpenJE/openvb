@@ -54,7 +54,9 @@ namespace F3 {
 			undefined4 virt_meth_0x45e9a0();
 			undefined4 meth_0x45ef70();
 			undefined4 virt_meth_0x45f000();
-			undefined4 virt_meth_0x45f2e0();
+			// 0x45f2e0 = the scalar deleting destructor (vft slot 0; body read whole
+			// 2026-10-24: call the dtor, if (flags&1) free(this), return this).
+			GameClient* virt_meth_0x45f2e0( byte flags );
 			undefined4 meth_0x45f370();
 			undefined4 meth_0x45f4f0();
 			undefined4 meth_0x45f5d0();

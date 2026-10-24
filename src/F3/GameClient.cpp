@@ -81,4 +81,22 @@ namespace F3 {
 		ctor_0x460b30( (ushort)0 );
 	}
 
+	// 0x45e6a0 - GameClient dtor, read whole (2 instructions, IDA original 2026-10-24):
+	//   vft store 0x664804 (the merged GameClient/Client/net_client/net_base vft - compiler
+	//   owned), tail-jmp JE::Client::meth_0x5897d0 (the direct base teardown, ecx unchanged).
+	void GameClient::dtor_0x45e6a0() {
+		this->JE::Client::meth_0x5897d0();
+	}
+
+	// 0x45f2e0 - the scalar deleting destructor (vft slot 0), read whole (11 instructions,
+	// IDA original 2026-10-24): call the dtor; if (flags & 1) free(this); return this.
+	F3::GameClient* GameClient::virt_meth_0x45f2e0( byte flags ) {
+		this->dtor_0x45e6a0();                          // @0x45f2e3
+
+		if ( flags & 1 ) {                              // @0x45f2e8-0x45f2ed
+			free( this );                               // @0x45f2ef-0x45f2f0
+		}
+		return this;                                    // @0x45f2f8 eax = esi
+	}
+
 } // namespace F3

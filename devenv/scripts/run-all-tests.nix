@@ -121,7 +121,7 @@ in {
         "CombatMath|modules/openje/tests/je/CombatMath/CombatMath.cpp|src/F3/CombatMath.cpp $SRC|43"
         "ScriptNatives|modules/openje/tests/je/ScriptNatives/ScriptNatives.cpp|src/F3/ScriptNatives.cpp $SRC|243"
         "GameWeapon|modules/openje/tests/je/GameWeapon/GameWeapon.cpp|src/F3/GameWeapon.cpp $JE/ResourceSystem.cpp $JE/Common/Chunk.cpp $JE/VFX_Parameter.cpp $SRC|60"
-        "Commands|modules/openje/tests/je/Commands/Commands.cpp|src/F3/Commands.cpp src/F3/CommandRegistry.cpp src/F3/GameClient.cpp $JE/DialogueManager.cpp $JE/cls_0x4d8d70.cpp $JE/cls_0x50db20.cpp $JE/Network.cpp $JE/Client.cpp $JE/CameraControl.cpp $JE/Gfx_CamCtrl_Orbit.cpp $JE/cls_0x50dbb0.cpp $JE/cls_0x48d750.cpp $JE/Subsystem.cpp $JE/VFX_Parameter.cpp $SRC|16"
+        "Commands|modules/openje/tests/je/Commands/Commands.cpp|src/F3/Commands.cpp src/F3/CommandRegistry.cpp src/F3/GameClient.cpp $JE/DialogueManager.cpp $JE/cls_0x4d8d70.cpp $JE/cls_0x50db20.cpp $JE/Network.cpp $JE/Client.cpp $JE/CameraControl.cpp $JE/Gfx_CamCtrl_Orbit.cpp $JE/cls_0x50dbb0.cpp $JE/net/base.cpp $JE/net/client.cpp $JE/net/critical_section.cpp $JE/net/socket.cpp $JE/cls_0x48d750.cpp $JE/Subsystem.cpp $JE/VFX_Parameter.cpp $SRC|16"
       )
 
       # ---- stale-table guard ---------------------------------------------------------------
