@@ -13,7 +13,7 @@
 # + unpumped arm, so refusal lands on the 4th push.
 # Depth math changed from "5 orders" to "4 orders (3 + unpumped-arm wall)" - the SAME
 # D-2 fact under T-070's re-expression (discoveries/2025-10-21-t070 §4).
-digest /tmp/d2-stress.digest
+digest artifacts/d2-stress.digest
 spawn brute  0 20.0 0.0 0.0 45
 spawn v1     1 24.0 0.0 0.0 30
 spawn v2     2 25.0 0.0 0.0 30
