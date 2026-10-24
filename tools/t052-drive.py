@@ -89,6 +89,18 @@ GFX2 = ("x/8wx $gfx+0x28", "x/1bx $gfx+0x48", "set $ad=*(int*)0x708380",
         "x/8wx $md", "x/8wx $md+32", "continue")
 
 tick = [0]; fun = [0]; r1 = [0]; post = [0]; segv = [0]; pump = [0]; seam = [0, 0]
+ladder = {"raise": [0], "exh": [0], "clear": [0], "popA": [0], "popB": [0],
+          "sink": [0], "drain": [0], "mbox": [0], "factory": [0], "animpush": [0]}
+# S3/legs-15+ (arm order 21-26, S0 law: numbers = arm order, quote EAs in relays):
+#   21 0x5803e0 = GUI::Interface slot-2 EVENT DISPATCH ENTRY (T-062 item 4: edi = event struct,
+#       [edi] = kind) — the live kind HISTOGRAM is the BONUS-4 producer-side half.
+#   22 0x580417 = kind 4/7 gate (host+0xD18==1, +0xD24 default path)
+#   23 0x5804e0 = kind-1 gate (parent forward + [[host]+0x11c])
+#   24 0x580435 = kind-5 gate (+0xD40 beam)
+#   25 0x58059a = kind-3 gate (+0xD40)
+#   26 0x437ab0 = GameCursorManager::SetCursor ENTRY — the live [cursorMgr vft+0x10] sighting
+#       (S-PEND cell 4's live half) + path-arg pointer banked for offline string decode.
+ek = [0, 0, 0, 0, 0]; cur = [0]
 # S2 code-on-arrival legs (runbook ladder; numbers 11-20 == arm order after legacy 1-10;
 # raw reads go to the values log, PAIR/HISTOGRAM interpretation is OFFLINE per "no freelancing")
 ladder = {"raise": [0], "exh": [0], "clear": [0], "popA": [0], "popB": [0],
@@ -112,7 +124,7 @@ while time.time() < DEADLINE:
     # match BOTH or you silently mis-service stops (T-052 session J lesson).
     hit = {n: (("Breakpoint %d hit" % n) in chunk or
                re.search(r"Breakpoint %d[, ] 0x" % n, chunk) is not None or
-               ("hit Breakpoint %d," % n) in chunk) for n in range(1, 21)}
+               ("hit Breakpoint %d," % n) in chunk) for n in range(1, 27)}
     if hit[7]:
         send(*GFX1)
     elif hit[8]:
@@ -166,11 +178,30 @@ while time.time() < DEADLINE:
         bump("factory", 200, 19, extra=("x/1wx $esp+4", "x/1wx $esp+8",))
     elif hit[20]:   # bpN5 0x5505F0 anim deque pushes (engine Queue_* only, NEVER a native)
         bump("animpush", 100, 20, extra=("x/1wx $esp+4",))
+    elif hit[21]:   # slot-2 event dispatch entry: [edi] = kind (T-062 item 4)
+        ek[0] += 1; send("print/x $edi", "x/1wx $edi", "continue")
+        if ek[0] >= 200: send("disable 21")
+    elif hit[22]:   # kind 4/7 branch gate
+        ek[1] += 1; send("print/x $edi", "x/1wx $edi", "continue")
+        if ek[1] >= 60: send("disable 22")
+    elif hit[23]:   # kind 1 branch gate
+        ek[2] += 1; send("print/x $edi", "x/1wx $edi", "continue")
+        if ek[2] >= 60: send("disable 23")
+    elif hit[24]:   # kind 5 branch gate (+0xD40 beam)
+        ek[3] += 1; send("print/x $edi", "x/1wx $edi", "continue")
+        if ek[3] >= 60: send("disable 24")
+    elif hit[25]:   # kind 3 branch gate (+0xD40)
+        ek[4] += 1; send("print/x $edi", "x/1wx $edi", "continue")
+        if ek[4] >= 60: send("disable 25")
+    elif hit[26]:   # SetCursor entry: live sighting + path arg
+        cur[0] += 1; send("print/x $ecx", "x/1wx $esp+4", "continue")
+        if cur[0] >= 20: send("disable 26")
     elif "received signal" in chunk or "SIGTRAP" in chunk:
         send("continue")                 # THE DANCE: consume thread-start stops
     elif "exited" in chunk and "exit thread" not in chunk:
         vals.write("PROCESS-EXITED\n"); break
-vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d seamA=%d seamB=%d raise=%d exh=%d clear=%d popA=%d popB=%d sink=%d drain=%d mbox=%d factory=%d animpush=%d\n" % (
+vals.write("DRIVER-END r1=%d tick=%d pump=%d funnel=%d post=%d seamA=%d seamB=%d raise=%d exh=%d clear=%d popA=%d popB=%d sink=%d drain=%d mbox=%d factory=%d animpush=%d ek21=%d ek22=%d ek23=%d ek24=%d ek25=%d setcur=%d\n" % (
     r1[0], tick[0], pump[0], fun[0], post[0], seam[0], seam[1],
     ladder["raise"][0], ladder["exh"][0], ladder["clear"][0], ladder["popA"][0], ladder["popB"][0],
-    ladder["sink"][0], ladder["drain"][0], ladder["mbox"][0], ladder["factory"][0], ladder["animpush"][0]))
+    ladder["sink"][0], ladder["drain"][0], ladder["mbox"][0], ladder["factory"][0], ladder["animpush"][0],
+    ek[0], ek[1], ek[2], ek[3], ek[4], cur[0]))
