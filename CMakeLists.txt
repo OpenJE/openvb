@@ -82,6 +82,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/net/address.cpp"
 	"modules/openje/src/JE/GUI/Window.cpp"
 	"modules/openje/src/JE/AreaMapIcon.cpp"
+	"modules/openje/src/JE/CSoundSystem.cpp"
 	"modules/openje/src/JE/cls_0x45f060.cpp"
 	"modules/openje/src/JE/net/client.cpp"
 	"modules/openje/src/JE/net/critical_section.cpp"
