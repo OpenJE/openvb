@@ -89,6 +89,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/cls_0x539d90.cpp"
 	"modules/openje/src/JE/cls_0x53a1e0.cpp"
 	"modules/openje/src/JE/VFX_Sound.cpp"
+	"modules/openje/src/JE/cls_0x401b00.cpp"
 	"modules/openje/src/JE/cls_0x45f060.cpp"
 	"modules/openje/src/JE/net/client.cpp"
 	"modules/openje/src/JE/net/critical_section.cpp"
