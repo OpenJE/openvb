@@ -97,3 +97,34 @@ produce the attack keypress, and cannot outpace the pump's drain); R5 closed wit
 table (8 pool members live-confirmed, 13 ISO). **Row S3-INJ's readings are exhausted — the row
 closes.** Residual for the FUTURE (named, not owed by this row): the ~793 unsighted 801-pool
 members; keyboard-channel injection for a live attack-native sighting.
+
+## S4 follow-up (same day, ~02:42Z): keyboard-channel injection executed — the negative is CONFIRMED and the door is named
+
+Run-window 2026-10-24T02:42:14Z | head=e197404 | stage=S4-keyboard-injection | drvrc=0
+(`/tmp/sitting-redquartz/s4a-winedbg.log`, 316 KB, **1017 breakpoint stops**; script
+`/tmp/sitting-redquartz/s4-window.sh` = the s3 recipe with the injection loop replaced by an
+XTEST keyboard sweep: windowactivate + per-round `space ctrl a s d f` + one right-click ×40
+rounds, mouse moves/clicks retained). Two earlier in-turn launches were killed by harness
+interruption before completion — the detached setsid/nohup relaunch is the working form (the
+in-script fifo dance is order-based, not session-based; the 4f410ac foreground law's real
+content is the reader-first held-writer order, which the script itself enforces).
+
+**R1' (the R1 enabler's answer): bp5 (0x459f5d F3::Attack) = 0 hits under keyboard injection.**
+The kind-stream numerics reproduce S3's mouse-only census EXACTLY (bp21 0x5803e0 ×201 →
+0x580417 ×60 → {0x5804e0 ×60 | 0x580435 ×39} → 0x58059a ×60; SetCursor 0x437ab0 ×21; the
+funnel pair ×101×101) — the two channels produce the same dispatched shape.
+
+**Verdict: the enabler hypothesis is NEGATED, and T-037's static law explains it.** The script
+natives (F3::Attack 0x459f5d, JustAttack 0x45a025, StartDialogue 0x45a0f0, ReloadWeapon
+0x45a3e6/0x45a3fb) are the SECOND input door — AMX-script-driven orders — architecturally
+distinct from the player-input path. Player input (mouse OR keyboard) travels the
+entity-inbox path (the kAttack PendingEffect funnel 0x550720, which the port implements);
+the native fires only when the script VM issues the order. A live attack-native sighting
+therefore requires a SCRIPT-DRIVEN attack (the AMX door / a scripted order), not any
+peripheral-injection channel. Honest caveat kept: key DELIVERY to the game window was not
+positively verified (windowactivate result unchecked post-hoc) — but the negative matches the
+static law's prediction, so it is not load-bearing for the verdict.
+
+**Successor (re-pointed, not owed by this row): script-driven attack via the AMX/script door.**
+Keyboard-channel injection is SPENT (executed cleanly, twice-reproduced negative); it does not
+re-earn as an enabler.
