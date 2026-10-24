@@ -120,3 +120,38 @@ ctor_0x46ee70, 0x7108 bytes) with the same f3_vftable_index pass before band 3 l
   words die on body bytes — three erratum instances on record).
 - `undefined4` stays until a slot's type is pinned by its consumers.
 - The 0x118/0x7108 allocation sizes are the shipped operator-new literals — keep them verbatim.
+
+## 2026-10-24 — the fstream-band scoping judgment (recorded, inline)
+
+The meth_0x4c79e0 re-land's descent into its call tree bottomed in VS2003 CRT
+library functions, not game code: `std::ios_base::clear(int,bool)` @0x605c76
+(IDA-annotated "Library Function - Single Match, Library: Visual Studio 2003
+Release") and the surrounding band — sub_498B80 (the 35-block fopen-mode
+parse), meth_0x499040, sub_498DF0, meth_0x4984e0, meth_0x498550, and the
+cls_0x605e28/0x605e31 critical-section guards — is the statically-linked
+std::basic_fstream<char>/ios_base implementation.
+
+Porting rule (the sub_5AC230 throw convention generalized): CRT std machinery
+is HOST-OWNED. The port keeps only the game-side ResourceSystem wrappers
+(FileStreamSeek_498800, FileStreamOpen_49b9f0, FileStreamRead_499220,
+meth_0x49b1d0) with the std internals expressed as real host std::fstream /
+ios semantics; each wrapper's comment carries the shipped-CRT provenance.
+
+### The revised road to the meth_0x4c79e0 re-land (each = 1-2 turns)
+
+1. ResourceSystem game-side band: FileStreamSeek_498800 def-check/port,
+   FileStreamOpen_49b9f0, FileStreamRead_499220 (the std path = host-owned,
+   the game path = the +0xDC/+0xE4 cached-file band per the 4989C0/49b1d0
+   reads), meth_0x49b1d0 (ReleaseFile_50dc60 pull — game-side, port it).
+2. sub_4C6FC0 (the ogg read-fn — calls FileStreamRead on the shipped shape).
+3. The ogg/vorbis open: sub_5FF310 (read ✓ ~250 instr), the 5FEC50 codebook
+   band (5FEDB0 + funcs_5FED8C + 5FEE60 still unread), sub_5FEB80/sub_5FEC00
+   (read ✓), off_7045C8/70F4D8 fill-in (the globals exist, zeroed).
+4. meth_0x4c7450 (read ✓; the two zeroing ctors 4c6fb0/4c68b0 read ✓),
+   meth_0x4c75b0 (read ✓), meth_0x4c7600 (read ✓), meth_0x4c76a0 (read ✓).
+5. meth_0x4c79e0 re-land (read ✓; withdrawn 391cecb for premature landing —
+   the fan was unresolved).
+6. meth_0x4c7a80 (the ~180-instr volume tick; callees 4c79e0/4c6a40/4c6ab0 ✓
+   ported by then), ctor_0x4c8100 (read ✓, pulls sub_52AEC0/52AE10/433760 ✓),
+   CMusic ctor_0x539030 (read ✓), Graphics::meth_0x590a20 (read ✓), then the
+   HUB body (179).
