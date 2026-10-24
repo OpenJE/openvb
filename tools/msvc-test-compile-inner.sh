@@ -30,7 +30,7 @@ INC='/I Z:\work\src /I Z:\work\modules\openje\src /I Z:\work\modules\tracing\src
 FLAGS='/nologo /c /EHsc /W0 /MT'
 # Tracks cmake.toml `windows.private-link-libraries`. d3d8 joins this list the day a suite links render
 # code, and both lists change together - the last thing wanted here is a second compiler-shaped divergence.
-LINKLIBS='user32.lib gdi32.lib winmm.lib shell32.lib ws2_32.lib'
+LINKLIBS='user32.lib gdi32.lib winmm.lib shell32.lib ws2_32.lib dsound.lib dxguid.lib'   # P2 slice-1: dsound+dxguid for CSoundSystem::meth_0x52a2e0 (DirectSoundCreate8 + the notify GUIDs)
 
 # ONE cl INVOCATION PER TU, unique object names. Non-negotiable: several suites pair a test TU with an impl
 # TU of the SAME basename (Scripting.cpp, ActionMoveTo.cpp, PathManager.cpp, ResourceSystem.cpp,
