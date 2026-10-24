@@ -760,6 +760,10 @@ namespace F3 {
 namespace JE {
 	namespace Host {
 		char* GetCurrentWorkingDirectory() { return F3::g_szCurrentWorkingDirectory; }
+		// 0x4C56B0's callee chain (the JE ResourceFileManager mkdir band calls
+		// F3::CreateDirectoryWithErrorMapping in the shipped binary).
+		int  CreateDirectoryWithErrorMapping( const char* path ) { return F3::CreateDirectoryWithErrorMapping( path ); }
+		bool PathIsDirectoryExists( const char* path ) { return F3::PathIsDirectoryExists( path ); }
 		void* GetParameterTree() { return &F3::g_vfxParameterTree; } // 0x70C2C0/0x70C2CC (sub_56AF30/56AF40)
 		void* GetEngineStringSystem() { return &F3::g_engineStringSystem; } // 0x70C2D8
 		int TickMilliseconds() { return (int)timeGetTime(); }               // 0x56AF50
