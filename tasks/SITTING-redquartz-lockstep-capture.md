@@ -67,7 +67,7 @@ plus the digest fold waking WildZenith's successor row.
 - bp10 hits across a full DXVK boot: TBD  (T-050: reopen or closed-as-unobserved, both gold)
 - event-kind numerics {1,3,4,5,7}: TBD
 - deque count >4 observed: TBD (if no-injection: NOT-CLAIMABLE-ABSENT, script-capped, say so)
-- cursor +0xA4 fill site + GameCursorManager+0xA4: TBD
+- cursor +0xA4 fill site + GameCursorManager+0xA4: STATIC-CLOSED 2026-10-24 — fill = 0x58f1d3 (mov [esi+0xA4],eax) in JE::Client::virt_meth_0x58f010, the install hub; factory = slot-45 0x45e940 (new(0xB0)+GameCursorManager::ctor_0x436330) dispatched at 0x58f1cd; ctor zero-inits first (0x58e971). Evidence: discoveries/2025-10-21-t062-cursor-subsystem-and-child-notify.md item-2 addendum (9167884); live [cursorMgr vft+0x10] sighting still open for the SetCursor half
 - 801 cross-refs residual: TBD
 - windows ledgered with exe-sha of the ORIGINAL (f3demo F3.exe — static; head at run = git provenance)
 
