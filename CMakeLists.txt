@@ -92,6 +92,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/cls_0x401b00.cpp"
 	"modules/openje/src/JE/CSoundFile.cpp"
 	"modules/openje/src/JE/CSoundGroup.cpp"
+	"modules/openje/src/JE/CMasterGrouplist.cpp"
 	"modules/openje/src/JE/cls_0x45f060.cpp"
 	"modules/openje/src/JE/net/client.cpp"
 	"modules/openje/src/JE/net/critical_section.cpp"
