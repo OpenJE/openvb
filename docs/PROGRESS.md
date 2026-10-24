@@ -159,3 +159,25 @@ reading as "lower the bar," it is wrong.
 - `docs/PROGRESS.md` itself was last stamped 2026-10-20; the three days of board motion are the rows
   above. Suite figures were NOT re-stamped this refresh (heavy wine boot) — the run-all stamp from the
   coverage table remains the last audited suite number.
+
+## Refresh 2026-10-24 (executor seat; every figure with its command)
+
+- **PARK board: 38 closed rows** — `grep -cE "^\| ~~" tasks/PARK.md` (was 25). The 13 strikes since
+  the last refresh: R-PORT-Q (qi= inbox-era digest grammar, three legs), S3-INJ (all five deep-input
+  readings exhausted: T-050 falsifier confirmed live, kind-stream census, third SetCursor caller
+  identified, two honest negatives), H-IDX refresh receipt (ea-index current 211 docs / 8,106 EAs,
+  recall 0 missed), R-USERRE-A (queue call verified done: Law-#6 SEH triage + WAVE-4 landed), 
+  R-KEEPER queue receipt (item-5 sink-proof + slice-2 acceptance both receipted; seat stands), and
+  COMMENT-CHAN (the set_comments coercion defect root-caused as lazy-MCP-route-only — the direct
+  `ida action=call srvtool=set_comments` route is the recorded convention; W4-R4's three annotation
+  rows landed + saved).
+- **Live IDB census** (ida action=save census): **10,173 functions / 7,690 named (75.5%)** — the
+  +42 named since 2026-10-23 is tier movement (wave-4 renames + the landed annotation-era work),
+  same caveat as the refresh above: not new behavior coverage.
+- **Standing rows** (both live, not owed): R-KEEPER's seat (rig entry point, re-arms on lane
+  window requests) and H-IDX (re-arms on next --check drift). **No actionable open rows remain**;
+  the named successors queued for minting: values-era owner-chase 21-row batch (boot data =
+  values-s2.log now on disk), P2-surface instantiation (~35 undefined vft virtuals, LNK2001 both
+  toolchains, sequence EA-named), FastNova hp=0 fixture (damage routes through the inbox since
+  P-CMBT Step 2 — constructible), the cls_0x616328 dual-role band-evidence re-cut, item5b
+  probe-line, keyboard-channel injection, ~793 unsighted 801-pool members.
