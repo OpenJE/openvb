@@ -98,6 +98,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/Gfx_Engine.cpp"
 	"modules/openje/src/JE/cls_0x53a510.cpp"
 	"modules/openje/src/JE/CSound.cpp"
+	"modules/openje/src/JE/CMusic.cpp"
 	"modules/openje/src/JE/cls_0x605e28.cpp"
 	"modules/openje/src/JE/cls_0x40a220.cpp"
 	"modules/openje/src/JE/cls_0x537ca0.cpp"
