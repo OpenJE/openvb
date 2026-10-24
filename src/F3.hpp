@@ -83,6 +83,13 @@ namespace F3 {
 
 	// 0x56B000
 	char SetupSaveDirectory( CHAR *pcModulePath );
+
+	// 0x619E42 - the CreateDirectoryA wrapper (0 ok, -1 failed; _dosmaperr-era
+	// mapping) and 0x4C56B0's findfind dir probe. Promoted non-static (the
+	// JE::Host hooks delegate to them; the monolithic-F3.cpp TU stays out of
+	// the suite exes).
+	int  CreateDirectoryWithErrorMapping( const char *path );
+	char PathIsDirectoryExists( LPCSTR lpFileName );
 	// 0x56B220
 	//void SetupConfigFile();
 	// 0x56B100

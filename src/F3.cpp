@@ -139,42 +139,6 @@ namespace F3 {
     	return world;
     }
 
-	// 0x619E42 - CreateDirectoryA wrapper: 0 on success, -1 (with _dosmaperr) on failure.
-	// NOTE: the original resolves to the CRT import thunks area; the reimplementation uses the
-	// Win32 API directly, matching observed behavior (ERROR_SUCCESS -> 0).
-	static int CreateDirectoryWithErrorMapping( const char *path ) {
-		DWORD lastError;
-
-		if ( CreateDirectoryA( path, NULL ) ) {
-			lastError = 0;
-		} else {
-			lastError = GetLastError();
-		}
-		if ( !lastError ) {
-			return 0;
-		}
-		return -1;
-	} // CreateDirectoryWithErrorMapping
-
-	// 0x4C56B0 - "directory entry exists": _findfirst/_findnext over the path pattern, returning 1
-	// when some match carries the directory attribute (0x10), 0 otherwise.
-	static char PathIsDirectoryExists( LPCSTR lpFileName ) {
-		struct _finddata_t entry;
-		long handle;
-
-		handle = _findfirst( lpFileName, &entry );
-		if ( handle == -1L ) {
-			return 0;
-		}
-		while ( ( entry.attrib & _A_SUBDIR ) == 0 ) {
-			if ( _findnext( handle, &entry ) == -1L ) {
-				_findclose( handle );
-				return 0;
-			}
-		}
-		_findclose( handle );
-		return 1;
-	} // PathIsDirectoryExists
 
 	// 0x4C5750 - recursive directory creation ("MakeAllDirectories"): strips a trailing separator,
 	// skips the drive/UNC prefix, then creates every separator-delimited prefix that does not
@@ -760,10 +724,6 @@ namespace F3 {
 namespace JE {
 	namespace Host {
 		char* GetCurrentWorkingDirectory() { return F3::g_szCurrentWorkingDirectory; }
-		// 0x4C56B0's callee chain (the JE ResourceFileManager mkdir band calls
-		// F3::CreateDirectoryWithErrorMapping in the shipped binary).
-		int  CreateDirectoryWithErrorMapping( const char* path ) { return F3::CreateDirectoryWithErrorMapping( path ); }
-		bool PathIsDirectoryExists( const char* path ) { return F3::PathIsDirectoryExists( path ); }
 		void* GetParameterTree() { return &F3::g_vfxParameterTree; } // 0x70C2C0/0x70C2CC (sub_56AF30/56AF40)
 		void* GetEngineStringSystem() { return &F3::g_engineStringSystem; } // 0x70C2D8
 		int TickMilliseconds() { return (int)timeGetTime(); }               // 0x56AF50

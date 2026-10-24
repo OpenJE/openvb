@@ -151,6 +151,7 @@ target_include_directories(tracing PRIVATE
 # Target: F3
 set(F3_SOURCES
 	cmake.toml
+	"src/HostHooks.cpp"
 	"src/F3.cpp"
 	"src/F3/CombatManager.cpp"
 	"src/F3/CombatMath.cpp"
