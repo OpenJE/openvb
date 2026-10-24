@@ -49,6 +49,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/Client.cpp"
 	"modules/openje/src/JE/Common/Chunk.cpp"
 	"modules/openje/src/JE/DialogueManager.cpp"
+	"modules/openje/src/JE/Gfx_CamCtrl_Orbit.cpp"
 	"modules/openje/src/JE/Gregorian.cpp"
 	"modules/openje/src/JE/Map.cpp"
 	"modules/openje/src/JE/MemorySystem.cpp"
