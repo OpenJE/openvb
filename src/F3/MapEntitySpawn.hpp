@@ -246,18 +246,29 @@ namespace F3 {
 		// funnel, `++count` @0x54ea71) and we refuse instead - the same D-2 law the action deque
 		// already lives under (docs/f3/EntityActionQueueSeam.md), cited not hidden.
 		struct PendingEffect {
-			PendingEffect() : kind(0), source(0), dmg(0), damageType(0),
+			PendingEffect() : kind(0), source(0), dmg(0), damageType(0), material(0),
+			                  firstInBatch(1), flurryGe2(0), unarmedSnapshot(0),
 			                  pending0xA(0), done0xB(0) {}
 			int kind;                 // port-side effect class (0 = empty slot; 1 = kEffectDamage)
 			SpawnedEntity* source;    // the actor that raised it (shipped carries the effect's
 			                          // +0x44 = &Entity+0x1DC handle stamp instead - 0x55a3a9,
 			                          // T-074 §3; the port has no handle field to stamp, D-3)
-			int dmg;                  // payload, unused by Step 1 (Step 2 routes damage here)
-			int damageType;           // payload, unused by Step 1
+			int dmg;                  // payload: effect +0x9C (stamped by the finisher's DIRECT
+			                          // movs @0x4038b3-0x4038d1 in shipped; Step 2 routes it here)
+			int damageType;           // payload: effect +0xA0
+			int material;             // payload: effect +0xA4 (ammo/proto material - weapon
+			                          // unported; the finisher stamps 0, as before Step 2)
+			unsigned char firstInBatch; // effect +0xAD mirror: 1 = first record of the batch
+			                            // (the finisher stamps queueCount==1 at insert time)
+			unsigned char flurryGe2;    // the finisher's pre-loop census result (+0xAC truth:
+			                            // >= 2 armed marks), stamped per record
+			unsigned char unarmedSnapshot; // record+0x19 snapshot of action+0x71 at insert
+			                               // (@0x4041A1) - the death flag's OWN source, distinct
+			                               // from the census result the reaction pick consumes
 			unsigned char pending0xA; // shipped Effect byte +0xA: 0x55a4f0 fires [vft+0x2C] ONLY
 			                          // when it is set, then clears it, so a re-finish is silent
 			unsigned char done0xB;    // THE done-predicate, shipped byte +0xB read by
-			                          // [vft+0] = 0x45c090 (`8b 41 0b c3` = mov eax,[ecx+0Bh]... 
+			                          // [vft+0] = 0x45c090 (`8b 41 0b c3` = mov eax,[ecx+0Bh]...
 			                          // raw-verified this write: `mov al,[ecx+0xB]; ret`)
 		};
 		struct EffectInbox {
@@ -426,6 +437,15 @@ namespace F3 {
 	// 1 = appended, 0 = inline-fired, -1 = refused at the 4-slot capacity (shipped would allocate a
 	// second block @0x54ea49 - the declared D-2 divergence, cited not hidden).
 	int EnqueueEffect( SpawnedEntity* target, const SpawnedEntity::PendingEffect& in );
+
+	// P-CMBT Step 2 (docs/f3/P-CMBT-combat-anim-port-design.md "Change:"): the damage apply
+	// chain, moved out of the GameActionAttack finisher into the effect's fire path. Defined in
+	// GameActionAttack.cpp (it owns the angle/reaction/veg/die helpers). Returns 1 = hit
+	// consumed (applied or graze-skipped), 0 = the DEAD gate hit - the finisher's loop stops.
+	// Called ONLY from EnqueueEffect's push-side inline branch (damage never queues; the
+	// walk/drain fire sites stay generic-only - [vft+0x2C] is the bare `retn` 0x404b70 for
+	// GameEffectDamage, so a queued damage entry is ticked, never applied).
+	int ApplyDamageEffect( SpawnedEntity* target, const SpawnedEntity::PendingEffect& pe );
 
 	// Full drain, mirror of meth_0x54c390 - the ONLY caller in shipped is entity reset/destroy
 	// (meth_0x54fff0 @0x5501a2). It FIRES pending effects (erase @0x54c3fa then finish @0x54c409);

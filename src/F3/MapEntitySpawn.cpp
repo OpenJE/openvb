@@ -461,6 +461,17 @@ namespace F3 {
 		// writer the port eventually owes. Step 1 ports the container law only; the replay feeder is
 		// not implemented and is not invented here.
 		if ( pe.done0xB ) {
+			// P-CMBT Step 2: damage applies PUSH-SIDE, at the effect's fire path. Shipped calls the
+			// slot-10 apply wrapper (0x45c6b0 -> tail-jmp 0x45c140) at the finisher's creation site
+			// @0x403842, before the push @0x403906 - synchronous within the attacker's execution
+			// either way, so the port runs it here, in the inline branch, and the per-hit math did
+			// not move. The walk/drain fire sites below do NOT apply damage: shipped's generic
+			// finish slot [vft+0x2C] is the bare `retn` 0x404b70 for GameEffectDamage - a queued
+			// damage entry is ticked, never applied (NiceTiger 9a32ecd). A return of 0 from the
+			// apply (the DEAD gate) is observed by the finisher's loop post-apply, not here.
+			if ( pe.kind == 1 ) {
+				(void)ApplyDamageEffect( target, pe );
+			}
 			FirePendingEffect( target, &pe );
 			target->effectsFreed++;            // 0x55a570's [vft+0x0C](obj,1) deleting-dtor
 			target->inboxTrace[0] = 1;         // fire

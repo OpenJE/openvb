@@ -261,9 +261,12 @@ namespace F3 {
 			}
 		}
 
-		// finisher (meth_0x403770): drain the damage queue into target HP. Deviation:
-		// direct HP write; original creates GameEffectDamage per hit (+0x9C payload) and
-		// ATTACHES to the target (updater layer unported).
+		// finisher (meth_0x403770): the volley drain. P-CMBT Step 2 retired the old
+		// "direct HP write" deviation: the finisher now creates the GameEffectDamage payload
+		// per hit (shipped: fresh factory call @0x403851, payload stamped by DIRECT movs
+		// @0x4038b3-0x4038d1) and pushes it to the target through the enqueue seam
+		// (meth_0x5506c0 @0x403906); the apply chain runs at the effect's fire path
+		// (ApplyDamageEffect, invoked synchronously by EnqueueEffect's inline branch).
 		if ( seriesRemaining == 0 && !volleyContinuing ) {
 		// pre-loop census (0x4037D2..0x403804): count records whose queued +0x19 mark
 		// is set. +0xAC is TRUE only for >= 2, i.e. an UNARMED flurry - counting records
@@ -271,97 +274,40 @@ namespace F3 {
 		int unarmedMarks = 0;
 		for ( int m = 0; m < queueCount; ++m ) { if ( queue[m].unarmedSnapshot ) { ++unarmedMarks; } }
 		const bool flurryGe2 = ( unarmedMarks >= 2 );
-			// per queued hit, ordered exactly as GameEffectDamage::Apply (0x45C140 §3):
+			// P-CMBT Step 2: per queued hit, build the GameEffectDamage payload (shipped: fresh
+			// factory call inside the per-hit loop @0x403851 - damage is COPIED per hit, never
+			// re-rolled; +0x9C/0xA0/0xA4/0xA8 stamped by DIRECT movs from the hit entry
+			// @0x4038b3-0x4038d1) and push it to the target through the enqueue seam. The apply
+			// chain lives at the effect's fire path now (ApplyDamageEffect, invoked synchronously
+			// by EnqueueEffect's inline branch); WHO-WRITES and WHEN moved, the per-hit math did
+			// not. The DEAD gate's volley-stop is observed post-apply: each hit is its own effect
+			// in shipped and the gate is Apply's, so a hit against a target the previous hit
+			// killed still runs the gate (no write, no double die) and the loop then stops.
 			for ( int i = 0; i < queueCount; ++i ) {
 				const QueuedHit& qh = queue[i];
-				// 1. DEAD gate (vft+0x50 == state 7): no double damage
-				if ( target->entityState == kStateDead || target->entityState == kStateDying ) {
-					break;
-				}
-				// 2. dmg==0 early-out
-				if ( qh.dmg == 0 ) {
-					continue;
-				}
-				// 3. HP update @0x45c1a3 -> SetCurrentHealth min-clamp @0x4629C0
-				const int oldHp = target->statCur;
-				int cur = oldHp - qh.dmg;
-				if ( cur > target->statMax ) { cur = target->statMax; }
-				target->statCur = cur < 0 ? 0 : cur;
-				// 4. hit angle. Shipped shape (Apply 0x45C243..0x45C29C): the negated delta
-				// Euler components are prescaled by flt_649C50 = pi/180, run through the two
-				// transform helpers 0x47272B / 0x471357, and combined as atan2 via fpatan. The
-				// fpatan RESULT is what the compare chain consumes and no instruction scales it,
-				// so the value entering the chain is in RADIANS by x87 architecture: the
-				// rad-vs-deg question left open in discoveries/2025-10-20-T010a-behind-test-is-
-				// wrap-not-threshold.md §3 is CLOSED, and because |atan2| <= pi < 180 the
-				// +/-180 and 360 compares are UNREACHABLE for any real input. The degrees
-				// reading is therefore recorded as unreachable, not implemented - there is no
-				// 180/pi multiply in the binary to justify one.
-				// Deviation kept: we feed the planar position delta, because the delta-Euler
-				// source fields and both transform helpers are still unported. Shape faithful,
-				// inputs not.
-				const float hx = target->pos[0] - actor->pos[0];
-				const float hz = target->pos[2] - actor->pos[2];
-				const float angle = atan2f( hx, hz );
-				// The shipped wrap byte is Apply's var_B1. Nothing in Apply ever zeroes it - the
-				// only stores are `mov byte,1` at 0x45C2D2/0x45C2DB - so on an in-band angle the
-				// original reads uninitialised stack (stack reuse from the previous Apply call).
-				// We pass a deterministic fresh 0; see HitAngleWrapFlag for the defect write-up.
-				const unsigned char wrapByte = HitAngleWrapFlag( angle, 0 );
-				// 5. reaction anim pick (QueueAnimEvent_0x4673D0 unported -> id stored on the
-				// victim as the seam; session 7 §3 step 5, victim-moving byte = Entity+0x3A2)
-				const int anim = ReactionAnimFor( qh.firstInBatch, target->movingFlag,
-				                                flurryGe2, wrapByte );
-				if ( anim != 0 ) { target->queuedAnimEvent = anim; }   // 0 = no event queued at all
-				// 6. VFX .veg selection - name resolved and parked on the seam, spawn unported
-				target->lastHitVeg = SelectHitVeg( qh.damageType, qh.material, qh.dmg );
-				// 7. voice roll (audio ids unported; seam kept for determinism)
-				(void)CombatDice( 0, 1, s_voiceRand );
-				// 8. OnDamage script event (sub_55A220 payload {dmg, attackerId, DT})
-				JE::EntityRunScript( target, "OnDamage", qh.dmg,
-				                     actor->netId, qh.damageType );
-				// 9. server sync 0x46d020 - net broadcast unported (annotated skip)
-				// 10. death conversion @0x45c5b9: NEWLY dead -> queue GameActionDie on victim.
-				// The shipped code takes the action from the world-server factory and pushes it via
-				// Entity::meth_0x550720; we mirror that with a static ring (no heap, same
-				// lifetime as the Wait/OperateDoor pools in GameActionMoveTo.cpp). The victim's
-				// OWN pump runs it next tick - the action is not executed inline here.
-				// P-CMBT clamp item, STEP 1 of the agreed order (re-derive death from the
-				// predicate -> prove against T-068's hp= pairs -> only then relax the write
-				// floor). Shipped's [vft+0x50] predicate is now derived to the byte, not inferred:
-				//   apply's target is the virtual-Entity BASE subobject at tgt+0xA4 (descriptor
-				//   [raw+4] word0 = 0xA0), its vft 0x666044 has cell 20/+0x50 OVERRIDDEN to the
-				//   thunk 0x467a10 (`2b 49 fc` sub ecx,[ecx-4]; `e9 58 af ff ff` jmp), NOT the pure
-				//   Entity-base 0x549030 found at vft 0x692084+0x50; the thunk lands in 0x462970,
-				//   whose body is two legs:
-				//     LEG 1 `8b 86 60 ff ff ff` mov eax,[esi-0xA0] ; `8b 48 04` ; lea-readjust ;
-				//           call 0x549030 = (*[this+0x1E0] == 7) -> if true, `b0 01` return 1
-				//     LEG 2 `8b 46 80` mov eax,[esi-0x80] ; `85 c0` TEST eax,eax ;
-				//           `0f 9e c0` SETLE al  ->  (tgt+0x24 = CurHealth) <= 0
-				//   So [vft+0x50] == (entityState(+0x1E0) == 7) OR (curHealth <= 0).
-				// THE THRESHOLD IS <= 0, NOT == 0. Two consequences, and they are one design:
-				//  (a) This test now reads the shipped threshold. It is BEHAVIOUR-PRESERVING today
-				//      only because our write floors at 0, where <= 0 and == 0 coincide; that is
-				//      exactly why the threshold had to be re-derived BEFORE the floor could move.
-				//  (b) It also explains a null result honestly rather than leaving it as evidence:
-				//      FastNova's scan for `cmp DWORD PTR [reg+0x24], 0` across all of .text returned
-				//      zero hits and was STRUCTURALLY guaranteed to - leg 2 is `test`+`setle`, never
-				//      a cmp-with-immediate. A zero-hit scan on an assumed instruction form is a
-				//      statement about the pattern, not the binary (item 73/76a).
-				// Note the subobject rendering: inside the thunk the field is [esi-0x80]; raw it is
-				// +0x24. Reading the thunk's text without resolving the +0xA4 base "finds" a -0x80
-				// field that exists nowhere in the object.
-				// STILL OPEN, step 2: prove this against T-068's paired hp= digest, then relax the
-				// write floor at 0x4629C0's site. A floor relaxation without this line already
-				// carrying <= 0 is the red flag on the diff.
-				if ( target->statCur <= 0 && target->entityState == kStateActive ) {
-					static GameActionDie s_dies[4];
-					static int s_di = 0;
-					GameActionDie& die = s_dies[ s_di = ( s_di + 1 ) & 3 ];
-					die.damageType = qh.damageType;
-					die.material = qh.material;
-					die.flagsByte0x28 = qh.flurryGe2 ? 1 : 0;
-					PushActionOntoEntity( target, 5, &die );   // mode-5 queued-action accept
+				SpawnedEntity::PendingEffect pe;
+				pe.kind = 1;
+				pe.source = actor;
+				pe.dmg = qh.dmg;
+				pe.damageType = qh.damageType;
+				pe.material = qh.material;
+				pe.firstInBatch = qh.firstInBatch;
+				pe.flurryGe2 = flurryGe2;               // the census local, as the reaction pick consumed it
+				pe.unarmedSnapshot = qh.unarmedSnapshot;
+				// Effect ready-state bytes, from the shipped bytes: +0xB is set to 1
+				// UNCONDITIONALLY at the wrapper's first store (0x45c6b3) and the enqueue
+				// preamble's 0x55a460 leg also stores 1 - no shipped path leaves damage
+				// unready; +0xA arrives as the caller built the effect (the fire is one-shot
+				// at 0x55a4f0). With done0xB=1 the enqueue's done-predicate branch is the ONLY
+				// one reachable for damage (shipped: the 0x550701 append is unreachable), so
+				// the effect inline-fires synchronously and the 4-slot capacity refusal is
+				// unreachable for damage traffic too.
+				pe.pending0xA = 1;
+				pe.done0xB = 1;
+				(void)EnqueueEffect( target, pe );
+				if ( target->entityState == kStateDead
+				     || target->entityState == kStateDying ) {
+					break;   // the DEAD gate fired inside the apply: the volley stops
 				}
 			}
 			queueCount = 0;
@@ -396,6 +342,118 @@ namespace F3 {
 			return "FX_HitRicochetMetal_01.veg";
 		}
 	} // SelectHitVeg
+	// P-CMBT Step 2 (docs/f3/P-CMBT-combat-anim-port-design.md "Change:"): the damage apply
+	// chain, moved out of the finisher's per-hit loop into the effect's fire path. The
+	// per-hit math did not move; WHO-WRITES and WHEN did: the HP write now happens when the
+	// damage effect fires at the PUSH side (the slot-10 wrapper mirror: 0x45c6b0 sets +0xB
+	// then tail-jmps 0x45c140; shipped calls that from the finisher's creation site @0x403842,
+	// before the push @0x403906 - synchronous within the ATTACKER's execution either way,
+	// just at a different call frame). The target's own walk never applies damage: damage
+	// never queues, and if it ever did it would not apply (NiceTiger 9a32ecd: a queued damage
+	// entry is ticked, never applied - [vft+0x2C] is the bare `retn` 0x404b70 for
+	// GameEffectDamage). So the walk/drain fire sites stay generic-only; ONLY the push-side
+	// inline branch (EnqueueEffect's done0xB branch) invokes this. Returns 1 = hit consumed
+	// (applied or graze-skipped), 0 = the DEAD gate hit - the volley stops (the finisher's
+	// loop observes it post-apply; each hit is its own effect in shipped and the gate is
+	// Apply's).
+	int ApplyDamageEffect( SpawnedEntity* target, const SpawnedEntity::PendingEffect& pe ) {
+		if ( !target || !pe.source ) {
+			return 0;
+		}
+		SpawnedEntity* const actor = pe.source;   // the old loop's `actor` (the action's field)
+
+		// 1. DEAD gate (vft+0x50 == state 7): no double damage
+		if ( target->entityState == kStateDead || target->entityState == kStateDying ) {
+			return 0;
+		}
+		// 2. dmg==0 early-out
+		if ( pe.dmg == 0 ) {
+			return 1;
+		}
+		// 3. HP update @0x45c1a3 -> SetCurrentHealth min-clamp @0x4629C0
+		const int oldHp = target->statCur;
+		int cur = oldHp - pe.dmg;
+		if ( cur > target->statMax ) { cur = target->statMax; }
+		target->statCur = cur < 0 ? 0 : cur;
+		// 4. hit angle. Shipped shape (Apply 0x45C243..0x45C29C): the negated delta
+		// Euler components are prescaled by flt_649C50 = pi/180, run through the two
+		// transform helpers 0x47272B / 0x471357, and combined as atan2 via fpatan. The
+		// fpatan RESULT is what the compare chain consumes and no instruction scales it,
+		// so the value entering the chain is in RADIANS by x87 architecture: the
+		// rad-vs-deg question left open in discoveries/2025-10-20-T010a-behind-test-is-
+		// wrap-not-threshold.md §3 is CLOSED, and because |atan2| <= pi < 180 the
+		// +/-180 and 360 compares are UNREACHABLE for any real input. The degrees
+		// reading is therefore recorded as unreachable, not implemented - there is no
+		// 180/pi multiply in the binary to justify one.
+		// Deviation kept: we feed the planar position delta, because the delta-Euler
+		// source fields and both transform helpers are still unported. Shape faithful,
+		// inputs not.
+		const float hx = target->pos[0] - actor->pos[0];
+		const float hz = target->pos[2] - actor->pos[2];
+		const float angle = atan2f( hx, hz );
+		// The shipped wrap byte is Apply's var_B1. Nothing in Apply ever zeroes it - the
+		// only stores are `mov byte,1` at 0x45C2D2/0x45C2DB - so on an in-band angle the
+		// original reads uninitialised stack (stack reuse from the previous Apply call).
+		// We pass a deterministic fresh 0; see HitAngleWrapFlag for the defect write-up.
+		const unsigned char wrapByte = HitAngleWrapFlag( angle, 0 );
+		// 5. reaction anim pick (QueueAnimEvent_0x4673D0 unported -> id stored on the
+		// victim as the seam; session 7 §3 step 5, victim-moving byte = Entity+0x3A2)
+		const int anim = ReactionAnimFor( pe.firstInBatch, target->movingFlag,
+		                                pe.flurryGe2, wrapByte );
+		if ( anim != 0 ) { target->queuedAnimEvent = anim; }   // 0 = no event queued at all
+		// 6. VFX .veg selection - name resolved and parked on the seam, spawn unported
+		target->lastHitVeg = SelectHitVeg( pe.damageType, pe.material, pe.dmg );
+		// 7. voice roll (audio ids unported; seam kept for determinism)
+		(void)CombatDice( 0, 1, GameActionAttack::s_voiceRand );   // static member: the apply is namespace-scope now
+		// 8. OnDamage script event (sub_55A220 payload {dmg, attackerId, DT})
+		JE::EntityRunScript( target, "OnDamage", pe.dmg,
+		                     actor->netId, pe.damageType );
+		// 9. server sync 0x46d020 - net broadcast unported (annotated skip)
+		// 10. death conversion @0x45c5b9: NEWLY dead -> queue GameActionDie on victim.
+		// The shipped code takes the action from the world-server factory and pushes it via
+		// Entity::meth_0x550720; we mirror that with a static ring (no heap, same
+		// lifetime as the Wait/OperateDoor pools in GameActionMoveTo.cpp). The victim's
+		// OWN pump runs it next tick - the action is not executed inline here.
+		// P-CMBT clamp item, STEP 1 of the agreed order (re-derive death from the
+		// predicate -> prove against T-068's hp= pairs -> only then relax the write
+		// floor). Shipped's [vft+0x50] predicate is now derived to the byte, not inferred:
+		//   apply's target is the virtual-Entity BASE subobject at tgt+0xA4 (descriptor
+		//   [raw+4] word0 = 0xA0), its vft 0x666044 has cell 20/+0x50 OVERRIDDEN to the
+		//   thunk 0x467a10 (`2b 49 fc` sub ecx,[ecx-4]; `e9 58 af ff ff` jmp), NOT the pure
+		//   Entity-base 0x549030 found at vft 0x692084+0x50; the thunk lands in 0x462970,
+		//   whose body is two legs:
+		//     LEG 1 `8b 86 60 ff ff ff` mov eax,[esi-0xA0] ; `8b 48 04` ; lea-readjust ;
+		//           call 0x549030 = (*[this+0x1E0] == 7) -> if true, `b0 01` return 1
+		//     LEG 2 `8b 46 80` mov eax,[esi-0x80] ; `85 c0` TEST eax,eax ;
+		//           `0f 9e c0` SETLE al  ->  (tgt+0x24 = CurHealth) <= 0
+		//   So [vft+0x50] == (entityState(+0x1E0) == 7) OR (curHealth <= 0).
+		// THE THRESHOLD IS <= 0, NOT == 0. Two consequences, and they are one design:
+		//  (a) This test now reads the shipped threshold. It is BEHAVIOUR-PRESERVING today
+		//      only because our write floors at 0, where <= 0 and == 0 coincide; that is
+		//      exactly why the threshold had to be re-derived BEFORE the floor could move.
+		//  (b) It also explains a null result honestly rather than leaving it as evidence:
+		//      FastNova's scan for `cmp DWORD PTR [reg+0x24], 0` across all of .text returned
+		//      zero hits and was STRUCTURALLY guaranteed to - leg 2 is `test`+`setle`, never
+		//      a cmp-with-immediate. A zero-hit scan on an assumed instruction form is a
+		//      statement about the pattern, not the binary (item 73/76a).
+		// Note the subobject rendering: inside the thunk the field is [esi-0x80]; raw it is
+		// +0x24. Reading the thunk's text without resolving the +0xA4 base "finds" a -0x80
+		// field that exists nowhere in the object.
+		// STILL OPEN, step 2: prove this against T-068's paired hp= digest, then relax the
+		// write floor at 0x4629C0's site. A floor relaxation without this line already
+		// carrying <= 0 is the red flag on the diff.
+		if ( target->statCur <= 0 && target->entityState == kStateActive ) {
+			static GameActionDie s_dies[4];
+			static int s_di = 0;
+			GameActionDie& die = s_dies[ s_di = ( s_di + 1 ) & 3 ];
+			die.damageType = pe.damageType;
+			die.material = pe.material;
+			die.flagsByte0x28 = pe.unarmedSnapshot ? 1 : 0;
+			PushActionOntoEntity( target, 5, &die );   // mode-5 queued-action accept
+		}
+		return 1;
+	}
+
 
 	int GameActionDie::Update( SpawnedEntity* victim ) {
 		tracing::instrument( tracing::LOCATION, "dt=%d mat=%d", damageType, material );

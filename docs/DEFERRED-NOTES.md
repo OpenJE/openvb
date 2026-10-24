@@ -796,3 +796,22 @@ Flips are citations, never restatements; each authority was read before citing i
 STILL-OPEN, explicitly NOT flipped (checked same pass): "WIRING PENDING: who calls
 SS::EngineStringSystem::Init/ctor with which root dir" — grep across discoveries/ + docs/ finds no
 closer (only this file's own listing and the sweep's carry); it stays the named half of D7 above.
+
+## T-079 batch-6 (P-CMBT Step 2, 2026-10-24, splitseat) — the "direct HP write" deviation RETIRED
+
+The attack finisher's registered deviation ("direct HP write; original creates GameEffectDamage per
+hit and attaches to the target") is RETIRED by the P-CMBT Step 2 landing: the finisher now builds
+the damage payload per hit and pushes it through the enqueue seam (EnqueueEffect), and the ordered
+Apply chain (HP write @0x45c1a3/0x4629C0 mirror, angle chain, reaction pick, VEG pick, OnDamage
+script invoke, death conversion) runs at the EFFECT's fire path (`ApplyDamageEffect`, defined in
+GameActionAttack.cpp, called ONLY from EnqueueEffect's push-side inline branch). No new deviation
+is added; the write site now matches shipped's shape (apply @0x403842 inside the finisher's
+execution, push @0x403906). Laws that travel with it: damage never queues and the walk/drain fire
+sites stay generic-only ([vft+0x2C] is the bare `retn` 0x404b70 for GameEffectDamage — a queued
+damage entry is ticked, never applied); the DEAD gate's volley-stop is observed post-apply by the
+finisher's loop; the 4-slot inbox capacity refusal is unreachable for damage traffic (inline-fired
+effects never occupy slots). Gates at landing: msvc rc0, cppcheck rc0, run-all 14 pass/0 fail,
+port-annot 0/476 uncited. OPEN acceptance legs (docs/f3/P-CMBT-combat-anim-port-design.md §Step 2):
+(1) the deferral/order assert fixture, (3) the T-068 paired-instants digest re-run with the `q=`
+unchanged assert. The floor relaxation (write floor at 0x4629C0's site) stays BLOCKED on leg (3)
+per the clamp item's agreed order.
