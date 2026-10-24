@@ -190,3 +190,32 @@ byte-exact, and the String setter 0x4B06A0 = **slot 52 within the primary** per 
 of a second table. Evidence: discoveries/2025-10-21-t081-gfx-slot-table-bases.md. Lesson logged
 coordinator-side: a correction written while the correcting tool still trusts the flattened view
 bakes its own phantom — re-key citations through the RAW table before authoring the fix text.
+
+## Item 2 ADDENDUM (2026-10-24, splitseat executor seat): the +0xA4 fill site is now PINNED — statically, without a window
+
+The named-open "one ctor store was not pinned" is closed by a local disp32 byte scan of the PE
+(.text 0x1000-0x247000 raw==RVA, VA=RVA+0x400000; every `[reg+0xA4]` mod=10 operand in the image
+enumerated, then instruction-context filtered with objdump decode of the hits):
+
+- **Fill site = 0x58f1d3**: `mov [esi+0xA4], eax`, inside **`JE::Client::virt_meth_0x58f010`** — the
+  SAME install hub R-USERRE-A mapped for the +0x78/7C/80 event/FIFO/GHH trio. The cursor manager's
+  birth is a third block in that hub's construction ladder: `call [edx+0xB8]`→store +0xA8
+  (0x58f1ab/0x58f1b1), **`call [edx+0xB4]`→store +0xA4 (0x58f1cd/0x58f1d3)**, `call [edx+0xB0]`→
+  store +0xA0 (0x58f1ef/0x58f1f5) — each result immediately gets its vft+4/vft+8 init calls.
+- **The factory it calls = 0x45e940** (`GameClient` vft 0x664804 slot 45): `new(0xB0)` +
+  `GameCursorManager::ctor_0x436330`, SEH-guarded, returns the pointer. Sole direct xref of the
+  ctor; the factory itself has NO direct callers — it is reached ONLY through the slot-45 virtual
+  dispatch at 0x58f1cd (hence F3.json's member-usage list showing reads only: the store is fed by
+  an indirect call, invisible to usage-mining).
+- **Ctor zero-init first**: `JE::Client::ctor_0x58e900` sweeps the field band to 0
+  (`mov [esi+0xA4], eax` with eax=0 in the 0x58e952-0x58e98e zero sweep), so a client that never
+  reaches the hub has NULL at +0xA4 — the consumers' NULL-deref shape at 0x587f64 is real.
+- **Consumers re-identified**: both recorded reads (0x587f64, 0x587fe5) are in
+  `F3::GameClient::virt_meth_0x45f000` (vft slot 9, the per-frame pump method): slot-8
+  (`[cursorMgr vft+0x1C]`) and slot-5 SetCursor (`[cursorMgr vft+0x10]`) dispatches on the same
+  object — pump-era per-frame cursor work, exactly the hub-constructed set.
+- Port consequence (travel with the cell): if the port constructs GameClient's pump era, +0xA4 must
+  be built by the SAME hub step, not in the ctor — zero-init + hub-fill is the shipped order.
+- IDB note: renames/comments for 0x58f1d3/0x58f1cd pending — the ida_original_f3 server was wedged
+  at record time (autosave guard had proven the disk save, so nothing at risk); land the IDB
+  annotations on the next live server window per the renames-via-IDA-MCP-only rule.
