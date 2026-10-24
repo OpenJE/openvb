@@ -53,6 +53,12 @@ namespace F3 {
 			undefined4 virt_meth_0x45e940();
 			undefined4 virt_meth_0x45e9a0();
 			undefined4 meth_0x45ef70();
+			// 0x59c4f0 = the send-with-log wrapper (body read whole 2026-10-24, 35
+			// instr): the packet's writer (+0x18) resolves the addr to a name
+			// (meth_0x5acaf0, 0x40 bytes, quiet=1), the debug_stream printf at
+			// &mbr_0xc logs "[client %u] Sending packet to server at %s\n", then
+			// meth_0x5ac450(mbr_0x54 connection, pkt, channel).
+			int meth_0x59c4f0( undefined4 pkt, undefined4 channel );
 			undefined4 virt_meth_0x45f000();
 			// 0x45f2e0 = the scalar deleting destructor (vft slot 0; body read whole
 			// 2026-10-24: call the dtor, if (flags&1) free(this), return this).

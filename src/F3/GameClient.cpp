@@ -10,7 +10,10 @@
 #include "F3/GameClient.hpp"
 
 #include "F3.hpp"
+#include "JE.hpp"
 #include "JE/Client.hpp"
+#include "JE/cls_0x5ac9e0.hpp"
+#include "JE/net/connection.hpp"
 #include "JE/DialogueManager.hpp"
 #include "tracing.hpp"
 
@@ -100,3 +103,19 @@ namespace F3 {
 	}
 
 } // namespace F3
+
+// 0x59c4f0 — F3::GameClient::meth_0x59c4f0, shipped @0x59c4f0, read whole (35
+// instructions + the decompile cross-check, IDA original 2026-10-24). The send
+// wrapper: the packet's embedded writer (+0x18) resolves the address to a name
+// (meth_0x5acaf0 with quiet=1), the debug stream at &mbr_0xc logs, then the
+// channel dispatch via the connection at mbr_0x54.
+int F3::GameClient::meth_0x59c4f0( undefined4 pktArg, undefined4 channel ) {
+    char Buffer[0x40];                                  // @0x59c4f0 Buffer
+    JE::net::packet* pkt = (JE::net::packet*)pktArg;
+    ( (JE::cls_0x5ac9e0*)( (byte*)pkt + 0x18 ) )->meth_0x5acaf0( Buffer, 0x40, 1 );     // @0x59c514
+    JE::printf( (dword)&this->mbr_0xc, 1,
+                "[client %u] Sending packet to server at %s\n",
+                (unsigned)this->mbr_0x28, Buffer );     // @0x59c52a (the shipped stream+mask+fmt+args)
+    JE::net::connection* conn = (JE::net::connection*)this->mbr_0x54;
+    return conn->meth_0x5ac450( pktArg, channel );      // @0x59c53b
+}
