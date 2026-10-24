@@ -40,7 +40,7 @@ namespace F3 {
 		// and `head -1` answers "what is in here" without reading the code.
 		inline void WriteHeader( FILE* f, const Sources& src ) {
 			fprintf( f,
-				"# SIM-DIGEST v1 include=frame clockDelta ents <eN=name,pos,yaw,hp,st,ak> "
+				"# SIM-DIGEST v1 include=frame clockDelta ents <eN=name,pos,yaw,hp,st,ak,qi> "
 				"pathJobs turns turnOrder draws\n"
 				"# entity-fields=name pos[3] yaw hp=cur/max st=entityState,moving,acted q=QUEUED ACTION "
 				"COUNT (shipped Entity+0x314, the action deque's ELEMENT COUNT - ++ at 0x54ea71, -- at "
@@ -48,10 +48,15 @@ namespace F3 {
 				"at most 4, and a shipped q above 4 beside our q=4 is deviation D-2, i.e. a DROPPED "
 				"ORDER, not a digest bug - T-039 verdict, harness item 22; it is printed as a COUNT and "
 				"was never a busy flag, which is why it left the st= triple) "
+				"qi=EFFECT-INBOX COUNT (shipped Entity+0x2F0, the effect deque's live count - the "
+				"field virt_meth_0x54ab00's busy predicate reads as != 0, T-074 §4e; our side derives "
+				"it from inbox.fx[] - inbox-era state since P-CMBT steps 1-2 route damage through the "
+				"inbox; the shipped side renders NA:absent-in-capture when its capture predates the "
+				"inbox era, and a lockstep capture carrying numbered qi must name an r5 read) "
 				"ak=ACTION CLASS NAMES: our side maps port kind->class in code, the original side maps "
 				"[action+0x00] vftptr->class via artifacts/F3.json, UNKNOWN_VT=<ea> when unresolved and "
 				"those are counted, never named | cap %d entities, excess -> entsMore=1\n"
-				"# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/q/ak pathJobs turns turnOrder draws | "
+				"# COMPARED=frame clockDelta ents eN.name/pos/yaw/hp/st/q/ak/qi pathJobs turns turnOrder draws | "
 				"CONTEXT(after ' ctx:')=tickMs clock (ABSOLUTE) - printed, captured, NOT hashed: uptime and the "
 				"shipped first-Update leap make both incomparable across processes, so the digest carries "
 				"clockDelta (seconds elapsed since frame 0) as the comparable axis instead; promote a "
@@ -195,6 +200,10 @@ namespace F3 {
 				n = Append( line, cap, n, ",ak=%s/%s/%s/%s",
 				             ActionKindName( e->actions[0].kind ), ActionKindName( e->actions[1].kind ),
 				             ActionKindName( e->actions[2].kind ), ActionKindName( e->actions[3].kind ) );
+				// R-PORT-Q: the inbox count - the paired field to q= above, for the inbox era
+				// (P-CMBT steps 1-2 route damage through the effect inbox; the shipped side
+				// reads Entity+0x2F0, and the busy predicate virt_meth_0x54ab00 keys on it).
+				n = Append( line, cap, n, ",qi=%u", e->InboxCount() );
 				++shown;
 			}
 			if ( count > shown ) { n = Append( line, cap, n, " entsMore=1" ); }
