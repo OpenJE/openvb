@@ -18,8 +18,8 @@ IDB chain: baseline 00:56:49Z pre-write sync (live==disk) -> 50 renames 00:57:22
 ## HOLD list (21 rows, ambiguity gate; comments landed with the reason)
 | EA | reason (truncated) |
 |---|---|
-| 0x442BF0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
-| 0x4433E0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
+| 0x442BF0 | bare-namespace holder: key sites resolve to F3::Command*/JE: - **C1 RESOLVED 2026-10-24 (owner chase): NO owner class exists - the class IS the five-interface switch module (five member pairs this+8..+2C, per-case CLoadMapInterface show/hide + [vft+0x168] tags); sole consumers F3::CommandOptionsWindow + F3::CommandGameOptions; amendment-3 verdict: module CONFIRMED, domain rename withheld (no confident shipped name)** |
+| 0x4433E0 | bare-namespace holder: key sites resolve to F3::Command*/JE: - **C1 RESOLVED 2026-10-24: the 9-instruction wrapper (meth_0x442bf0 + meth_0x442dc0 param 1-5 switch) selecting which interface to open; same consumer evidence as 0x442BF0; amendment-3 verdict stands** |
 | 0x55BF60 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
 | 0x55BFA0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
 | 0x5813A0 | bare-namespace holder: key sites resolve to F3::Command*/JE: |
