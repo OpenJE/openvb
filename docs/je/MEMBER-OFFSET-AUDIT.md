@@ -407,3 +407,25 @@ Worth flagging separately: `CSound`'s header contains `#pragma pack(push, 1)` im
 `#pragma pack(pop)` with nothing between them - the comment claims packing, the code applies none. It
 currently passes its layout guards by using explicit `reserved_` gaps, so it is not a live bug, but the
 pragma pair there is decoration and should be removed or made real.
+
+## A memory-image class needs its HOLES, not just its fields
+
+`cls_0x4c0190` (75 rows, `--drift`: "mbr_0x10 at +0x4, name says +0x10") had every F3 field offset, and
+still measured wrong, because three things were missing that no field list can express:
+
+- **Fields F3 records that the port had skipped.** `mbr_0x4`, `mbr_0x8`, `mbr_0xc` were absent, so every
+  later member landed 0xC early. Adding them is free - the struct is a memory image.
+- **Subobject spans declared as one dword.** F3 records a 300-byte `Gfx_Camera` at `+0x30` and a 16-byte
+  `cls_0x4abc60` at `+0x214`; the port had four bytes for the first, so 0x12C bytes of the image were
+  unaccounted for and everything past `+0x30` drifted.
+- **Genuine holes in the map.** F3 has no member at `+0x180`, `+0x194..+0x19c` or `+0x1b0..+0x1b8`; a
+  declaration list closes those gaps, so the members after them each land 4 or 8 bytes early. They are
+  part of the layout and need `byte reserved_0xNNN[N]` to hold their place.
+
+Rebuilt from F3 as an image (fields at their recorded sizes, flattened subobject spans, explicit reserved
+holes) the class went 75 -> 0 rows, and the census **1897 -> 1822 in 97 files**, suite green.
+
+The general lesson: for these recovered structures the declaration list must reproduce the **byte image**,
+not the semantic field list. Absent members, un-declared subobject spans and unnamed holes all shift their
+successors, and `--drift` reports all three with the same symptom - a name that misses by a constant
+delta. Read `--drift` together with F3's spacing, not just its names.
