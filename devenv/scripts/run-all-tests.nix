@@ -462,7 +462,7 @@ in {
       # ordering one. The ratchet makes "no new member sits at an offset its own name contradicts" a
       # gate now, instead of waiting for a backlog nobody should have to clear in one change: a change
       # may reduce the count, never raise it.
-      layout_out="$(python3 "$root/tools/check-member-offsets.py" --ratchet 3588 2>&1)"; layout_rc=$?
+      layout_out="$(python3 "$root/tools/check-member-offsets.py" --ratchet 3577 2>&1)"; layout_rc=$?
       if [ $layout_rc -ne 0 ]; then
         printf 'layout-ratchet  FAIL (new member misordered vs its own named offset)\n%s\n' "$(printf '%s\n' "$layout_out" | tail -10)"
         summary="$summary layout=FAIL "

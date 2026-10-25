@@ -203,3 +203,27 @@ class-subobject case stays refused and needs the composition fix (move the child
 that owns them), not a layout trick. Reverting kept the tree at the 3588-row ratchet with the suite
 green, which is the right trade: a layout feature that cannot run on the files that need it is not
 progress.
+
+## F3's `cls_0xNNNN_0xNN` subobject annotations can be fabricated - the dtor settles it
+
+`VFXEFFECTTYPE_BASE_Struct` carried `cls_0x50db20 mbr_0x34` - a **577-byte** subobject. Its shipped
+destructor at `0x4e1750` disposes exactly two members, both straight off `this`:
+
+    cmp [esi+1Ch],10h / jb / mov eax,[esi+8]  / free / [+18h]=0 / [+1Ch]=0Fh / [+8]=0
+    cmp [esi+4Ch],10h / jb / mov eax,[esi+38h] / free / [+48h]=0 / [+4Ch]=0Fh / [+38h]=0
+
+Two SSO strings, ptr/size/capacity at `+0x8/+0x18/+0x1C` and `+0x38/+0x48/+0x4C` (threshold `0x10`,
+capacity reset `0xF`) - the `cls_0x50db20` shape, but seen through `this`, not through a subobject. A
+577-byte member starting at `+0x34` would contain `+0x38`, and this dtor could not free its pointer, so
+no such subobject is there. `mbr_0x34` is 4 bytes, and F3's `cls_0x50db20_0x34` row is a fabricated
+annotation - the same mistake as the orbit's derived-extent `size`.
+
+That correction alone removed 11 static rows (ceiling lowered 3588 -> 3577) because the bogus size had
+been blocking the class from being reordered at all: `mbr_0x38` "fell inside" a member that never
+existed.
+
+The class still refuses to reorder, and now for an honest reason: `cls_0x4dff90 mbr_0x54` (56 bytes per
+F3) spans over `mbr_0x60`, so those two subobject rows also cannot both be right. Their types are the
+next question - and the destructor does not touch them, so `mbr_0x54`/`mbr_0x60` need a different
+witness before they are typed. Guessing there would silently overlap two objects, which is the failure
+mode this audit exists to prevent.
