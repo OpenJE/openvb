@@ -359,3 +359,29 @@ Tool note for the next pass: the layout checker sizes a class-typed member from 
 is wrong for rows like `cls_0x50db20_0x34` (F3 says 577, the class is 0xE0). Sizing from the ported
 header's own members would have avoided the whole detour; until the checker does that, this class's size
 lives in its header comment and the offsets guards.
+
+## `--drift`: name the member that broke the class, not every member after it
+
+2041 contradictions is not a worklist. What matters is **where each class first stops matching**, because
+one too-large declaration shifts every member behind it. `python3 tools/check-member-offsets.py --static
+--drift` reports exactly that, with the member declared immediately before the divergence:
+
+    cls_0x514000        144 rows  first: mbr_0x45 at +0x48 (name says +0x45, -3)   after mbr_0x44
+    AreaMapWindow       142 rows  first: mbr_0x18 at +0xD38 (name says +0x18)      after -
+    cls_0x4c0190         75 rows  first: mbr_0x10 at +0x4  (name says +0x10, +12)  after mbr_0x0
+    World                72 rows  first: mbr_0x4  at +0x4C (name says +0x4, -72)   after m_pauseLastMS
+
+Two readings, and they separate the backlog into two different jobs:
+
+- **`after <member>` names a real culprit.** `cls_0x514000` drifts by exactly -3 from `mbr_0x44` on, and
+  `cls_0x4c0190` by +12 from `mbr_0x0` on - each is one declaration that is too large (a dword where the
+  shipped field is a byte, or an array count that is too big). Those are type fixes with a named suspect.
+- **`after -` means the class's FIRST declared member already misses**, which is the base-redeclaration
+  defect: `AreaMapWindow`'s `mbr_0x18` lands at +0xD38 because its bases (`GUI::Picture`, `cls_0x4abc60`)
+  already occupy that space. The reorderer drops such members when F3 marks them `base=True` *and* the
+  port's base declares them, which is why `AreaMapWindow` has 142 rows while being unorderable: one
+  member it cannot drop (a too-large field before `mbr_0xD2C`) blocks it first.
+
+So the remaining census is not 2041 independent mistakes; it is a handful of oversized declarations in
+otherwise-fine classes, plus base-field duplicates that the reorderer already knows how to remove once
+those declarations are corrected.

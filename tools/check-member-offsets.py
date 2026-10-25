@@ -229,6 +229,37 @@ def static_layout_rows(sized, ambiguous, where):
     return rows
 
 
+def first_divergence(sized, ambiguous, where):
+    """(class, previous member, first offender, laid-out, named, delta, count, file) per class.
+
+    2041 contradictions is not a worklist: what matters is WHERE a class first stops matching, because
+    one too-large declaration shifts every member after it. The member declared immediately before the
+    first divergence is almost always the culprit - a dword where the shipped field is a byte, or an
+    array whose count is too big.
+    """
+    out = []
+    for cname in sorted(sized):
+        if cname in ambiguous:
+            continue
+        members = sized[cname][1]
+        count, first, prev = 0, None, None
+        for i, (mname, off) in enumerate(members):
+            m = NAME_OFFSET_RE.match(mname)
+            if not m:
+                prev = mname
+                continue
+            named = int(m.group(1), 16)
+            if named != off:
+                count += 1
+                if first is None:
+                    first = (members[i - 1][0] if i else "-", mname, off, named, named - off)
+            prev = mname
+        if first:
+            out.append((count, cname) + first + (where.get(cname, "?"),))
+    out.sort(reverse=True)
+    return out
+
+
 def main(argv):
     gate = "--gate" in argv
     md_path = None
@@ -322,6 +353,17 @@ def main(argv):
             print("      :%d  %s::%s -> declared +0x%X" % (ln, owner, member, got))
         if len(rows) > 6:
             print("      ... %d more" % (len(rows) - 6))
+
+    if "--drift" in argv:
+        drift = first_divergence(sized, ambiguous, where)
+        print("first layout divergence per class (the member declared just before it is the "
+              "likely culprit):")
+        for count, cname, prev, offender, off, named, delta in [
+                r[:7] for r in drift[:40]]:
+            print("  %-34s %4d rows  first: %s at +0x%X (name says +0x%X, %+d)  after %s"
+                  % (cname, count, offender, off, named, delta, prev))
+        if len(drift) > 40:
+            print("  ... %d more classes" % (len(drift) - 40))
 
     static_rows = static_layout_rows(sized, ambiguous, where)
     if "--static" in argv or static_rows:
