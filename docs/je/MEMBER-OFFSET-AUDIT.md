@@ -227,3 +227,26 @@ F3) spans over `mbr_0x60`, so those two subobject rows also cannot both be right
 next question - and the destructor does not touch them, so `mbr_0x54`/`mbr_0x60` need a different
 witness before they are typed. Guessing there would silently overlap two objects, which is the failure
 mode this audit exists to prevent.
+
+### Correction: the ctor is the positive witness, the dtor alone is not
+
+The section above claimed F3's `cls_0x50db20_0x34` row was fabricated because the dtor at `0x4e1750`
+frees only `[+0x8]` and `[+0x38]`. **That was wrong, and the constructor disproves it** (`0x4e0f00`):
+
+    lea ecx,[esi+2Ch] / call cls_0x502110__ctor_0x502110
+    lea ecx,[esi+34h] / call cls_0x50db20__ctor_0x404bc0     <-- a subobject AT +0x34
+    lea ecx,[esi+54h] / call cls_0x4dff90__ctor_0x523b00
+    lea ecx,[esi+60h] / call JE__StringTree__ctor_0x52c260
+
+The dtor reads the way it does because the subobject's own destructor was **inlined** into it: the
+string it frees at `[+0x38]` is `subobject+0x4`. An inlined destructor looks exactly like a member of
+the enclosing object, which is precisely the trap.
+
+So the rule is asymmetric: `lea ecx,[esi+off] / call <class>::ctor` is positive proof of a subobject at
+`off`; the absence of a matching destructor call proves nothing, because it may be inlined. The member
+is restored (`cls_0x50db20 mbr_0x34`) and the ratchet ceiling is back at 3588 - the previous "11 rows
+removed" were an artefact of the bad edit, not progress.
+
+What the ctor does show for real: `[+0x8]` is an SSO string initialised **inline** (`[+0x1C]=0xF`,
+`[+0x18]=0`, `[+0x8]=0`) with no ctor call, i.e. a plain string member occupying `+0x8..+0x20` whose
+type the port still models as loose dwords. That is the next honest unit for this class.
