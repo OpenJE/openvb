@@ -6,7 +6,7 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 46 in 6 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 43 in 4 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
@@ -51,34 +51,27 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 46 in 6 files
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1794 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1796 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1798 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 88 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
-| `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 92 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
-| `modules/openje/src/JE/cls_0x5ac5e0.cpp` | 24 | `cls_0x5ac5e0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 25 | `exception` | `mbr_0x4` | +0x0 |
 
-## Fixed: net::connection's prefix band - census 57 -> 46
+## Fixed: the two slim packet-header classes - census 46 -> 43
 
-The same two defects as the rest of the net chain: members declared in IDA's EA order, and a
-non-polymorphic class even though F3 records `vftptr_0x0` for it - so no vftptr was emitted and the
-whole prefix sat 4 bytes early on top of the shuffle. 12 census rows -> 1.
+`cls_0x5ac2b0` (20 bytes) and `cls_0x5ac5e0` (56 bytes) had the same EA-ordering defect as the net
+chain, without the polymorphism half: neither is polymorphic (F3 records no `vftptr_0x0` for either
+and neither port class declares a virtual), they simply carried their first recorded field too
+early - `mbr_0x10` landed at `+0x0` in both, so `cls_0x5ac2b0`'s four dwords and `cls_0x5ac5e0`'s
+whole header sat 0x10 bytes early.
 
-The prefix (+0x4..+0x6C) is now generated from the F3 map in offset order with its holes reserved
-(+0x1A..+0x1C, +0x2A..+0x2C, +0x3C..+0x40), and the class is `virtual`.
+The leading space is real and is now reserved rather than invented: `cls_0x5ac2b0` records nothing
+below `+0x4` and `cls_0x5ac5e0` nothing below `+0x10`, so those spans are `reserved_0x0[...]`. The
+interior holes (`+0x18..+0x1C`, `+0x22..+0x24` of `cls_0x5ac5e0`) are reserved too.
 
-The region from +0x6C is deliberately NOT regenerated: F3 places a 60-byte `net::packet` subobject
-at +0x6C yet also records fields at +0x70/+0x80/+0x84, which cannot both be true. The port keeps
-its own names for that span (they appear in connection.cpp) at the offsets their names spell, and
-the ambiguity stays visible instead of being guessed away.
+These classes are worth pinning behaviourally rather than by offsets alone, because the remedy
+they exercise is real: `cls_0x5ac5e0::meth_0x5ac5e0` (the flag->size calculator at 0x5ac5e0) adds
+`this->mbr_0x10` when `flags & 0x40`, and the serialize at 0x5ac690 reads `[hdr+0x10]`/`[hdr+0x14]`
+plus the whole +0x1C..+0x34 band. The probe therefore *pokes absolute offsets* - writes 7 at +0x10
+and 100 at +0x14, then asks the calculator - so it fails if either member moves, regardless of what
+the header claims. It also pins the fixed flag-bit sum (6+2+4+4+4+2 = 22) and that +0x14 is not
+part of the answer.
 
-Pinned by 20 compile-time offsetof assertions plus the nested throw type: its message is the BASE's
-+0x4 (net::exception is 8 bytes), so `offsetof(connection::exception, mbr_0x4) == 4` and
-`sizeof == 8`. Mutant (the old header): twenty C2118 errors.
-
-### Known false positive in the detector: the one remaining connection row
-
-`connection.cpp:25  exception::mbr_0x4 -> declared +0x0` is the tool, not the code. The nested
-`connection::exception` is registered under the bare name `exception`, colliding with
-`net::exception`, and the entry that wins the lookup has no vftptr (its members start at +0x0). The
-compiler disagrees: the assertion above puts the field at +0x4 in an 8-byte object. Fixing it means
-qualifying nested class names in the detector - a change that would re-key every entry.
+Mutant (the old header): three C2118 errors from the `offsetof` assertions.
