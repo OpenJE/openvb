@@ -6,30 +6,36 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 999 | sized 927 | wrong-offset accesses 1 in 1 files
+classes parsed 999 | sized 927 | wrong-offset accesses 0 in 0 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
-| `modules/openje/src/JE/CameraControl.cpp` | 209 | `CameraControl` | `mbr_0x8` | +0x4 |
 
-## Fixed: net::buffer::overflow had TWO definitions - census 3 -> 1
+## Fixed: CameraControl was not polymorphic - the census is now CLEAN (0 rows)
 
-The last two rows were tool false positives with a real cause: **two competing declarations of one
-shipped class**. `JE/net/buffer.hpp` defines `buffer::overflow : public net::exception` (the type
-with the 0x45e450 ctor that stores its message in the base's +0x4), and the older generated header
-`JE/net/buffer/overflow.hpp` declared the same class again as a `struct` with its own `mbr_0x4`.
+The last row, `CameraControl::mbr_0x8 -> declared +0x4`, was the same vftptr defect as the net chain:
+F3 records `vftptr_0x0` for `.?AUCameraControl@@` and `virt_meth_0x587030` is a vft slot, but it was
+declared plain, so no vftptr was emitted and the embedded orbit landed at `+0x4` - one dword early
+for its entire 184-byte body.
 
-That duplicate field is not cosmetic: on top of an 8-byte `net::exception` it would land at +0x8,
-one dword past where the shipped ctor actually writes, so a TU including that header would read and
-write the wrong word. Nothing included it - but the census could not tell that, and the row it
-produced was permanently wrong, which is the one failure mode a layout checker must not have.
+Verified behaviourally rather than declaratively: the shipped destructor (0x586570) is `add ecx, 8`
+then a tail-jump to the orbit's own dtor at 0x4c68a0, and the port keeps that as a member call. The
+probe supplies the orbit dtor, drives `CameraControl::dtor_0x586570`, and records *which address* was
+destroyed: it must be `object + 8`, not `object + 4` and not `object`. Mutant (the old header): three
+C2118 errors.
 
-`net/buffer/overflow.hpp` is deleted and the one piece of information it alone carried is merged
-into the surviving declaration: F3 lists a SECOND ctor of `.?AUoverflow@buffer@net@@` at 0x45f090
-(confirmed through the F3 method index), and the nested class now declares `ctor_0x45f090()`
-alongside `overflow()`. The header deletion is safe because no .cpp includes it.
+### KNOWN WRONG, recorded rather than papered over
 
-There is a FAMILY of these stale per-namespace headers - `buffer/underflow.hpp`,
-`address/exception.hpp`, `connection/exception.hpp`, `socket/exception.hpp` - each declaring a type
-the parent header now defines nested. Only the one that produced a wrong census row is removed here;
-the rest need the same "is it a duplicate and is it unused" check before deletion, one at a time.
+The census being clean does **not** mean `CameraControl` is laid out correctly, and the probe says so
+out loud instead of asserting the wrong value as if it were right:
+
+`mbr_0x98 .. mbr_0xbc` are declared at CameraControl level, but F3's `.?AUCameraControl@@` entry marks
+all of them `base=True` - they belong to the **embedded orbit**, which owns `+0x8..+0xC0`. Declared
+here they land *after* the orbit, so that band is late by the orbit's size: the compiler puts the
+azimuth/elevation/distance triple that should be at `+0xa4` at `+0xEC`.
+
+The name-based census cannot see this, because `mbr_0xa4` in the header does equal `0xa4` in F3 - the
+defect is *which class owns the field*, not what it is called. That is a layering change: move the
+band into `Gfx_CamCtrl_Orbit` (whose F3 map is itself split, its members from `+0x8` all `base=True`
+on `.?AVGfx_CamCtrl@@`), then re-point every `this->mbr_0xa4`-style use in CameraControl.cpp at the
+member. Recorded as the next unit rather than half-done here.
