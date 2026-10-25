@@ -6,34 +6,11 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 57 in 6 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
 | `modules/openje/src/JE/CameraControl.cpp` | 209 | `CameraControl` | `mbr_0x8` | +0x4 |
-| `modules/openje/src/JE/Client.cpp` | 165 | `Client` | `mbr_0x84` | +0xD8 |
-| `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x14C |
-| `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x14C |
-| `modules/openje/src/JE/Client.cpp` | 235 | `Client` | `mbr_0xb8` | +0x10C |
-| `modules/openje/src/JE/Client.cpp` | 236 | `Client` | `mbr_0xb0` | +0x104 |
-| `modules/openje/src/JE/Client.cpp` | 237 | `Client` | `mbr_0xac` | +0x100 |
-| `modules/openje/src/JE/Client.cpp` | 238 | `Client` | `mbr_0x9c` | +0xF0 |
-| `modules/openje/src/JE/Client.cpp` | 239 | `Client` | `mbr_0xa0` | +0xF4 |
-| `modules/openje/src/JE/Client.cpp` | 240 | `Client` | `mbr_0xa4` | +0xF8 |
-| `modules/openje/src/JE/Client.cpp` | 241 | `Client` | `mbr_0xa8` | +0xFC |
-| `modules/openje/src/JE/Client.cpp` | 242 | `Client` | `mbr_0xb4` | +0x108 |
-| `modules/openje/src/JE/Client.cpp` | 244 | `Client` | `mbr_0x84` | +0xD8 |
-| `modules/openje/src/JE/Client.cpp` | 245 | `Client` | `mbr_0x84` | +0xD8 |
-| `modules/openje/src/JE/Client.cpp` | 246 | `Client` | `mbr_0x84` | +0xD8 |
-| `modules/openje/src/JE/Client.cpp` | 249 | `Client` | `mbr_0x88` | +0xDC |
-| `modules/openje/src/JE/Client.cpp` | 250 | `Client` | `mbr_0x8c` | +0xE0 |
-| `modules/openje/src/JE/Client.cpp` | 251 | `Client` | `mbr_0x94` | +0xE8 |
-| `modules/openje/src/JE/Client.cpp` | 252 | `Client` | `mbr_0x98` | +0xEC |
-| `modules/openje/src/JE/Client.cpp` | 253 | `Client` | `mbr_0x80` | +0xD4 |
-| `modules/openje/src/JE/Client.cpp` | 254 | `Client` | `mbr_0x7c` | +0xD0 |
-| `modules/openje/src/JE/Client.cpp` | 255 | `Client` | `mbr_0x78` | +0xCC |
-| `modules/openje/src/JE/Client.cpp` | 256 | `Client` | `mbr_0x74` | +0xC8 |
-| `modules/openje/src/JE/Client.cpp` | 257 | `Client` | `mbr_0x70` | +0xC4 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 132 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 147 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 194 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
@@ -78,11 +55,6 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
 | `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 92 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/cls_0x5ac5e0.cpp` | 24 | `cls_0x5ac5e0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
-| `modules/openje/src/JE/net/client.cpp` | 79 | `client` | `mbr_0x58` | +0x8C |
-| `modules/openje/src/JE/net/client.cpp` | 80 | `client` | `mbr_0x58` | +0x8C |
-| `modules/openje/src/JE/net/client.cpp` | 86 | `client` | `mbr_0x54` | +0x88 |
-| `modules/openje/src/JE/net/client.cpp` | 121 | `client` | `mbr_0x40` | +0x74 |
-| `modules/openje/src/JE/net/client.cpp` | 122 | `client` | `mbr_0x30` | +0x64 |
 | `modules/openje/src/JE/net/connection.cpp` | 13 | `connection` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/connection.cpp` | 25 | `exception` | `mbr_0x4` | +0x0 |
 | `modules/openje/src/JE/net/connection.cpp` | 50 | `connection` | `mbr_0x14` | +0x4 |
@@ -96,29 +68,31 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
 | `modules/openje/src/JE/net/connection.cpp` | 104 | `connection` | `mbr_0x18` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 105 | `connection` | `mbr_0x54` | +0x114 |
 
-## Fixed: net::critical_section's SIZE - the root cause of the whole net client chain
+## Fixed: the whole net client chain - census 85 -> 57, one chain
 
-F3 puts this class inside `net::base` at +0x4, and TWO independent entries agree that base's own
-first field is +0xc (`.?AVbase@net@@` lists `mbr_0xc` base=True; `.?AVclient@net@@` repeats the
-same band). So the embedded lock is 8 bytes: a vftptr and one dword. The generated header declared
-**64 members** here (`mbr_0x10` .. `mbr_0x3bc`), because IDA attributed every access that walked a
-client-sized object to this structure - the F3 entry even claims size 960, which is the derived
-object's extent, not the lock's.
+Three headers, one defect shape, and together they were 28 of the 85 rows.
 
-That made the class ~0x3C0 bytes and pushed every `net::base` member 0x3B8 bytes late, and through
-it every `net::client`/`JE::Client` field. This is why the census kept reporting 5 rows against
-`net/client.cpp` and 23 against `Client.cpp`: it was ONE wrong size, not 28 wrong call sites.
+F3's three entries agree once they are merged, because IDA attributes the whole band to the INNER
+class: `net::base` owns +0x4 (the 8-byte `critical_section`) and +0xc..+0x70; `net::client` owns
++0x70..+0x118; `JE::Client` adds **no members at all** - every field it touches is `base=True` in
+its own entry, i.e. it is net::client's storage.
 
-The fix is a header change plus a `virtual` on the destructor (the shipped object carries a
-vftptr; a non-polymorphic class is 4 bytes and puts the field at +0x0). The destructor body goes
-back to reading `this->mbr_0x4` by name - the explicit-offset workaround from the earlier net::base
-iteration is no longer needed, which is the point: the layout fix belongs in the header, once.
+What was wrong:
+- every header listed its members in IDA's EA order, so each field sat at the offset of whichever
+  member happened to precede it alphabetically;
+- `net::base` was not polymorphic - its slot-0 deleting destructor was declared plain - so the
+  compiler emitted no vftptr and the entire chain was 4 bytes early on top of the ordering error;
+- `JE::Client` re-declared all 44 of net::client's fields, hiding them.
 
-Immediately visible: `Client::mbr_0x84` moved from `declared +0x1C4` to `declared +0xD8` - still
-wrong (base and client's own members are still EA-ordered) but now wrong by 0x54 bytes instead of
-0x140, i.e. the 0x3B8-byte error is gone.
+Now: base is `virtual` (vftptr at +0x0, the lock at +0x4, band +0xc..+0x70), client owns
++0x70..+0x118, Client declares nothing and inherits. `sizeof` is 0x70 / 0x118 / 0x118.
 
-Probe: sizeof == 8, `mbr_0x4` at +0x4, then the real destructor driven on a genuine Win32
-CRITICAL_SECTION through the class's own vftable, checking it consumed the pointer at +0x4, left
-the vftptr word alone and wrote nothing past the 8-byte object. Mutant (the old 64-member blob):
-fails the build.
+One F3 contradiction had to be resolved rather than copied: the map records a 4-byte `mbr_0xd0` AND
+single bytes at +0xd2 and +0xd4, which cannot all coexist in one object. The two byte entries
+corroborate each other (+0xd2, +0xd4, +0xd3 free), a coherent layout only if +0xd0 is 2 bytes wide,
+so IDA's "4" is the mis-size (a dword read spanning +0xd0..+0xd4) and the field is declared as a
+word plus two bytes.
+
+Pinned by a probe of fourteen offsets plus `sizeof` on all three classes, and by the property that
+matters: `offsetof( JE::Client, mbr_0x84 ) == 0x84`, i.e. Client resolves the inherited field at the
+shipped offset. Mutant (the old base.hpp): sixteen C2118 errors.
