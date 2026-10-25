@@ -73,3 +73,5 @@ tools/__pycache__/
 /sdk-*.obj
 *.obj
 .$$$
+
+design-docs
