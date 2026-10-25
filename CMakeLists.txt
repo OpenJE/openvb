@@ -95,6 +95,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/VFX_Sound.cpp"
 	"modules/openje/src/JE/cls_0x401b00.cpp"
 	"modules/openje/src/JE/cls_0x4abc60.cpp"
+	"modules/openje/src/JE/cls_0x4b5d00.cpp"
 	"modules/openje/src/JE/cls_0x4b60b0.cpp"
 	"modules/openje/src/JE/CSoundFile.cpp"
 	"modules/openje/src/JE/CSoundGroup.cpp"
