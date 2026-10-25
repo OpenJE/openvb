@@ -125,8 +125,15 @@ def header_classes(path):
             i += 1
         # members at body depth 0 only (nested classes have their own "{" lines)
         members, unknown, level, has_virtual = [], False, 0, False
+        packed = False
         for line in body:
-            if level == 0 and re.search(r"\bvirtual\b", line):
+            code = re.sub(r"//.*$", "", line)      # a trailing comment is not a declaration
+            code = re.sub(r"/\*.*?\*/", "", code)
+            if re.search(r"#pragma\s+pack\s*\(\s*push\s*,\s*1\s*\)", code):
+                packed = True
+            elif re.search(r"#pragma\s+pack\s*\(\s*pop\s*\)", code):
+                packed = False
+            if level == 0 and re.search(r"\bvirtual\b", code):
                 has_virtual = True
             if level == 0:
                 mm = MEMBER_RE.match(line)
@@ -139,6 +146,7 @@ def header_classes(path):
             "name": name,
             "base": base_name(bases),
             "virtual": has_virtual,
+            "packed": packed,
             "members": members,
             "unknown": not members,
         })
@@ -158,7 +166,7 @@ def sizes_of(classes):
                     # an invented base would produce invented offsets, i.e. false positives.
                     continue
                 base = computed[cls["base"]][0]     # a base with a vftable already carries it
-            else:
+            elif not any(m[0] == "vftptr_0x0" for m in cls["members"]):
                 add_vft = 4 if cls["virtual"] else 0
             off = base + add_vft
             table, ok = [], True
@@ -174,7 +182,7 @@ def sizes_of(classes):
                 else:
                     ok = False
                     break
-                a = align_of(mtype, elem)
+                a = 1 if cls.get("packed") else align_of(mtype, elem)
                 if a > 1:
                     off = (off + a - 1) // a * a
                 table.append((mname, off))
@@ -182,7 +190,7 @@ def sizes_of(classes):
             if ok:
                 biggest = 8 if any(short(t) in ("double", "undefined8")
                                    for _n, t, _c in cls["members"]) else 4
-                a = biggest if cls["virtual"] or off > 4 else 1
+                a = 1 if cls.get("packed") else (biggest if cls["virtual"] or off > 4 else 1)
                 off = (off + a - 1) // a * a
                 val = (off, table)
                 if computed.get(cls["name"]) != val:

@@ -6,13 +6,10 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 88 in 9 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
-| `modules/openje/src/JE/CSound.cpp` | 256 | `CSound` | `mbr_0x4` | +0x3C |
-| `modules/openje/src/JE/CSound.cpp` | 260 | `CSound` | `mbr_0x4` | +0x3C |
-| `modules/openje/src/JE/CSound.cpp` | 661 | `CSound` | `mbr_0x4` | +0x3C |
 | `modules/openje/src/JE/CameraControl.cpp` | 209 | `CameraControl` | `mbr_0x8` | +0x4 |
 | `modules/openje/src/JE/Client.cpp` | 165 | `Client` | `mbr_0x84` | +0x1C4 |
 | `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x238 |
@@ -99,28 +96,26 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 88 in 9 files
 | `modules/openje/src/JE/net/connection.cpp` | 104 | `connection` | `mbr_0x18` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 105 | `connection` | `mbr_0x54` | +0x114 |
 
-## Fixed: cls_0x5ac9e0 (the packet's wire address header, 4 bytes early)
+## Fixed: CSound (65 of its 66 members were at the wrong offset)
 
-F3 DB: size 10, the four address bytes at +0x4..+0x7 and the port word at +0x8, with a 4-byte
-word at +0x0 that the member map does not model. The header declared the fields from +0x0, so
-every one of them sat four bytes early and `meth_0x5aca10` - the only place a game address turns
-into sockaddr bytes on the P2 path - read its port out of the address bytes.
+The generated header listed `.?AVCSound@@`'s members in EA/alphabetical order - `mbr_0x100`
+first, `mbr_0x4` in the middle - so every field sat somewhere else: `mbr_0x4` at +0x3C, inside
+the byte band the play-state ladder reads. The class is the engine's central audio object, so this
+was not one bad access but 65 wrong fields at once, silent because nothing crashes.
 
-Verified against the original rather than the port's own comment (0x5aca1f `mov ax,[esi+8]`,
-0x5aca24 `call htons`, 0x5aca29 `mov [edi+2],ax`, then the four bytes from +4..+7), then by a
-probe that checks the band copy and the built sockaddr byte by byte, including that nothing past
-+0x8 is written. Removing the reserved word fails the build with three C2118 offset errors.
+Now declared in the F3 map's OFFSET order, under `#pragma pack(1)`: the shipped fields are
+unaligned (`mbr_0x115` is a dword at +0x115), which no default layout can reproduce, and the
+map's two holes (+0x10..+0x1C, +0x110..+0x115) are reserved explicitly. Size 281.
 
-Recorded honestly: my first probe run reported two FAILs on the port order, and the probe was
-wrong, not the port - `htons(0x1234)` is 0x3412, which in little-endian memory is the byte pair
-12 34, i.e. exactly the network order a `sockaddr` must hold. The expectations were inverted;
-the code matched the original all along.
+Pinned by a generated probe: one `offsetof` per member, 65 checks against the F3 map, plus
+`sizeof == 281` and three compile-time assertions. Restoring the old order fails the build with
+three C2118 errors. The CSound suite stays green (`3 pass, 0 fail`).
 
-## Known limitation: a grab-bag TU cannot be attributed to one class
+## Detector self-corrections in this pass (three, all found by CSound)
 
-`cls_0x50dbb0.cpp` accounts for 40 of the remaining rows, but that TU is not one class: its
-rotates address a std-tree node (+0x0 left, +0x4 parent, +0x8 right), its 0x50Cxxx/0x50Dxxx
-bodies address a ResourceFileManager (+0xC/+0x14/+0x18/+0x1C), and sub_506A10/sub_506B70 address
-a Gfx_BufferManager. The port models them all as members of one header, so the detector's
-per-class attribution is meaningless there - the rows are NOT 40 defects and "fixing the header"
-would be wrong. Splitting that TU by real class is the honest fix, and it is not a one-turn change.
+- a **trailing `//` comment mentioning "virtual" made CSound look polymorphic**, so the tool added
+  a vftptr that the class does not have and shifted all 66 members by +4 - the same failure mode
+  already recorded for `net::socket`, which is why comments are now stripped before the test.
+- a class that **declares `vftptr_0x0` explicitly** no longer gets a second compiler-supplied one.
+- `#pragma pack(push, 1)` regions are honoured: alignment 1, no final round-up. Without this a
+  packed class reports every field as wrong and a hand-fix would "correct" it back to being wrong.
