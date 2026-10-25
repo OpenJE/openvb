@@ -6,7 +6,7 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 57 in 6 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 46 in 6 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
@@ -55,44 +55,30 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 57 in 6 files
 | `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 92 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/cls_0x5ac5e0.cpp` | 24 | `cls_0x5ac5e0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
-| `modules/openje/src/JE/net/connection.cpp` | 13 | `connection` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/connection.cpp` | 25 | `exception` | `mbr_0x4` | +0x0 |
-| `modules/openje/src/JE/net/connection.cpp` | 50 | `connection` | `mbr_0x14` | +0x4 |
-| `modules/openje/src/JE/net/connection.cpp` | 63 | `connection` | `mbr_0x48` | +0x108 |
-| `modules/openje/src/JE/net/connection.cpp` | 64 | `connection` | `mbr_0x48` | +0x108 |
-| `modules/openje/src/JE/net/connection.cpp` | 66 | `connection` | `mbr_0x2c` | +0x74 |
-| `modules/openje/src/JE/net/connection.cpp` | 66 | `connection` | `mbr_0x34` | +0x7C |
-| `modules/openje/src/JE/net/connection.cpp` | 68 | `connection` | `mbr_0x14` | +0x4 |
-| `modules/openje/src/JE/net/connection.cpp` | 99 | `connection` | `mbr_0x10` | +0x0 |
-| `modules/openje/src/JE/net/connection.cpp` | 100 | `connection` | `mbr_0x10` | +0x0 |
-| `modules/openje/src/JE/net/connection.cpp` | 104 | `connection` | `mbr_0x18` | +0x8 |
-| `modules/openje/src/JE/net/connection.cpp` | 105 | `connection` | `mbr_0x54` | +0x114 |
 
-## Fixed: the whole net client chain - census 85 -> 57, one chain
+## Fixed: net::connection's prefix band - census 57 -> 46
 
-Three headers, one defect shape, and together they were 28 of the 85 rows.
+The same two defects as the rest of the net chain: members declared in IDA's EA order, and a
+non-polymorphic class even though F3 records `vftptr_0x0` for it - so no vftptr was emitted and the
+whole prefix sat 4 bytes early on top of the shuffle. 12 census rows -> 1.
 
-F3's three entries agree once they are merged, because IDA attributes the whole band to the INNER
-class: `net::base` owns +0x4 (the 8-byte `critical_section`) and +0xc..+0x70; `net::client` owns
-+0x70..+0x118; `JE::Client` adds **no members at all** - every field it touches is `base=True` in
-its own entry, i.e. it is net::client's storage.
+The prefix (+0x4..+0x6C) is now generated from the F3 map in offset order with its holes reserved
+(+0x1A..+0x1C, +0x2A..+0x2C, +0x3C..+0x40), and the class is `virtual`.
 
-What was wrong:
-- every header listed its members in IDA's EA order, so each field sat at the offset of whichever
-  member happened to precede it alphabetically;
-- `net::base` was not polymorphic - its slot-0 deleting destructor was declared plain - so the
-  compiler emitted no vftptr and the entire chain was 4 bytes early on top of the ordering error;
-- `JE::Client` re-declared all 44 of net::client's fields, hiding them.
+The region from +0x6C is deliberately NOT regenerated: F3 places a 60-byte `net::packet` subobject
+at +0x6C yet also records fields at +0x70/+0x80/+0x84, which cannot both be true. The port keeps
+its own names for that span (they appear in connection.cpp) at the offsets their names spell, and
+the ambiguity stays visible instead of being guessed away.
 
-Now: base is `virtual` (vftptr at +0x0, the lock at +0x4, band +0xc..+0x70), client owns
-+0x70..+0x118, Client declares nothing and inherits. `sizeof` is 0x70 / 0x118 / 0x118.
+Pinned by 20 compile-time offsetof assertions plus the nested throw type: its message is the BASE's
++0x4 (net::exception is 8 bytes), so `offsetof(connection::exception, mbr_0x4) == 4` and
+`sizeof == 8`. Mutant (the old header): twenty C2118 errors.
 
-One F3 contradiction had to be resolved rather than copied: the map records a 4-byte `mbr_0xd0` AND
-single bytes at +0xd2 and +0xd4, which cannot all coexist in one object. The two byte entries
-corroborate each other (+0xd2, +0xd4, +0xd3 free), a coherent layout only if +0xd0 is 2 bytes wide,
-so IDA's "4" is the mis-size (a dword read spanning +0xd0..+0xd4) and the field is declared as a
-word plus two bytes.
+### Known false positive in the detector: the one remaining connection row
 
-Pinned by a probe of fourteen offsets plus `sizeof` on all three classes, and by the property that
-matters: `offsetof( JE::Client, mbr_0x84 ) == 0x84`, i.e. Client resolves the inherited field at the
-shipped offset. Mutant (the old base.hpp): sixteen C2118 errors.
+`connection.cpp:25  exception::mbr_0x4 -> declared +0x0` is the tool, not the code. The nested
+`connection::exception` is registered under the bare name `exception`, colliding with
+`net::exception`, and the entry that wins the lookup has no vftptr (its members start at +0x0). The
+compiler disagrees: the assertion above puts the field at +0x4 in an 8-byte object. Fixing it means
+qualifying nested class names in the detector - a change that would re-key every entry.
