@@ -131,3 +131,22 @@ by shape would be a guess, so the port keeps the callee as a seam rather than in
 
 Until 1-3 exist, `tests/je/cls_0x49cc40/` can only pin the layout guards that are already there; adding an
 "accessor" test that fakes the arrays would test the fake, not the shipped contract.
+
+## What the callers do with the element they get back
+
+`JE::ModelInstance::SetSocketModel_564f90` calls the forwarder three times and always on an object taken
+from the model instance's own `[this+0x10]` array, never on `this`:
+
+    5654d0  mov edx, [ebp+10h] / mov ecx, [edx+edi*4]     ; the object, indexed by the socket id
+    5654d7  call meth_0x49cc40                            ; -> element of that object's arrays
+    5654dc  cmp  eax, ebx / jz
+    5654e3  mov  [eax+130h], ecx                           ; ecx = [ebp+18h] = the model instance's +0x18
+
+so the socket pass, in one line, is: **for every socket index of every model instance, copy the instance's
+`+0x18` into the element's `+0x130`** - and it does nothing when the forwarder returns null (the
+"neither container is set" path). The same `+0x130` is what `meth_0x4a0750` copies between two arrays
+(previous section), so `+0x130` on a `cls_0x4b60b0` element is a per-element handle this code propagates in
+both directions: array-to-array and instance-to-array.
+
+That is the whole port-relevant surface of the forwarder, and it is only observable from the callers: the
+accessors themselves carry no hint that `+0x130` matters.
