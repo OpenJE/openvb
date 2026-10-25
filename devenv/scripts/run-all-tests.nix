@@ -132,6 +132,14 @@ in {
         # two again (LNK2005, measured), and it is not needed by any path the suite takes.
         # Floor 42 = the ck()/ck_null() calls that ran; the suite now reports the count itself.
         "cls_0x515040|modules/openje/tests/je/cls_0x515040/cls_0x515040.cpp|$JE/cls_0x515040.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp|42"
+        # The enclosing object's destructor 0x505CD0, whose four parts are pinned here: the +0x28
+        # scalar delete through its own vtable slot 0 (flag 1), the +0x2c release-then-free, the
+        # render-manager user count at 0x7089BC (2->1 no teardown, 1->0 teardown, 0 wraps to
+        # 0xFFFFFFFF and no teardown), and the base element destructor last. Same tower as
+        # cls_0x515040 above plus cls_0x420270/cls_0x41cff0; the suite carries the five link-only
+        # stubs itself, with a g_unreached counter, so JE.cpp stays out (it redefines two of them).
+        # Floor 28 = the check() lines in the source; the run reports 28.
+        "cls_0x420270|modules/openje/tests/je/cls_0x420270/cls_0x420270.cpp|$JE/cls_0x420270.cpp $JE/cls_0x41cff0.cpp $JE/cls_0x515040.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp|28"
         # The shipped composite copy ctor (0x565EB0): one 0x1C SSO string + one 0x10 vector holder.
         # Small source list on purpose - it drives the holder family on raw storage, no tower needed.
         "cls_0x565eb0|modules/openje/tests/je/cls_0x565eb0/cls_0x565eb0.cpp|$JE/cls_0x565eb0.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|32"
