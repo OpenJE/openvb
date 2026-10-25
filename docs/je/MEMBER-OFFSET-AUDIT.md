@@ -250,3 +250,32 @@ removed" were an artefact of the bad edit, not progress.
 What the ctor does show for real: `[+0x8]` is an SSO string initialised **inline** (`[+0x1C]=0xF`,
 `[+0x18]=0`, `[+0x8]=0`) with no ctor call, i.e. a plain string member occupying `+0x8..+0x20` whose
 type the port still models as loose dwords. That is the next honest unit for this class.
+
+## The port's std::string is 0x1C; the original's 0x18-byte string cannot be modelled with it
+
+`VFXEFFECTTYPE_BASE_Struct`'s ctor (`0x4e0f00`) initialises a string member at `+0x8` **inline**:
+`[+0x1C]=0xF` (capacity), `[+0x18]=0` (size), `[+0x8]=0` (buffer). That is an SSO string occupying
+`+0x8..+0x20`, i.e. **0x18 bytes with size at member+0x10 and capacity at member+0x14** - the VC7.1
+`std::string` shape built WITHOUT iterator debugging.
+
+Which cannot be expressed in this port. `tools/probes/probe_stdstring_size.cpp` measures, under the
+project's own compile flags:
+
+    sizeof(std::string) = 0x1C      size at +0x14, capacity at +0x18
+
+The extra 4 bytes come from the iterator-debugging container base and survive
+`#define _HAS_ITERATOR_DEBUGGING 0` before the include (the build's PCH has already pulled in the STL).
+So substituting `std::string mbr_0x8` makes the type 4 bytes too big and every later offset moves:
+attempting exactly that failed the suite with C2118 and dropped the static-check census to 2223 - a
+number that looks like progress and is really the tool mis-sizing the member. Reverted; rows back to
+3588.
+
+Two durable consequences:
+
+- **No offset-named member in the port may be typed `std::string`** (`grep -c 'std::string mbr_'` = 0
+  today). It is 4 bytes larger than the original's string, so it silently shifts everything after it.
+  Where the port currently models such a member as loose dwords (`mbr_0x8`, `mbr_0x18`, `mbr_0x1c`) it
+  is at least the right SIZE, which is why those classes still pass their offset guards.
+- Modelling the string properly needs a dedicated 0x18-byte type whose ctor/dtor match the original's
+  (capacity reset `0xF`, threshold `0x10`, `free` on overflow) - a real unit of work, not a keyword
+  substitution.
