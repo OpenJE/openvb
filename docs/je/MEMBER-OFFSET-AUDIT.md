@@ -44,3 +44,33 @@ Two findings only the compiler could settle:
 
 Call sites re-pointed from `mbr_0xa4/0xa8/0xac` to `mbr_0x8.mbr_0x9c/0xa0/0xa4` (abs - 8) in
 CameraControl.cpp (22 uses) and src/F3/Commands.cpp (5 uses). Full suite: 24/24 OK.
+
+## The defect class was systemic: 7057 members sit at an offset their own name contradicts
+
+`tools/check-member-offsets.py --static` is new. The existing census only inspects member-name
+ACCESSES in ported .cpp files, so a header that nothing touches yet is never checked - and
+`Gfx_CamCtrl` was exactly that: EA-ordered, `byte mbr_0x4` first, every field one slot off, invisible
+to the census. The static pass needs no access site: it compares each member's computed offset against
+the offset its own name spells (`mbr_0x14` claims +0x14).
+
+**First run: 7057 members in 702 files.** The generated headers list data members in IDA's EA
+(alphabetical) order, which only accidentally matches offset order - and when a byte or a base-class
+field is involved, declaration order moves every later field.
+
+`tools/sort-member-decls.py --f3 --apply FILE...` fixes a file from F3 rather than from names: it
+takes the fields F3 marks `base=False` (the class's OWN, not the base's) in offset order, keeps the
+port's existing declaration text and comments for members that already existed, and inserts explicit
+`byte pad_0xNN[n]` fillers where the order alone would leave a hole. It refuses classes it cannot
+settle: overlapping shipped offsets (needs a union), a member size with no C type, an unresolved base,
+packed classes.
+
+Applied first to the Action family (11 classes). `ActionDie` is the pattern: it declared
+`byte mbr_0x10, dword mbr_0x14, byte mbr_0x18, byte mbr_0x4` - EA order, and the last one is the
+BASE's field (F3 marks it base=True), so the port put the base's byte at +0x11. Now: pad to +0x10,
+byte, pad to +0x14, dword, byte.
+
+Two things this iteration established that matter for the remaining 690 files:
+- **F3 "size" is an extent, not `sizeof`.** `ActionDie` is 25 (0x19) there while MSVC's `sizeof` is
+  0x1C because a class with a vftptr pads to 4. Verify member OFFSETS, not sizes.
+- derived classes re-declare their base's fields (ActionDie did). That is the same duplicate-member
+  defect as `net::buffer::overflow`, and F3's `base` flag is the authority for dropping them.

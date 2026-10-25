@@ -203,6 +203,30 @@ def sizes_of(classes):
     return computed
 
 
+# Data-member names carry the shipped offset as text (mbr_0x14, vftptr_0x0). Comparing that text with
+# the offset the compiler would give the member is a check that needs NO access site: it catches the
+# rotation defect class (a byte declared before the dwords pushes every later field up one slot) in
+# headers no ported .cpp touches yet. Gfx_CamCtrl was exactly that - EA-ordered, byte mbr_0x4 first,
+# and invisible to the access census because nothing accessed it.
+NAME_OFFSET_RE = re.compile(r"^(?:mbr|vftptr)_0x([0-9a-fA-F]+)$")
+
+
+def static_layout_rows(sized, ambiguous, where):
+    """(class, member, declared, named-offset, file) for every member whose name contradicts layout."""
+    rows = []
+    for cname in sorted(sized):
+        if cname in ambiguous:
+            continue
+        for mname, off in sized[cname][1]:
+            m = NAME_OFFSET_RE.match(mname)
+            if not m:
+                continue
+            named = int(m.group(1), 16)
+            if named != off:
+                rows.append((cname, mname, off, named, where.get(cname, "?")))
+    return rows
+
+
 def main(argv):
     gate = "--gate" in argv
     md_path = None
@@ -210,18 +234,31 @@ def main(argv):
         md_path = argv[argv.index("--md") + 1]
 
     headers = {}
+    where = {}
+    # A class NAME is not unique across the tree: `exception` exists as JE::net::exception and as
+    # the nested JE::net::connection::exception (and again as JE::net::buffer::overflow's base
+    # spelling), all collapsing to the short name. Resolution then answers for the wrong class and
+    # reports a bogus offset - a FALSE POSITIVE, the one failure mode this tool must not have,
+    # because a permanently wrong row hides real regressions in the same file. Names are counted
+    # here so that any resolution path touching an ambiguous name is skipped instead of guessed.
+    name_count = {}
     for dirpath, _dirs, files in os.walk(SRC):
         for f in files:
             if f.endswith(".hpp") or f.endswith(".h"):
                 for cls in header_classes(os.path.join(dirpath, f)):
+                    name_count[cls["name"]] = name_count.get(cls["name"], 0) + 1
+                    where.setdefault(cls["name"], os.path.relpath(os.path.join(dirpath, f), ROOT))
                     if cls["name"] not in headers:
                         headers[cls["name"]] = cls
+    ambiguous = {n for n, c in name_count.items() if c > 1}
     computed = sizes_of(headers)
 
     def lookup_offset(cls_name, member):
         """The offset of `member` in `cls_name`, following base classes."""
         seen = set()
         while cls_name and cls_name not in seen:
+            if cls_name in ambiguous:
+                return None        # the name resolves to more than one class: no evidence
             seen.add(cls_name)
             target = sized.get(cls_name)
             if target:
@@ -284,6 +321,22 @@ def main(argv):
         if len(rows) > 6:
             print("      ... %d more" % (len(rows) - 6))
 
+    static_rows = static_layout_rows(sized, ambiguous, where)
+    if "--static" in argv or static_rows:
+        static_files = {r[4] for r in static_rows}
+        print("members whose declared offset contradicts the offset in their own name: %d in %d files"
+              % (len(static_rows), len(static_files)))
+        shown = {}
+        for cname, mname, off, named, path in static_rows:
+            shown.setdefault(path, []).append((cname, mname, off, named))
+        for path in sorted(shown):
+            rows = shown[path]
+            print("  %-58s %d" % (path, len(rows)))
+            for cname, mname, off, named in rows[:6]:
+                print("      %s::%s named +0x%X but laid out at +0x%X" % (cname, mname, named, off))
+            if len(rows) > 6:
+                print("      ... %d more" % (len(rows) - 6))
+
     if md_path:
         with open(md_path, "w", encoding="utf-8") as fh:
             fh.write("# Member-offset census (tools/check-member-offsets.py)\n\n")
@@ -299,6 +352,9 @@ def main(argv):
                     fh.write("| `%s` | %d | `%s` | `%s` | +0x%X |\n" % (path, ln, owner, member, got))
         print("wrote %s" % os.path.relpath(md_path, ROOT))
 
+    if "--static-gate" in argv and static_rows:
+        print("GATE FAIL: %d members are declared at an offset their name contradicts" % len(static_rows))
+        return 1
     if gate and hits:
         print("GATE FAIL: %d member-name accesses read the wrong offset" % len(hits))
         return 1
