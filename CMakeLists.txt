@@ -99,6 +99,8 @@ set(openje_SOURCES
 	"modules/openje/src/JE/GUI/LineSystem.cpp"
 	"modules/openje/src/JE/cls_0x4b5d00.cpp"
 	"modules/openje/src/JE/cls_0x4b60b0.cpp"
+	"modules/openje/src/JE/cls_0x4abe60.cpp"
+	"modules/openje/src/JE/cls_0x4ac210.cpp"
 	"modules/openje/src/JE/CSoundFile.cpp"
 	"modules/openje/src/JE/CSoundGroup.cpp"
 	"modules/openje/src/JE/CMasterGrouplist.cpp"
