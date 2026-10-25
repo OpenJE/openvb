@@ -11,29 +11,29 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
 | `modules/openje/src/JE/CameraControl.cpp` | 209 | `CameraControl` | `mbr_0x8` | +0x4 |
-| `modules/openje/src/JE/Client.cpp` | 165 | `Client` | `mbr_0x84` | +0x1C4 |
-| `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x238 |
-| `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x238 |
-| `modules/openje/src/JE/Client.cpp` | 235 | `Client` | `mbr_0xb8` | +0x1F8 |
-| `modules/openje/src/JE/Client.cpp` | 236 | `Client` | `mbr_0xb0` | +0x1F0 |
-| `modules/openje/src/JE/Client.cpp` | 237 | `Client` | `mbr_0xac` | +0x1EC |
-| `modules/openje/src/JE/Client.cpp` | 238 | `Client` | `mbr_0x9c` | +0x1DC |
-| `modules/openje/src/JE/Client.cpp` | 239 | `Client` | `mbr_0xa0` | +0x1E0 |
-| `modules/openje/src/JE/Client.cpp` | 240 | `Client` | `mbr_0xa4` | +0x1E4 |
-| `modules/openje/src/JE/Client.cpp` | 241 | `Client` | `mbr_0xa8` | +0x1E8 |
-| `modules/openje/src/JE/Client.cpp` | 242 | `Client` | `mbr_0xb4` | +0x1F4 |
-| `modules/openje/src/JE/Client.cpp` | 244 | `Client` | `mbr_0x84` | +0x1C4 |
-| `modules/openje/src/JE/Client.cpp` | 245 | `Client` | `mbr_0x84` | +0x1C4 |
-| `modules/openje/src/JE/Client.cpp` | 246 | `Client` | `mbr_0x84` | +0x1C4 |
-| `modules/openje/src/JE/Client.cpp` | 249 | `Client` | `mbr_0x88` | +0x1C8 |
-| `modules/openje/src/JE/Client.cpp` | 250 | `Client` | `mbr_0x8c` | +0x1CC |
-| `modules/openje/src/JE/Client.cpp` | 251 | `Client` | `mbr_0x94` | +0x1D4 |
-| `modules/openje/src/JE/Client.cpp` | 252 | `Client` | `mbr_0x98` | +0x1D8 |
-| `modules/openje/src/JE/Client.cpp` | 253 | `Client` | `mbr_0x80` | +0x1C0 |
-| `modules/openje/src/JE/Client.cpp` | 254 | `Client` | `mbr_0x7c` | +0x1BC |
-| `modules/openje/src/JE/Client.cpp` | 255 | `Client` | `mbr_0x78` | +0x1B8 |
-| `modules/openje/src/JE/Client.cpp` | 256 | `Client` | `mbr_0x74` | +0x1B4 |
-| `modules/openje/src/JE/Client.cpp` | 257 | `Client` | `mbr_0x70` | +0x1B0 |
+| `modules/openje/src/JE/Client.cpp` | 165 | `Client` | `mbr_0x84` | +0xD8 |
+| `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x14C |
+| `modules/openje/src/JE/Client.cpp` | 234 | `Client` | `mbr_0xf8` | +0x14C |
+| `modules/openje/src/JE/Client.cpp` | 235 | `Client` | `mbr_0xb8` | +0x10C |
+| `modules/openje/src/JE/Client.cpp` | 236 | `Client` | `mbr_0xb0` | +0x104 |
+| `modules/openje/src/JE/Client.cpp` | 237 | `Client` | `mbr_0xac` | +0x100 |
+| `modules/openje/src/JE/Client.cpp` | 238 | `Client` | `mbr_0x9c` | +0xF0 |
+| `modules/openje/src/JE/Client.cpp` | 239 | `Client` | `mbr_0xa0` | +0xF4 |
+| `modules/openje/src/JE/Client.cpp` | 240 | `Client` | `mbr_0xa4` | +0xF8 |
+| `modules/openje/src/JE/Client.cpp` | 241 | `Client` | `mbr_0xa8` | +0xFC |
+| `modules/openje/src/JE/Client.cpp` | 242 | `Client` | `mbr_0xb4` | +0x108 |
+| `modules/openje/src/JE/Client.cpp` | 244 | `Client` | `mbr_0x84` | +0xD8 |
+| `modules/openje/src/JE/Client.cpp` | 245 | `Client` | `mbr_0x84` | +0xD8 |
+| `modules/openje/src/JE/Client.cpp` | 246 | `Client` | `mbr_0x84` | +0xD8 |
+| `modules/openje/src/JE/Client.cpp` | 249 | `Client` | `mbr_0x88` | +0xDC |
+| `modules/openje/src/JE/Client.cpp` | 250 | `Client` | `mbr_0x8c` | +0xE0 |
+| `modules/openje/src/JE/Client.cpp` | 251 | `Client` | `mbr_0x94` | +0xE8 |
+| `modules/openje/src/JE/Client.cpp` | 252 | `Client` | `mbr_0x98` | +0xEC |
+| `modules/openje/src/JE/Client.cpp` | 253 | `Client` | `mbr_0x80` | +0xD4 |
+| `modules/openje/src/JE/Client.cpp` | 254 | `Client` | `mbr_0x7c` | +0xD0 |
+| `modules/openje/src/JE/Client.cpp` | 255 | `Client` | `mbr_0x78` | +0xCC |
+| `modules/openje/src/JE/Client.cpp` | 256 | `Client` | `mbr_0x74` | +0xC8 |
+| `modules/openje/src/JE/Client.cpp` | 257 | `Client` | `mbr_0x70` | +0xC4 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 132 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 147 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 194 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
@@ -78,11 +78,11 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
 | `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 92 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/cls_0x5ac5e0.cpp` | 24 | `cls_0x5ac5e0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
-| `modules/openje/src/JE/net/client.cpp` | 79 | `client` | `mbr_0x58` | +0x178 |
-| `modules/openje/src/JE/net/client.cpp` | 80 | `client` | `mbr_0x58` | +0x178 |
-| `modules/openje/src/JE/net/client.cpp` | 86 | `client` | `mbr_0x54` | +0x174 |
-| `modules/openje/src/JE/net/client.cpp` | 121 | `client` | `mbr_0x40` | +0x160 |
-| `modules/openje/src/JE/net/client.cpp` | 122 | `client` | `mbr_0x30` | +0x150 |
+| `modules/openje/src/JE/net/client.cpp` | 79 | `client` | `mbr_0x58` | +0x8C |
+| `modules/openje/src/JE/net/client.cpp` | 80 | `client` | `mbr_0x58` | +0x8C |
+| `modules/openje/src/JE/net/client.cpp` | 86 | `client` | `mbr_0x54` | +0x88 |
+| `modules/openje/src/JE/net/client.cpp` | 121 | `client` | `mbr_0x40` | +0x74 |
+| `modules/openje/src/JE/net/client.cpp` | 122 | `client` | `mbr_0x30` | +0x64 |
 | `modules/openje/src/JE/net/connection.cpp` | 13 | `connection` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/net/connection.cpp` | 25 | `exception` | `mbr_0x4` | +0x0 |
 | `modules/openje/src/JE/net/connection.cpp` | 50 | `connection` | `mbr_0x14` | +0x4 |
@@ -96,26 +96,29 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 85 in 8 files
 | `modules/openje/src/JE/net/connection.cpp` | 104 | `connection` | `mbr_0x18` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 105 | `connection` | `mbr_0x54` | +0x114 |
 
-## Fixed: CSound (65 of its 66 members were at the wrong offset)
+## Fixed: net::critical_section's SIZE - the root cause of the whole net client chain
 
-The generated header listed `.?AVCSound@@`'s members in EA/alphabetical order - `mbr_0x100`
-first, `mbr_0x4` in the middle - so every field sat somewhere else: `mbr_0x4` at +0x3C, inside
-the byte band the play-state ladder reads. The class is the engine's central audio object, so this
-was not one bad access but 65 wrong fields at once, silent because nothing crashes.
+F3 puts this class inside `net::base` at +0x4, and TWO independent entries agree that base's own
+first field is +0xc (`.?AVbase@net@@` lists `mbr_0xc` base=True; `.?AVclient@net@@` repeats the
+same band). So the embedded lock is 8 bytes: a vftptr and one dword. The generated header declared
+**64 members** here (`mbr_0x10` .. `mbr_0x3bc`), because IDA attributed every access that walked a
+client-sized object to this structure - the F3 entry even claims size 960, which is the derived
+object's extent, not the lock's.
 
-Now declared in the F3 map's OFFSET order, under `#pragma pack(1)`: the shipped fields are
-unaligned (`mbr_0x115` is a dword at +0x115), which no default layout can reproduce, and the
-map's two holes (+0x10..+0x1C, +0x110..+0x115) are reserved explicitly. Size 281.
+That made the class ~0x3C0 bytes and pushed every `net::base` member 0x3B8 bytes late, and through
+it every `net::client`/`JE::Client` field. This is why the census kept reporting 5 rows against
+`net/client.cpp` and 23 against `Client.cpp`: it was ONE wrong size, not 28 wrong call sites.
 
-Pinned by a generated probe: one `offsetof` per member, 65 checks against the F3 map, plus
-`sizeof == 281` and three compile-time assertions. Restoring the old order fails the build with
-three C2118 errors. The CSound suite stays green (`3 pass, 0 fail`).
+The fix is a header change plus a `virtual` on the destructor (the shipped object carries a
+vftptr; a non-polymorphic class is 4 bytes and puts the field at +0x0). The destructor body goes
+back to reading `this->mbr_0x4` by name - the explicit-offset workaround from the earlier net::base
+iteration is no longer needed, which is the point: the layout fix belongs in the header, once.
 
-## Detector self-corrections in this pass (three, all found by CSound)
+Immediately visible: `Client::mbr_0x84` moved from `declared +0x1C4` to `declared +0xD8` - still
+wrong (base and client's own members are still EA-ordered) but now wrong by 0x54 bytes instead of
+0x140, i.e. the 0x3B8-byte error is gone.
 
-- a **trailing `//` comment mentioning "virtual" made CSound look polymorphic**, so the tool added
-  a vftptr that the class does not have and shifted all 66 members by +4 - the same failure mode
-  already recorded for `net::socket`, which is why comments are now stripped before the test.
-- a class that **declares `vftptr_0x0` explicitly** no longer gets a second compiler-supplied one.
-- `#pragma pack(push, 1)` regions are honoured: alignment 1, no final round-up. Without this a
-  packed class reports every field as wrong and a hand-fix would "correct" it back to being wrong.
+Probe: sizeof == 8, `mbr_0x4` at +0x4, then the real destructor driven on a genuine Win32
+CRITICAL_SECTION through the class's own vftable, checking it consumed the pointer at +0x4, left
+the vftptr word alone and wrote nothing past the 8-byte object. Mutant (the old 64-member blob):
+fails the build.
