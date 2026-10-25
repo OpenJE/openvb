@@ -305,3 +305,28 @@ This does NOT make the port string-complete: only the layout is modelled. Append
 and freeing live in the free functions already ported in `cls_0x50db20.cpp` (`0x4256E0`, `0x4257D0`,
 `0x425BD0`), which operate on this layout; wiring them into a class interface is separate work, and
 inventing method semantics before that would be guesswork.
+
+## StringTree is 0xC, and cls_0x4dff90 shadows its base - the root cause behind the VFX overlap
+
+`VFXEFFECTTYPE_BASE_Struct` refused to reorder because `cls_0x4dff90 mbr_0x54` (56 bytes per F3) ran over
+`cls_0x4d8d70 mbr_0x60`. Both types were wrong in the port:
+
+- **`cls_0x4d8d70` (StringTree) declares 0x38 bytes.** Its shipped ctor (`0x560490`) writes exactly two
+  dwords and returns - `mov [eax],0 / mov [eax+4],0`. And every site that embeds one puts the next own
+  field *0xC* further on: `VFXEFFECTTYPE_BASE_Struct` +0x60 -> `mbr_0x70`,
+  `VFXEFFECTTYPE_PARTICLESYSTEM_Struct` +0x210 -> +0x21c, `cls_0x40a220` +0x60. Members
+  `mbr_0xc..mbr_0x34` were fabricated - nothing in the shipped code reads or writes them, and a
+  0x38-byte StringTree would overlap its neighbours in all of those structs. The port's own ctor was
+  even zeroing them "defensively", which is how a fabrication survives review.
+- **`cls_0x4dff90` re-declared `mbr_0x4/0x8/0xc/0x10/0x14` on top of a `cls_0x4d8d70` base**, shadowing
+  it and inflating `sizeof` to base+0x18. Its shipped ctor (`0x523b00`) calls the base ctor and writes one
+  dword: `mov dword ptr [esi+8], 0` - which is the base's node count, not a new field. With the shadow
+  block gone it is exactly 0xC, matching every embedding spacing.
+
+Fixing both removed the phantom overlap, let the reorderer reach the classes that embed them, and dropped
+the static census **3586 -> 3454 in 129 files** (17 more classes reordered). The ratchet ceiling follows.
+
+The pattern across this whole audit keeps repeating: **a class that is too big is worse than a class that
+is misordered**, because it silently steals the neighbours' offsets - and the only reliable size evidence
+is the shipped ctor's writes plus the spacing between embedding sites, never F3's `size` on a subobject
+row.
