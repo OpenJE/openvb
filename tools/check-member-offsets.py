@@ -48,9 +48,20 @@ FIXED = {
 }
 
 MEMBER_RE = re.compile(
-    r"^\s*(?:/\*.*?\*/\s*)?([A-Za-z_][\w:]*(?:\s*[*&])?)\s+(mbr_0x[0-9a-fA-F]+)\s*"
-    r"(?:\[\s*(\d+)\s*\])?\s*(?:;|\[)"
+    r"^\s*(?:/\*.*?\*/\s*)?([A-Za-z_][\w:]*(?:\s*[*&])?)\s+([A-Za-z_]\w*)\s*"
+    r"(?:\[\s*(\d+)\s*\])?\s*;"
 )
+
+# MSVC default packing on win32: a member starts at the next multiple of its alignment.
+def align_of(type_name, size):
+    t = short(type_name)
+    if t in ("byte", "bool", "char"):
+        return 1
+    if t in ("word", "short", "wchar"):
+        return 2
+    if t in ("double", "undefined8"):
+        return 8 if size % 8 == 0 else 4
+    return 4
 CLASS_RE = re.compile(r"^\s*(?:class|struct)\s+([A-Za-z_]\w*)\s*(?::\s*([^{]+))?\{")
 FUNC_RE = re.compile(r"^\s*[\w:<>,*&\s]*?\b([A-Za-z_]\w*)::([A-Za-z_]\w*)\s*\(")
 
@@ -72,6 +83,16 @@ def strip_comments(text):
     at +0, which is the defect the socket fix measured).
     """
     return COMMENT_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+
+
+def base_name(bases):
+    """`public Foo, private Bar` -> Foo (the first base's class name)."""
+    if not bases.strip():
+        return None
+    first = bases.split(",")[0]
+    words = [w for w in re.findall(r"[A-Za-z_]\w*", first)
+             if w not in ("public", "protected", "private", "virtual")]
+    return short(words[-1]) if words else None
 
 
 def short(name):
@@ -116,7 +137,7 @@ def header_classes(path):
                 level = 0
         out.append({
             "name": name,
-            "base": short(re.split(r"[,\s]+", bases.strip())[0]) if bases.strip() else None,
+            "base": base_name(bases),
             "virtual": has_virtual,
             "members": members,
             "unknown": not members,
@@ -130,28 +151,39 @@ def sizes_of(classes):
     for _ in range(6):  # fixed-point: class sizes depend on member class sizes
         progress = False
         for cls in classes.values():
-            base = 0
-            if cls["base"] and cls["base"] in computed and computed[cls["base"]] is not None:
-                base = computed[cls["base"]]
-            elif cls["base"] and short(cls["base"]) not in ("HeapTracker", ""):
-                if cls["base"] in classes:      # base present but unsized
+            base, add_vft = 0, 0
+            if cls["base"]:
+                if cls["base"] not in computed or computed[cls["base"]] is None:
+                    # base declared but not sized (or not parsed at all): do NOT guess a size -
+                    # an invented base would produce invented offsets, i.e. false positives.
                     continue
-                base = 4                          # unknown base: assume one vftptr, mark? no
-            off = base + (4 if cls["virtual"] else 0)
+                base = computed[cls["base"]][0]     # a base with a vftable already carries it
+            else:
+                add_vft = 4 if cls["virtual"] else 0
+            off = base + add_vft
             table, ok = [], True
             for mname, mtype, count in cls["members"]:
                 t = short(mtype)
                 n = count and int(count) or 1
                 if t in FIXED:
-                    sz = FIXED[t] * n
+                    elem = FIXED[t]
+                    sz = elem * n
                 elif t in computed and computed[t] is not None:
-                    sz = computed[t][0] * n
+                    elem = computed[t][0]
+                    sz = elem * n
                 else:
                     ok = False
                     break
+                a = align_of(mtype, elem)
+                if a > 1:
+                    off = (off + a - 1) // a * a
                 table.append((mname, off))
                 off += sz
             if ok:
+                biggest = 8 if any(short(t) in ("double", "undefined8")
+                                   for _n, t, _c in cls["members"]) else 4
+                a = biggest if cls["virtual"] or off > 4 else 1
+                off = (off + a - 1) // a * a
                 val = (off, table)
                 if computed.get(cls["name"]) != val:
                     computed[cls["name"]] = val
