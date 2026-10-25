@@ -6,7 +6,7 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 98 in 10 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 88 in 9 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
@@ -80,16 +80,6 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 98 in 10 files
 | `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 88 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/cls_0x5ac2b0.cpp` | 92 | `cls_0x5ac2b0` | `mbr_0x10` | +0x0 |
 | `modules/openje/src/JE/cls_0x5ac5e0.cpp` | 24 | `cls_0x5ac5e0` | `mbr_0x10` | +0x0 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 18 | `cls_0x5ac9e0` | `mbr_0x4` | +0x0 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 19 | `cls_0x5ac9e0` | `mbr_0x5` | +0x1 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 20 | `cls_0x5ac9e0` | `mbr_0x6` | +0x2 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 21 | `cls_0x5ac9e0` | `mbr_0x7` | +0x3 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 22 | `cls_0x5ac9e0` | `mbr_0x8` | +0x4 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 32 | `cls_0x5ac9e0` | `mbr_0x8` | +0x4 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 34 | `cls_0x5ac9e0` | `mbr_0x4` | +0x0 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 35 | `cls_0x5ac9e0` | `mbr_0x5` | +0x1 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 36 | `cls_0x5ac9e0` | `mbr_0x6` | +0x2 |
-| `modules/openje/src/JE/cls_0x5ac9e0.cpp` | 37 | `cls_0x5ac9e0` | `mbr_0x7` | +0x3 |
 | `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
 | `modules/openje/src/JE/net/client.cpp` | 79 | `client` | `mbr_0x58` | +0x178 |
 | `modules/openje/src/JE/net/client.cpp` | 80 | `client` | `mbr_0x58` | +0x178 |
@@ -109,23 +99,28 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 98 in 10 files
 | `modules/openje/src/JE/net/connection.cpp` | 104 | `connection` | `mbr_0x18` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 105 | `connection` | `mbr_0x54` | +0x114 |
 
-## Fixed: cls_0x45f060 (its destructor freed a garbage pointer)
+## Fixed: cls_0x5ac9e0 (the packet's wire address header, 4 bytes early)
 
-F3 DB: size 24 (0x18), members at +0x0, +0x4 and +0x14. The header declared them in IDA's EA
-order (`mbr_0x0, mbr_0x14, mbr_0x4`), so the two fields landed at +0x4 and +0x8 - and the
-shipped destructor reads its "owns the block" flag at +0x4 and frees `[this+0x14]`. With the
-swap, the dtor read a flag out of the wrong word and **freed the dword at +0x4** - a garbage
-pointer - on every teardown of the UDP send path's stack buffer.
+F3 DB: size 10, the four address bytes at +0x4..+0x7 and the port word at +0x8, with a 4-byte
+word at +0x0 that the member map does not model. The header declared the fields from +0x0, so
+every one of them sat four bytes early and `meth_0x5aca10` - the only place a game address turns
+into sockaddr bytes on the P2 path - read its port out of the address bytes.
 
-Fixed by declaring the members in offset order with the +0x5..+0x14 hole reserved, and pinned
-with compile-time `offsetof`/`sizeof` assertions (24, +0x4, +0x14) plus runtime checks that put
-a canary at +0x8 and a real heap block at +0x14. Restoring the old order fails the build.
+Verified against the original rather than the port's own comment (0x5aca1f `mov ax,[esi+8]`,
+0x5aca24 `call htons`, 0x5aca29 `mov [edi+2],ax`, then the four bytes from +4..+7), then by a
+probe that checks the band copy and the built sockaddr byte by byte, including that nothing past
++0x8 is written. Removing the reserved word fails the build with three C2118 offset errors.
 
-## Correction: the previous pass claimed a hex-array fix it did not make
+Recorded honestly: my first probe run reported two FAILs on the port order, and the probe was
+wrong, not the port - `htons(0x1234)` is 0x3412, which in little-endian memory is the byte pair
+12 34, i.e. exactly the network order a `sockaddr` must hold. The expectations were inverted;
+the code matched the original all along.
 
-The commit before this one said array counts "may be hexadecimal (`byte mbr_0x1c[0x4]`)", but the
-pattern was still decimal-only. The member was silently dropped, `cls_0x41cff0` came out 4 bytes
-short, and that produced **7 false positives** for `cls_0x420270::mbr_0x28`/`mbr_0x2c`. The
-pattern now really accepts both forms and those 7 rows are gone - they were never defects.
-Lesson recorded deliberately: a commit message describing a fix is not evidence the fix exists;
-the census number is what has to be re-derived after every tool change.
+## Known limitation: a grab-bag TU cannot be attributed to one class
+
+`cls_0x50dbb0.cpp` accounts for 40 of the remaining rows, but that TU is not one class: its
+rotates address a std-tree node (+0x0 left, +0x4 parent, +0x8 right), its 0x50Cxxx/0x50Dxxx
+bodies address a ResourceFileManager (+0xC/+0x14/+0x18/+0x1C), and sub_506A10/sub_506B70 address
+a Gfx_BufferManager. The port models them all as members of one header, so the detector's
+per-class attribution is meaningless there - the rows are NOT 40 defects and "fixing the header"
+would be wrong. Splitting that TU by real class is the honest fix, and it is not a one-turn change.
