@@ -74,3 +74,27 @@ Two things this iteration established that matter for the remaining 690 files:
   0x1C because a class with a vftptr pads to 4. Verify member OFFSETS, not sizes.
 - derived classes re-declare their base's fields (ActionDie did). That is the same duplicate-member
   defect as `net::buffer::overflow`, and F3's `base` flag is the authority for dropping them.
+
+## Tree-wide reorder: 614 classes (static rows 7144 -> 3621)
+
+`tools/sort-member-decls.py --f3 --apply` now rewrites the whole tree. Four things it got wrong on the
+way, each caught by a different existing guard - worth recording, because every one of them looked
+like success from the tool's own output:
+
+1. **It emitted exactly F3's fields.** That silently DROPS port fields F3 does not list, and every use
+   site fails with C2039. Now it reorders and pads only; the sole removal is a member F3 marks
+   `base=True` AND the port's own base class actually declares (otherwise the field just vanishes).
+2. **It ignored array counts.** `byte mbr_0x8[0xc]` counted as one byte, so eleven bogus filler bytes
+   went in after it and the header's own `offsetof` guards failed with C2118.
+3. **It reordered access specifiers.** `public:` is not a member; sorted into the middle of the block
+   it makes the following fields private - C2248 at the first `cam.mbr_0x4` use.
+4. **It trusted the parser's single-base model for multiple inheritance.** `GUI::Window : Base,
+   HeapTracker` got filler pushed over a layout a human had already derived from the ctor. Classes
+   with more than one base are skipped now.
+
+The lesson across all four: the tool cannot verify itself (its padding step absorbs any gap, so
+re-simulating it only confirms its own arithmetic). The real verifiers are the `offsetof` guards the
+headers already carry and the suite - which is why every one of these was caught before landing.
+
+Remaining 3621 rows in 144 files are classes the tool refuses: `//: Members` block/class pairing
+mismatches, unresolved bases, shipped offset overlaps needing a union, and sizes with no C type.

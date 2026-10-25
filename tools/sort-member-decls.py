@@ -33,7 +33,7 @@ _spec = importlib.util.spec_from_file_location("cmo", os.path.join(ROOT, "tools"
 cmo = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cmo)
 
-DECL_RE = re.compile(r"^(\s*)([A-Za-z_][\w:<>,\s]*?)\s+(mbr_0x[0-9a-fA-F]+|vftptr_0x0)(\s*\[[^\]]*\])?\s*;(.*)$")
+DECL_RE = re.compile(r"^(\s*)([A-Za-z_][\w:<>,\s]*\**)\s+([A-Za-z_]\w*_0x[0-9a-fA-F]+)(\s*\[[^\]]*\])?\s*;(.*)$")
 NAME_OFFSET_RE = cmo.NAME_OFFSET_RE
 
 
@@ -56,8 +56,14 @@ def classes_of(path):
     return lines, classes, spans
 
 
-def member_entries(lines, lo, hi):
-    """[(offset, decl_text, attached_comment_lines, trailing)] for the member block [lo, hi)."""
+def member_entries(lines, lo, hi, prologue=None):
+    """[(offset, decl_text, attached_comment_lines, trailing)] for the member block [lo, hi).
+
+    Access specifiers ("public:", "protected:") are NOT members and must not travel with one: sorted
+    into the middle of the block they silently make the following fields private (C2248 at the use
+    sites). Everything that is neither a member declaration nor a // comment is collected into
+    `prologue`, which the caller emits at the top of the block in original order.
+    """
     out = []
     lead = []
     for i in range(lo + 1, hi):
@@ -68,8 +74,13 @@ def member_entries(lines, lo, hi):
             continue
         m = DECL_RE.match(raw)
         if not m:
-            # a comment (or a continuation of one) documents the NEXT member
-            lead.append(raw)
+            if stripped.startswith("//"):
+                lead.append(raw)          # a comment documents the NEXT member
+            elif prologue is not None:
+                prologue.append(raw)      # public:/protected:/#pragma - block-level, stays on top
+                lead = []
+            else:
+                lead.append(raw)
             continue
         indent, _type, name, _arr, trailing = m.groups()
         nm = NAME_OFFSET_RE.match(name)
@@ -131,7 +142,8 @@ def tree_sized():
     return {k: v for k, v in cmo.sizes_of(classes).items() if v}
 
 
-def fix(path, apply, sized, f3=None):
+def fix(path, apply, sized, f3=None, headers_by_name=None):
+    headers_by_name = headers_by_name or {}
     lines, classes, spans = classes_of(path)
     if not spans:
         return 0, ["%s: class/member-block mismatch - skipped whole file" % path]
@@ -140,45 +152,120 @@ def fix(path, apply, sized, f3=None):
         if cls.get("packed"):
             notes.append("%s: packed - skipped" % cls["name"])
             continue
-        if f3 is not None:
-            own = f3_own_members(f3[cls["name"]])
-            start = plan(cls, sized)
-            if start is None:
-                notes.append("%s: base size unresolved - skipped" % cls["name"])
+        # Reorder-and-pad only. Every member the port declares is KEPT (it may carry evidence F3
+        # does not, e.g. a field only a ported body proves); the only removals are names F3 marks
+        # base=True, i.e. the base class's own fields that this class must not re-declare. An
+        # F3-driven "emit exactly F3's fields" rewrite was tried and is wrong: it drops port fields
+        # (C2039 at the use sites) and it cannot type them (float vs dword).
+        prologue = []
+        entries = member_entries(lines, lo, hi, prologue)
+        base_owned = set()
+        if f3 is not None and cls["name"] in f3:
+            base_owned = {name for _off, name, _sz in f3_own_members(f3[cls["name"]]) if False}
+            for m in f3[cls["name"]]["members"].values():
+                if m.get("base") and NAME_OFFSET_RE.match(m.get("name", "")):
+                    base_owned.add(m["name"])
+        def base_declares(name):
+            """Does the PORT's base class actually declare this member? Dropping a name F3 marks
+            base=True is only safe then - otherwise the field simply disappears and every use site
+            fails with C2039."""
+            seen, cur = set(), cls["base"]
+            while cur and cur not in seen:
+                seen.add(cur)
+                if cur in sized and any(m == name for m, _o in sized[cur][1]):
+                    return True
+                cur = headers_by_name.get(cur, {}).get("base")
+            return False
+
+        kept = []
+        for e in entries:
+            if e[5] in base_owned and base_declares(e[5]):
+                notes.append("%s: %s is the BASE's field (F3 base=True) - the base declares it, so "
+                             "it is not re-declared here (it would shift everything after it)"
+                             % (cls["name"], e[5]))
                 continue
-            have = {}
-            for offset, raw, lead, _tr, _ind, name in member_entries(lines, lo, hi):
-                have[name] = (raw, lead)
-            indent = "\t\t\t"
-            body, off, bad = [], start, False
-            for offset, name, size in own:
-                if size not in SIZE_TYPE:
-                    notes.append("%s: %s has size %s, no C type for it - skipped class"
-                                 % (cls["name"], name, size))
-                    bad = True
-                    break
-                if offset < off:
-                    notes.append("%s: %s overlaps a shipped field - skipped class"
-                                 % (cls["name"], name))
-                    bad = True
-                    break
-                if offset > off:
-                    body.append("%sbyte pad_0x%x[%d];   // alignment filler: nothing is stored here"
-                                % (indent, off, offset - off))
-                raw, lead = have.get(name, (None, []))
-                if raw is None:
-                    raw = "%s%s %s;   // F3: %d byte(s), not declared in the port before"
-                    raw = raw % (indent, SIZE_TYPE[size], name, size)
-                body.extend(lead)
-                body.append(raw)
-                off = offset + size
-            if bad or not body:
-                continue
-            if body != lines[lo + 1:hi]:
-                changed += 1
-                if apply:
-                    lines[lo + 1:hi] = body
+            if e[5] in base_owned:
+                notes.append("%s: %s is base=True in F3 but the port's base does not declare it - "
+                             "kept (dropping it would break the use sites)" % (cls["name"], e[5]))
+            kept.append(e)
+        if not kept:
             continue
+        offsets = [e[0] for e in kept]
+        if len(set(offsets)) != len(offsets):
+            notes.append("%s: duplicate offset names (shipped overlap needs a union) - skipped"
+                         % cls["name"])
+            continue
+        decl_line = ""
+        for i in range(lo, max(0, lo - 40), -1):
+            if re.search(r"\b(class|struct)\s+%s\b" % re.escape(cls["name"]), lines[i]):
+                decl_line = lines[i]
+                break
+        if cls["base"] and "," in decl_line.split(":", 1)[-1]:
+            # MULTIPLE BASES: the parser models one base, so its idea of where this class's own
+            # fields start is a guess. GUI::Window : Base, HeapTracker was mangled that way - filler
+            # pushed over a layout a human had already derived from the ctor.
+            notes.append("%s: multiple bases - skipped" % cls["name"])
+            continue
+        if False:
+            # A base's size has to come from the same parser that reads this header; multiple
+            # inheritance and hand-derived bases (GUI::Window : Base, HeapTracker) are exactly where
+            # it was wrong, and it inserted filler over a layout a human had already verified.
+            notes.append("%s: has a base - skipped (pass --with-bases to include)" % cls["name"])
+            continue
+        start_off = plan(cls, sized)
+        if start_off is None:
+            notes.append("%s: base size unresolved - skipped" % cls["name"])
+            continue
+        body, off, bad = [], start_off, False
+        indent = kept[0][4] if kept else "\t\t\t"
+        for offset, raw, lead, _tr, _ind, name in sorted(kept, key=lambda e: e[0]):
+            decl = DECL_RE.match(raw)
+            t = cmo.short(decl.group(2))
+            size = 4 if t.replace(" ", "") == "void*" else cmo.FIXED.get(t)
+            if size is None:
+                size = sized[t][0] if t in sized else None
+            if size is not None and decl.group(4):
+                # an ARRAY member: the count is part of its footprint. Ignoring it (as the first
+                # version did) left "byte mbr_0x8[0xc]" counted as one byte and inserted eleven
+                # bogus filler bytes, which the layout guards in the headers then rejected.
+                count = decl.group(4).strip()[1:-1].strip()
+                try:
+                    n = int(count, 0)
+                except ValueError:
+                    notes.append("%s: %s has an unsizable array count '%s' - skipped class"
+                                 % (cls["name"], name, count))
+                    bad = True
+                    break
+                size *= n
+            if size is None:
+                notes.append("%s: %s has a type this tool cannot size - skipped class"
+                             % (cls["name"], name))
+                bad = True
+                break
+            if offset < off:
+                notes.append("%s: %s (named +0x%X) falls inside the base or the previous field "
+                             "(+0x%X) - skipped class" % (cls["name"], name, offset, off))
+                bad = True
+                break
+            if offset > off:
+                body.append("%sbyte pad_0x%x[%d];   // alignment filler: nothing is stored here"
+                            % (indent, off, offset - off))
+            body.extend(lead)
+            body.append(raw)
+            off = offset + size
+        if bad or not body:
+            continue
+        body = prologue + body
+        # No self-verification here: the padding step absorbs any gap, so re-simulating it would
+        # only confirm the builder's own arithmetic. The real verifiers are the layout guards the
+        # headers already carry (typedef char ...[ offsetof == N ? 1 : -1 ]) and the test suite -
+        # a wrong base size shows up there as C2118, which is how GUI::Window's multi-base case was
+        # caught before it landed.
+        if body != lines[lo + 1:hi]:
+            changed += 1
+            if apply:
+                lines[lo + 1:hi] = body
+        continue
 
         entries = member_entries(lines, lo, hi)
         if not entries:
@@ -213,9 +300,22 @@ def fix(path, apply, sized, f3=None):
                 body = None
                 break
             t = cmo.short(decl.group(2))
-            size = cmo.FIXED.get(t)
+            size = 4 if t.replace(" ", "") == "void*" else cmo.FIXED.get(t)
             if size is None:
                 size = sized[t][0] if t in sized else None
+            if size is not None and decl.group(4):
+                # an ARRAY member: the count is part of its footprint. Ignoring it (as the first
+                # version did) left "byte mbr_0x8[0xc]" counted as one byte and inserted eleven
+                # bogus filler bytes, which the layout guards in the headers then rejected.
+                count = decl.group(4).strip()[1:-1].strip()
+                try:
+                    n = int(count, 0)
+                except ValueError:
+                    notes.append("%s: %s has an unsizable array count '%s' - skipped class"
+                                 % (cls["name"], name, count))
+                    bad = True
+                    break
+                size *= n
             if size is None:
                 notes.append("%s: %s has a type this tool cannot size - skipped class"
                              % (cls["name"], name))
@@ -238,10 +338,16 @@ def main(argv):
     apply = "--apply" in argv
     files = [a for a in argv if not a.startswith("--")]
     sized = tree_sized()
+    by_name = {}
+    for dirpath, _dirs, _walk_files in os.walk(cmo.SRC):
+        for wf in _walk_files:
+            if wf.endswith((".hpp", ".h")):
+                for cls in cmo.header_classes(os.path.join(dirpath, wf)):
+                    by_name.setdefault(cls["name"], cls)
     f3 = load_f3() if "--f3" in argv else None
     total = 0
     for f in files:
-        n, notes = fix(f, apply, sized, f3)
+        n, notes = fix(f, apply, sized, f3, by_name)
         total += n
         if n:
             print("%-58s %d class(es) reordered" % (os.path.relpath(f, ROOT), n))

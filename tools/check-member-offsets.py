@@ -208,7 +208,9 @@ def sizes_of(classes):
 # rotation defect class (a byte declared before the dwords pushes every later field up one slot) in
 # headers no ported .cpp touches yet. Gfx_CamCtrl was exactly that - EA-ordered, byte mbr_0x4 first,
 # and invisible to the access census because nothing accessed it.
-NAME_OFFSET_RE = re.compile(r"^(?:mbr|vftptr)_0x([0-9a-fA-F]+)$")
+# any member whose NAME encodes its shipped offset: mbr_0x14, vftptr_0x0, gap_0x04,
+# reserved_0x30. The name is the claim; the declaration order is what must honour it.
+NAME_OFFSET_RE = re.compile(r"^[A-Za-z_]\w*_0x([0-9a-fA-F]+)$")
 
 
 def static_layout_rows(sized, ambiguous, where):
