@@ -131,6 +131,11 @@ in {
         # is actually reached - which is why JE.cpp is NOT in this source list: it defines the first
         # two again (LNK2005, measured), and it is not needed by any path the suite takes.
         # Floor 42 = the ck()/ck_null() calls that ran; the suite now reports the count itself.
+        # cls_0x49cc40::meth_0x49cc40 - the two-child element accessor. Seven checks: the independent
+        # guards and the legal 0 result, the model-mesh wrapper+0xC indirection, the skin-mesh direct
+        # pointer, index scaling by the 0x244 stride on both, the LAST-call-wins result when both
+        # children are present, and the absence of a bounds check.
+        "cls_0x49cc40|modules/openje/tests/je/cls_0x49cc40/cls_0x49cc40.cpp|$JE/cls_0x49cc40.cpp $JE/cls_0x40a220.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b5d00.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp $JE.cpp|8"
         "cls_0x515040|modules/openje/tests/je/cls_0x515040/cls_0x515040.cpp|$JE/cls_0x515040.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp|42"
         # The enclosing object's destructor 0x505CD0, whose four parts are pinned here: the +0x28
         # scalar delete through its own vtable slot 0 (flag 1), the +0x2c release-then-free, the
