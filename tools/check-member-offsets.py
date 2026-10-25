@@ -210,6 +210,19 @@ def main(argv):
                         headers[cls["name"]] = cls
     computed = sizes_of(headers)
 
+    def lookup_offset(cls_name, member):
+        """The offset of `member` in `cls_name`, following base classes."""
+        seen = set()
+        while cls_name and cls_name not in seen:
+            seen.add(cls_name)
+            target = sized.get(cls_name)
+            if target:
+                for mname, off in target[1]:
+                    if mname == member:
+                        return off
+            cls_name = headers.get(cls_name, {}).get("base")
+        return None
+
     sized = {k: v for k, v in computed.items() if v}
     hits, unknown_hits = [], 0
     this_re = re.compile(r"this\s*->\s*(mbr_0x[0-9a-fA-F]+)")
@@ -234,7 +247,7 @@ def main(argv):
                             unknown_hits += 1
                         continue
                     want = int(m.group(1)[6:], 16)
-                    got = dict(target[1]).get(m.group(1))
+                    got = lookup_offset(owner, m.group(1))
                     if got is not None and got != want:
                         hits.append((os.path.relpath(path, ROOT), line_no, owner, m.group(1), got))
                 for m in cast_re.finditer(line):
@@ -243,7 +256,7 @@ def main(argv):
                     if not target:
                         continue
                     want = int(m.group(2)[6:], 16)
-                    got = dict(target[1]).get(m.group(2))
+                    got = lookup_offset(cls, m.group(2))
                     if got is not None and got != want:
                         hits.append((os.path.relpath(path, ROOT), line_no, cls, m.group(2), got))
 
