@@ -6,34 +6,30 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 3 in 3 files
+classes parsed 999 | sized 927 | wrong-offset accesses 1 in 1 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
 | `modules/openje/src/JE/CameraControl.cpp` | 209 | `CameraControl` | `mbr_0x8` | +0x4 |
-| `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
-| `modules/openje/src/JE/net/connection.cpp` | 25 | `exception` | `mbr_0x4` | +0x0 |
 
-## Fixed: cls_0x50dbb0 and the byte-first rotation - census 43 -> 3
+## Fixed: net::buffer::overflow had TWO definitions - census 3 -> 1
 
-**An earlier note in this file called these 40 rows "a grab-bag TU, not 40 defects". That was
-wrong**, and worth recording as wrong: they were forty accesses through one rotated header.
+The last two rows were tool false positives with a real cause: **two competing declarations of one
+shipped class**. `JE/net/buffer.hpp` defines `buffer::overflow : public net::exception` (the type
+with the 0x45e450 ctor that stores its message in the base's +0x4), and the older generated header
+`JE/net/buffer/overflow.hpp` declared the same class again as a `struct` with its own `mbr_0x4`.
 
-`cls_0x50dbb0` is a 32-byte ordered-map header with eight members. The generated header listed them
-in IDA's EA order - `mbr_0x0, mbr_0x10, mbr_0x14, mbr_0x18, mbr_0x1c, mbr_0x4, mbr_0x8, mbr_0xc` -
-and because `mbr_0x0` is a **single byte**, every following dword was realigned back up to `+0x4`.
-The object came out **rotated by one dword**: `mbr_0x4` landed at `+0x14` and `mbr_0x10` at `+0x4`,
-exactly swapped, with `mbr_0x8`/`mbr_0xc` shifted along with them. Every tree walk in the TU then
-read the wrong word at every hop.
+That duplicate field is not cosmetic: on top of an 8-byte `net::exception` it would land at +0x8,
+one dword past where the shipped ctor actually writes, so a TU including that header would read and
+write the wrong word. Nothing included it - but the census could not tell that, and the row it
+produced was permanently wrong, which is the one failure mode a layout checker must not have.
 
-That is the trap this class exposes: a header whose first field is 1 byte and whose next field is
-marked `0x10` cannot be declared in EA order without the whole object rotating - the alignment
-padding an EA-ordered list introduces is invisible until a member's own offset is checked.
+`net/buffer/overflow.hpp` is deleted and the one piece of information it alone carried is merged
+into the surviving declaration: F3 lists a SECOND ctor of `.?AUoverflow@buffer@net@@` at 0x45f090
+(confirmed through the F3 method index), and the nested class now declares `ctor_0x45f090()`
+alongside `overflow()`. The header deletion is safe because no .cpp includes it.
 
-Now declared in offset order with the map's holes reserved (`+0x1..+0x4`, `+0xd..+0x10`);
-`sizeof` is the map's 32.
-
-The probe pins exactly the pair that was swapped: it pokes `0xA4` at absolute `+0x04` and `0x1010`
-at absolute `+0x10`, then reads back through the member names - they must not come back exchanged -
-and checks that the two byte members stay bytes at `+0x00` and `+0x0C`. Eight `offsetof`
-assertions plus `sizeof` cover the rest. Mutant (the old header): seven C2118 errors.
+There is a FAMILY of these stale per-namespace headers - `buffer/underflow.hpp`,
+`address/exception.hpp`, `connection/exception.hpp`, `socket/exception.hpp` - each declaring a type
+the parent header now defines nested. Only the one that produced a wrong census row is removed here;
+the rest need the same "is it a duplicate and is it unused" check before deletion, one at a time.
