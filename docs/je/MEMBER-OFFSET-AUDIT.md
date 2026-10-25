@@ -6,72 +6,34 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 43 in 4 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 3 in 3 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
 | `modules/openje/src/JE/CameraControl.cpp` | 209 | `CameraControl` | `mbr_0x8` | +0x4 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 132 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 147 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 194 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 198 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 446 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 548 | `cls_0x50dbb0` | `mbr_0x10` | +0x4 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 548 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 548 | `cls_0x50dbb0` | `mbr_0xc` | +0x1C |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 549 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 557 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 566 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 567 | `cls_0x50dbb0` | `mbr_0x10` | +0x4 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 568 | `cls_0x50dbb0` | `mbr_0x10` | +0x4 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 625 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 626 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 631 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 631 | `cls_0x50dbb0` | `mbr_0xc` | +0x1C |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 671 | `cls_0x50dbb0` | `mbr_0xc` | +0x1C |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 680 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 717 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 718 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 722 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 733 | `cls_0x50dbb0` | `mbr_0xc` | +0x1C |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 755 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 830 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 883 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 924 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1110 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1114 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1341 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1342 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1529 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1530 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1556 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1587 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1611 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1789 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1794 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1796 | `cls_0x50dbb0` | `mbr_0x8` | +0x18 |
-| `modules/openje/src/JE/cls_0x50dbb0.cpp` | 1798 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/net/buffer.cpp` | 58 | `overflow` | `mbr_0x4` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 25 | `exception` | `mbr_0x4` | +0x0 |
 
-## Fixed: the two slim packet-header classes - census 46 -> 43
+## Fixed: cls_0x50dbb0 and the byte-first rotation - census 43 -> 3
 
-`cls_0x5ac2b0` (20 bytes) and `cls_0x5ac5e0` (56 bytes) had the same EA-ordering defect as the net
-chain, without the polymorphism half: neither is polymorphic (F3 records no `vftptr_0x0` for either
-and neither port class declares a virtual), they simply carried their first recorded field too
-early - `mbr_0x10` landed at `+0x0` in both, so `cls_0x5ac2b0`'s four dwords and `cls_0x5ac5e0`'s
-whole header sat 0x10 bytes early.
+**An earlier note in this file called these 40 rows "a grab-bag TU, not 40 defects". That was
+wrong**, and worth recording as wrong: they were forty accesses through one rotated header.
 
-The leading space is real and is now reserved rather than invented: `cls_0x5ac2b0` records nothing
-below `+0x4` and `cls_0x5ac5e0` nothing below `+0x10`, so those spans are `reserved_0x0[...]`. The
-interior holes (`+0x18..+0x1C`, `+0x22..+0x24` of `cls_0x5ac5e0`) are reserved too.
+`cls_0x50dbb0` is a 32-byte ordered-map header with eight members. The generated header listed them
+in IDA's EA order - `mbr_0x0, mbr_0x10, mbr_0x14, mbr_0x18, mbr_0x1c, mbr_0x4, mbr_0x8, mbr_0xc` -
+and because `mbr_0x0` is a **single byte**, every following dword was realigned back up to `+0x4`.
+The object came out **rotated by one dword**: `mbr_0x4` landed at `+0x14` and `mbr_0x10` at `+0x4`,
+exactly swapped, with `mbr_0x8`/`mbr_0xc` shifted along with them. Every tree walk in the TU then
+read the wrong word at every hop.
 
-These classes are worth pinning behaviourally rather than by offsets alone, because the remedy
-they exercise is real: `cls_0x5ac5e0::meth_0x5ac5e0` (the flag->size calculator at 0x5ac5e0) adds
-`this->mbr_0x10` when `flags & 0x40`, and the serialize at 0x5ac690 reads `[hdr+0x10]`/`[hdr+0x14]`
-plus the whole +0x1C..+0x34 band. The probe therefore *pokes absolute offsets* - writes 7 at +0x10
-and 100 at +0x14, then asks the calculator - so it fails if either member moves, regardless of what
-the header claims. It also pins the fixed flag-bit sum (6+2+4+4+4+2 = 22) and that +0x14 is not
-part of the answer.
+That is the trap this class exposes: a header whose first field is 1 byte and whose next field is
+marked `0x10` cannot be declared in EA order without the whole object rotating - the alignment
+padding an EA-ordered list introduces is invisible until a member's own offset is checked.
 
-Mutant (the old header): three C2118 errors from the `offsetof` assertions.
+Now declared in offset order with the map's holes reserved (`+0x1..+0x4`, `+0xd..+0x10`);
+`sizeof` is the map's 32.
+
+The probe pins exactly the pair that was swapped: it pokes `0xA4` at absolute `+0x04` and `0x1010`
+at absolute `+0x10`, then reads back through the member names - they must not come back exchanged -
+and checks that the two byte members stay bytes at `+0x00` and `+0x0C`. Eight `offsetof`
+assertions plus `sizeof` cover the rest. Mutant (the old header): seven C2118 errors.
