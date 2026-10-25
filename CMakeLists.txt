@@ -83,6 +83,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/net/address.cpp"
 	"modules/openje/src/JE/GUI/Window.cpp"
 	"modules/openje/src/JE/GUI/Base.cpp"
+	"modules/openje/src/JE/GUI/Label.cpp"
 	"modules/openje/src/JE/AreaMapIcon.cpp"
 	"modules/openje/src/JE/CSoundSystem.cpp"
 	"modules/openje/src/JE/Gfx_NodeAttribute.cpp"
