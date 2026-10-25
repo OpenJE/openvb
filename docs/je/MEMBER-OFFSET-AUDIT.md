@@ -429,3 +429,32 @@ The general lesson: for these recovered structures the declaration list must rep
 not the semantic field list. Absent members, un-declared subobject spans and unnamed holes all shift their
 successors, and `--drift` reports all three with the same symptom - a name that misses by a constant
 delta. Read `--drift` together with F3's spacing, not just its names.
+
+## Image-filling does not automate: measured 1822 -> 5000 rows, then reverted
+
+The `cls_0x4c0190` rebuild was 75 rows to 0, so the obvious next step was to generalise it:
+`tools/fill-member-images.py` walks a header, compares each declared member's end against the next
+member's offset, and inserts either F3's missing members or a `reserved_0xNNN` hole. Applied per class by
+hand it works. Applied across the tree it made things much worse, twice over:
+
+- first attempt (no base guard): **1822 -> 5000 rows in 394 files**
+- second attempt (skip derived classes, treat members larger than a dword as spans covering their F3
+  rows): **1822 -> 4887 rows in 381 files**
+
+Two causes, and neither is fixable from the declarations alone:
+
+1. **A derived class's leading gap is its base subobject.** The base already declares those fields, so
+   filling the gap inserts a second copy of the base and pushes every member out. Skipping classes with a
+   base removes many false inserts but not the damage already done to classes whose base is spelled as a
+   member rather than inheritance.
+2. **Whether a gap is real depends on spans the header expresses as a single array.** A flattened subobject
+   declared `byte mbr_0x30[0x12C]` already covers the F3 rows inside it; a tool that cannot tell that from
+   a plain `dword` either doubles the span's fields or skips a genuine hole. Even on the class it was
+   written for, the second pass re-inserted two members inside the 300-byte camera span and put 69 rows
+   back.
+
+The tool therefore refuses `--apply` on more than one file, with the measurement in the refusal message,
+and stays useful as `--check`: it lists, per class, exactly which declarations are missing between two
+named members. That list is what the hand rebuild consumed. **The lesson is the boundary, not the script:
+recovered layout work of this kind is per-class evidence work, and an automated sweep over 993 headers
+manufactures more errors than it fixes.**
