@@ -150,3 +150,31 @@ both directions: array-to-array and instance-to-array.
 
 That is the whole port-relevant surface of the forwarder, and it is only observable from the callers: the
 accessors themselves carry no hint that `+0x130` matters.
+
+## Resolved: the containers are `Gfx_ModelMeshPkt` and `Gfx_SkinMeshPkt`
+
+The 0x49CC40-0x4A0E00 range holds 107 references to `+0x6C`/`+0x70`/`+0x68`/`+0x54`/`+0x78`, and the small
+setters settle both types. Three of them are the same four lines twice:
+
+    meth_0x49ced0:  [eax+45h] = dl   |  [ecx+98h] = dl      (eax = [this+6Ch], ecx = [this+70h])
+    meth_0x49cef0:  [eax+46h] = dl   |  [ecx+99h] = dl
+    meth_0x49cf10:  [eax+44h] = dl   |  [ecx+0B0h] = dl
+
+Each setter writes the SAME byte into both objects, at different offsets - so these are two different
+classes rendering the same state. Fingerprinting those offsets against F3 leaves exactly one structure each:
+
+- `[this+0x6C]` = **`Gfx_ModelMeshPkt`** (F3 size 0x58): bytes at `+0x44/+0x45/+0x46`, dwords at
+  `+0x28`, `+0x2C` and `+0x54` - and `+0x54` is Family A's wrapper pointer, which is why the accessor reads
+  `[this+0x54]` and indexes `wrapper+0xC`.
+- `[this+0x70]` = **`Gfx_SkinMeshPkt`** (F3 size 0xC8): `+0x24` manager, `+0x68` count, `+0x70` data,
+  `+0x78`, and the bytes at `+0x98/+0x99/+0xB0` the setters touch - Family B exactly.
+
+So `cls_0x49cc40` carries a model-mesh packet list and a skin-mesh packet list, both arrays of
+`cls_0x4b60b0` at stride 0x244, built lazily and never bounds-checked. That closes the last open question
+in this note: the forwarder at `0x49cc40` is a two-container accessor over
+`Gfx_ModelMeshPkt::+0x54` and `Gfx_SkinMeshPkt::+0x70`, and every callee type is now known, so it can be
+ported without inventing an owner.
+
+The differing offsets in each setter pair (`+0x44 -> +0x98`, `+0x45 -> +0x99`, `+0x46 -> +0xB0`) are a
+useful cross-check for a port: the two packets are NOT layout-compatible aliases, and code that treats them
+as one type would write the wrong field for two of the three.
