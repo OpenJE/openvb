@@ -125,3 +125,25 @@ So the remaining work for these files is a composition fix, not a reorder: move 
 member down into the base class that owns it, then re-run the reorderer on both classes. That needs a
 per-hierarchy pass with the layout guards as the check - a different unit of work from the mechanical
 sweep, and one that must not be done blind, because a wrong owner silently overlaps two objects.
+
+## The header work lives in the NESTED repo - and the rewrite is now idempotent
+
+Two process defects found the hard way this iteration, both worth as much as the code change:
+
+**`modules/openje` is its own git repository.** Committing it from the parent (`git add modules/openje`)
+records a submodule POINTER, not the file contents. Several iterations of header rewrites were staged
+in the parent while the nested repo's worktree stayed dirty, and a routine `git -C modules/openje
+checkout src` then discarded all of it. Header changes must be committed INSIDE `modules/openje` first
+(commit c77b63a), and the parent commit only records which revision that is.
+
+**A rewrite that is not idempotent is a churn machine.** Re-running the reorderer over a tree it had
+already processed reported "616 classes would change" - because it re-read its own `pad_0xNN` fillers
+as members and generated new padding around them. It now skips `pad_` members (the padding step
+regenerates them), so a second run is a no-op. That check is part of the acceptance for this tool: a
+transform that keeps rewriting the same declaration is the doorknob-polishing failure in mechanical
+form, and it also makes every later diff unreadable.
+
+Also added: a class-typed member whose span the OTHER declared members fully cover is a subobject the
+header already flattens, so it is replaced by padding instead of being kept (keeping both put its
+children after the whole subobject). Partial coverage is NOT flattened - that deletes state of its own
+(CameraControl's embedded orbit, cls_0x401d60's fields).

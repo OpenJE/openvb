@@ -197,6 +197,11 @@ def fix(path, apply, sized, f3=None, headers_by_name=None):
 
         kept = []
         for e in entries:
+            if e[5].startswith("pad_"):
+                # filler this tool generated on an earlier pass - the padding step below regenerates
+                # it. Leaving it in makes the rewrite non-idempotent: every run would insert pads
+                # around the old pads and churn the whole tree again.
+                continue
             if e[5] in base_owned and base_declares(e[5]):
                 notes.append("%s: %s is the BASE's field (F3 base=True) - the base declares it, so "
                              "it is not re-declared here (it would shift everything after it)"
@@ -208,6 +213,49 @@ def fix(path, apply, sized, f3=None, headers_by_name=None):
             kept.append(e)
         if not kept:
             continue
+        # A class-typed member whose SPAN covers other declared fields is a subobject whose contents
+        # the header already flattens: keeping both would put those fields after the whole subobject
+        # (that is why mbr_0x38 "fell inside" cls_0x50db20 at +0x34). Drop the container, keep the
+        # leaves - the struct is a memory image, and every leaf then lands on its shipped offset.
+        spans = []
+        for e in kept:
+            d = DECL_RE.match(e[1])
+            t = cmo.short(d.group(2))
+            size = 4 if t.replace(" ", "") == "void*" else cmo.FIXED.get(t)
+            if size is None:
+                size = sized[t][0] if t in sized else None
+            if size is not None and d.group(4):
+                try:
+                    size *= int(d.group(4).strip()[1:-1].strip(), 0)
+                except ValueError:
+                    size = None
+            spans.append((e, t, size))
+        # Only flatten a container whose span the OTHER declared members FULLY cover. Partial
+        # coverage means the container carries state of its own (CameraControl's embedded orbit) and
+        # dropping it deletes fields the code uses - cls_0x401d60 lost mbr_0x4/mbr_0x8 that way.
+        def covered(lo, hi, ivs):
+            reach = lo
+            for a, b in sorted(ivs):
+                if a > reach:
+                    break
+                reach = max(reach, b)
+                if reach >= hi:
+                    return True
+            return reach >= hi
+
+        flattened = []
+        for e, t, size in spans:
+            if t in sized and size:
+                inside = [(oe[0], s2) for oe, _ot, s2 in spans
+                          if oe[0] > e[0] and oe[0] < e[0] + size and s2]
+                ivs = [(o, o + s2) for o, s2 in inside]
+                if inside and covered(e[0], e[0] + size, ivs):
+                    notes.append("%s: %s (%s at +0x%X, %d bytes) is fully covered by %d individually "
+                                 "declared fields - replaced by padding"
+                                 % (cls["name"], e[5], t, e[0], size, len(inside)))
+                    continue
+            flattened.append(e)
+        kept = flattened
         offsets = [e[0] for e in kept]
         if len(set(offsets)) != len(offsets):
             notes.append("%s: duplicate offset names (shipped overlap needs a union) - skipped"
