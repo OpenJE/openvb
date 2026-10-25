@@ -73,6 +73,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/cls_0x4d91d0.cpp"
 	"modules/openje/src/JE/cls_0x420140.cpp"
 	"modules/openje/src/JE/cls_0x4d6ce0.cpp"
+	"modules/openje/src/JE/cls_0x431000.cpp"
 	"modules/openje/src/JE/cls_0x48d750.cpp"
 	"modules/openje/src/JE/cls_0x48d7b0.cpp"
 	"modules/openje/src/JE/cls_0x50dbb0.cpp"
