@@ -69,6 +69,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/World.cpp"
 	"modules/openje/src/JE/cls_0x4d8d70.cpp"
 	"modules/openje/src/JE/cls_0x50db20.cpp"
+	"modules/openje/src/JE/cls_0x4d8b70.cpp"
 	"modules/openje/src/JE/cls_0x48d750.cpp"
 	"modules/openje/src/JE/cls_0x48d7b0.cpp"
 	"modules/openje/src/JE/cls_0x50dbb0.cpp"
