@@ -127,7 +127,10 @@ in {
         # string and one 0x10 holder. First record in the family whose elements come through the
         # shipped `_eh vector copy constructor iterator' (count 2), so it pins element ORDER and the
         # per-element construct (not assign) path. Small source list on purpose - raw storage, no tower.
-        "cls_0x4d8b70|modules/openje/tests/je/cls_0x4d8b70/cls_0x4d8b70.cpp|$JE/cls_0x4d8b70.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|35"
+        # It also carries the record's destructor (0x4d6c70), the body the owner's SEH calls on
+        # unwind: the pinned defects there are the BEGIN-only holder guard, the resets that happen on
+        # both arms of the standalone string's free test, and the element destructor's BYTE store.
+        "cls_0x4d8b70|modules/openje/tests/je/cls_0x4d8b70/cls_0x4d8b70.cpp|$JE/cls_0x4d8b70.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|73"
         # The 0x90-byte mesh-attribute record and the two 0x10 container instantiations it embeds. The
         # pinned defect is a sibling copy-paste: the 4-byte and 1-byte copy ctors are otherwise identical
         # text, so the CAPACITY checks (3 elements -> 12 bytes vs 5 bytes -> 5 bytes) are what break if the
