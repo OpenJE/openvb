@@ -171,3 +171,35 @@ Demonstrated both directions on a throwaway edit to `ActionDie.hpp`:
 The ceiling is meant to be lowered as the backlog clears; it is a floor of protection, not an
 acceptance target. Leaving it stale at 3588 while fixing files would be safe but sloppy, so the tool
 prints "(lower the ceiling to N)" whenever it runs below the ceiling.
+
+## Shipped overlaps: what MSVC 2002 accepts, and what it forbids
+
+The refused classes that remain split into "shipped offset overlap" (two members the original
+addresses at different widths over the same bytes, e.g. a dword at +0x70 and byte views at +0x72/+0x73)
+and the flattened memory-image structs. Before writing a rewriter for the overlap case I asked the
+shipped compiler instead of assuming - `tools/probes/probe_union_overlap.cpp`:
+
+**Accepted.** An anonymous struct inside a union overlays exactly as intended:
+
+    union { dword mbr_0x70; struct { word pad_0x70; byte mbr_0x72; byte mbr_0x73; }; };
+
+Measured relative offsets 0x70->4, 0x72->6, 0x73->7 and `sizeof` 12 for that shape, with the byte
+views reading the dword's own bytes (0xAABBCCDD -> 0xBB at the third byte). My first probe "failed"
+only because I had written absolute offsets into a struct that starts at 0 - the compiler was right and
+my expectation was wrong, which is the second time this campaign that lesson has paid.
+
+**Forbidden.** MSVC 2002 rejects a union arm with a user-defined constructor:
+
+    error C2620: member '...::mbr_0x34' of union '...::__unnamed' has user-defined constructor or
+                 non-trivial default constructor
+
+That matters because the wide arm in these VFX structs is exactly such a class (`cls_0x50db20`,
+`cls_0x4dff90`). So a union can model a scalar overlap but never a class-subobject one.
+
+**Consequence.** An attempt to emit unions automatically was written, measured and reverted: 58 classes
+would have been rewritten and the build failed with C2620 in `VFXEFFECTTYPE_BASE_Struct` and
+`VFX_EffectInstance`. The union path is therefore only valid where the wide member is a scalar; the
+class-subobject case stays refused and needs the composition fix (move the children into the class
+that owns them), not a layout trick. Reverting kept the tree at the 3588-row ratchet with the suite
+green, which is the right trade: a layout feature that cannot run on the files that need it is not
+progress.
