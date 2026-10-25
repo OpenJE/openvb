@@ -11,31 +11,36 @@ classes parsed 999 | sized 927 | wrong-offset accesses 0 in 0 files
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
 
-## Fixed: CameraControl was not polymorphic - the census is now CLEAN (0 rows)
+## Fixed: the camera's three layers (Gfx_CamCtrl / Gfx_CamCtrl_Orbit / CameraControl)
 
-The last row, `CameraControl::mbr_0x8 -> declared +0x4`, was the same vftptr defect as the net chain:
-F3 records `vftptr_0x0` for `.?AUCameraControl@@` and `virt_meth_0x587030` is a vft slot, but it was
-declared plain, so no vftptr was emitted and the embedded orbit landed at `+0x4` - one dword early
-for its entire 184-byte body.
+The layering defect recorded in the previous section is closed. F3's maps describe three objects, and
+the port had collapsed them into one:
 
-Verified behaviourally rather than declaratively: the shipped destructor (0x586570) is `add ecx, 8`
-then a tail-jump to the orbit's own dtor at 0x4c68a0, and the port keeps that as a member call. The
-probe supplies the orbit dtor, drives `CameraControl::dtor_0x586570`, and records *which address* was
-destroyed: it must be `object + 8`, not `object + 4` and not `object`. Mutant (the old header): three
-C2118 errors.
+    CameraControl            vftptr +0x0, owner link +0x4, Gfx_CamCtrl_Orbit +0x8 (0xB8), own +0xC0..+0x120
+    Gfx_CamCtrl_Orbit        : Gfx_CamCtrl, NO state of its own
+    Gfx_CamCtrl              vftptr +0x0, byte +0x4, dwords +0x8..+0xB4, size 0xB8
 
-### KNOWN WRONG, recorded rather than papered over
+`.?AVGfx_CamCtrl_Orbit@@` marks every one of its entries `base=True` - they are the base's fields
+seen through the derived object, at CameraControl-ABSOLUTE offsets (+0x8 there is the orbit's own
++0x0). The port had re-declared sixteen of them inside the orbit and ten more inside CameraControl, so
+the whole band landed after the embedded object: the azimuth triple that belongs at `+0xa4` was at
+`+0xEC`.
 
-The census being clean does **not** mean `CameraControl` is laid out correctly, and the probe says so
-out loud instead of asserting the wrong value as if it were right:
+Three defects fixed together:
+- `Gfx_CamCtrl` was in EA order with a BYTE `mbr_0x4` first, i.e. the cls_0x50dbb0 rotation - now
+  offset order, `virtual` for its recorded vftptr, size 0xB8;
+- the orbit declared state it does not own - now member-less;
+- `CameraControl` declared the orbit's band as its own - now it embeds the orbit and declares only
+  `+0xC0..+0x11C`, size 288.
 
-`mbr_0x98 .. mbr_0xbc` are declared at CameraControl level, but F3's `.?AUCameraControl@@` entry marks
-all of them `base=True` - they belong to the **embedded orbit**, which owns `+0x8..+0xC0`. Declared
-here they land *after* the orbit, so that band is late by the orbit's size: the compiler puts the
-azimuth/elevation/distance triple that should be at `+0xa4` at `+0xEC`.
+Two findings only the compiler could settle:
+- the MODE REGISTER is a **dword at +0xC2 whose low half is the "zoom speed" slot at +0xC4** (the
+  shipped code writes 32-bit through it). Declaring both separately made `sizeof` 0x124; a union of
+  `dword mbr_0xc2` and `word mbr_0xc4w` gives the shipped overlap and 288.
+- the azimuth/elevation/distance triple must be **float**. Declared as dwords the arithmetic read the
+  bit pattern as an integer: `set_azimuth` computed `6e10` instead of `28.6`. That is what the probe's
+  behavioural check caught - it pokes 0.5 rad at absolute `+0xa4`, calls `set_azimuth_0x585ea0(0.5 *
+  57.295776f)` and requires the shipped early-out (anim bit 0 clear); an integer field fails it.
 
-The name-based census cannot see this, because `mbr_0xa4` in the header does equal `0xa4` in F3 - the
-defect is *which class owns the field*, not what it is called. That is a layering change: move the
-band into `Gfx_CamCtrl_Orbit` (whose F3 map is itself split, its members from `+0x8` all `base=True`
-on `.?AVGfx_CamCtrl@@`), then re-point every `this->mbr_0xa4`-style use in CameraControl.cpp at the
-member. Recorded as the next unit rather than half-done here.
+Call sites re-pointed from `mbr_0xa4/0xa8/0xac` to `mbr_0x8.mbr_0x9c/0xa0/0xa4` (abs - 8) in
+CameraControl.cpp (22 uses) and src/F3/Commands.cpp (5 uses). Full suite: 24/24 OK.

@@ -122,14 +122,14 @@ namespace F3 {
 		}
 	} // CommandCameraAzimuth
 
-	// 0x588360 - "CameraAzimuthInc": local = cur_deg(mbr_0xa4) * 57.295776 * 0.022222223 + 1.0,
+	// 0x588360 - "CameraAzimuthInc": local = cur_deg(mbr_0x8.mbr_0x9c) * 57.295776 * 0.022222223 + 1.0,
 	// then * 45.0 -> set_azimuth (shipped floats at 0x647920/0x69c484/0x647880/0x69bef4).
 	void __cdecl CommandCameraAzimuthInc() {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::CameraControl* cam = Cam();
 		if ( !cam ) { return; }
-		float local_4 = cam->mbr_0xa4 * 57.295776f * 0.022222223f + 1.0f;
+		float local_4 = cam->mbr_0x8.mbr_0x9c * 57.295776f * 0.022222223f + 1.0f;
 		local_4 = local_4 * 45.0f;
 		cam->set_azimuth_0x585ea0( local_4 );
 	} // CommandCameraAzimuthInc
@@ -140,7 +140,7 @@ namespace F3 {
 
 		JE::CameraControl* cam = Cam();
 		if ( !cam ) { return; }
-		float local_4 = cam->mbr_0xa4 * 57.295776f * 0.022222223f * 45.0f - 45.0f;
+		float local_4 = cam->mbr_0x8.mbr_0x9c * 57.295776f * 0.022222223f * 45.0f - 45.0f;
 		cam->set_azimuth_0x585ea0( local_4 );
 	} // CommandCameraAzimuthDec
 
@@ -193,13 +193,13 @@ namespace F3 {
 	} // CommandCameraTop
 
 	// 0x5883E0 - "CameraTopDown": sub_586290(cam, 1) - target = (cur_elev_deg <= 45.0) ? 90.0 : 0.0,
-	// then ANIMATED set (0x5862cd). The <=45 test is at 0x5862b0 (mbr_0xa8 * 57.295776).
+	// then ANIMATED set (0x5862cd). The <=45 test is at 0x5862b0 (mbr_0x8.mbr_0xa0 * 57.295776).
 	void __cdecl CommandCameraTopDown() {
 		tracing::instrument( tracing::LOCATION, "" );
 
 		JE::CameraControl* cam = Cam();
 		if ( cam ) {
-			float target = ( cam->mbr_0xa8 * 57.295776f <= 45.0f ) ? 90.0f : 0.0f;   // 0x5862b0
+			float target = ( cam->mbr_0x8.mbr_0xa0 * 57.295776f <= 45.0f ) ? 90.0f : 0.0f;   // 0x5862b0
 			cam->set_elevation_0x586010( target );
 		}
 	} // CommandCameraTopDown
