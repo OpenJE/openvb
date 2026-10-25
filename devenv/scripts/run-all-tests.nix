@@ -148,7 +148,7 @@ in {
         # grow arm C by half / drop the self-assignment test / trim capacity in arm A - each turns the
         # row red on the named check). The self-assignment guard is only observable when size == 0 with a
         # bought block (`_Buy` leaves exactly that state), so that case is checked separately.
-        "cls_0x4d91d0|modules/openje/tests/je/cls_0x4d91d0/cls_0x4d91d0.cpp|$JE/cls_0x4d91d0.cpp $JE/cls_0x4d8b70.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d6ce0.cpp $JE/cls_0x401d60.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|173"
+        "cls_0x4d91d0|modules/openje/tests/je/cls_0x4d91d0/cls_0x4d91d0.cpp|$JE/cls_0x4d91d0.cpp $JE/cls_0x4d8b70.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d6ce0.cpp $JE/cls_0x401d60.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|178"
         # The 0x10-byte 4-byte-element holder: its layout (the +0x00 proxy word the DB's member list
         # omits), the two element primitives only its grow path uses (_Copy_backward 0x545780 and the
         # value fill 0x4016b0), and the container bodies themselves - _Insert_n 0x4d3d90 and push_back
