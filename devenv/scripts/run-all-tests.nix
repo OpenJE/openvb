@@ -116,6 +116,12 @@ in {
         # no Map/ResourceSystem/VFX tower. Floor 29 = the check() calls the runner counts in the
         # source; the run itself reports 39 (the helper bodies assert several fields per call).
         "cls_0x50db20|modules/openje/tests/je/cls_0x50db20/cls_0x50db20.cpp|$JE/cls_0x50db20.cpp $JE/net/exception.cpp src/HostHooks.cpp $SRC|313"
+        # The 0x10-byte container of 4-byte elements (0x41FE40 _Buy, 0x420140 copy ctor, 0x421230 the
+        # ASSIGNMENT operator) plus its three element primitives (0x5456A0 _Ucopy / 0x41F520 / 0x5457B0
+        # _Ufill). One impl source on purpose: the class only needs <new>/<stdexcept>, and the suite
+        # drives it on raw heap blocks, so no Map/Resource tower. Floor 66 = the check() lines in the
+        # source; the run reports 66 (the checkFresh helper adds its one call per invocation).
+        "cls_0x420140|modules/openje/tests/je/cls_0x420140/cls_0x420140.cpp|$JE/cls_0x420140.cpp|66"
         # The shipped composite copy ctor (0x565EB0): one 0x1C SSO string + one 0x10 vector holder.
         # Small source list on purpose - it drives the holder family on raw storage, no tower needed.
         "cls_0x565eb0|modules/openje/tests/je/cls_0x565eb0/cls_0x565eb0.cpp|$JE/cls_0x565eb0.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|32"
