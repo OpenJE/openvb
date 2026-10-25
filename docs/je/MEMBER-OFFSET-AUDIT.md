@@ -279,3 +279,29 @@ Two durable consequences:
 - Modelling the string properly needs a dedicated 0x18-byte type whose ctor/dtor match the original's
   (capacity reset `0xF`, threshold `0x10`, `free` on overflow) - a real unit of work, not a keyword
   substitution.
+
+## `JE::StringSSO16` - the engine's 0x18-byte string, now a real type
+
+Since this build's `std::string` is 0x1C and the original's string is 0x18 (measured, previous
+section), the size-correct type now exists as `modules/openje/src/JE/StringSSO16.hpp`:
+
+    union { char buf[0x10]; char* ptr; };   // +0x0  text inline, or heap pointer
+    unsigned size;                          // +0x10
+    unsigned capacity;                      // +0x14  SSO while < 0x10
+
+Every field comes from the shipped code, not from a header guess: the ctor at `0x4e0f00` writes
+`[+0x1C]=0xF`, `[+0x18]=0`, `[+0x8]=0`, and the dtor at `0x4e1750` branches on `[+0x1C] < 0x10` before
+freeing `[+0x8]` - so the 16 bytes at the member start ARE the text while capacity is small.
+
+The layout is pinned by `offsetof` typedefs asserting `sizeof == 0x18`, `size` at `0x10` and `capacity`
+at `0x14`. Falsified on purpose: widening `buf` to 0x14 makes the very next suite build fail with
+C2118, so the pin is live rather than decorative.
+
+`VFXEFFECTTYPE_BASE_Struct` now declares `StringSSO16 mbr_0x8` instead of three loose dwords
+(`mbr_0x8`, `mbr_0x18`, `mbr_0x1c` were that string's pointer/buffer, size and capacity). Static rows
+3588 -> 3586.
+
+This does NOT make the port string-complete: only the layout is modelled. Appending, growing, copying
+and freeing live in the free functions already ported in `cls_0x50db20.cpp` (`0x4256E0`, `0x4257D0`,
+`0x425BD0`), which operate on this layout; wiring them into a class interface is separate work, and
+inventing method semantics before that would be guesswork.
