@@ -122,6 +122,16 @@ in {
         # drives it on raw heap blocks, so no Map/Resource tower. Floor 66 = the check() lines in the
         # source; the run reports 66 (the checkFresh helper adds its one call per invocation).
         "cls_0x420140|modules/openje/tests/je/cls_0x420140/cls_0x420140.cpp|$JE/cls_0x420140.cpp|66"
+        # The 0x54-byte line container embedded in GUI::LineSystem (+0x2C) and GUI::Label (+0xD78):
+        # meth_0x41f200 the flat teardown and meth_0x41fdf0 the destructor (0x41f200 + the embedded
+        # cls_0x4abc60's full teardown). The suite existed since 2f2252b but was never in this list,
+        # so its checks only ran when someone built it by hand. It carries its own link-only stubs
+        # (sub_5A48E0 / FileStreamHost_ctor_0x497bb0 / cls_0x4b5d00::ctor, plus a faithful
+        # RbTree_InitSentinel_0x56e0b0) and a g_unreached counter that fails the run if any of them
+        # is actually reached - which is why JE.cpp is NOT in this source list: it defines the first
+        # two again (LNK2005, measured), and it is not needed by any path the suite takes.
+        # Floor 42 = the ck()/ck_null() calls that ran; the suite now reports the count itself.
+        "cls_0x515040|modules/openje/tests/je/cls_0x515040/cls_0x515040.cpp|$JE/cls_0x515040.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp|42"
         # The shipped composite copy ctor (0x565EB0): one 0x1C SSO string + one 0x10 vector holder.
         # Small source list on purpose - it drives the holder family on raw storage, no tower needed.
         "cls_0x565eb0|modules/openje/tests/je/cls_0x565eb0/cls_0x565eb0.cpp|$JE/cls_0x565eb0.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|32"
