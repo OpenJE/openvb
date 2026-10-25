@@ -126,6 +126,11 @@ def header_classes(path):
         # members at body depth 0 only (nested classes have their own "{" lines)
         members, unknown, level, has_virtual = [], False, 0, False
         packed = False
+        # The class counts as packed if any MEMBER was declared while pack(1) was in effect. Taking
+        # the flag's value at the end of the body is wrong: a header that correctly wraps its member
+        # block in push/pop ends with pack(pop) and would be scored as unpacked, which is exactly how
+        # cls_0x514000's unaligned +0x45 field was mis-diagnosed as a too-large neighbour.
+        packed_members = False
         for line in body:
             code = re.sub(r"//.*$", "", line)      # a trailing comment is not a declaration
             code = re.sub(r"/\*.*?\*/", "", code)
@@ -138,6 +143,7 @@ def header_classes(path):
             if level == 0:
                 mm = MEMBER_RE.match(line)
                 if mm:
+                    packed_members = packed_members or packed
                     members.append((mm.group(2), mm.group(1), mm.group(3)))
             level += line.count("{") - line.count("}")
             if level < 0:
@@ -146,7 +152,7 @@ def header_classes(path):
             "name": name,
             "base": base_name(bases),
             "virtual": has_virtual,
-            "packed": packed,
+            "packed": packed_members,
             "members": members,
             "unknown": not members,
         })

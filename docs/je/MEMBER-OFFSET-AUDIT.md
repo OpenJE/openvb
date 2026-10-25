@@ -385,3 +385,25 @@ Two readings, and they separate the backlog into two different jobs:
 So the remaining census is not 2041 independent mistakes; it is a handful of oversized declarations in
 otherwise-fine classes, plus base-field duplicates that the reorderer already knows how to remove once
 those declarations are corrected.
+
+## The layout checker was blind to correctly-wrapped `pack(1)` blocks
+
+`cls_0x514000` looked like it had a too-large member at `+0x44`: F3 records `mbr_0x44` as 1 byte and
+`mbr_0x45` as 4, and `+0x45` is not dword-aligned, so a naturally-aligned struct rounds that field to
+`+0x48` and every later member drifts by 3 - which is exactly what `--drift` reported. But the real story
+was the opposite: the class IS packed, and the tool refused to believe it.
+
+`header_classes()` scanned the class body for `#pragma pack(push,1)` and `#pragma pack(pop)` and kept the
+**last** value seen. A header that wraps its members correctly - push before the block, pop after - ends
+with `pop`, so the class was scored **unpacked**. Every well-formed packed header in the tree was
+therefore mis-measured, and the resulting drift was then blamed on individual member types.
+
+Fixed by recording the pragma state **per member** and scoring the class packed if any member was
+declared while `pack(1)` was in effect. With `cls_0x514000` also marked packed (its F3 field at an odd
+offset is the proof that the shipped class is packed), the census went **2041 -> 1897 rows in 98 files**
+and that class's 144 rows disappeared entirely.
+
+Worth flagging separately: `CSound`'s header contains `#pragma pack(push, 1)` immediately followed by
+`#pragma pack(pop)` with nothing between them - the comment claims packing, the code applies none. It
+currently passes its layout guards by using explicit `reserved_` gaps, so it is not a live bug, but the
+pragma pair there is decoration and should be removed or made real.
