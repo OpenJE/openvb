@@ -137,10 +137,15 @@ in {
         # element stride is swapped. Also the record's deep-copy proof: release the destination, read the
         # source across all four sub-objects. Section 6 covers the record's teardown @0x4d7ac0: release
         # ORDER (+0x84 before +0x74, then the tail-called head dtor), the two container proxy words that
-        # must SURVIVE it, and the head teardown the same call performs. Floor 126: measured by running
-        # the row, both directions of each claim mutation-tested (swap the two containers / drop the
-        # proxies / drop the head dtor each turn the row red).
-        "cls_0x4d91d0|modules/openje/tests/je/cls_0x4d91d0/cls_0x4d91d0.cpp|$JE/cls_0x4d91d0.cpp $JE/cls_0x4d8b70.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d6ce0.cpp $JE/cls_0x401d60.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|126"
+        # must SURVIVE it, and the head teardown the same call performs. Section 7 covers the 4-byte
+        # container's ASSIGNMENT operator @0x421230: arm A keeps the block and its capacity and leaves the
+        # stale tail past the new end, arm C re-buys exactly n (not 1.5x), self-assignment returns before
+        # freeing, an empty source releases and zeroes. Floor 173: measured by running the row, and every
+        # claim above mutation-tested (swap the two containers / drop the proxies / drop the head dtor /
+        # grow arm C by half / drop the self-assignment test / trim capacity in arm A - each turns the
+        # row red on the named check). The self-assignment guard is only observable when size == 0 with a
+        # bought block (`_Buy` leaves exactly that state), so that case is checked separately.
+        "cls_0x4d91d0|modules/openje/tests/je/cls_0x4d91d0/cls_0x4d91d0.cpp|$JE/cls_0x4d91d0.cpp $JE/cls_0x4d8b70.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d6ce0.cpp $JE/cls_0x401d60.cpp $JE/cls_0x50db20.cpp $JE/net/exception.cpp|173"
         # The 0x10-byte 4-byte-element holder: its layout (the +0x00 proxy word the DB's member list
         # omits), the two element primitives only its grow path uses (_Copy_backward 0x545780 and the
         # value fill 0x4016b0), and the container bodies themselves - _Insert_n 0x4d3d90 and push_back

@@ -1,4 +1,4 @@
-{"ts": "2026-10-25T15:15:55Z", "entries": 25542, "note": "EA->name ledger; recovery source after restart/rollback"}
+{"ts": "2026-10-25T15:20:01Z", "entries": 25542, "note": "EA->name ledger; recovery source after restart/rollback"}
 {"ea": "0x401000", "name": "CopyByteValue_0x401000"}
 {"ea": "0x401010", "name": "JE::Common::Exception::virt_deldtor_0x401010"}
 {"ea": "0x401030", "name": "JE::Vector3::Normalize_0x401030"}
