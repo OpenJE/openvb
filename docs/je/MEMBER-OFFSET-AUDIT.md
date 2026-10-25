@@ -98,3 +98,30 @@ headers already carry and the suite - which is why every one of these was caught
 
 Remaining 3621 rows in 144 files are classes the tool refuses: `//: Members` block/class pairing
 mismatches, unresolved bases, shipped offset overlaps needing a union, and sizes with no C type.
+
+## The last 3588 rows are NOT an ordering problem - they are class composition
+
+Multiple-inheritance layouts are now modelled instead of skipped: bases sit in declaration order, each
+at its own alignment, so a class's own fields begin after ALL of them
+(`multi_base_start`). That unlocked 2 more classes and, more usefully, produced the diagnosis for
+everything the tool still refuses.
+
+Refusal census over the tree: **130 classes "member falls inside the base"**, 42 "base unresolved",
+11 "multiple bases, one unsized".
+
+The 130 are the flattened memory-image structs (`VFXEFFECTTYPE_PARTICLESYSTEM_Struct` and friends,
+237 static rows each). They mix THREE base classes and then re-declare fields at offsets that lie
+inside those bases:
+
+    struct VFXEFFECTTYPE_PARTICLESYSTEM_Struct : VFXEFFECTTYPE_BASE_Struct, cls_0x50db20, cls_0x4dff90 {
+        ... mbr_0x74 ...      // the bases already occupy 0x0..0x324
+
+No declaration ORDER can put `mbr_0x74` at +0x74 when the bases start at +0x0 and run to +0x324.
+F3 says why: it marks those members `base=True` - they belong to one of the base classes. The defect is
+not that the fields are misordered, it is that they are attributed to the WRONG CLASS (the same defect
+`net::buffer::overflow` and `CameraControl` had, one and two layers up).
+
+So the remaining work for these files is a composition fix, not a reorder: move each `base=True`
+member down into the base class that owns it, then re-run the reorderer on both classes. That needs a
+per-hierarchy pass with the layout guards as the check - a different unit of work from the mechanical
+sweep, and one that must not be done blind, because a wrong owner silently overlaps two objects.

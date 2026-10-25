@@ -131,6 +131,24 @@ def f3_own_members(st):
     return sorted(rows)
 
 
+def multi_base_start(decl_line, sized):
+    """Byte offset where a multiple-inheritance class's own fields begin, or None if unsized."""
+    after = decl_line.split(":", 1)[1]
+    after = after.split("{", 1)[0]
+    off = 0
+    for part in after.split(","):
+        name = part.replace("public", " ").replace("protected", " ").replace("private", " ") \
+                   .replace("virtual", " ").strip()
+        name = name.split("::")[-1].strip()
+        if not name or name not in sized:
+            return None
+        base_size = sized[name][0]
+        align = 4 if base_size % 4 == 0 else 1
+        off = (off + align - 1) // align * align
+        off += base_size
+    return off
+
+
 def tree_sized():
     """Every class in the tree, so a base declared in another header still resolves."""
     classes = {}
@@ -200,19 +218,24 @@ def fix(path, apply, sized, f3=None, headers_by_name=None):
             if re.search(r"\b(class|struct)\s+%s\b" % re.escape(cls["name"]), lines[i]):
                 decl_line = lines[i]
                 break
+        multi_start = None
         if cls["base"] and "," in decl_line.split(":", 1)[-1]:
-            # MULTIPLE BASES: the parser models one base, so its idea of where this class's own
-            # fields start is a guess. GUI::Window : Base, HeapTracker was mangled that way - filler
-            # pushed over a layout a human had already derived from the ctor.
-            notes.append("%s: multiple bases - skipped" % cls["name"])
-            continue
+            multi_start = multi_base_start(decl_line, sized)
+            # MULTIPLE BASES: MSVC lays the bases out in declaration order, each at its own
+            # alignment, so the class's own fields start after ALL of them. The shared parser models
+            # one base, which is why GUI::Window : Base, HeapTracker was mangled - filler over a
+            # layout a human had derived from the ctor. Either every base is sized here or the class
+            # is refused; nothing is guessed.
+            if multi_start is None:
+                notes.append("%s: multiple bases, at least one unsized - skipped" % cls["name"])
+                continue
         if False:
             # A base's size has to come from the same parser that reads this header; multiple
             # inheritance and hand-derived bases (GUI::Window : Base, HeapTracker) are exactly where
             # it was wrong, and it inserted filler over a layout a human had already verified.
             notes.append("%s: has a base - skipped (pass --with-bases to include)" % cls["name"])
             continue
-        start_off = plan(cls, sized)
+        start_off = multi_start if multi_start is not None else plan(cls, sized)
         if start_off is None:
             notes.append("%s: base size unresolved - skipped" % cls["name"])
             continue
