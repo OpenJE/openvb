@@ -96,6 +96,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/cls_0x401b00.cpp"
 	"modules/openje/src/JE/cls_0x4abc60.cpp"
 	"modules/openje/src/JE/cls_0x49cc40.cpp"
+	"modules/openje/src/JE/cls_0x515040.cpp"
 	"modules/openje/src/JE/GUI/LineSystem.cpp"
 	"modules/openje/src/JE/cls_0x4b5d00.cpp"
 	"modules/openje/src/JE/cls_0x4b60b0.cpp"
