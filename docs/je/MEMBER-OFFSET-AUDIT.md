@@ -330,3 +330,32 @@ The pattern across this whole audit keeps repeating: **a class that is too big i
 is misordered**, because it silently steals the neighbours' offsets - and the only reliable size evidence
 is the shipped ctor's writes plus the spacing between embedding sites, never F3's `size` on a subobject
 row.
+
+## The VFX base struct was sized from flattening noise - 3454 -> 2041 rows
+
+`VFXEFFECTTYPE_BASE_Struct` declared eleven members out of F3's row list, including `mbr_0x38`, `mbr_0x48`,
+`mbr_0x4c`, `mbr_0x54`, `mbr_0x60`, `mbr_0x70` and more up to `mbr_0x108`. The shipped ctor (`0x4e0f00`)
+only ever establishes four things:
+
+    0x4e0f19  mov dword [esi], vftable                    -> +0x0
+    0x4e0f21  [+1Ch]=0Fh / [+18h]=0 / [+8]=0              -> StringSSO16 at +0x8, 0x18 bytes
+    0x4e0f32  lea ecx,[esi+2Ch] / call cls_0x502110       -> +0x2C
+    0x4e0f3e  lea ecx,[esi+34h] / call cls_0x50db20       -> +0x34, and that class is 0xE0 bytes
+
+`0x34 + 0xE0 = 0x114`, so everything F3 lists between `+0x38` and `+0x108` lies INSIDE that subobject -
+which is exactly why F3 marks those rows `base=True`. They are the embedded `cls_0x50db20`'s own fields:
+its string A begins at subobject+0x4, giving pointer `+0x38`, size `+0x48`, capacity `+0x4C` - the three
+words the destructor frees inline, which is the reading that fooled an earlier pass into "correcting"
+`mbr_0x34` (see above). Declaring them on the outer struct placed a **second copy** of the subobject's
+fields over it, and because this struct is the base of the whole `VFXEFFECTTYPE_*` family, every derived
+struct inherited the error.
+
+Correcting the member list to the four the ctor actually establishes dropped the static census
+**3454 -> 2041 rows in 99 files** in one change, with the suite green. That is the largest single drop in
+this audit, and it came from deleting declarations rather than adding or reordering them - the blame for
+those 1400 rows was never in the derived classes.
+
+Tool note for the next pass: the layout checker sizes a class-typed member from F3's `size` field, which
+is wrong for rows like `cls_0x50db20_0x34` (F3 says 577, the class is 0xE0). Sizing from the ported
+header's own members would have avoided the whole detour; until the checker does that, this class's size
+lives in its header comment and the offsets guards.
