@@ -62,6 +62,8 @@ reproduce because there is none.
 - then, for `i` in `0 .. [this+0x68]`: `cls_0x50db20::ctor_0x41fc60(&elements[i], [[this+0x24]+0x5C] + i)`
   - i.e. each element is initialised from an index-parallel record owned by the manager at `[this+0x24]`.
 
+Both are arrays of `cls_0x4b60b0` at stride 0x244 (proof below).
+
 Note the asymmetry against Family A: **no `+0xC`**, and the array carries its own length in a hidden
 header. A port that unifies the two accessors would be wrong in one of the two places.
 
@@ -93,7 +95,29 @@ guess:
 - neither call's result is stored, so the function's only observable effect is the lazy allocation each
   accessor may perform.
 
-Who owns the objects at `[+0x6C]` / `[+0x70]` is **not** determined yet, and that is the real blocker for
+## The element type is `cls_0x4b60b0`, and that is already ported
+
+`cls_0x49cc40::meth_0x4a0750` (`0x4a0750`) settles the one thing that looked unresolvable. It advances the
+index while counting `[[this+0x44]]->meth_0x4a06e0()` and copies one field between the two arrays:
+
+    4a0971  push edi / mov ecx, ebp / call meth_0x49cc40      ; element of THIS object's array
+    4a0979  push edi / mov ecx, esi / call meth_0x49cc40      ; element of `esi`'s array
+    4a098b  mov  ebx, [ebx+130h]                              ; A->+0x130
+    4a0995  mov  [eax+130h], ebx                              ; B->+0x130 = A->+0x130
+
+Two consequences:
+
+1. **Both families yield the same element type**, one with a field at `+0x130`. Family B's own rebuild
+   names its element lifecycle outright - `cls_0x4b60b0::ctor_0x4b60b0` and `meth_0x401720` in the
+   `eh vector` iterators with stride 0x244 - and the port's `cls_0x4b60b0.hpp` already pins `sizeof` to
+   **0x244** (F3's 577 is the untailed extent; the header documents that and the "alphabetical order"
+   generator defect) and already declares `mbr_0x130` as the first of the two 4-dword arrays at
+   `0x130..0x13F` and `0x140..0x14F`. So the element side needs no new work.
+2. **The forwarder is a shared helper, not a `cls_0x49cc40` method in spirit**: this call site passes
+   `this` (a `cls_0x49cc40`) and then `esi`, which came from `[this+0x44]->meth_0x4a06e0()` - a
+   `cls_0x49caf0`-related object. One body, two unrelated owners, same element type.
+
+What is still open is only the **container** class of `[+0x6C]` / `[+0x70]`, and that is the real blocker for
 porting this: `sub_50E300` has exactly one caller (`0x49cc52`, this forwarder) and no F3 method entry, and
 58 structures in F3 carry members at `+0x28`, `+0x2C` and `+0x54` - the shape Family A touches. Picking one
 by shape would be a guess, so the port keeps the callee as a seam rather than inventing an owner type.
