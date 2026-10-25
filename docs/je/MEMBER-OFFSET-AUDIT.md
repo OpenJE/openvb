@@ -6,7 +6,7 @@ Every row is an access that uses a member NAME while the generated header's
 declaration order puts that member at a different offset - the exact shape of the
 three defects fixed in net::base, net::critical_section and net::socket.
 
-classes parsed 1000 | sized 928 | wrong-offset accesses 109 in 12 files
+classes parsed 1000 | sized 928 | wrong-offset accesses 98 in 10 files
 
 | file | line | class | member | declared offset |
 |---|---|---|---|---|
@@ -37,17 +37,6 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 109 in 12 files
 | `modules/openje/src/JE/Client.cpp` | 255 | `Client` | `mbr_0x78` | +0x1B8 |
 | `modules/openje/src/JE/Client.cpp` | 256 | `Client` | `mbr_0x74` | +0x1B4 |
 | `modules/openje/src/JE/Client.cpp` | 257 | `Client` | `mbr_0x70` | +0x1B0 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 144 | `cls_0x420270` | `mbr_0x28` | +0x24 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 145 | `cls_0x420270` | `mbr_0x28` | +0x24 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 146 | `cls_0x420270` | `mbr_0x28` | +0x24 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 148 | `cls_0x420270` | `mbr_0x2c` | +0x28 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 149 | `cls_0x420270` | `mbr_0x2c` | +0x28 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 150 | `cls_0x420270` | `mbr_0x2c` | +0x28 |
-| `modules/openje/src/JE/cls_0x420270.cpp` | 151 | `cls_0x420270` | `mbr_0x2c` | +0x28 |
-| `modules/openje/src/JE/cls_0x45f060.cpp` | 17 | `cls_0x45f060` | `mbr_0x4` | +0x8 |
-| `modules/openje/src/JE/cls_0x45f060.cpp` | 19 | `cls_0x45f060` | `mbr_0x14` | +0x4 |
-| `modules/openje/src/JE/cls_0x45f060.cpp` | 21 | `cls_0x45f060` | `mbr_0x4` | +0x8 |
-| `modules/openje/src/JE/cls_0x45f060.cpp` | 22 | `cls_0x45f060` | `mbr_0x14` | +0x4 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 132 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 147 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
 | `modules/openje/src/JE/cls_0x50dbb0.cpp` | 194 | `cls_0x50dbb0` | `mbr_0x4` | +0x14 |
@@ -120,26 +109,23 @@ classes parsed 1000 | sized 928 | wrong-offset accesses 109 in 12 files
 | `modules/openje/src/JE/net/connection.cpp` | 104 | `connection` | `mbr_0x18` | +0x8 |
 | `modules/openje/src/JE/net/connection.cpp` | 105 | `connection` | `mbr_0x54` | +0x114 |
 
-## Fixed: net::buffer / net::packet (43 + 9 rows -> 0)
+## Fixed: cls_0x45f060 (its destructor freed a garbage pointer)
 
-The F3 DB settles the layout: `.?AVbuffer@net@@` is 28 (0x1C) bytes - vftptr at +0x0, the byte
-flag at +0x4, then words at +0x8/+0xC/+0x10/+0x14/+0x18 - and `.?AVpacket@net@@` is 60 (0x3C)
-with the buffer subobject at +0x0 and its OWN members from +0x1C. The port had the base fields
-declared inside `packet` instead of `buffer`, so packet's own members began at +0x4 and every
-named field was about 0x30 bytes early; `packet::ctor_0x45f300` is the citation (it stores
-0x2000 at +0x10 and `this+0x38` at +0x14 - a wrong layout writes those into the member area and
-leaves the shipped words untouched).
+F3 DB: size 24 (0x18), members at +0x0, +0x4 and +0x14. The header declared them in IDA's EA
+order (`mbr_0x0, mbr_0x14, mbr_0x4`), so the two fields landed at +0x4 and +0x8 - and the
+shipped destructor reads its "owns the block" flag at +0x4 and frees `[this+0x14]`. With the
+swap, the dtor read a flag out of the wrong word and **freed the dword at +0x4** - a garbage
+pointer - on every teardown of the UDP send path's stack buffer.
 
-The +0x22 hole between the two words is real in the F3 map, so `packet` reserves it explicitly.
+Fixed by declaring the members in offset order with the +0x5..+0x14 hole reserved, and pinned
+with compile-time `offsetof`/`sizeof` assertions (24, +0x4, +0x14) plus runtime checks that put
+a canary at +0x8 and a real heap block at +0x14. Restoring the old order fails the build.
 
-Pinned by compile-time `offsetof`/`sizeof` assertions for both classes (28 / 60 and all fourteen
-member offsets) plus runtime observation of the ctor in raw memory, including a slack byte past
-the 60-byte object to catch an overrun. Restoring the old re-declaration fails the build with
-three C2118 errors.
+## Correction: the previous pass claimed a hex-array fix it did not make
 
-## Detector self-corrections in this pass
-
-- inherited members are now resolved up the base chain: `overflow::mbr_0x4` is
-  `net::exception`'s +0x4, and reporting it as overflow's own was a false positive.
-- array counts may be hexadecimal (`byte mbr_0x1c[0x4]`): a decimal-only pattern silently dropped
-  that member and shifted everything after it.
+The commit before this one said array counts "may be hexadecimal (`byte mbr_0x1c[0x4]`)", but the
+pattern was still decimal-only. The member was silently dropped, `cls_0x41cff0` came out 4 bytes
+short, and that produced **7 false positives** for `cls_0x420270::mbr_0x28`/`mbr_0x2c`. The
+pattern now really accepts both forms and those 7 rows are gone - they were never defects.
+Lesson recorded deliberately: a commit message describing a fix is not evidence the fix exists;
+the census number is what has to be re-derived after every tool change.

@@ -49,7 +49,7 @@ FIXED = {
 
 MEMBER_RE = re.compile(
     r"^\s*(?:/\*.*?\*/\s*)?([A-Za-z_][\w:]*(?:\s*[*&])?)\s+([A-Za-z_]\w*)\s*"
-    r"(?:\[\s*(\d+)\s*\])?\s*;"
+    r"(?:\[\s*(0[xX][0-9a-fA-F]+|\d+)\s*\])?\s*;"
 )
 
 # MSVC default packing on win32: a member starts at the next multiple of its alignment.
@@ -164,7 +164,7 @@ def sizes_of(classes):
             table, ok = [], True
             for mname, mtype, count in cls["members"]:
                 t = short(mtype)
-                n = count and int(count) or 1
+                n = (int(count, 0) if count else 0) or 1
                 if t in FIXED:
                     elem = FIXED[t]
                     sz = elem * n
