@@ -147,3 +147,27 @@ Also added: a class-typed member whose span the OTHER declared members fully cov
 header already flattens, so it is replaced by padding instead of being kept (keeping both put its
 children after the whole subobject). Partial coverage is NOT flattened - that deletes state of its own
 (CameraControl's embedded orbit, cls_0x401d60's fields).
+
+## The ordering work is now gated, not just done: a ratchet, not a backlog
+
+`tools/check-member-offsets.py --ratchet N` and a `layout-ratchet` step in
+`devenv/scripts/run-all-tests.nix` enforce the contract that matters now:
+
+> a change may REDUCE the number of members declared at an offset their own name contradicts, never
+> raise it.
+
+A "zero rows" gate would be wrong today - 3588 rows remain in the flattened memory-image structs, and
+those need a composition fix, not an ordering one. But without a gate, the next hand-written header can
+reintroduce exactly the defect class this campaign removed, and nothing would notice: the offsets stay
+plausible (they are one dword or one padding slot off, not wild), the build succeeds, and the suite
+passes because no test reads that member.
+
+Demonstrated both directions on a throwaway edit to `ActionDie.hpp`:
+- a comment-only edit leaves the count at 3588 - the gate tolerates harmless change;
+- an EA-style "tidy" that moves the byte above the dword reports 3591 rows in 145 files and names
+  `ActionDie::mbr_0x14 named +0x14 but laid out at +0x10` - it detects the regression, and exits 1
+  when the count exceeds the ceiling (checked at ceiling 3587).
+
+The ceiling is meant to be lowered as the backlog clears; it is a floor of protection, not an
+acceptance target. Leaving it stale at 3588 while fixing files would be safe but sloppy, so the tool
+prints "(lower the ceiling to N)" whenever it runs below the ceiling.

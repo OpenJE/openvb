@@ -354,6 +354,23 @@ def main(argv):
                     fh.write("| `%s` | %d | `%s` | `%s` | +0x%X |\n" % (path, ln, owner, member, got))
         print("wrote %s" % os.path.relpath(md_path, ROOT))
 
+    # RATCHET: the tree is mid-migration from IDA's EA order to shipped offset order. A hard gate
+    # ("zero rows") would fail for the 144 files still waiting, so the contract enforced here is that
+    # a change may REDUCE the count but never raise it: a new member declared at an offset its own
+    # name contradicts is a regression the moment it lands, whatever the backlog is.
+    if "--ratchet" in argv:
+        ceiling = int(argv[argv.index("--ratchet") + 1])
+        if len(static_rows) > ceiling:
+            print("GATE FAIL: %d members contradict their own named offset, ceiling %d (%+d)"
+                  % (len(static_rows), ceiling, len(static_rows) - ceiling))
+            for cname, mname, off, named, path in static_rows[:10]:
+                print("   %s::%s named +0x%X declared +0x%X" % (cname, mname, named, off))
+            return 1
+        print("layout-ratchet: %d rows <= ceiling %d%s"
+              % (len(static_rows), ceiling,
+                 " (lower the ceiling to %d)" % len(static_rows)
+                 if len(static_rows) < ceiling else ""))
+
     if "--static-gate" in argv and static_rows:
         print("GATE FAIL: %d members are declared at an offset their name contradicts" % len(static_rows))
         return 1
