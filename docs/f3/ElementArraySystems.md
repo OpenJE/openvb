@@ -76,6 +76,28 @@ two different sub-objects of its own owner:
 and `cls_0x49cc40::meth_0x49db50` (`0x49db50`) is `mov ecx,[ecx+48h]; push arg; call sub_49D610` - a
 one-line forwarder to a third seam that is also still unported.
 
+The forwarder body read whole (`0x49cc40`, 18 instructions, `retn 4`) settles three points a port must not
+guess:
+
+    49cc46  xor  eax, eax            ; the RESULT for the "neither pointer set" path
+    49cc48  test ecx, ecx / jz       ; [ecx+6Ch] null -> skip Family A entirely
+    49cc51  push edi / call sub_50E300
+    49cc57  mov  ecx, [esi+70h]
+    49cc5a  test ecx, ecx / jz       ; [ecx+70h] null -> skip Family B entirely
+    49cc5e  push edi / call sub_509470
+    49cc66  retn 4                   ; returns whatever the LAST call left in eax
+
+- the two pointers are tested **independently**: neither being set is legal, and then the result is 0;
+- the return value is **not** the first family's element - it is whatever the last call left behind, so a
+  call where only Family A runs returns A's element and a call where both run returns **B's**;
+- neither call's result is stored, so the function's only observable effect is the lazy allocation each
+  accessor may perform.
+
+Who owns the objects at `[+0x6C]` / `[+0x70]` is **not** determined yet, and that is the real blocker for
+porting this: `sub_50E300` has exactly one caller (`0x49cc52`, this forwarder) and no F3 method entry, and
+58 structures in F3 carry members at `+0x28`, `+0x2C` and `+0x54` - the shape Family A touches. Picking one
+by shape would be a guess, so the port keeps the callee as a seam rather than inventing an owner type.
+
 ## What a port needs, in order
 
 1. `cls_0x4abc60::ctor_0x4abd40` / `meth_0x4abdd0` (the 0x10-byte wrapper and its `+0xC` element base).
