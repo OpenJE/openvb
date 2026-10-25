@@ -1887,3 +1887,20 @@ for the string `76c` reported 1 hit and I read that as "landed." The match was a
 (`76c44ce4...`) in an earlier item. The item had not landed at all: an unanchored substring check on prose is the
 same defect as an unanchored citation, and the fix is the same - test the property with an anchored pattern
 (`^## 76c`), not the token's existence anywhere in the file.
+## 77. A GENERATED DECLARATION'S MEMBER NAMES ARE NOT SHIPPED OFFSETS — `mbr_0x4c` may sit anywhere in the object
+
+Found while landing the CSound host suite (openje `bcda563`). `src/JE/CSound.hpp` lists its members in
+ALPHABETICAL order (`mbr_0x100, mbr_0x104, ..., mbr_0x1c, mbr_0x20, ...` `mbr_0xfc`), i.e. it is a generated
+declaration, not a layout transcription. Every ported body in `CSound.cpp` already addresses fields as
+`*( (dword*)( (byte*)this + 0xNN ) )`, so the engine code is correct while `s.mbr_0xe0` in a TEST reads a
+different byte than offset 0xE0. The first version of the new suite set fields by member name and reported 33
+spurious failures — all of them the test's fault, none of them the port's. Test fixtures must use
+offset accessors (`rdw()/wrw()`), exactly like the bodies they exercise; and the same suspicion applies to any
+typed `->mbr_0xNN` access on a class whose header order is alphabetical (cls_0x4c6fb0's is numeric and fine).
+
+Second half of the same item, because it is the same species of "the shape looks like the meaning": `byte_70B250`
+is a `dword*` HOLDING the singleton pointer, and Hex-Rays renders `[ptr+0x4C]` as `*(*byte_70B250 + 76)`. Five
+CSound sites had been ported as `*byte_70B250 + off/4`, which dereferences the singleton's FIELD 0 and adds `off`
+bytes to that value — a different object at the same offset, silently. Cross-check any `*(*sym + N)` against the
+disassembly (`mov edx, dword ptr sym ; mov eax, [edx+4Ch]`) before choosing between "byte offset off the pointer"
+and "pointer arithmetic on the pointee"; `JE/cls_0x539d90.cpp` already had the correct form in this tree.
