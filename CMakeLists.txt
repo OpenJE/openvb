@@ -86,6 +86,7 @@ set(openje_SOURCES
 	"modules/openje/src/JE/CSoundSystem.cpp"
 	"modules/openje/src/JE/Gfx_NodeAttribute.cpp"
 	"modules/openje/src/JE/Gfx_ModelMesh.cpp"
+	"modules/openje/src/JE/Gfx_SkinMesh.cpp"
 	"modules/openje/src/JE/cls_0x50ca00.cpp"
 	"modules/openje/src/JE/GUI/Interface.cpp"
 	"modules/openje/src/JE/cls_0x52d080.cpp"
