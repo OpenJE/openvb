@@ -136,6 +136,11 @@ in {
         # pointer, index scaling by the 0x244 stride on both, the LAST-call-wins result when both
         # children are present, and the absence of a bounds check.
         "cls_0x49cc40|modules/openje/tests/je/cls_0x49cc40/cls_0x49cc40.cpp|$JE/cls_0x49cc40.cpp $JE/cls_0x40a220.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b5d00.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp $JE.cpp|8"
+        # cls_0x40cc80::meth_0x431220 - the erase/close-gap primitive of the begin/end container. The
+        # requirement is what a caller can rely on afterwards (which elements moved, where the new end
+        # points, which cases are no-ops), because all three interesting failure modes are about the
+        # END: caching it once, not publishing it on first==last, and always publishing it otherwise.
+        "cls_0x40cc80|modules/openje/tests/je/cls_0x40cc80/cls_0x40cc80.cpp|$JE/cls_0x40cc80.cpp|16"
         # cls_0x4a5be0::meth_0x4a5d70 - the AnimMeshInstance teardown. The requirement is the object's
         # state AFTER teardown, and the shipped code is deliberately asymmetric: the malloc'd buffers
         # are freed and nulled, while the four Granny handles and the bare +0xBC block are freed and
