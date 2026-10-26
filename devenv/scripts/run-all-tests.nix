@@ -139,7 +139,7 @@ in {
         # cls_0x4a67f0::meth_0x4a5a90 - erase-range over the intrusive list behind the anim-mesh +0xB0
         # sub-object. The requirement is what survives: the sentinel (re-read every iteration and
         # skipped), the per-freed-node count, and the cursor that advances before the sentinel test.
-        "cls_0x4a67f0|modules/openje/tests/je/cls_0x4a67f0/cls_0x4a67f0.cpp|$JE/cls_0x4a67f0.cpp|43"
+        "cls_0x4a67f0|modules/openje/tests/je/cls_0x4a67f0/cls_0x4a67f0.cpp|$JE/cls_0x4a67f0.cpp $JE/cls_0x50db20.cpp $JE/cls_0x40a220.cpp|59"
         # cls_0x40cc80::meth_0x431220 - the erase/close-gap primitive of the begin/end container. The
         # requirement is what a caller can rely on afterwards (which elements moved, where the new end
         # points, which cases are no-ops), because all three interesting failure modes are about the
@@ -153,7 +153,7 @@ in {
         # what lets the test count the forwards and check the arguments instead of asserting on a no-op.
         # Floor 23 = the check() calls this runner's regex counts in the source; the run reports 33
         # (check_ptr is a helper, so its calls add assertions without matching the floor regex).
-        "cls_0x4a5be0|modules/openje/tests/je/cls_0x4a5be0/cls_0x4a5be0.cpp|$JE/cls_0x4a5be0.cpp $JE/cls_0x40cc80.cpp $JE/cls_0x4a67f0.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp|31"
+        "cls_0x4a5be0|modules/openje/tests/je/cls_0x4a5be0/cls_0x4a5be0.cpp|$JE/cls_0x4a5be0.cpp $JE/cls_0x40cc80.cpp $JE/cls_0x4a67f0.cpp $JE/cls_0x50db20.cpp $JE/cls_0x40a220.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp|31"
         "cls_0x515040|modules/openje/tests/je/cls_0x515040/cls_0x515040.cpp|$JE/cls_0x515040.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp|42"
         # The enclosing object's destructor 0x505CD0, whose four parts are pinned here: the +0x28
         # scalar delete through its own vtable slot 0 (flag 1), the +0x2c release-then-free, the
