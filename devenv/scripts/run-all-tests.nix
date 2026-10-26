@@ -139,7 +139,7 @@ in {
         # cls_0x4a67f0::meth_0x4a5a90 - erase-range over the intrusive list behind the anim-mesh +0xB0
         # sub-object. The requirement is what survives: the sentinel (re-read every iteration and
         # skipped), the per-freed-node count, and the cursor that advances before the sentinel test.
-        "cls_0x4a67f0|modules/openje/tests/je/cls_0x4a67f0/cls_0x4a67f0.cpp|$JE/cls_0x4a67f0.cpp $JE/cls_0x50db20.cpp $JE/cls_0x40a220.cpp|59"
+        "cls_0x4a67f0|modules/openje/tests/je/cls_0x4a67f0/cls_0x4a67f0.cpp|$JE/cls_0x4a67f0.cpp $JE/cls_0x50db20.cpp $JE/cls_0x40a220.cpp|81"
         # cls_0x40cc80::meth_0x431220 - the erase/close-gap primitive of the begin/end container. The
         # requirement is what a caller can rely on afterwards (which elements moved, where the new end
         # points, which cases are no-ops), because all three interesting failure modes are about the
