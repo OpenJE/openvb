@@ -140,7 +140,7 @@ in {
         # requirement is what a caller can rely on afterwards (which elements moved, where the new end
         # points, which cases are no-ops), because all three interesting failure modes are about the
         # END: caching it once, not publishing it on first==last, and always publishing it otherwise.
-        "cls_0x40cc80|modules/openje/tests/je/cls_0x40cc80/cls_0x40cc80.cpp|$JE/cls_0x40cc80.cpp|16"
+        "cls_0x40cc80|modules/openje/tests/je/cls_0x40cc80/cls_0x40cc80.cpp|$JE/cls_0x40cc80.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/net/exception.cpp|31"
         # cls_0x4a5be0::meth_0x4a5d70 - the AnimMeshInstance teardown. The requirement is the object's
         # state AFTER teardown, and the shipped code is deliberately asymmetric: the malloc'd buffers
         # are freed and nulled, while the four Granny handles and the bare +0xBC block are freed and
