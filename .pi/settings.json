@@ -2,7 +2,7 @@
 {
   "$schema": "https://pi.dev/schemas/settings.schema.json",
   "defaultProvider": "opencode-go",
-  "defaultModel": "opencode-go/deepseek-v4.1-flash",
+  "defaultModel": "deepseek-v4.1-flash",
   "defaultThinkingLevel": "high",
   "extensions": [
     "-builtin:codemode"
@@ -16,7 +16,8 @@
     "npm:pi-jev-extension@0.3.1",
     "npm:pi-subagents@0.81.0",
     "npm:@henryqw/pi-codegraph@0.7.3",
-    "npm:pi-ghidra@0.3.0"
+    "npm:pi-ghidra@0.3.0",
+    "npm:pi-compaction-model@0.1.0"
   ],
   "enabledModels": [
     "opencode-go/deepseek-v4.1-flash",
@@ -34,34 +35,43 @@
     "keepRecentTokens": 20000,
     "modelOverrides": {
       "opencode-go/deepseek-v4.1-flash": {
-        "reserveTokens": 890000,
-        "keepRecentTokens": 20000
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
       },
       "opencode-go/glm-5.3-flash": {
-        "reserveTokens": 890000,
-        "keepRecentTokens": 20000
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
       },
       "opencode-go/glm-5.3": {
-        "reserveTokens": 890000,
-        "keepRecentTokens": 20000
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
       },
       "opencode-go/gpt-6-luna": {
-        "reserveTokens": 940000,
-        "keepRecentTokens": 20000
+        "reserveTokens": 750000,
+        "keepRecentTokens": 50000
       },
       "opencode-go/qwen3.8-flash": {
-        "reserveTokens": 890000,
-        "keepRecentTokens": 20000
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
       },
       "opencode-go/deepseek-v4-pro": {
-        "reserveTokens": 890000,
-        "keepRecentTokens": 20000
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
       },
       "opencode/deepseek-v4.1-flash-free": {
-        "reserveTokens": 90000,
-        "keepRecentTokens": 18000
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
+      },
+      "opencode/claude-sonnet-5-5": {
+        "reserveTokens": 700000,
+        "keepRecentTokens": 50000
       }
     }
+  },
+  "compactionModel": {
+    "model": "opencode-go/glm-5.3-flash",
+    "thinkingLevel": "low",
+    "reasons": ["manual", "threshold", "overflow"]
   },
   "subagents": {
     "defaultProvider": "opencode-go",
@@ -116,4 +126,3 @@
     }
   }
 }
-

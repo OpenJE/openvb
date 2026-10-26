@@ -1,1 +1,0 @@
-echo "DBG nargs=$# nsrcwords=$(printf '%s\n' "$@"  || { echo "usage: $0 <out.exe> <source.cpp> [...]" >&2; exit 2; }
