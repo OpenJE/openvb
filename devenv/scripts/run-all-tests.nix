@@ -136,6 +136,15 @@ in {
         # pointer, index scaling by the 0x244 stride on both, the LAST-call-wins result when both
         # children are present, and the absence of a bounds check.
         "cls_0x49cc40|modules/openje/tests/je/cls_0x49cc40/cls_0x49cc40.cpp|$JE/cls_0x49cc40.cpp $JE/cls_0x40a220.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b5d00.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp $JE.cpp|8"
+        # cls_0x4a5be0::meth_0x4a5d70 - the AnimMeshInstance teardown. The requirement is the object's
+        # state AFTER teardown, and the shipped code is deliberately asymmetric: the malloc'd buffers
+        # are freed and nulled, while the four Granny handles and the bare +0xBC block are freed and
+        # left dangling. The Granny frees and the +0xB0 sub-object teardown have no reimplementation
+        # (SDK imports / unported method), so the port routes them through installable hooks - which is
+        # what lets the test count the forwards and check the arguments instead of asserting on a no-op.
+        # Floor 17 = the check() calls this runner's regex counts in the source; the run reports 25
+        # (check_ptr is a helper, so its calls add assertions without matching the floor regex).
+        "cls_0x4a5be0|modules/openje/tests/je/cls_0x4a5be0/cls_0x4a5be0.cpp|$JE/cls_0x4a5be0.cpp|17"
         "cls_0x515040|modules/openje/tests/je/cls_0x515040/cls_0x515040.cpp|$JE/cls_0x515040.cpp $JE/cls_0x4abc60.cpp $JE/cls_0x4abe60.cpp $JE/cls_0x4ac210.cpp $JE/cls_0x4b60b0.cpp $JE/cls_0x401b00.cpp $JE/cls_0x50db20.cpp $JE/cls_0x420140.cpp $JE/cls_0x4d3d90.cpp $JE/GUI/Interface.cpp $JE/net/exception.cpp|42"
         # The enclosing object's destructor 0x505CD0, whose four parts are pinned here: the +0x28
         # scalar delete through its own vtable slot 0 (flag 1), the +0x2c release-then-free, the
